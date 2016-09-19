@@ -906,6 +906,12 @@ class wallet_api
        */
       annotated_signed_transaction follow( string follower, string following, set<string> what, bool broadcast );
 
+      /**
+       *  Creates snapshot of the blockchain which includes information about current blockchain state with all accounts.
+       *
+       *  @param filename - the name of file which will be generated (ex. snapshot.json).
+       */
+      void generate_snapshot( const fc::path& filename ) const;
 
       std::map<string,std::function<string(fc::variant,const fc::variants&)>> get_result_formatters() const;
 
@@ -1033,6 +1039,9 @@ FC_API( steemit::wallet::wallet_api,
         (get_active_witnesses)
         (get_miner_queue)
         (get_transaction)
+
+        // Snapshot api
+        (generate_snapshot)
       )
 
 FC_REFLECT( steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) );

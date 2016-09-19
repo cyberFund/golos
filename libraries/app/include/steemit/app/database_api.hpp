@@ -7,6 +7,7 @@
 #include <steemit/chain/history_object.hpp>
 #include <steemit/tags/tags_plugin.hpp>
 #include <steemit/follow/follow_plugin.hpp>
+#include <steemit/chain/snapshot_state.hpp>
 
 #include <fc/api.hpp>
 #include <fc/optional.hpp>
@@ -186,6 +187,11 @@ class database_api
        *  @return all accounts that referr to the key or account id in their owner or active authorities.
        */
       vector<account_id_type> get_account_references( account_id_type account_id )const;
+
+      /**
+       *  @return return account's short summary.
+       */
+      account_summary get_account_summary( account_id_type account_id )const;
 
       /**
        * @brief Get a list of accounts by name
@@ -472,6 +478,7 @@ FC_API(steemit::app::database_api,
    // Accounts
    (get_accounts)
    (get_account_references)
+   (get_account_summary)
    (lookup_account_names)
    (lookup_accounts)
    (get_account_count)
@@ -517,4 +524,3 @@ FC_API(steemit::app::database_api,
    (get_active_witnesses)
    (get_miner_queue)
 )
-
