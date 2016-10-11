@@ -4,8 +4,8 @@ Introducing Golos (alpha)
 Seed Nodes
 ----------
 
-    cyberfounder           45.55.217.111:12150                         
-    litvintech             104.168.154.160:40696
+seed-node = 95.85.13.229:2225
+seed-node = 95.85.33.35:2225
 
 
 How to Mine
@@ -22,7 +22,7 @@ might not be accepted by the blockchain.
 OS-specific build instructions
 ------------------------------
 
-See [here]() for Linux and [here]() for OSX (Apple).
+See [here](https://wiki.golos.io/3-guides/ubuntu_guide.html) for Ubuntu and [here](https://wiki.golos.io/3-guides/osx_guide.html) for OSX (Apple).
 
 cmake Build Options
 --------------------------
