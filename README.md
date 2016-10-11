@@ -5,6 +5,7 @@ Seed Nodes
 ----------
 
 seed-node = 95.85.13.229:2225
+
 seed-node = 95.85.33.35:2225
 
 
@@ -22,7 +23,7 @@ might not be accepted by the blockchain.
 OS-specific build instructions
 ------------------------------
 
-See [here](https://wiki.golos.io/3-guides/ubuntu_guide.html) for Ubuntu and [here](https://wiki.golos.io/3-guides/osx_guide.html) for OSX (Apple).
+See [here](https://wiki.golos.io/3-guides/ubuntu_guide.html) for Ubuntu and [here](https://wiki.golos.io/3-guides/osx_guide.html) for macOS (Apple).
 
 cmake Build Options
 --------------------------
