@@ -1600,7 +1600,7 @@ BOOST_AUTO_TEST_CASE( liquidity_rewards )
 
       BOOST_TEST_MESSAGE( "Waiting 10 minutes" );
 
-      generate_blocks( db.head_block_time() + STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10_HF10, true );
+      generate_blocks( db.head_block_time() + STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10, true );
 
       BOOST_TEST_MESSAGE( "Creating Limit Order for SBD that will be filled immediately." );
 

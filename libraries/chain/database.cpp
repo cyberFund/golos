@@ -3374,9 +3374,8 @@ int database::match( const limit_order_object& new_order, const limit_order_obje
 
    auto age = head_block_time() - old_order.created;
    if( !has_hardfork( STEEMIT_HARDFORK_0_12__178 ) &&
-      ( (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork( STEEMIT_HARDFORK_0_10__149)) ||
-      (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 && has_hardfork( STEEMIT_HARDFORK_0_10__149) ) ) )
-   if( !has_hardfork( STEEMIT_HARDFORK_0_12__178 ) && age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC )
+       ( (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork( STEEMIT_HARDFORK_0_10__149)) ||
+       (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 && has_hardfork( STEEMIT_HARDFORK_0_10__149) ) ) )
    {
       if( old_order_receives.symbol == STEEM_SYMBOL )
       {

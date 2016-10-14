@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Golos, and contributors.
+ * Copyright (c) 2016 Golos, community and contributors.
  */
 #pragma once
 
@@ -191,7 +191,7 @@
 #define STEEMIT_FEED_HISTORY_WINDOW             (24*1)
 #define STEEMIT_MAX_FEED_AGE                    (fc::days(1))
 #define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_MINERS/3) /// protects the network from conversions before price has been established
-#define STEEMIT_CONVERSION_DELAY                (fc::days(1))
+#define STEEMIT_CONVERSION_DELAY                (fc::days(7))
 
 #define STEEMIT_MIN_UNDO_HISTORY                10
 #define STEEMIT_MAX_UNDO_HISTORY                10000
