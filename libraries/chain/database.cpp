@@ -1189,7 +1189,7 @@ void database::update_witness_schedule4()
       reset_virtual_schedule_time();
    }
 
-   if( head_block_num() > 20000 )
+   if( head_block_num() > 14400 )
    {
       FC_ASSERT( active_witnesses.size() == STEEMIT_MAX_MINERS, "number of active witnesses does not equal STEEMIT_MAX_MINERS",
                                        ("active_witnesses.size()",active_witnesses.size()) ("STEEMIT_MAX_MINERS",STEEMIT_MAX_MINERS) );
@@ -2151,7 +2151,7 @@ asset database::get_liquidity_reward()const
       return asset( 0, STEEM_SYMBOL );
 
    const auto& props = get_dynamic_global_properties();
-   // static_assert( STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC == 60*60, "this code assumes a 1 hour time interval" );
+   static_assert( STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC == 60*60, "this code assumes a 1 hour time interval" );
    asset percent( calc_percent_reward_per_hour< STEEMIT_LIQUIDITY_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL );
    return std::max( percent, STEEMIT_MIN_LIQUIDITY_REWARD );
 }
@@ -2217,7 +2217,8 @@ asset database::get_pow_reward()const
 #endif
 
    static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   // static_assert( STEEMIT_MAX_MINERS == 21, "this code assumes 21 per round" );
+   if( head_block_num() > 14400 )
+   static_assert( STEEMIT_MAX_MINERS == 21, "this code assumes 21 per round" );
    asset percent( calc_percent_reward_per_round< STEEMIT_POW_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
    return std::max( percent, STEEMIT_MIN_POW_REWARD );
 }
@@ -2283,6 +2284,10 @@ uint128_t database::calculate_vshares( uint128_t rshares ) const
 {
    auto s = get_content_constant_s();
    return ( rshares + s ) * ( rshares + s ) - s * s;
+   // TODO would like to smooth curve
+   // return ( rshares + s ) * ((rshares >> 1) + s ) - s * s;
+   // return ( (rshares >> 1) * 3 + s ) * ((rshares >> 1) + s ) - s * s;
+   // return ( (rshares >> 2) * 5 + s ) * ((rshares >> 1) + s ) - s * s;
 }
 
 /**
@@ -3368,6 +3373,9 @@ int database::match( const limit_order_object& new_order, const limit_order_obje
            old_order_pays == old_order.amount_for_sale() );
 
    auto age = head_block_time() - old_order.created;
+   if( !has_hardfork( STEEMIT_HARDFORK_0_12__178 ) &&
+      ( (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork( STEEMIT_HARDFORK_0_10__149)) ||
+      (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 && has_hardfork( STEEMIT_HARDFORK_0_10__149) ) ) )
    if( !has_hardfork( STEEMIT_HARDFORK_0_12__178 ) && age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC )
    {
       if( old_order_receives.symbol == STEEM_SYMBOL )
@@ -3788,7 +3796,7 @@ void database::apply_hardfork( uint32_t hardfork )
 #ifndef IS_TEST_NET
          elog( "HARDFORK 1 at block ${b}", ("b", head_block_num()) );
 #endif
-         perform_vesting_share_split( 1000000 );
+         // perform_vesting_share_split( 1000000 );
 #ifdef IS_TEST_NET
          {
             custom_operation test_op;
@@ -3892,6 +3900,24 @@ void database::apply_hardfork( uint32_t hardfork )
                   }
                }
             }
+
+            modify( get_account( STEEMIT_MINER_ACCOUNT ), [&]( account_object& a )
+            {
+               a.posting = authority();
+               a.posting.weight_threshold = 1;
+            });
+
+            modify( get_account( STEEMIT_NULL_ACCOUNT ), [&]( account_object& a )
+            {
+               a.posting = authority();
+               a.posting.weight_threshold = 1;
+            });
+
+            modify( get_account( STEEMIT_TEMP_ACCOUNT ), [&]( account_object& a )
+            {
+               a.posting = authority();
+               a.posting.weight_threshold = 1;
+            });
          }
          break;
       case STEEMIT_HARDFORK_0_13:

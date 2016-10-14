@@ -130,7 +130,7 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
       acc.mined = false;
 
       if( !db().has_hardfork( STEEMIT_HARDFORK_0_11__169 ) )
-         acc.recovery_account = STEEMIT_INIT_MINER_NAME;
+         acc.recovery_account = "golos";
       else
          acc.recovery_account = o.creator;
 
