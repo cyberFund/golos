@@ -2685,7 +2685,7 @@ void database::init_genesis( uint64_t init_supply )
          std::cout << "Initializing state from snapshot file: "<< snapshot_file.generic_string() << "\n";
 
          unsigned char digest[MD5_DIGEST_LENGTH];
-         char snapshot_checksum [] = "32368928930ff59dea99258a8cdea665";
+         char snapshot_checksum [] = "081b0149f0b2a570ae76b663090cfb0c";
          char md5hash[33];
          boost::iostreams::mapped_file_source src(snapshot_path);
          MD5((unsigned char*) src.data(), src.size(), (unsigned char*) &digest);
