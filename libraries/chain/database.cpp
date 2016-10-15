@@ -2217,7 +2217,6 @@ asset database::get_pow_reward()const
 #endif
 
    static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   if( head_block_num() > 14400 )
    static_assert( STEEMIT_MAX_MINERS == 21, "this code assumes 21 per round" );
    asset percent( calc_percent_reward_per_round< STEEMIT_POW_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
    return std::max( percent, STEEMIT_MIN_POW_REWARD );
