@@ -4,9 +4,9 @@ Introducing Golos (alpha)
 Seed Nodes
 ----------
 
-seed-node = 95.85.13.229:2227
+seed-node = 95.85.13.229:2228
 
-seed-node = 95.85.33.35:2227
+seed-node = 95.85.33.35:2228
 
 
 How to Mine
@@ -15,7 +15,7 @@ How to Mine
 The mining algorithm used by Golos requires the owner to have access to the private key
 used by the account. This means it does not favor mining pools.
 
-    ./golosd --miner=["accountname","${WIFPRIVATEKEY}"] --witness="accountname" --seed-node="95.85.13.229:2227"
+    ./golosd --miner=["accountname","${WIFPRIVATEKEY}"] --witness="accountname" --seed-node="95.85.13.229:2228"
 
 Make sure that your accountname is unique and not already used by someone else or your proof of work
 might not be accepted by the blockchain.
