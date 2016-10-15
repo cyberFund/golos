@@ -1,4 +1,3 @@
-
 #include <steemit/chain/protocol/steem_operations.hpp>
 
 #include <steemit/chain/block_summary_object.hpp>
@@ -2282,11 +2281,12 @@ uint128_t database::get_content_constant_s() const
 uint128_t database::calculate_vshares( uint128_t rshares ) const
 {
    auto s = get_content_constant_s();
-   return ( rshares + s ) * ( rshares + s ) - s * s;
+   // return ( rshares + s ) * ( rshares + s ) - s * s;
    // TODO would like to smooth curve
    // return ( rshares + s ) * ((rshares >> 1) + s ) - s * s;
    // return ( (rshares >> 1) * 3 + s ) * ((rshares >> 1) + s ) - s * s;
-   // return ( (rshares >> 2) * 5 + s ) * ((rshares >> 1) + s ) - s * s;
+   // For public testnet2
+   return ( (rshares >> 2) * 5 + s ) * ((rshares >> 1) + s ) - s * s;
 }
 
 /**
