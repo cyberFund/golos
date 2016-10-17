@@ -1117,8 +1117,8 @@ void vote_evaluator::do_apply( const vote_operation& o )
 
                if( !db().has_hardfork( STEEMIT_HARDFORK_0_1 ) )
                {
-                  rshares3 *= 10000;
-                  total2 *= 10000;
+                  rshares3 *= 30000;
+                  total2 *= 30000;
                }
 
                rshares3 = rshares3 * rshares3 * rshares3;
@@ -1134,8 +1134,8 @@ void vote_evaluator::do_apply( const vote_operation& o )
                }
                else
                {
-                  uint64_t old_weight = ( ( std::numeric_limits< uint64_t >::max() * fc::uint128_t( 10000 * old_vote_rshares.value ) ) / ( 2 * db().get_content_constant_s() + ( 10000 * old_vote_rshares.value ) ) ).to_uint64();
-                  uint64_t new_weight = ( ( std::numeric_limits< uint64_t >::max() * fc::uint128_t( 10000 * comment.vote_rshares.value ) ) / ( 2 * db().get_content_constant_s() + ( 10000 * comment.vote_rshares.value ) ) ).to_uint64();
+                  uint64_t old_weight = ( ( std::numeric_limits< uint64_t >::max() * fc::uint128_t( 30000 * old_vote_rshares.value ) ) / ( 2 * db().get_content_constant_s() + ( 30000 * old_vote_rshares.value ) ) ).to_uint64();
+                  uint64_t new_weight = ( ( std::numeric_limits< uint64_t >::max() * fc::uint128_t( 30000 * comment.vote_rshares.value ) ) / ( 2 * db().get_content_constant_s() + ( 30000 * comment.vote_rshares.value ) ) ).to_uint64();
                   cv.weight = new_weight - old_weight;
                }
             }
