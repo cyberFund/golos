@@ -43,7 +43,7 @@
 #define STEEMIT_SYMBOL                          "GOLOS"
 #define STEEMIT_ADDRESS_PREFIX                  "GLS"
 
-#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
+#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476722695))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24)  /// 24 hours
 #define STEEMIT_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define STEEMIT_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24*14) /// 2 weeks
