@@ -537,6 +537,7 @@ void witness_plugin::start_mining(
              }
           }
        } );
+       thread_num++;
     }
 }
 
