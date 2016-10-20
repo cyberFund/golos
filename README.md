@@ -4,8 +4,6 @@ Introducing Golos (alpha)
 Seed Nodes
 ----------
 ```
-seed-node = 95.89.13.228:4243                   # @cyberfounder (NL)
-seed-node = 95.85.33.35:4243                    # @litvintech (NL)
 seed-node = 136.243.33.85:4243                  # @smailer (DE)
 seed-node = golos-seed.someguy123.com:4243      # @someguy123 (USA)
 seed-node = steemul.ru:4243                     # @xtar (DE)
