@@ -12,7 +12,8 @@ seed-node = steemul.ru:4243                     # @xtar (DE)
 seed-node = 88.99.13.48:4243                    # @primus (DE)
 seed-node = 52.57.156.202:4243                  # @smooth (DE)
 seed-node = golos.steem.ws:4243                 # @jesta (US)
-seed-node = seed.roelandp.nl:4243                # @roelandp (CAN)
+seed-node = seed.roelandp.nl:4243               # @roelandp (CAN)
+seed-node = golosnode.com:4243                  # @steem-id (FR)
 ```
 
 How to Mine
