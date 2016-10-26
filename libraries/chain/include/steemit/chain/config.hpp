@@ -34,7 +34,7 @@
 #else // IS LIVE STEEM NETWORK
 
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "GLS79mEZV96FXMdJXYgd1QHfjsWLyHhxr5zSaDP9yXbLvr8QGv5yU"
-#define BLOCKCHAIN_NAME                         "GOLOS"
+#define BLOCKCHAIN_NAME                         "GOLOSTESTNETPR4"
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< GESTS with 6 digits of precision

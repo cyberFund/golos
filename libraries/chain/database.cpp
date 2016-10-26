@@ -1188,11 +1188,11 @@ void database::update_witness_schedule4()
       reset_virtual_schedule_time();
    }
 
-   if( head_block_num() > 14400 )
-   {
-      FC_ASSERT( active_witnesses.size() == STEEMIT_MAX_MINERS, "number of active witnesses does not equal STEEMIT_MAX_MINERS",
-                                       ("active_witnesses.size()",active_witnesses.size()) ("STEEMIT_MAX_MINERS",STEEMIT_MAX_MINERS) );
-   }
+   // if( head_block_num() > 14400 )
+   // {
+      // FC_ASSERT( active_witnesses.size() == STEEMIT_MAX_MINERS, "number of active witnesses does not equal STEEMIT_MAX_MINERS",
+                                       // ("active_witnesses.size()",active_witnesses.size()) ("STEEMIT_MAX_MINERS",STEEMIT_MAX_MINERS) );
+   // }
 
    auto majority_version = wso.majority_version;
 
