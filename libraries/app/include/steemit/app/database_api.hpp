@@ -336,7 +336,6 @@ class database_api
       vector<discussion> get_discussions_by_comments( const discussion_query& query )const;
       vector<discussion> get_discussions_by_promoted( const discussion_query& query )const;
 
-
       ///@}
 
       /**
@@ -521,3 +520,4 @@ FC_API(steemit::app::database_api,
    (get_active_witnesses)
    (get_miner_queue)
 )
+
