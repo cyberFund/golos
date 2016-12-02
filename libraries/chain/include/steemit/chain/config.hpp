@@ -66,7 +66,7 @@
 #define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1480902624))
 
-#define STEEMIT_INIT_MINER_NAME                 "cyberfounder"
+#define STEEMIT_INIT_MINER_NAME                 "cyberfounder_testnet"
 #define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_MAX_VOTED_WITNESSES             2
 #define STEEMIT_MAX_MINER_WITNESSES             1
