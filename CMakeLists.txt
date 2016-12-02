@@ -48,8 +48,6 @@ LIST(APPEND BOOST_COMPONENTS thread
                              locale)
 SET( Boost_USE_STATIC_LIBS ON CACHE STRING "ON or OFF" )
 
-OPTION( ENABLE_CONTENT_PATCHING "Allow posts to be updated with a patch rather than replaced, Requires Qt5" ON )
-
 OPTION( BUILD_GOLOS_TESTNET "Build source for test network (ON OR OFF)" OFF )
 MESSAGE( STATUS "BUILD_GOLOS_TESTNET: ${BUILD_GOLOS_TESTNET}" )
 if( BUILD_GOLOS_TESTNET  )
