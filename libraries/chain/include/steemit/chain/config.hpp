@@ -33,7 +33,8 @@
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 #else // IS LIVE STEEM NETWORK
 
-#define STEEMIT_INIT_PUBLIC_KEY_STR             "GLS79mEZV96FXMdJXYgd1QHfjsWLyHhxr5zSaDP9yXbLvr8QGv5yU"
+// 5JRFWJ17qjzexhikbXQ1BepnjmDTQrvNePBoJM8YRVbgvqpNX9a
+#define STEEMIT_INIT_PUBLIC_KEY_STR             "GLS5Dh9otpsCvbMn7g4yMqLw6aMKiMf7ZYSKeMenfAG3d6MuCKYEX"
 #define BLOCKCHAIN_NAME                         "GOLOSTESTNETPR4"
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
@@ -43,7 +44,7 @@
 #define STEEMIT_SYMBOL                          "GOLOS"
 #define STEEMIT_ADDRESS_PREFIX                  "GLS"
 
-#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476722695))
+#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1480688224))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24)  /// 24 hours
 #define STEEMIT_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define STEEMIT_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24*14) /// 2 weeks
@@ -61,13 +62,13 @@
 #define STEEMIT_BLOCK_INTERVAL                  3
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 47)
+#define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY/4)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1484478000))
+#define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1480702624))
 
 #define STEEMIT_INIT_MINER_NAME                 "cyberfounder"
 #define STEEMIT_NUM_INIT_MINERS                 1
-#define STEEMIT_MAX_VOTED_WITNESSES             1
+#define STEEMIT_MAX_VOTED_WITNESSES             2
 #define STEEMIT_MAX_MINER_WITNESSES             1
 #define STEEMIT_MAX_RUNNER_WITNESSES            1
 #define STEEMIT_MAX_MINERS                      (STEEMIT_MAX_VOTED_WITNESSES+STEEMIT_MAX_MINER_WITNESSES+STEEMIT_MAX_RUNNER_WITNESSES)
