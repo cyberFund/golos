@@ -1096,10 +1096,11 @@ void wallet_api::generate_snapshot(const fc::path& filename) const
    snapshot.head_block_num = gpo.head_block_number;
    snapshot.head_block_id = gpo.head_block_id;
    snapshot.chain_id = STEEMIT_CHAIN_ID;
-   snapshot.summary.balance = gpo.current_supply;
+   snapshot.summary.current_supply = gpo.current_supply;
    snapshot.summary.sbd_balance = gpo.current_sbd_supply;
    snapshot.summary.total_vesting_fund_steem = gpo.total_vesting_fund_steem;
    snapshot.summary.total_vesting_shares = gpo.total_vesting_shares;
+   snapshot.summary.total_reward_fund_steem = gpo.total_reward_fund_steem;
 
    account_summary account;
    const auto accounts_count = my->_remote_db->get_account_count();
