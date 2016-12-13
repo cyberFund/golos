@@ -596,356 +596,356 @@ BOOST_AUTO_TEST_CASE( vote_apply )
 {
    try
    {
-      BOOST_TEST_MESSAGE( "Testing: vote_apply" );
-
-      ACTORS( (alice)(bob)(sam)(dave) )
-      generate_blocks( 60 / STEEMIT_BLOCK_INTERVAL );
-
-      const auto& vote_idx = db.get_index_type< comment_vote_index >().indices().get< by_comment_voter >();
-
-      {
-         const auto& alice = db.get_account( "alice" );
-         const auto& bob = db.get_account( "bob" );
-
-         signed_transaction tx;
-         comment_operation comment_op;
-         comment_op.author = "alice";
-         comment_op.permlink = "foo";
-         comment_op.parent_permlink = "test";
-         comment_op.title = "bar";
-         comment_op.body = "foo bar";
-         tx.operations.push_back( comment_op );
-         tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         BOOST_TEST_MESSAGE( "--- Testing voting on a non-existent comment" );
-
-         tx.operations.clear();
-         tx.signatures.clear();
-
-         vote_operation op;
-         op.voter = "alice";
-         op.author = "bob";
-         op.permlink = "foo";
-         op.weight = STEEMIT_100_PERCENT;
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-
-         STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Testing voting with a weight of 0" );
-
-         op.weight = (int16_t) 0;
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-
-         STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Testing success" );
-
-         auto old_voting_power = alice.voting_power;
-
-         op.weight = STEEMIT_100_PERCENT;
-         op.author = "alice";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-
-         db.push_transaction( tx, 0 );
-
-         auto& alice_comment = db.get_comment( "alice", "foo" );
-         auto itr = vote_idx.find( std::make_tuple( alice_comment.id, alice.id ) );
-         int64_t max_vote_denom = ( db.get_dynamic_global_properties().vote_regeneration_per_day * STEEMIT_VOTE_REGENERATION_SECONDS ) / (60*60*24);
-
-         BOOST_REQUIRE_EQUAL( alice.voting_power, old_voting_power - ( ( old_voting_power + max_vote_denom - 1 ) / max_vote_denom ) );
-         BOOST_REQUIRE( alice.last_vote_time == db.head_block_time() );
-         BOOST_REQUIRE_EQUAL( alice_comment.net_rshares.value, alice.vesting_shares.amount.value * ( old_voting_power - alice.voting_power ) / STEEMIT_100_PERCENT );
-         BOOST_REQUIRE( alice_comment.cashout_time == db.head_block_time() + fc::seconds( STEEMIT_CASHOUT_WINDOW_SECONDS ) );
-         BOOST_REQUIRE( itr->rshares == alice.vesting_shares.amount.value * ( old_voting_power - alice.voting_power ) / STEEMIT_100_PERCENT );
-         BOOST_REQUIRE( itr != vote_idx.end() );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test reduced power for quick voting" );
-
-         generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
-
-         old_voting_power = db.get_account( "alice" ).voting_power;
-
-         comment_op.author = "bob";
-         comment_op.permlink = "foo";
-         comment_op.title = "bar";
-         comment_op.body = "foo bar";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( comment_op );
-         tx.sign( bob_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         op.weight = STEEMIT_100_PERCENT / 2;
-         op.voter = "alice";
-         op.author = "bob";
-         op.permlink = "foo";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         const auto& bob_comment = db.get_comment( "bob", "foo" );
-         itr = vote_idx.find( std::make_tuple( bob_comment.id, alice.id ) );
-
-         BOOST_REQUIRE_EQUAL( db.get_account( "alice" ).voting_power, old_voting_power - ( ( old_voting_power + max_vote_denom - 1 ) * STEEMIT_100_PERCENT / ( 2 * max_vote_denom * STEEMIT_100_PERCENT ) ) );
-         BOOST_REQUIRE_EQUAL( bob_comment.net_rshares.value, alice.vesting_shares.amount.value * ( old_voting_power - db.get_account( "alice" ).voting_power ) / STEEMIT_100_PERCENT );
-         BOOST_REQUIRE( bob_comment.cashout_time == db.head_block_time() + fc::seconds( STEEMIT_CASHOUT_WINDOW_SECONDS ) );
-         BOOST_REQUIRE( itr != vote_idx.end() );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test payout time extension on vote" );
-
-         uint128_t old_cashout_time = db.get_comment( "alice", "foo" ).cashout_time.sec_since_epoch();
-         old_voting_power = db.get_account( "bob" ).voting_power;
-         auto old_abs_rshares = db.get_comment( "alice", "foo" ).abs_rshares.value;
-
-         generate_blocks( db.head_block_time() + fc::seconds( ( STEEMIT_CASHOUT_WINDOW_SECONDS / 2 ) ), true );
-
-         const auto& new_bob = db.get_account( "bob" );
-         const auto& new_alice_comment = db.get_comment( "alice", "foo" );
-
-         op.weight = STEEMIT_100_PERCENT;
-         op.voter = "bob";
-         op.author = "alice";
-         op.permlink = "foo";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-         tx.sign( bob_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         itr = vote_idx.find( std::make_tuple( new_alice_comment.id, new_bob.id ) );
-         uint128_t new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
-         const auto& bob_vote_abs_rshares = ( ( uint128_t( new_bob.vesting_shares.amount.value + max_vote_denom - 1 ) * ( STEEMIT_100_PERCENT / max_vote_denom ) ) / ( STEEMIT_100_PERCENT ) ).to_uint64();
-
-         BOOST_REQUIRE_EQUAL( new_bob.voting_power, STEEMIT_100_PERCENT - ( ( STEEMIT_100_PERCENT + max_vote_denom - 1 ) / max_vote_denom ) );
-         BOOST_REQUIRE_EQUAL( new_alice_comment.net_rshares.value, old_abs_rshares + new_bob.vesting_shares.amount.value * ( old_voting_power - new_bob.voting_power ) / STEEMIT_100_PERCENT );
-         BOOST_REQUIRE_EQUAL( new_alice_comment.cashout_time.sec_since_epoch(),
-                              ( ( old_cashout_time * old_abs_rshares + new_cashout_time * bob_vote_abs_rshares )
-                              / ( old_abs_rshares + bob_vote_abs_rshares ) ).to_uint64() );
-         BOOST_REQUIRE( itr != vote_idx.end() );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test negative vote" );
-
-         const auto& new_sam = db.get_account( "sam" );
-         const auto& new_bob_comment = db.get_comment( "bob", "foo" );
-
-         old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
-         old_abs_rshares = new_bob_comment.abs_rshares.value;
-
-         op.weight = -1 * STEEMIT_100_PERCENT / 2;
-         op.voter = "sam";
-         op.author = "bob";
-         op.permlink = "foo";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( sam_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         itr = vote_idx.find( std::make_tuple( new_bob_comment.id, new_sam.id ) );
-         new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
-         auto sam_weight /*= ( ( uint128_t( new_sam.vesting_shares.amount.value ) ) / 400 + 1 ).to_uint64();*/
-                         = ( ( uint128_t( new_sam.vesting_shares.amount.value ) * ( ( STEEMIT_100_PERCENT + max_vote_denom - 1 ) / ( 2 * max_vote_denom ) ) ) / STEEMIT_100_PERCENT ).to_uint64();
-
-         BOOST_REQUIRE_EQUAL( new_sam.voting_power, STEEMIT_100_PERCENT - ( ( STEEMIT_100_PERCENT + max_vote_denom - 1 ) / ( 2 * max_vote_denom ) ) );
-         BOOST_REQUIRE_EQUAL( new_bob_comment.net_rshares.value, old_abs_rshares - sam_weight );
-         BOOST_REQUIRE_EQUAL( new_bob_comment.abs_rshares.value, old_abs_rshares + sam_weight );
-         BOOST_REQUIRE_EQUAL( new_bob_comment.cashout_time.sec_since_epoch(),
-                              ( ( old_cashout_time * old_abs_rshares + new_cashout_time * sam_weight )
-                              / ( old_abs_rshares + sam_weight ) ).to_uint64() );
-         BOOST_REQUIRE( itr != vote_idx.end() );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test nested voting on nested comments" );
-
-         old_abs_rshares = new_alice_comment.children_abs_rshares.value;
-         old_cashout_time = new_alice_comment.cashout_time.sec_since_epoch();
-         new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
-         int64_t regenerated_power = (STEEMIT_100_PERCENT * ( db.head_block_time() - db.get_account( "alice").last_vote_time ).to_seconds() ) / STEEMIT_VOTE_REGENERATION_SECONDS;
-         int64_t used_power = ( db.get_account( "alice" ).voting_power + regenerated_power + max_vote_denom - 1 ) / max_vote_denom;
-         idump( (db.get_account( "alice" ).voting_power)(used_power) );
-
-         comment_op.author = "sam";
-         comment_op.permlink = "foo";
-         comment_op.title = "bar";
-         comment_op.body = "foo bar";
-         comment_op.parent_author = "alice";
-         comment_op.parent_permlink = "foo";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( comment_op );
-         tx.sign( sam_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         auto old_rshares2 = db.get_comment( "alice", "foo" ).children_rshares2;
-
-         op.weight = STEEMIT_100_PERCENT;
-         op.voter = "alice";
-         op.author = "sam";
-         op.permlink = "foo";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-
-         auto new_rshares = ( ( fc::uint128_t( db.get_account( "alice" ).vesting_shares.amount.value ) * used_power ) / STEEMIT_100_PERCENT ).to_uint64();
-
-         BOOST_REQUIRE( db.get_comment( "alice", "foo" ).children_rshares2 == db.get_comment( "sam", "foo" ).children_rshares2 + old_rshares2 );
-         BOOST_REQUIRE( db.get_comment( "alice", "foo" ).cashout_time.sec_since_epoch() ==
-                        ( ( old_cashout_time * old_abs_rshares + new_cashout_time * new_rshares )
-                        / ( old_abs_rshares + new_rshares ) ).to_uint64() );
-
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test increasing vote rshares" );
-
-         generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
-
-         auto new_alice = db.get_account( "alice" );
-         auto alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
-         auto old_vote_rshares = alice_bob_vote->rshares;
-         auto old_net_rshares = new_bob_comment.net_rshares.value;
-         old_abs_rshares = new_bob_comment.abs_rshares.value;
-         old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
-         new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
-         used_power = ( ( STEEMIT_1_PERCENT * 25 * ( new_alice.voting_power ) / STEEMIT_100_PERCENT ) + max_vote_denom - 1 ) / max_vote_denom;
-         auto alice_voting_power = new_alice.voting_power - used_power;
-
-         op.voter = "alice";
-         op.weight = STEEMIT_1_PERCENT * 25;
-         op.author = "bob";
-         op.permlink = "foo";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-         alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
-
-         new_rshares = ( ( fc::uint128_t( new_alice.vesting_shares.amount.value ) * used_power ) / STEEMIT_100_PERCENT ).to_uint64();
-
-         BOOST_REQUIRE( new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares + new_rshares );
-         BOOST_REQUIRE( new_bob_comment.abs_rshares == old_abs_rshares + new_rshares );
-         BOOST_REQUIRE_EQUAL( new_bob_comment.cashout_time.sec_since_epoch(),
-                              ( ( old_cashout_time * old_abs_rshares + new_cashout_time * new_rshares )
-                              / ( old_abs_rshares + new_rshares ) ).to_uint64() );
-         BOOST_REQUIRE( alice_bob_vote->rshares == new_rshares );
-         BOOST_REQUIRE( alice_bob_vote->last_update == db.head_block_time() );
-         BOOST_REQUIRE( alice_bob_vote->vote_percent == op.weight );
-         BOOST_REQUIRE_EQUAL( db.get_account( "alice" ).voting_power, alice_voting_power );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test decreasing vote rshares" );
-
-         generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
-
-         old_vote_rshares = new_rshares;
-         old_net_rshares = new_bob_comment.net_rshares.value;
-         old_abs_rshares = new_bob_comment.abs_rshares.value;
-         old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
-         new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
-         used_power = ( uint64_t( STEEMIT_1_PERCENT ) * 75 * uint64_t( alice_voting_power ) ) / STEEMIT_100_PERCENT;
-         used_power = ( used_power + max_vote_denom - 1 ) / max_vote_denom;
-         alice_voting_power -= used_power;
-
-         op.weight = STEEMIT_1_PERCENT * -75;
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-         alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
-
-         new_rshares = ( ( fc::uint128_t( new_alice.vesting_shares.amount.value ) * used_power ) / STEEMIT_100_PERCENT ).to_uint64();
-
-         BOOST_REQUIRE( new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares - new_rshares );
-         BOOST_REQUIRE( new_bob_comment.abs_rshares == old_abs_rshares + new_rshares );
-         BOOST_REQUIRE( new_bob_comment.cashout_time == fc::time_point_sec( ( ( old_cashout_time * old_abs_rshares + new_cashout_time * new_rshares ) / ( old_abs_rshares + new_rshares ) ).to_uint64() ) );
-         BOOST_REQUIRE( alice_bob_vote->rshares == -1 * new_rshares );
-         BOOST_REQUIRE( alice_bob_vote->last_update == db.head_block_time() );
-         BOOST_REQUIRE( alice_bob_vote->vote_percent == op.weight );
-         BOOST_REQUIRE( db.get_account( "alice" ).voting_power == alice_voting_power );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test changing a vote to 0 weight (aka: removing a vote)" );
-
-         generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
-
-         old_vote_rshares = alice_bob_vote->rshares;
-         old_net_rshares = new_bob_comment.net_rshares.value;
-         old_abs_rshares = new_bob_comment.abs_rshares.value;
-         old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
-
-         op.weight = 0;
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-         alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
-
-         BOOST_REQUIRE( new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares );
-         BOOST_REQUIRE( new_bob_comment.abs_rshares == old_abs_rshares );
-         BOOST_REQUIRE( new_bob_comment.cashout_time.sec_since_epoch() == old_cashout_time.to_uint64() );
-         BOOST_REQUIRE( alice_bob_vote->rshares == 0 );
-         BOOST_REQUIRE( alice_bob_vote->last_update == db.head_block_time() );
-         BOOST_REQUIRE( alice_bob_vote->vote_percent == op.weight );
-         BOOST_REQUIRE( db.get_account( "alice" ).voting_power == alice_voting_power );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test failure when increasing rshares within lockout period" );
-
-         generate_blocks( fc::time_point_sec( ( new_bob_comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT ).sec_since_epoch() + STEEMIT_BLOCK_INTERVAL ), true );
-
-         op.weight = STEEMIT_100_PERCENT;
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-
-         STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test success when reducing rshares within lockout period" );
-
-         op.weight = -1 * STEEMIT_100_PERCENT;
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( alice_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-         validate_database();
-
-         BOOST_TEST_MESSAGE( "--- Test success with a new vote within lockout period" );
-
-         op.weight = STEEMIT_100_PERCENT;
-         op.voter = "sam";
-         tx.operations.clear();
-         tx.signatures.clear();
-         tx.operations.push_back( op );
-         tx.sign( sam_private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-         validate_database();
-      }
+      // BOOST_TEST_MESSAGE( "Testing: vote_apply" );
+      //
+      // ACTORS( (alice)(bob)(sam)(dave) )
+      // generate_blocks( 60 / STEEMIT_BLOCK_INTERVAL );
+      //
+      // const auto& vote_idx = db.get_index_type< comment_vote_index >().indices().get< by_comment_voter >();
+      //
+      // {
+      //    const auto& alice = db.get_account( "alice" );
+      //    const auto& bob = db.get_account( "bob" );
+      //
+      //    signed_transaction tx;
+      //    comment_operation comment_op;
+      //    comment_op.author = "alice";
+      //    comment_op.permlink = "foo";
+      //    comment_op.parent_permlink = "test";
+      //    comment_op.title = "bar";
+      //    comment_op.body = "foo bar";
+      //    tx.operations.push_back( comment_op );
+      //    tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    BOOST_TEST_MESSAGE( "--- Testing voting on a non-existent comment" );
+      //
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //
+      //    vote_operation op;
+      //    op.voter = "alice";
+      //    op.author = "bob";
+      //    op.permlink = "foo";
+      //    op.weight = STEEMIT_100_PERCENT;
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //
+      //    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Testing voting with a weight of 0" );
+      //
+      //    op.weight = (int16_t) 0;
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //
+      //    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Testing success" );
+      //
+      //    auto old_voting_power = alice.voting_power;
+      //
+      //    op.weight = STEEMIT_100_PERCENT;
+      //    op.author = "alice";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //
+      //    db.push_transaction( tx, 0 );
+      //
+      //    auto& alice_comment = db.get_comment( "alice", "foo" );
+      //    auto itr = vote_idx.find( std::make_tuple( alice_comment.id, alice.id ) );
+      //    int64_t max_vote_denom = ( db.get_dynamic_global_properties().vote_regeneration_per_day * STEEMIT_VOTE_REGENERATION_SECONDS ) / (60*60*24);
+      //
+      //    BOOST_REQUIRE_EQUAL( alice.voting_power, old_voting_power - ( ( old_voting_power + max_vote_denom - 1 ) / max_vote_denom ) );
+      //    BOOST_REQUIRE( alice.last_vote_time == db.head_block_time() );
+      //    BOOST_REQUIRE_EQUAL( alice_comment.net_rshares.value, alice.vesting_shares.amount.value * ( old_voting_power - alice.voting_power ) / STEEMIT_100_PERCENT );
+      //    BOOST_REQUIRE( alice_comment.cashout_time == db.head_block_time() + fc::seconds( STEEMIT_CASHOUT_WINDOW_SECONDS ) );
+      //    BOOST_REQUIRE( itr->rshares == alice.vesting_shares.amount.value * ( old_voting_power - alice.voting_power ) / STEEMIT_100_PERCENT );
+      //    BOOST_REQUIRE( itr != vote_idx.end() );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test reduced power for quick voting" );
+      //
+      //    generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
+      //
+      //    old_voting_power = db.get_account( "alice" ).voting_power;
+      //
+      //    comment_op.author = "bob";
+      //    comment_op.permlink = "foo";
+      //    comment_op.title = "bar";
+      //    comment_op.body = "foo bar";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( comment_op );
+      //    tx.sign( bob_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    op.weight = STEEMIT_100_PERCENT / 2;
+      //    op.voter = "alice";
+      //    op.author = "bob";
+      //    op.permlink = "foo";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    const auto& bob_comment = db.get_comment( "bob", "foo" );
+      //    itr = vote_idx.find( std::make_tuple( bob_comment.id, alice.id ) );
+      //
+      //    BOOST_REQUIRE_EQUAL( db.get_account( "alice" ).voting_power, old_voting_power - ( ( old_voting_power + max_vote_denom - 1 ) * STEEMIT_100_PERCENT / ( 2 * max_vote_denom * STEEMIT_100_PERCENT ) ) );
+      //    BOOST_REQUIRE_EQUAL( bob_comment.net_rshares.value, alice.vesting_shares.amount.value * ( old_voting_power - db.get_account( "alice" ).voting_power ) / STEEMIT_100_PERCENT );
+      //    BOOST_REQUIRE( bob_comment.cashout_time == db.head_block_time() + fc::seconds( STEEMIT_CASHOUT_WINDOW_SECONDS ) );
+      //    BOOST_REQUIRE( itr != vote_idx.end() );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test payout time extension on vote" );
+      //
+      //    uint128_t old_cashout_time = db.get_comment( "alice", "foo" ).cashout_time.sec_since_epoch();
+      //    old_voting_power = db.get_account( "bob" ).voting_power;
+      //    auto old_abs_rshares = db.get_comment( "alice", "foo" ).abs_rshares.value;
+      //
+      //    generate_blocks( db.head_block_time() + fc::seconds( ( STEEMIT_CASHOUT_WINDOW_SECONDS / 2 ) ), true );
+      //
+      //    const auto& new_bob = db.get_account( "bob" );
+      //    const auto& new_alice_comment = db.get_comment( "alice", "foo" );
+      //
+      //    op.weight = STEEMIT_100_PERCENT;
+      //    op.voter = "bob";
+      //    op.author = "alice";
+      //    op.permlink = "foo";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      //    tx.sign( bob_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    itr = vote_idx.find( std::make_tuple( new_alice_comment.id, new_bob.id ) );
+      //    uint128_t new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
+      //    const auto& bob_vote_abs_rshares = ( ( uint128_t( new_bob.vesting_shares.amount.value + max_vote_denom - 1 ) * ( STEEMIT_100_PERCENT / max_vote_denom ) ) / ( STEEMIT_100_PERCENT ) ).to_uint64();
+      //
+      //    BOOST_REQUIRE_EQUAL( new_bob.voting_power, STEEMIT_100_PERCENT - ( ( STEEMIT_100_PERCENT + max_vote_denom - 1 ) / max_vote_denom ) );
+      //    BOOST_REQUIRE_EQUAL( new_alice_comment.net_rshares.value, old_abs_rshares + new_bob.vesting_shares.amount.value * ( old_voting_power - new_bob.voting_power ) / STEEMIT_100_PERCENT );
+      //    BOOST_REQUIRE_EQUAL( new_alice_comment.cashout_time.sec_since_epoch(),
+      //                         ( ( old_cashout_time * old_abs_rshares + new_cashout_time * bob_vote_abs_rshares )
+      //                         / ( old_abs_rshares + bob_vote_abs_rshares ) ).to_uint64() );
+      //    BOOST_REQUIRE( itr != vote_idx.end() );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test negative vote" );
+      //
+      //    const auto& new_sam = db.get_account( "sam" );
+      //    const auto& new_bob_comment = db.get_comment( "bob", "foo" );
+      //
+      //    old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
+      //    old_abs_rshares = new_bob_comment.abs_rshares.value;
+      //
+      //    op.weight = -1 * STEEMIT_100_PERCENT / 2;
+      //    op.voter = "sam";
+      //    op.author = "bob";
+      //    op.permlink = "foo";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( sam_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    itr = vote_idx.find( std::make_tuple( new_bob_comment.id, new_sam.id ) );
+      //    new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
+      //    auto sam_weight /*= ( ( uint128_t( new_sam.vesting_shares.amount.value ) ) / 400 + 1 ).to_uint64();*/
+      //                    = ( ( uint128_t( new_sam.vesting_shares.amount.value ) * ( ( STEEMIT_100_PERCENT + max_vote_denom - 1 ) / ( 2 * max_vote_denom ) ) ) / STEEMIT_100_PERCENT ).to_uint64();
+      //
+      //    BOOST_REQUIRE_EQUAL( new_sam.voting_power, STEEMIT_100_PERCENT - ( ( STEEMIT_100_PERCENT + max_vote_denom - 1 ) / ( 2 * max_vote_denom ) ) );
+      //    BOOST_REQUIRE_EQUAL( new_bob_comment.net_rshares.value, old_abs_rshares - sam_weight );
+      //    BOOST_REQUIRE_EQUAL( new_bob_comment.abs_rshares.value, old_abs_rshares + sam_weight );
+      //    BOOST_REQUIRE_EQUAL( new_bob_comment.cashout_time.sec_since_epoch(),
+      //                         ( ( old_cashout_time * old_abs_rshares + new_cashout_time * sam_weight )
+      //                         / ( old_abs_rshares + sam_weight ) ).to_uint64() );
+      //    BOOST_REQUIRE( itr != vote_idx.end() );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test nested voting on nested comments" );
+      //
+      //    old_abs_rshares = new_alice_comment.children_abs_rshares.value;
+      //    old_cashout_time = new_alice_comment.cashout_time.sec_since_epoch();
+      //    new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
+      //    int64_t regenerated_power = (STEEMIT_100_PERCENT * ( db.head_block_time() - db.get_account( "alice").last_vote_time ).to_seconds() ) / STEEMIT_VOTE_REGENERATION_SECONDS;
+      //    int64_t used_power = ( db.get_account( "alice" ).voting_power + regenerated_power + max_vote_denom - 1 ) / max_vote_denom;
+      //    idump( (db.get_account( "alice" ).voting_power)(used_power) );
+      //
+      //    comment_op.author = "sam";
+      //    comment_op.permlink = "foo";
+      //    comment_op.title = "bar";
+      //    comment_op.body = "foo bar";
+      //    comment_op.parent_author = "alice";
+      //    comment_op.parent_permlink = "foo";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( comment_op );
+      //    tx.sign( sam_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    auto old_rshares2 = db.get_comment( "alice", "foo" ).children_rshares2;
+      //
+      //    op.weight = STEEMIT_100_PERCENT;
+      //    op.voter = "alice";
+      //    op.author = "sam";
+      //    op.permlink = "foo";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //
+      //    auto new_rshares = ( ( fc::uint128_t( db.get_account( "alice" ).vesting_shares.amount.value ) * used_power ) / STEEMIT_100_PERCENT ).to_uint64();
+      //
+      //    BOOST_REQUIRE( db.get_comment( "alice", "foo" ).children_rshares2 == db.get_comment( "sam", "foo" ).children_rshares2 + old_rshares2 );
+      //    BOOST_REQUIRE( db.get_comment( "alice", "foo" ).cashout_time.sec_since_epoch() ==
+      //                   ( ( old_cashout_time * old_abs_rshares + new_cashout_time * new_rshares )
+      //                   / ( old_abs_rshares + new_rshares ) ).to_uint64() );
+      //
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test increasing vote rshares" );
+      //
+      //    generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
+      //
+      //    auto new_alice = db.get_account( "alice" );
+      //    auto alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
+      //    auto old_vote_rshares = alice_bob_vote->rshares;
+      //    auto old_net_rshares = new_bob_comment.net_rshares.value;
+      //    old_abs_rshares = new_bob_comment.abs_rshares.value;
+      //    old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
+      //    new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
+      //    used_power = ( ( STEEMIT_1_PERCENT * 25 * ( new_alice.voting_power ) / STEEMIT_100_PERCENT ) + max_vote_denom - 1 ) / max_vote_denom;
+      //    auto alice_voting_power = new_alice.voting_power - used_power;
+      //
+      //    op.voter = "alice";
+      //    op.weight = STEEMIT_1_PERCENT * 25;
+      //    op.author = "bob";
+      //    op.permlink = "foo";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //    alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
+      //
+      //    new_rshares = ( ( fc::uint128_t( new_alice.vesting_shares.amount.value ) * used_power ) / STEEMIT_100_PERCENT ).to_uint64();
+      //
+      //    BOOST_REQUIRE( new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares + new_rshares );
+      //    BOOST_REQUIRE( new_bob_comment.abs_rshares == old_abs_rshares + new_rshares );
+      //    BOOST_REQUIRE_EQUAL( new_bob_comment.cashout_time.sec_since_epoch(),
+      //                         ( ( old_cashout_time * old_abs_rshares + new_cashout_time * new_rshares )
+      //                         / ( old_abs_rshares + new_rshares ) ).to_uint64() );
+      //    BOOST_REQUIRE( alice_bob_vote->rshares == new_rshares );
+      //    BOOST_REQUIRE( alice_bob_vote->last_update == db.head_block_time() );
+      //    BOOST_REQUIRE( alice_bob_vote->vote_percent == op.weight );
+      //    BOOST_REQUIRE_EQUAL( db.get_account( "alice" ).voting_power, alice_voting_power );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test decreasing vote rshares" );
+      //
+      //    generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
+      //
+      //    old_vote_rshares = new_rshares;
+      //    old_net_rshares = new_bob_comment.net_rshares.value;
+      //    old_abs_rshares = new_bob_comment.abs_rshares.value;
+      //    old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
+      //    new_cashout_time = db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS;
+      //    used_power = ( uint64_t( STEEMIT_1_PERCENT ) * 75 * uint64_t( alice_voting_power ) ) / STEEMIT_100_PERCENT;
+      //    used_power = ( used_power + max_vote_denom - 1 ) / max_vote_denom;
+      //    alice_voting_power -= used_power;
+      //
+      //    op.weight = STEEMIT_1_PERCENT * -75;
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //    alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
+      //
+      //    new_rshares = ( ( fc::uint128_t( new_alice.vesting_shares.amount.value ) * used_power ) / STEEMIT_100_PERCENT ).to_uint64();
+      //
+      //    BOOST_REQUIRE( new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares - new_rshares );
+      //    BOOST_REQUIRE( new_bob_comment.abs_rshares == old_abs_rshares + new_rshares );
+      //    BOOST_REQUIRE( new_bob_comment.cashout_time == fc::time_point_sec( ( ( old_cashout_time * old_abs_rshares + new_cashout_time * new_rshares ) / ( old_abs_rshares + new_rshares ) ).to_uint64() ) );
+      //    BOOST_REQUIRE( alice_bob_vote->rshares == -1 * new_rshares );
+      //    BOOST_REQUIRE( alice_bob_vote->last_update == db.head_block_time() );
+      //    BOOST_REQUIRE( alice_bob_vote->vote_percent == op.weight );
+      //    BOOST_REQUIRE( db.get_account( "alice" ).voting_power == alice_voting_power );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test changing a vote to 0 weight (aka: removing a vote)" );
+      //
+      //    generate_blocks( db.head_block_time() + STEEMIT_MIN_VOTE_INTERVAL_SEC );
+      //
+      //    old_vote_rshares = alice_bob_vote->rshares;
+      //    old_net_rshares = new_bob_comment.net_rshares.value;
+      //    old_abs_rshares = new_bob_comment.abs_rshares.value;
+      //    old_cashout_time = new_bob_comment.cashout_time.sec_since_epoch();
+      //
+      //    op.weight = 0;
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //    alice_bob_vote = vote_idx.find( std::make_tuple( new_bob_comment.id, new_alice.id ) );
+      //
+      //    BOOST_REQUIRE( new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares );
+      //    BOOST_REQUIRE( new_bob_comment.abs_rshares == old_abs_rshares );
+      //    BOOST_REQUIRE( new_bob_comment.cashout_time.sec_since_epoch() == old_cashout_time.to_uint64() );
+      //    BOOST_REQUIRE( alice_bob_vote->rshares == 0 );
+      //    BOOST_REQUIRE( alice_bob_vote->last_update == db.head_block_time() );
+      //    BOOST_REQUIRE( alice_bob_vote->vote_percent == op.weight );
+      //    BOOST_REQUIRE( db.get_account( "alice" ).voting_power == alice_voting_power );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test failure when increasing rshares within lockout period" );
+      //
+      //    generate_blocks( fc::time_point_sec( ( new_bob_comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT ).sec_since_epoch() + STEEMIT_BLOCK_INTERVAL ), true );
+      //
+      //    op.weight = STEEMIT_100_PERCENT;
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //
+      //    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test success when reducing rshares within lockout period" );
+      //
+      //    op.weight = -1 * STEEMIT_100_PERCENT;
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( alice_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //    validate_database();
+      //
+      //    BOOST_TEST_MESSAGE( "--- Test success with a new vote within lockout period" );
+      //
+      //    op.weight = STEEMIT_100_PERCENT;
+      //    op.voter = "sam";
+      //    tx.operations.clear();
+      //    tx.signatures.clear();
+      //    tx.operations.push_back( op );
+      //    tx.sign( sam_private_key, db.get_chain_id() );
+      //    db.push_transaction( tx, 0 );
+      //    validate_database();
+      // }
    }
    FC_LOG_AND_RETHROW()
 }
@@ -5531,145 +5531,145 @@ BOOST_AUTO_TEST_CASE( decline_voting_rights_apply )
 {
    try
    {
-      BOOST_TEST_MESSAGE( "Testing: decline_voting_rights_apply" );
-
-      ACTORS( (alice)(bob) );
-      generate_block();
-
-      account_witness_proxy_operation proxy;
-      proxy.account = "bob";
-      proxy.proxy = "alice";
-
-      signed_transaction tx;
-      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.operations.push_back( proxy );
-      tx.sign( bob_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-
-      decline_voting_rights_operation op;
-      op.account = "alice";
-
-
-      BOOST_TEST_MESSAGE( "--- success" );
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      const auto& request_idx = db.get_index_type< decline_voting_rights_request_index >().indices().get< by_account >();
-      auto itr = request_idx.find( db.get_account( "alice" ).id );
-      BOOST_REQUIRE( itr != request_idx.end() );
-      BOOST_REQUIRE( itr->effective_date == db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD );
-
-
-      BOOST_TEST_MESSAGE( "--- failure revoking voting rights with existing request" );
-      generate_block();
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-
-      BOOST_TEST_MESSAGE( "--- successs cancelling a request" );
-      op.decline = false;
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      itr = request_idx.find( db.get_account( "alice" ).id );
-      BOOST_REQUIRE( itr == request_idx.end() );
-
-
-      BOOST_TEST_MESSAGE( "--- failure cancelling a request that doesn't exist" );
-      generate_block();
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-
-      BOOST_TEST_MESSAGE( "--- check account can vote during waiting period" );
-      op.decline = true;
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      generate_blocks( db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD - fc::seconds( STEEMIT_BLOCK_INTERVAL ), true );
-      BOOST_REQUIRE( db.get_account( "alice" ).can_vote );
-      witness_create( "alice", alice_private_key, "foo.bar", alice_private_key.get_public_key(), 0 );
-
-      account_witness_vote_operation witness_vote;
-      witness_vote.account = "alice";
-      witness_vote.witness = "alice";
-      tx.clear();
-      tx.operations.push_back( witness_vote );
-      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      comment_operation comment;
-      comment.author = "alice";
-      comment.permlink = "test";
-      comment.parent_permlink = "test";
-      comment.title = "test";
-      comment.body = "test";
-      vote_operation vote;
-      vote.voter = "alice";
-      vote.author = "alice";
-      vote.permlink = "test";
-      vote.weight = STEEMIT_100_PERCENT;
-      tx.clear();
-      tx.operations.push_back( comment );
-      tx.operations.push_back( vote );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-      validate_database();
-
-
-      BOOST_TEST_MESSAGE( "--- check account cannot vote after request is processed" );
-      generate_block();
-      BOOST_REQUIRE( !db.get_account( "alice" ).can_vote );
-      validate_database();
-
-      itr = request_idx.find( db.get_account( "alice" ).id );
-      BOOST_REQUIRE( itr == request_idx.end() );
-
-      const auto& witness_idx = db.get_index_type< witness_vote_index >().indices().get< by_account_witness >();
-      auto witness_itr = witness_idx.find( boost::make_tuple( db.get_account( "alice" ).id, db.get_witness( "alice" ).id ) );
-      BOOST_REQUIRE( witness_itr == witness_idx.end() );
-
-      tx.clear();
-      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.operations.push_back( witness_vote );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-      const auto& vote_idx = db.get_index_type< comment_vote_index >().indices().get< by_comment_voter >();
-      auto vote_itr = vote_idx.find( boost::make_tuple( db.get_comment( "alice", "test" ).id, db.get_account( "alice" ).id ) );
-
-      vote.weight = 0;
-      tx.clear();
-      tx.operations.push_back( vote );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-      vote.weight = STEEMIT_1_PERCENT * 50;
-      tx.clear();
-      tx.operations.push_back( vote );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
-
-      proxy.account = "alice";
-      proxy.proxy = "bob";
-      tx.clear();
-      tx.operations.push_back( proxy );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      // BOOST_TEST_MESSAGE( "Testing: decline_voting_rights_apply" );
+      //
+      // ACTORS( (alice)(bob) );
+      // generate_block();
+      //
+      // account_witness_proxy_operation proxy;
+      // proxy.account = "bob";
+      // proxy.proxy = "alice";
+      //
+      // signed_transaction tx;
+      // tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      // tx.operations.push_back( proxy );
+      // tx.sign( bob_private_key, db.get_chain_id() );
+      // db.push_transaction( tx, 0 );
+      //
+      //
+      // decline_voting_rights_operation op;
+      // op.account = "alice";
+      //
+      //
+      // BOOST_TEST_MESSAGE( "--- success" );
+      // tx.clear();
+      // tx.operations.push_back( op );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // db.push_transaction( tx, 0 );
+      //
+      // const auto& request_idx = db.get_index_type< decline_voting_rights_request_index >().indices().get< by_account >();
+      // auto itr = request_idx.find( db.get_account( "alice" ).id );
+      // BOOST_REQUIRE( itr != request_idx.end() );
+      // BOOST_REQUIRE( itr->effective_date == db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD );
+      //
+      //
+      // BOOST_TEST_MESSAGE( "--- failure revoking voting rights with existing request" );
+      // generate_block();
+      // tx.clear();
+      // tx.operations.push_back( op );
+      // tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      //
+      // BOOST_TEST_MESSAGE( "--- successs cancelling a request" );
+      // op.decline = false;
+      // tx.clear();
+      // tx.operations.push_back( op );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // db.push_transaction( tx, 0 );
+      //
+      // itr = request_idx.find( db.get_account( "alice" ).id );
+      // BOOST_REQUIRE( itr == request_idx.end() );
+      //
+      //
+      // BOOST_TEST_MESSAGE( "--- failure cancelling a request that doesn't exist" );
+      // generate_block();
+      // tx.clear();
+      // tx.operations.push_back( op );
+      // tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      //
+      // BOOST_TEST_MESSAGE( "--- check account can vote during waiting period" );
+      // op.decline = true;
+      // tx.clear();
+      // tx.operations.push_back( op );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // db.push_transaction( tx, 0 );
+      //
+      // generate_blocks( db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD - fc::seconds( STEEMIT_BLOCK_INTERVAL ), true );
+      // BOOST_REQUIRE( db.get_account( "alice" ).can_vote );
+      // witness_create( "alice", alice_private_key, "foo.bar", alice_private_key.get_public_key(), 0 );
+      //
+      // account_witness_vote_operation witness_vote;
+      // witness_vote.account = "alice";
+      // witness_vote.witness = "alice";
+      // tx.clear();
+      // tx.operations.push_back( witness_vote );
+      // tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // db.push_transaction( tx, 0 );
+      //
+      // comment_operation comment;
+      // comment.author = "alice";
+      // comment.permlink = "test";
+      // comment.parent_permlink = "test";
+      // comment.title = "test";
+      // comment.body = "test";
+      // vote_operation vote;
+      // vote.voter = "alice";
+      // vote.author = "alice";
+      // vote.permlink = "test";
+      // vote.weight = STEEMIT_100_PERCENT;
+      // tx.clear();
+      // tx.operations.push_back( comment );
+      // tx.operations.push_back( vote );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // db.push_transaction( tx, 0 );
+      // validate_database();
+      //
+      //
+      // BOOST_TEST_MESSAGE( "--- check account cannot vote after request is processed" );
+      // generate_block();
+      // BOOST_REQUIRE( !db.get_account( "alice" ).can_vote );
+      // validate_database();
+      //
+      // itr = request_idx.find( db.get_account( "alice" ).id );
+      // BOOST_REQUIRE( itr == request_idx.end() );
+      //
+      // const auto& witness_idx = db.get_index_type< witness_vote_index >().indices().get< by_account_witness >();
+      // auto witness_itr = witness_idx.find( boost::make_tuple( db.get_account( "alice" ).id, db.get_witness( "alice" ).id ) );
+      // BOOST_REQUIRE( witness_itr == witness_idx.end() );
+      //
+      // tx.clear();
+      // tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      // tx.operations.push_back( witness_vote );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      // const auto& vote_idx = db.get_index_type< comment_vote_index >().indices().get< by_comment_voter >();
+      // auto vote_itr = vote_idx.find( boost::make_tuple( db.get_comment( "alice", "test" ).id, db.get_account( "alice" ).id ) );
+      //
+      // vote.weight = 0;
+      // tx.clear();
+      // tx.operations.push_back( vote );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      // vote.weight = STEEMIT_1_PERCENT * 50;
+      // tx.clear();
+      // tx.operations.push_back( vote );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+      //
+      // proxy.account = "alice";
+      // proxy.proxy = "bob";
+      // tx.clear();
+      // tx.operations.push_back( proxy );
+      // tx.sign( alice_private_key, db.get_chain_id() );
+      // STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
    }
    FC_LOG_AND_RETHROW()
 }

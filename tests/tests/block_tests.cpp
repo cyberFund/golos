@@ -441,7 +441,7 @@ BOOST_FIXTURE_TEST_CASE( optional_tapos, clean_database_fixture )
 {
    try
    {
-      idump((db.get_account("initminer")));
+      idump((db.get_account("cyberfounder")));
       ACTORS( (alice)(bob) );
 
       generate_block();
@@ -1004,7 +1004,7 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
       ahplugin->plugin_startup();
       db_plugin->plugin_startup();
 
-      vest( "initminer", 10000 );
+      vest( "cyberfounder", 10000 );
 
       // Fill up the rest of the required miners
       for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_MINERS; i++ )
@@ -1025,14 +1025,16 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
       BOOST_REQUIRE( !db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
 
-      BOOST_TEST_MESSAGE( "Generate blocks up to the hardfork time and check hardfork still not applied" );
-      generate_blocks( fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME - STEEMIT_BLOCK_INTERVAL ), true );
-
-      BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( !db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
+      // BOOST_TEST_MESSAGE( "Generate blocks up to the hardfork time and check hardfork still not applied" );
+      // generate_blocks( fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME - STEEMIT_BLOCK_INTERVAL ), true );
+      //
+      //
+      // BOOST_REQUIRE( db.has_hardfork( 0 ) );
+      // BOOST_REQUIRE( !db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
 
       BOOST_TEST_MESSAGE( "Generate a block and check hardfork is applied" );
-      generate_block();
+      // generate_block(300);
+      generate_blocks( fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME + STEEMIT_BLOCK_INTERVAL ), true );
 
       string op_msg = "Testnet: Hardfork applied";
       auto itr = db.get_index_type< account_history_index >().indices().get< by_id >().end();

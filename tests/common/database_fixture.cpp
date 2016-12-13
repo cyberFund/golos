@@ -59,7 +59,7 @@ clean_database_fixture::clean_database_fixture()
    //ahplugin->plugin_startup();
    db_plugin->plugin_startup();
 
-   vest( "initminer", 10000 );
+   vest( "cyberfounder", 10000 );
 
    // Fill up the rest of the required miners
    for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_MINERS; i++ )
