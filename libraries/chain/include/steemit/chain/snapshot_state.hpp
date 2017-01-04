@@ -18,10 +18,11 @@ namespace steemit { namespace chain {
 
   struct snapshot_summary
   {
-    asset                     balance;
+    asset                     current_supply;
     asset                     sbd_balance;
     asset                     total_vesting_shares;
     asset                     total_vesting_fund_steem;
+    asset                     total_reward_fund_steem;
     uint32_t                  accounts_count;
   };
 
@@ -55,6 +56,6 @@ namespace steemit { namespace chain {
 
 FC_REFLECT( steemit::chain::account_keys, (owner_key)(active_key)(posting_key)(memo_key) )
 FC_REFLECT( steemit::chain::account_balances, (assets) )
-FC_REFLECT( steemit::chain::snapshot_summary, (balance)(sbd_balance)(total_vesting_shares)(total_vesting_fund_steem)(accounts_count) )
+FC_REFLECT( steemit::chain::snapshot_summary, (current_supply)(sbd_balance)(total_vesting_shares)(total_vesting_fund_steem)(total_reward_fund_steem)(accounts_count) )
 FC_REFLECT( steemit::chain::account_summary, (id)(name)(posting_rewards)(curation_rewards)(keys)(balances)(json_metadata)(proxy)(post_count)(recovery_account)(reputation) )
 FC_REFLECT( steemit::chain::snapshot_state, (timestamp)(head_block_num)(head_block_id)(chain_id)(summary)(accounts) )

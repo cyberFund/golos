@@ -11,6 +11,9 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <steemit/chain/snapshot_state.hpp>
+#include <fc/io/raw_variant.hpp>
+#include <fc/io/json.hpp>
 
 #include <cctype>
 
@@ -53,6 +56,7 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       // Accounts
       vector< extended_account > get_accounts( vector< string > names )const;
       vector<account_id_type> get_account_references( account_id_type account_id )const;
+      account_summary get_account_summary( account_id_type account_id )const;
       vector<optional<account_object>> lookup_account_names(const vector<string>& account_names)const;
       set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit)const;
       uint64_t get_account_count()const;
@@ -376,6 +380,39 @@ vector<account_id_type> database_api_impl::get_account_references( account_id_ty
    }
    return result;*/
    FC_ASSERT( false, "database_api::get_account_references --- Needs to be refactored for steem." );
+}
+
+account_summary database_api::get_account_summary( account_id_type account_id )const
+{
+   return my->get_account_summary( account_id );
+}
+
+account_summary database_api_impl::get_account_summary( account_id_type account_id )const
+{
+   const auto& account_idx = _db.get_index_type< account_index >().indices().get< by_id >();
+   const auto& a = account_idx.find(account_id);
+   account_summary account;
+   account.name = a->name;
+   account.id = a->id;
+   account.json_metadata = a->json_metadata;
+   account.proxy = a->proxy;
+   account.post_count = a->post_count;
+   account.recovery_account = a->recovery_account;
+   account.reputation = _follow_api->get_account_reputations( a->name, 1 )[0].reputation;
+
+   account.curation_rewards = a->curation_rewards;
+   account.posting_rewards = a->posting_rewards;
+
+   account.balances.assets.push_back (a->balance);
+   account.balances.assets.push_back (a->sbd_balance);
+   account.balances.assets.push_back (a->vesting_shares);
+
+   account.keys.owner_key = a->owner;
+   account.keys.active_key = a->active;
+   account.keys.posting_key = a->posting;
+   account.keys.memo_key = a->memo_key;
+
+   return account;
 }
 
 vector<optional<account_object>> database_api::lookup_account_names(const vector<string>& account_names)const

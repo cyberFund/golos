@@ -51,6 +51,10 @@
 #include <steemit/wallet/reflect_util.hpp>
 #include <fc/smart_ref_impl.hpp>
 
+#include <steemit/chain/snapshot_state.hpp>
+#include <fc/io/raw_variant.hpp>
+#include <fc/io/json.hpp>
+
 #ifndef WIN32
 # include <sys/types.h>
 # include <sys/stat.h>
@@ -1079,6 +1083,41 @@ variant_object wallet_api::about() const
 {
     return my->about();
 }
+
+void wallet_api::generate_snapshot(const fc::path& filename) const
+{ try {
+   FC_ASSERT( !is_locked(), "Wallet must be unlocked to generate snapshot" );
+   wlog( "Started snapshot generator. This can take a few minutes..\n" );
+
+   snapshot_state snapshot;
+   auto gpo = my->_remote_db->get_dynamic_global_properties();
+
+   snapshot.timestamp = fc::time_point::now();
+   snapshot.head_block_num = gpo.head_block_number;
+   snapshot.head_block_id = gpo.head_block_id;
+   snapshot.chain_id = STEEMIT_CHAIN_ID;
+   snapshot.summary.current_supply = gpo.current_supply;
+   snapshot.summary.sbd_balance = gpo.current_sbd_supply;
+   snapshot.summary.total_vesting_fund_steem = gpo.total_vesting_fund_steem;
+   snapshot.summary.total_vesting_shares = gpo.total_vesting_shares;
+   snapshot.summary.total_reward_fund_steem = gpo.total_reward_fund_steem;
+
+   account_summary account;
+   const auto accounts_count = my->_remote_db->get_account_count();
+
+   for( uint64_t id = 0; id != accounts_count; id++ )
+   {
+      account = my->_remote_db->get_account_summary(id);
+      snapshot.accounts.push_back (account);
+      if( id%5000 == 0 )
+         wlog( "Processed ${current_id} accounts", ("current_id", id) );
+   }
+
+   wlog( "Processed ${current_id} accounts", ("current_id", accounts_count) );
+   snapshot.summary.accounts_count = accounts_count;
+   fc::json::save_to_file( snapshot, filename );
+
+} FC_CAPTURE_AND_RETHROW( (filename) ) }
 
 /*
 fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_string, int sequence_number) const
