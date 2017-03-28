@@ -4,13 +4,9 @@ export HOME="/var/lib/golosd"
 
 STEEMD="/usr/local/bin/golosd"
 
-#if [[ "$USE_WAY_TOO_MUCH_RAM" ]]; then
-#    STEEMD="/usr/local/golosd-full/bin/golosd"
-#fi
-
 chown -R golosd:golosd $HOME
 
-# seed nodes come from doc/seednodes which is
+# seed nodes come from documentation/seednodes which is
 # installed by docker into /etc/golosd/seednodes
 SEED_NODES="$(cat /etc/golosd/seednodes | awk -F' ' '{print $1}')"
 
@@ -38,7 +34,11 @@ fi
 
 if [[ ! -z "$STEEMD_MINER_NAME" ]]; then
     ARGS+=" --miner=[\"$STEEMD_MINER_NAME\",\"$STEEMD_PRIVATE_KEY\"]"
-#    ARGS+=" --mining-threads=$(nproc)"
+    if [[ ! -z "$STEEMD_MINING_THREADS" ]]; then
+        ARGS+=" --mining-threads=\"$STEEMD_MINING_THREADS\""
+    else
+        ARGS+=" --mining-threads=$(nproc)"
+    fi
 fi
 
 if [[ ! -z "$STEEMD_PRIVATE_KEY" ]]; then
