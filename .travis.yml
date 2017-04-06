@@ -1,0 +1,20 @@
+sudo: required
+
+language: cpp
+
+services:
+  - docker
+
+before_install:
+  - git clone https://github.com/GolosChain/golos.git
+  - cd golos
+  - docker build -t goloschain/golos .
+
+script:
+  - docker images
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push goloschain/golos;
+    fi
