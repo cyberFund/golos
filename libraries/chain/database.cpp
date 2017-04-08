@@ -786,7 +786,7 @@ namespace steemit {
             string scheduled_witness = get_scheduled_witness(slot_num);
             FC_ASSERT(scheduled_witness == witness_owner);
 
-            const auto &witness_obj = get_witness(witness_owner);
+            const witness_object &witness_obj = get_witness(witness_owner);
 
             if (!(skip & skip_witness_signature))
                 FC_ASSERT(witness_obj.signing_key ==
@@ -865,7 +865,7 @@ namespace steemit {
             pending_block.transaction_merkle_root = pending_block.calculate_merkle_root();
             pending_block.witness = witness_owner;
             if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                const auto &witness = get_witness(witness_owner);
+                const witness_object &witness = get_witness(witness_owner);
 
                 if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
                     pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
@@ -2311,7 +2311,7 @@ namespace steemit {
                           3, "this code assumes a 3-second time interval");
             asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
 
-            const auto &witness_account = get_account(props.current_witness);
+            const account_object &witness_account = get_account(props.current_witness);
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
@@ -3092,7 +3092,7 @@ namespace steemit {
 
                 if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) // Cannot remove after hardfork
                 {
-                    const auto &witness = get_witness(next_block.witness);
+                    const witness_object &witness = get_witness(next_block.witness);
                     const auto &hardfork_state = get_hardfork_property_object();
                     FC_ASSERT(witness.running_version >=
                               hardfork_state.current_hardfork_version,
@@ -3305,7 +3305,7 @@ namespace steemit {
 
                 auto trx_size = fc::raw::pack_size(trx);
 
-                for (const auto &auth : required) {
+                for (const flat_set<account_name_type>::value_type &auth : required) {
                     const auto &acnt = get_account(auth);
 
                     old_update_account_bandwidth(acnt, trx_size, bandwidth_type::old_forum);
@@ -3358,7 +3358,7 @@ namespace steemit {
 
                 //Finally process the operations
                 _current_op_in_trx = 0;
-                for (const auto &op : trx.operations) {
+                for (const vector<operation>::value_type &op : trx.operations) {
                     try {
                         apply_operation(op);
                         ++_current_op_in_trx;
@@ -3413,7 +3413,7 @@ namespace steemit {
 
         void database::update_global_dynamic_data(const signed_block &b) {
             try {
-                auto block_size = fc::raw::pack_size(b);
+                std::size_t block_size = fc::raw::pack_size(b);
                 const dynamic_global_property_object &_dgp =
                         get_dynamic_global_properties();
 
@@ -3423,7 +3423,7 @@ namespace steemit {
                     assert(missed_blocks != 0);
                     missed_blocks--;
                     for (uint32_t i = 0; i < missed_blocks; ++i) {
-                        const auto &witness_missed = get_witness(get_scheduled_witness(
+                        const witness_object &witness_missed = get_witness(get_scheduled_witness(
                                 i + 1));
                         if (witness_missed.owner != b.witness) {
                             modify(witness_missed, [&](witness_object &w) {
@@ -4075,7 +4075,7 @@ namespace steemit {
             });
 
             const auto &idx = get_index<witness_index>().indices();
-            for (const auto &witness : idx) {
+            for (const witness_object &witness : idx) {
                 modify(witness, [&](witness_object &wobj) {
                     wobj.virtual_position = fc::uint128();
                     wobj.virtual_last_update = wso.current_virtual_time;
