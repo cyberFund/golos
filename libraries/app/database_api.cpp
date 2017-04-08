@@ -4,6 +4,8 @@
 
 #include <steemit/protocol/get_config.hpp>
 
+#include <steemit/chain/util/reward.hpp>
+
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -1006,7 +1008,7 @@ namespace steemit {
             u256 total_r2 = to256(props.total_reward_shares2);
 
             if (props.total_reward_shares2 > 0) {
-                auto vshares = my->_db.calculate_vshares(
+                auto vshares = steemit::chain::util::calculate_vshares(
                         d.net_rshares.value > 0 ? d.net_rshares.value : 0);
 
                 //int64_t abs_net_rshares = llabs(d.net_rshares.value);
@@ -1504,6 +1506,7 @@ namespace steemit {
                         std::multimap<tags::tag_object, discussion, tags::by_parent_created> result = get_discussions<tags::by_parent_created>(query, tag, parent, tidx, tidx_itr, filter_function);
 
                         map_result.insert(result.cbegin(), result.cend());
+                    }
                 } else {
                     auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, fc::time_point_sec::maximum()));
 
@@ -1523,7 +1526,8 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::function<bool(const comment_api_obj &c)> filter_function = [&](const comment_api_obj &c) -> bool {
+                std::function<bool(const comment_api_obj
+                &c)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
                         if (query.select_authors.find(c.author) ==
                             query.select_authors.end()) {
@@ -1578,7 +1582,8 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::function<bool(const comment_api_obj &c)> filter_function = [&](const comment_api_obj &c) -> bool {
+                std::function<bool(const comment_api_obj
+                &c)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
                         if (query.select_authors.find(c.author) ==
                             query.select_authors.end()) {
@@ -1636,7 +1641,8 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::function<bool(const comment_api_obj &c)> filter_function = [&](const comment_api_obj &c) -> bool {
+                std::function<bool(const comment_api_obj
+                &c)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
                         if (query.select_authors.find(c.author) ==
                             query.select_authors.end()) {
@@ -1692,7 +1698,8 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::function<bool(const comment_api_obj &c)> filter_function = [&](const comment_api_obj &c) -> bool {
+                std::function<bool(const comment_api_obj
+                &c)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
                         if (query.select_authors.find(c.author) ==
                             query.select_authors.end()) {
@@ -1747,7 +1754,8 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::function<bool(const comment_api_obj &c)> filter_function = [&](const comment_api_obj &c) -> bool {
+                std::function<bool(const comment_api_obj
+                &c)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
                         if (query.select_authors.find(c.author) ==
                             query.select_authors.end()) {
@@ -1803,7 +1811,8 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::function<bool(const comment_api_obj &c)> filter_function = [&](const comment_api_obj &c) -> bool {
+                std::function<bool(const comment_api_obj
+                &c)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
                         if (query.select_authors.find(c.author) ==
                             query.select_authors.end()) {
@@ -1860,8 +1869,9 @@ namespace steemit {
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author)
-                                                       : "";
+                auto start_author = query.start_author
+                                    ? *(query.start_author)
+                                    : "";
                 auto start_permlink = query.start_permlink
                                       ? *(query.start_permlink) : "";
 
@@ -1894,7 +1904,8 @@ namespace steemit {
 
                                 bool found = false;
                                 while (tag_itr != tag_idx.end() &&
-                                       tag_itr->comment == feed_itr->comment) {
+                                       tag_itr->comment ==
+                                       feed_itr->comment) {
                                     if (query.select_tags.find(tag_itr->tag) !=
                                         query.select_tags.end()) {
                                         found = true;
@@ -1933,8 +1944,9 @@ namespace steemit {
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author)
-                                                       : "";
+                auto start_author = query.start_author
+                                    ? *(query.start_author)
+                                    : "";
                 auto start_permlink = query.start_permlink
                                       ? *(query.start_permlink) : "";
 
@@ -1968,7 +1980,8 @@ namespace steemit {
 
                                 bool found = false;
                                 while (tag_itr != tag_idx.end() &&
-                                       tag_itr->comment == blog_itr->comment) {
+                                       tag_itr->comment ==
+                                       blog_itr->comment) {
                                     if (query.select_tags.find(tag_itr->tag) !=
                                         query.select_tags.end()) {
                                         found = true;
@@ -2122,7 +2135,8 @@ namespace steemit {
                     for (auto &r : replies) {
                         try {
                             recursively_fetch_content(_state, r, referenced_accounts);
-                            root.replies.push_back(r.author + "/" + r.permlink);
+                            root.replies.push_back(
+                                    r.author + "/" + r.permlink);
                             _state.content[r.author + "/" +
                                            r.permlink] = std::move(r);
                             if (r.author.size()) {
@@ -2341,7 +2355,8 @@ namespace steemit {
                             auto itr = pidx.lower_bound(acnt);
                             eacnt.comments = std::vector<std::string>();
 
-                            while (itr != pidx.end() && itr->author == acnt &&
+                            while (itr != pidx.end() &&
+                                   itr->author == acnt &&
                                    count < 20) {
                                 if (itr->parent_author.size()) {
                                     const auto link = acnt + "/" +
@@ -2355,7 +2370,8 @@ namespace steemit {
                                 ++itr;
                             }
 #endif
-                        } else if (part[1].size() == 0 || part[1] == "blog") {
+                        } else if (part[1].size() == 0 ||
+                                   part[1] == "blog") {
                             if (my->_follow_api) {
                                 auto blog = my->_follow_api->get_blog_entries(eacnt.name, 0, 20);
                                 eacnt.blog = std::vector<std::string>();
@@ -2372,7 +2388,8 @@ namespace steemit {
                                     }
                                 }
                             }
-                        } else if (part[1].size() == 0 || part[1] == "feed") {
+                        } else if (part[1].size() == 0 ||
+                                   part[1] == "feed") {
                             if (my->_follow_api) {
                                 auto feed = my->_follow_api->get_feed_entries(eacnt.name, 0, 20);
                                 eacnt.feed = std::vector<std::string>();
