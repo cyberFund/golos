@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Golos, Inc., and contributors.
+ * Copyright (c) 2017 Golos, Inc., and contributors.
  */
 #pragma once
 
