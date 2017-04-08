@@ -128,7 +128,7 @@ namespace steemit {
 
         void account_create_evaluator::do_apply(const account_create_operation &o) {
             database &_db = db();
-            const auto &creator = _db.get_account(o.creator);
+            const account_object &creator = _db.get_account(o.creator);
 
             const auto &props = _db.get_dynamic_global_properties();
 
@@ -206,7 +206,7 @@ namespace steemit {
                 o.posting->validate();
             }
 
-            const auto &account = _db.get_account(o.account);
+            const account_object &account = _db.get_account(o.account);
             const auto &account_auth = _db.get<account_authority_object, by_account>(o.account);
 
             if (o.owner) {
@@ -284,7 +284,7 @@ namespace steemit {
         void delete_comment_evaluator::do_apply(const delete_comment_operation &o) {
             database &_db = db();
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
-                const auto &auth = _db.get_account(o.author);
+                const account_object &auth = _db.get_account(o.author);
                 FC_ASSERT(!(auth.owner_challenged ||
                             auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
             }
@@ -345,7 +345,7 @@ namespace steemit {
         void comment_options_evaluator::do_apply(const comment_options_operation &o) {
             database &_db = db();
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
-                const auto &auth = _db.get_account(o.author);
+                const account_object &auth = _db.get_account(o.author);
                 FC_ASSERT(!(auth.owner_challenged ||
                             auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
             }
@@ -388,7 +388,7 @@ namespace steemit {
                 const auto &by_permlink_idx = _db.get_index<comment_index>().indices().get<by_permlink>();
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
 
-                const auto &auth = _db.get_account(o.author); /// prove it exists
+                const account_object &auth = _db.get_account(o.author); /// prove it exists
 
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
                     FC_ASSERT(!(auth.owner_challenged ||
@@ -631,7 +631,7 @@ namespace steemit {
             try {
                 database &_db = db();
 
-                const auto &from_account = _db.get_account(o.from);
+                const account_object &from_account = _db.get_account(o.from);
                 _db.get_account(o.to);
                 _db.get_account(o.agent);
 
@@ -705,14 +705,14 @@ namespace steemit {
                 }
 
                 if (reject_escrow) {
-                    const auto &from_account = _db.get_account(o.from);
+                    const account_object &from_account = _db.get_account(o.from);
                     _db.adjust_balance(from_account, escrow.steem_balance);
                     _db.adjust_balance(from_account, escrow.sbd_balance);
                     _db.adjust_balance(from_account, escrow.pending_fee);
 
                     _db.remove(escrow);
                 } else if (escrow.to_approved && escrow.agent_approved) {
-                    const auto &agent_account = _db.get_account(o.agent);
+                    const account_object &agent_account = _db.get_account(o.agent);
                     _db.adjust_balance(agent_account, escrow.pending_fee);
 
                     _db.modify(escrow, [&](escrow_object &esc) {
@@ -750,7 +750,7 @@ namespace steemit {
             try {
                 database &_db = db();
                 _db.get_account(o.from); // Verify from account exists
-                const auto &receiver_account = _db.get_account(o.receiver);
+                const account_object &receiver_account = _db.get_account(o.receiver);
 
                 const auto &e = _db.get_escrow(o.from, o.escrow_id);
                 FC_ASSERT(e.steem_balance >=
@@ -804,8 +804,8 @@ namespace steemit {
 
         void transfer_evaluator::do_apply(const transfer_operation &o) {
             database &_db = db();
-            const auto &from_account = _db.get_account(o.from);
-            const auto &to_account = _db.get_account(o.to);
+            const account_object &from_account = _db.get_account(o.from);
+            const account_object &to_account = _db.get_account(o.to);
 
             if (from_account.active_challenged) {
                 _db.modify(from_account, [&](account_object &a) {
@@ -823,8 +823,8 @@ namespace steemit {
         void transfer_to_vesting_evaluator::do_apply(const transfer_to_vesting_operation &o) {
             database &_db = db();
 
-            const auto &from_account = _db.get_account(o.from);
-            const auto &to_account = o.to.size() ? _db.get_account(o.to)
+            const account_object &from_account = _db.get_account(o.from);
+            const account_object &to_account = o.to.size() ? _db.get_account(o.to)
                                                  : from_account;
 
             FC_ASSERT(_db.get_balance(from_account, STEEM_SYMBOL) >=
@@ -836,7 +836,7 @@ namespace steemit {
         void withdraw_vesting_evaluator::do_apply(const withdraw_vesting_operation &o) {
             database &_db = db();
 
-            const auto &account = _db.get_account(o.account);
+            const account_object &account = _db.get_account(o.account);
 
             FC_ASSERT(account.vesting_shares >=
                       asset(0, VESTS_SYMBOL), "Account does not have sufficient Golos Power for withdraw.");
@@ -901,8 +901,8 @@ namespace steemit {
         void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_route_operation &o) {
             try {
                 database &_db = db();
-                const auto &from_account = _db.get_account(o.from_account);
-                const auto &to_account = _db.get_account(o.to_account);
+                const account_object &from_account = _db.get_account(o.from_account);
+                const account_object &to_account = _db.get_account(o.to_account);
                 const auto &wd_idx = _db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
                 auto itr = wd_idx.find(boost::make_tuple(from_account.id, to_account.id));
 
@@ -954,7 +954,7 @@ namespace steemit {
 
         void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_operation &o) {
             database &_db = db();
-            const auto &account = _db.get_account(o.account);
+            const account_object &account = _db.get_account(o.account);
             FC_ASSERT(account.proxy != o.proxy, "Proxy must change.");
 
             FC_ASSERT(account.can_vote, "Account has declined the ability to vote and cannot proxy votes.");
@@ -968,7 +968,7 @@ namespace steemit {
             _db.adjust_proxied_witness_votes(account, delta);
 
             if (o.proxy.size()) {
-                const auto &new_proxy = _db.get_account(o.proxy);
+                const account_object &new_proxy = _db.get_account(o.proxy);
                 flat_set<account_id_type> proxy_chain({account.id, new_proxy.id
                 });
                 proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
@@ -976,7 +976,7 @@ namespace steemit {
                 /// check for proxy loops and fail to update the proxy if it would create a loop
                 auto cprox = &new_proxy;
                 while (cprox->proxy.size() != 0) {
-                    const auto next_proxy = _db.get_account(cprox->proxy);
+                    const account_object next_proxy = _db.get_account(cprox->proxy);
                     FC_ASSERT(proxy_chain.insert(next_proxy.id).second, "This proxy would create a proxy loop.");
                     cprox = &next_proxy;
                     FC_ASSERT(proxy_chain.size() <=
@@ -1005,7 +1005,7 @@ namespace steemit {
 
         void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation &o) {
             database &_db = db();
-            const auto &voter = _db.get_account(o.account);
+            const account_object &voter = _db.get_account(o.account);
             FC_ASSERT(voter.proxy.size() ==
                       0, "A proxy is currently set, please clear the proxy before voting for a witness.");
 
@@ -1076,7 +1076,7 @@ namespace steemit {
                 database &_db = db();
 
                 const auto &comment = _db.get_comment(o.author, o.permlink);
-                const auto &voter = _db.get_account(o.voter);
+                const account_object &voter = _db.get_account(o.voter);
 
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
                     FC_ASSERT(!(voter.owner_challenged ||
@@ -1582,7 +1582,7 @@ namespace steemit {
                 });
             }
 
-            const auto &worker_account = db.get_account(o.get_worker_account()); // verify it exists
+            const account_object &worker_account = db.get_account(o.get_worker_account()); // verify it exists
             const auto &worker_auth = db.get<account_authority_object, by_account>(o.get_worker_account());
             FC_ASSERT(worker_auth.active.num_auths() ==
                       1, "Miners can only have one key authority. ${a}", ("a", worker_auth.active));
@@ -1633,7 +1633,7 @@ namespace steemit {
             db.adjust_supply(pow_reward, true);
 
             /// pay the witness that includes this POW
-            const auto &inc_witness = db.get_account(dgp.current_witness);
+            const account_object &inc_witness = db.get_account(dgp.current_witness);
             if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
                 db.adjust_balance(inc_witness, pow_reward);
             } else {
@@ -1723,7 +1723,7 @@ namespace steemit {
                 asset inc_reward = db.get_pow_reward();
                 db.adjust_supply(inc_reward, true);
 
-                const auto &inc_witness = db.get_account(dgp.current_witness);
+                const account_object &inc_witness = db.get_account(dgp.current_witness);
                 db.create_vesting(inc_witness, inc_reward);
             }
         }
@@ -1739,7 +1739,7 @@ namespace steemit {
 
         void convert_evaluator::do_apply(const convert_operation &o) {
             database &_db = db();
-            const auto &owner = _db.get_account(o.owner);
+            const account_object &owner = _db.get_account(o.owner);
             FC_ASSERT(_db.get_balance(owner, o.amount.symbol) >=
                       o.amount, "Account does not have sufficient balance for conversion.");
 
@@ -1768,7 +1768,7 @@ namespace steemit {
             FC_ASSERT(o.expiration >
                       _db.head_block_time(), "Limit order has to expire after head block time.");
 
-            const auto &owner = _db.get_account(o.owner);
+            const account_object &owner = _db.get_account(o.owner);
 
             FC_ASSERT(_db.get_balance(owner, o.amount_to_sell.symbol) >=
                       o.amount_to_sell, "Account does not have sufficient funds for limit order.");
@@ -1795,7 +1795,7 @@ namespace steemit {
             FC_ASSERT(o.expiration >
                       _db.head_block_time(), "Limit order has to expire after head block time.");
 
-            const auto &owner = _db.get_account(o.owner);
+            const account_object &owner = _db.get_account(o.owner);
 
             FC_ASSERT(_db.get_balance(owner, o.amount_to_sell.symbol) >=
                       o.amount_to_sell, "Account does not have sufficient funds for limit order.");
@@ -1831,8 +1831,8 @@ namespace steemit {
             database &_db = db();
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__307))
                 FC_ASSERT(false, "Challenge authority operation is currently disabled.");
-            const auto &challenged = _db.get_account(o.challenged);
-            const auto &challenger = _db.get_account(o.challenger);
+            const account_object &challenged = _db.get_account(o.challenged);
+            const account_object &challenger = _db.get_account(o.challenger);
 
             if (o.require_owner) {
                 FC_ASSERT(challenged.reset_account ==
@@ -1868,7 +1868,7 @@ namespace steemit {
 
         void prove_authority_evaluator::do_apply(const prove_authority_operation &o) {
             database &_db = db();
-            const auto &challenged = _db.get_account(o.challenged);
+            const account_object &challenged = _db.get_account(o.challenged);
             FC_ASSERT(challenged.owner_challenged ||
                       challenged.active_challenged, "Account is not challeneged. No need to prove authority.");
 
@@ -1884,7 +1884,7 @@ namespace steemit {
 
         void request_account_recovery_evaluator::do_apply(const request_account_recovery_operation &o) {
             database &_db = db();
-            const auto &account_to_recover = _db.get_account(o.account_to_recover);
+            const account_object &account_to_recover = _db.get_account(o.account_to_recover);
 
             if (account_to_recover.recovery_account.length())   // Make sure recovery matches expected recovery account
                 FC_ASSERT(account_to_recover.recovery_account ==
@@ -1942,7 +1942,7 @@ namespace steemit {
 
         void recover_account_evaluator::do_apply(const recover_account_operation &o) {
             database &_db = db();
-            const auto &account = _db.get_account(o.account_to_recover);
+            const account_object &account = _db.get_account(o.account_to_recover);
 
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_12))
                 FC_ASSERT(
@@ -1983,7 +1983,7 @@ namespace steemit {
         void change_recovery_account_evaluator::do_apply(const change_recovery_account_operation &o) {
             database &_db = db();
             _db.get_account(o.new_recovery_account); // Simply validate account exists
-            const auto &account_to_recover = _db.get_account(o.account_to_recover);
+            const account_object &account_to_recover = _db.get_account(o.account_to_recover);
 
             const auto &change_recovery_idx = _db.get_index<change_recovery_account_request_index>().indices().get<by_account>();
             auto request = change_recovery_idx.find(o.account_to_recover);
@@ -2012,8 +2012,8 @@ namespace steemit {
 
         void transfer_to_savings_evaluator::do_apply(const transfer_to_savings_operation &op) {
             database &_db = db();
-            const auto &from = _db.get_account(op.from);
-            const auto &to = _db.get_account(op.to);
+            const account_object &from = _db.get_account(op.from);
+            const account_object &to = _db.get_account(op.to);
             FC_ASSERT(_db.get_balance(from, op.amount.symbol) >=
                       op.amount, "Account does not have sufficient funds to transfer to savings.");
 
@@ -2023,7 +2023,7 @@ namespace steemit {
 
         void transfer_from_savings_evaluator::do_apply(const transfer_from_savings_operation &op) {
             database &_db = db();
-            const auto &from = _db.get_account(op.from);
+            const account_object &from = _db.get_account(op.from);
             _db.get_account(op.to); // Verify to account exists
 
             FC_ASSERT(from.savings_withdraw_requests <
@@ -2055,7 +2055,7 @@ namespace steemit {
             _db.adjust_savings_balance(_db.get_account(swo.from), swo.amount);
             _db.remove(swo);
 
-            const auto &from = _db.get_account(op.from);
+            const account_object &from = _db.get_account(op.from);
             _db.modify(from, [&](account_object &a) {
                 a.savings_withdraw_requests--;
             });
@@ -2065,7 +2065,7 @@ namespace steemit {
             database &_db = db();
             FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_14__324));
 
-            const auto &account = _db.get_account(o.account);
+            const account_object &account = _db.get_account(o.account);
             const auto &request_idx = _db.get_index<decline_voting_rights_request_index>().indices().get<by_account>();
             auto itr = request_idx.find(account.id);
 
@@ -2089,7 +2089,7 @@ namespace steemit {
             database &_db = db();
             FC_ASSERT(false, "Reset Account Operation is currently disabled.");
 
-            const auto &acnt = _db.get_account(op.account_to_reset);
+            const account_object &acnt = _db.get_account(op.account_to_reset);
             auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(op.account_to_reset, bandwidth_type::old_forum));
             if (band != nullptr)
                 FC_ASSERT(
@@ -2105,7 +2105,7 @@ namespace steemit {
             database &_db = db();
             FC_ASSERT(false, "Set Reset Account Operation is currently disabled.");
 
-            const auto &acnt = _db.get_account(op.account);
+            const account_object &acnt = _db.get_account(op.account);
             _db.get_account(op.reset_account);
 
             FC_ASSERT(acnt.reset_account ==
