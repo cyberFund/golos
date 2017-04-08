@@ -3244,9 +3244,9 @@ namespace steemit {
 
                 if (!(skip &
                       (skip_transaction_signatures | skip_authority_check))) {
-                    authority get_active = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).active); };
-                    authority get_owner = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).owner); };
-                    authority get_posting = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).posting); };
+                    auto get_active = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).active); };
+                    auto get_owner = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).owner); };
+                    auto get_posting = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).posting); };
 
                     try {
                         trx.verify_authority(chain_id, get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH);
