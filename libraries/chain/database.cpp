@@ -3307,20 +3307,23 @@ namespace steemit {
 
                 for (const auto &auth : required) {
                     const auto &acnt = get_account(auth);
+                    if (!has_hardfork(STEEMIT_HARDFORK_0_17__79)) {
 
-                    old_update_account_bandwidth(acnt, trx_size, bandwidth_type::old_forum);
+                        old_update_account_bandwidth(acnt, trx_size, bandwidth_type::old_forum);
+                    }
+
                     update_account_bandwidth(acnt, trx_size, bandwidth_type::forum);
                     for (const auto &op : trx.operations) {
                         if (is_market_operation(op)) {
-                            old_update_account_bandwidth(acnt, trx_size, bandwidth_type::old_market);
+                            if (!has_hardfork(STEEMIT_HARDFORK_0_17__79)) {
+                                old_update_account_bandwidth(acnt, trx_size, bandwidth_type::old_market);
+                            }
                             update_account_bandwidth(acnt,
                                     trx_size * 10, bandwidth_type::market);
                             break;
                         }
                     }
                 }
-
-
 
                 //Skip all manner of expiration and TaPoS checking if we're on block 1; It's impossible that the transaction is
                 //expired, and TaPoS makes no sense as no blocks exist.
@@ -4148,17 +4151,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
