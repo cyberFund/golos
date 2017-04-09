@@ -1892,56 +1892,6 @@ namespace steemit {
  *
  *  @returns unclaimed rewards.
  */
-        share_type database::pay_discussions(const comment_object &c, share_type max_rewards) {
-            share_type unclaimed_rewards = max_rewards;
-            std::deque<comment_id_type> child_queue;
-
-            // TODO: Optimize in future hardfork
-
-            if (c.children_rshares2 > 0) {
-                const auto &comment_by_parent = get_index<comment_index>().indices().get<by_parent>();
-                fc::uint128_t total_rshares2(c.children_rshares2 -
-                                             util::calculate_vshares(c.net_rshares.value));
-                child_queue.push_back(c.id);
-
-                // Pre-order traversal of the tree of child comments
-                while (child_queue.size()) {
-                    const auto &cur = get(child_queue.front());
-                    child_queue.pop_front();
-
-                    if (cur.net_rshares > 0) {
-                        auto claim = static_cast< uint64_t >(
-                                (util::to256(util::calculate_vshares(cur.net_rshares.value)) *
-                                 max_rewards.value) /
-                                util::to256(total_rshares2));
-                        unclaimed_rewards -= claim;
-
-                        if (claim > 0) {
-                            create_vesting(get_account(cur.author), asset(claim, STEEM_SYMBOL));
-                            // create discussion reward vop
-                        }
-                    }
-
-                    auto itr = comment_by_parent.lower_bound(boost::make_tuple(cur.author, cur.permlink, comment_id_type()));
-
-                    while (itr != comment_by_parent.end() &&
-                           itr->parent_author == cur.author &&
-                           itr->parent_permlink == cur.permlink) {
-                        child_queue.push_back(itr->id);
-                        ++itr;
-                    }
-                }
-            }
-
-            return unclaimed_rewards;
-        }
-
-/**
- *  This method will iterate through all comment_vote_objects and give them
- *  (max_rewards * weight) / c.total_vote_weight.
- *
- *  @returns unclaimed rewards.
- */
         share_type database::pay_curators(const comment_object &c, share_type max_rewards) {
             try {
                 uint128_t total_weight(c.total_vote_weight);
@@ -2011,25 +1961,12 @@ namespace steemit {
 
                     asset total_payout;
                     if (reward_tokens > 0) {
-                        share_type discussion_tokens = 0;
                         share_type curation_tokens = ((reward_tokens *
                                                        get_curation_rewards_percent()) /
                                                       STEEMIT_100_PERCENT).to_uint64();
-                        if (comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
-                            discussion_tokens = ((reward_tokens *
-                                                  get_discussion_rewards_percent()) /
-                                                 STEEMIT_100_PERCENT).to_uint64();
-                        }
-
-                        share_type author_tokens =
-                                reward_tokens.to_uint64() - discussion_tokens -
-                                curation_tokens;
+                        share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
 
                         author_tokens += pay_curators(comment, curation_tokens);
-
-                        if (discussion_tokens > 0) {
-                            author_tokens += pay_discussions(comment, discussion_tokens);
-                        }
 
                         auto sbd_steem = (author_tokens *
                                           comment.percent_steem_dollars) /
@@ -2420,10 +2357,6 @@ namespace steemit {
                     push_virtual_operation(liquidity_reward_operation(get(itr->owner).name, reward));
                 }
             }
-        }
-
-        uint16_t database::get_discussion_rewards_percent() const {
-            return 0;
         }
 
         uint16_t database::get_curation_rewards_percent() const {
