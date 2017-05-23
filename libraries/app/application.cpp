@@ -27,7 +27,7 @@
 
 #include <graphene/net/exceptions.hpp>
 
-#include <graphene/time/time.hpp>
+#include <steemit/time/time.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -295,7 +295,7 @@ namespace steemit {
                                 _force_validate = true;
                             }
 
-                            graphene::time::now();
+                            steemit::time::now();
                         } else {
                             ilog("Starting Golos node in read mode.");
                             _chain_db->open(_data_dir /
@@ -433,7 +433,7 @@ namespace steemit {
                                                 ("n", blk_msg.block.block_num()));
                             }
 
-                            time_point_sec now = graphene::time::now();
+                            time_point_sec now = steemit::time::now();
 
                             uint64_t max_accept_time = now.sec_since_epoch();
                             max_accept_time += allow_future_time;
@@ -799,9 +799,9 @@ namespace steemit {
                     } FC_CAPTURE_AND_RETHROW((block_id))
                 }
 
-                /** returns graphene::time::now() */
+                /** returns steemit::time::now() */
                 virtual fc::time_point_sec get_blockchain_now() override {
-                    return graphene::time::now();
+                    return steemit::time::now();
                 }
 
                 virtual item_hash_t get_head_block_id() const override {

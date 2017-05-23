@@ -24,8 +24,8 @@
 #include <cctype>
 
 #include <steemit/app/api.hpp>
+#include <steemit/time/time.hpp>
 
-#include <graphene/time/time.hpp>
 #include <graphene/utilities/key_conversion.hpp>
 
 #include <fc/smart_ref_impl.hpp>
@@ -128,7 +128,7 @@ namespace steemit {
                     return false;
                 }
 
-                fc::time_point_sec now = graphene::time::now();
+                fc::time_point_sec now = time::now();
                 std::shared_ptr<database> db = _app.chain_database();
                 const dynamic_global_property_object &dgpo = db->get_dynamic_global_properties();
 

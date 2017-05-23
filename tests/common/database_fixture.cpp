@@ -1,7 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/program_options.hpp>
 
-#include <graphene/time/time.hpp>
 #include <graphene/utilities/tempdir.hpp>
 
 #include <steemit/chain/steem_objects.hpp>
@@ -146,7 +145,6 @@ namespace steemit {
                 ahplugin->plugin_initialize(boost::program_options::variables_map());
 
                 db.open(_chain_dir, _chain_dir);
-                graphene::time::now();
 
                 validate_database();
                 generate_block();

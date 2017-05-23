@@ -80,9 +80,9 @@ endif()
 add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
 set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
 
-add_dependencies(golos_${CURRENT_TARGET} golos::protocol graphene_time build_hardfork_hpp)
+add_dependencies(golos_${CURRENT_TARGET} golos::protocol golos::time build_hardfork_hpp)
 
-target_link_libraries(golos_${CURRENT_TARGET} golos::protocol graphene_time fc chainbase graphene_schema ${PATCH_MERGE_LIB})
+target_link_libraries(golos_${CURRENT_TARGET} golos::protocol golos::time fc chainbase graphene_schema ${PATCH_MERGE_LIB})
 target_include_directories(golos_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include")
 

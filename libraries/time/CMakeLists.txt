@@ -1,24 +1,38 @@
-file(GLOB HEADERS "include/graphene/time/*.hpp")
+set(CURRENT_TARGET time)
+
+list(APPEND CURRENT_TARGET_HEADERS
+        include/steemit/time/time.hpp
+        )
+
+list(APPEND CURRENT_TARGET_SOURCES
+        time.cpp
+        )
 
 if(BUILD_SHARED_LIBRARIES)
-    add_library(graphene_time SHARED
-            time.cpp
+    add_library(golos_${CURRENT_TARGET} SHARED
+            ${CURRENT_TARGET_HEADERS}
+            ${CURRENT_TARGET_SOURCES}
             )
 else()
-    add_library(graphene_time STATIC
-            time.cpp
+    add_library(golos_${CURRENT_TARGET} STATIC
+            ${CURRENT_TARGET_HEADERS}
+            ${CURRENT_TARGET_SOURCES}
             )
 endif()
 
-target_link_libraries(graphene_time fc)
-target_include_directories(graphene_time
+add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
+set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
+
+target_link_libraries(golos_${CURRENT_TARGET} fc)
+target_include_directories(golos_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 install(TARGETS
-        graphene_time
+        golos_${CURRENT_TARGET}
 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${HEADERS} DESTINATION "include/graphene/time")
+
+install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/time")
