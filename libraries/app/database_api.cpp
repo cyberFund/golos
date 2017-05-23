@@ -2,6 +2,8 @@
 #include <steemit/app/application.hpp>
 #include <steemit/app/database_api.hpp>
 
+#include <steemit/chain/utilities/reward.hpp>
+
 #include <steemit/protocol/get_config.hpp>
 
 #include <fc/bloom_filter.hpp>
@@ -1006,7 +1008,7 @@ namespace steemit {
             u256 total_r2 = to256(props.total_reward_shares2);
 
             if (props.total_reward_shares2 > 0) {
-                auto vshares = my->_db.calculate_vshares(
+                auto vshares = chain::utilities::calculate_vshares(
                         d.net_rshares.value > 0 ? d.net_rshares.value : 0);
 
                 //int64_t abs_net_rshares = llabs(d.net_rshares.value);

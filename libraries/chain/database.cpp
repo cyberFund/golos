@@ -20,6 +20,10 @@
 #include <steemit/chain/shared_db_merkle.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
+#include <steemit/chain/utilities/asset.hpp>
+#include <steemit/chain/utilities/reward.hpp>
+#include <steemit/chain/utilities/uint256.hpp>
+
 #include <fc/smart_ref_impl.hpp>
 
 #include <fc/container/deque.hpp>
@@ -63,13 +67,6 @@ namespace steemit {
     namespace chain {
 
         using boost::container::flat_set;
-
-        inline u256 to256(const fc::uint128 &t) {
-            u256 v(t.hi);
-            v <<= 64;
-            v += t.lo;
-            return v;
-        }
 
         class database_impl {
         public:
@@ -1904,7 +1901,7 @@ namespace steemit {
             if (c.children_rshares2 > 0) {
                 const auto &comment_by_parent = get_index<comment_index>().indices().get<by_parent>();
                 fc::uint128_t total_rshares2(c.children_rshares2 -
-                                             calculate_vshares(c.net_rshares.value));
+                                             utilities::calculate_vshares(c.net_rshares.value));
                 child_queue.push_back(c.id);
 
                 // Pre-order traversal of the tree of child comments
@@ -1914,8 +1911,9 @@ namespace steemit {
 
                     if (cur.net_rshares > 0) {
                         auto claim = static_cast< uint64_t >(
-                                (to256(calculate_vshares(cur.net_rshares.value)) *
-                                 max_rewards.value) / to256(total_rshares2));
+                                (utilities::to256(utilities::calculate_vshares(cur.net_rshares.value)) *
+                                 max_rewards.value) /
+                                utilities::to256(total_rshares2));
                         unclaimed_rewards -= claim;
 
                         if (claim > 0) {
@@ -1987,12 +1985,29 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
+        void fill_comment_reward_context_global_state(utilities::comment_reward_context &ctx, const database &db) {
+            const dynamic_global_property_object &dgpo = db.get_dynamic_global_properties();
+            ctx.total_reward_shares2 = dgpo.total_reward_shares2;
+            ctx.total_reward_fund_steem = dgpo.total_reward_fund_steem;
+            ctx.current_steem_price = db.get_feed_history().current_median_history;
+        }
+
+        void fill_comment_reward_context_local_state(utilities::comment_reward_context &ctx, const comment_object &comment) {
+            ctx.rshares = comment.net_rshares;
+            ctx.reward_weight = comment.reward_weight;
+            ctx.max_sbd = comment.max_accepted_payout;
+        }
+
         void database::cashout_comment_helper(const comment_object &comment) {
             try {
                 const auto &cat = get_category(comment.category);
 
                 if (comment.net_rshares > 0) {
-                    uint128_t reward_tokens = uint128_t(claim_rshare_reward(comment.net_rshares, comment.reward_weight, to_steem(comment.max_accepted_payout)).value);
+                    utilities::comment_reward_context ctx;
+                    fill_comment_reward_context_local_state(ctx, comment);
+                    fill_comment_reward_context_global_state(ctx, *this);
+                    const share_type reward = utilities::get_rshare_reward(ctx);
+                    uint128_t reward_tokens = uint128_t(reward.value);
 
                     asset total_payout;
                     if (reward_tokens > 0) {
@@ -2059,7 +2074,11 @@ namespace steemit {
 
                     }
 
-                    fc::uint128_t old_rshares2 = calculate_vshares(comment.net_rshares.value);
+                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &p) {
+                        p.total_reward_fund_steem.amount -= reward;
+                    });
+
+                    fc::uint128_t old_rshares2 = utilities::calculate_vshares(comment.net_rshares.value);
                     adjust_rshares2(comment, old_rshares2, 0);
                 }
 
@@ -2416,15 +2435,6 @@ namespace steemit {
             }
         }
 
-        uint128_t database::get_content_constant_s() const {
-            return uint128_t(uint64_t(2000000000000ll)); // looking good for posters
-        }
-
-        uint128_t database::calculate_vshares(uint128_t rshares) const {
-            auto s = get_content_constant_s();
-            return (rshares + s) * (rshares + s) - s * s;
-        }
-
 /**
  *  Iterates over all conversion requests with a conversion date before
  *  the head block time and then converts them to/from steem/sbd at the
@@ -2471,61 +2481,11 @@ namespace steemit {
         }
 
         asset database::to_sbd(const asset &steem) const {
-            FC_ASSERT(steem.symbol == STEEM_SYMBOL);
-            const auto &feed_history = get_feed_history();
-            if (feed_history.current_median_history.is_null()) {
-                return asset(0, SBD_SYMBOL);
-            }
-
-            return steem * feed_history.current_median_history;
+            return utilities::to_sbd(get_feed_history().current_median_history, steem);
         }
 
         asset database::to_steem(const asset &sbd) const {
-            FC_ASSERT(sbd.symbol == SBD_SYMBOL);
-            const auto &feed_history = get_feed_history();
-            if (feed_history.current_median_history.is_null()) {
-                return asset(0, STEEM_SYMBOL);
-            }
-
-            return sbd * feed_history.current_median_history;
-        }
-
-/**
- *  This method reduces the rshare^2 supply and returns the number of tokens are
- *  redeemed.
- */
-        share_type database::claim_rshare_reward(share_type rshares, uint16_t reward_weight, asset max_steem) {
-            try {
-                FC_ASSERT(rshares > 0);
-
-                const auto &props = get_dynamic_global_properties();
-
-                u256 rs(rshares.value);
-                u256 rf(props.total_reward_fund_steem.amount.value);
-                u256 total_rshares2 = to256(props.total_reward_shares2);
-
-                u256 rs2 = to256(calculate_vshares(rshares.value));
-                rs2 = (rs2 * reward_weight) / STEEMIT_100_PERCENT;
-
-                u256 payout_u256 = (rf * rs2) / total_rshares2;
-                FC_ASSERT(payout_u256 <=
-                          u256(uint64_t(std::numeric_limits<int64_t>::max())));
-                uint64_t payout = static_cast< uint64_t >( payout_u256 );
-
-                asset sbd_payout_value = to_sbd(asset(payout, STEEM_SYMBOL));
-
-                if (sbd_payout_value < STEEMIT_MIN_PAYOUT_SBD) {
-                    payout = 0;
-                }
-
-                payout = std::min(payout, uint64_t(max_steem.amount.value));
-
-                modify(props, [&](dynamic_global_property_object &p) {
-                    p.total_reward_fund_steem.amount -= payout;
-                });
-
-                return payout;
-            } FC_CAPTURE_AND_RETHROW((rshares)(max_steem))
+            return utilities::to_steem(get_feed_history().current_median_history, sbd);
         }
 
         void database::account_recovery_processing() {
@@ -4154,17 +4114,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
@@ -4397,7 +4357,7 @@ namespace steemit {
                 for (auto itr = comment_idx.begin();
                      itr != comment_idx.end(); ++itr) {
                     if (itr->net_rshares.value > 0) {
-                        auto delta = calculate_vshares(itr->net_rshares.value);
+                        auto delta = utilities::calculate_vshares(itr->net_rshares.value);
                         total_rshares2 += delta;
                     }
                     if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
@@ -4472,7 +4432,7 @@ namespace steemit {
 
                 for (const auto &c : comments) {
                     if (c.net_rshares.value > 0) {
-                        adjust_rshares2(c, 0, calculate_vshares(c.net_rshares.value));
+                        adjust_rshares2(c, 0, utilities::calculate_vshares(c.net_rshares.value));
                     }
                 }
 
