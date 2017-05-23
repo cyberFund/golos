@@ -1717,24 +1717,37 @@ namespace steemit {
             }
         }
 
-/**
- * This method recursively tallies children_rshares2 for this post plus all of its parents,
- * TODO: this method can be skipped for validation-only nodes
- */
-        void database::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
-            modify(c, [&](comment_object &comment) {
-                comment.children_rshares2 -= old_rshares2;
-                comment.children_rshares2 += new_rshares2;
-            });
-            if (c.depth) {
-                adjust_rshares2(get_comment(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
-            } else {
-                const auto &cprops = get_dynamic_global_properties();
-                modify(cprops, [&](dynamic_global_property_object &p) {
-                    p.total_reward_shares2 -= old_rshares2;
-                    p.total_reward_shares2 += new_rshares2;
+        void update_children_rshares2(database &db, const comment_object &c, const fc::uint128_t &old_rshares2, const fc::uint128_t &new_rshares2) {
+            // Iteratively updates the children_rshares2 of this comment and all of its ancestors
+
+            const comment_object *current_comment = &c;
+            while (true) {
+                db.modify(*current_comment, [&](comment_object &comment) {
+                    comment.children_rshares2 -= old_rshares2;
+                    comment.children_rshares2 += new_rshares2;
                 });
+
+                if (current_comment->depth == 0) {
+                    break;
+                }
+
+                current_comment = &db.get_comment(current_comment->parent_author, current_comment->parent_permlink);
             }
+        }
+
+        /** This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's rshares2 changes
+        * from old_rshares2 to new_rshares2.  Maintaining invariants that children_rshares2 is the sum of all descendants' rshares2,
+        * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
+        */
+
+        void database::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+            update_children_rshares2(*this, c, old_rshares2, new_rshares2);
+
+            const auto &dgpo = get_dynamic_global_properties();
+            modify(dgpo, [&](dynamic_global_property_object &p) {
+                p.total_reward_shares2 -= old_rshares2;
+                p.total_reward_shares2 += new_rshares2;
+            });
         }
 
         void database::update_owner_authority(const account_object &account, const authority &owner_authority) {
@@ -4053,17 +4066,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
