@@ -2485,7 +2485,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                                                            STEEMIT_BLOCK_INTERVAL) /
                                                           STEEMIT_POST_AVERAGE_WINDOW);
             auto reward_weight =
-                    (STEEMIT_POST_WEIGHT_CONSTANT * STEEMIT_100_PERCENT) /
+                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF_17 * STEEMIT_100_PERCENT) /
                     (alice_post_bandwidth * alice_post_bandwidth);
             bandwidth = db.get<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple("alice", bandwidth_type::post)).average_bandwidth;
 
