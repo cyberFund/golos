@@ -2299,6 +2299,8 @@ namespace steemit {
                                     case operation::tag<escrow_approve_operation>::value:
                                     case operation::tag<escrow_dispute_operation>::value:
                                     case operation::tag<escrow_release_operation>::value:
+                                    case operation::tag<fill_convert_request_operation>::value:
+                                    case operation::tag<fill_order_operation>::value:
                                         eacnt.transfer_history[item.first] = item.second;
                                         break;
                                     case operation::tag<comment_operation>::value:
@@ -2306,8 +2308,6 @@ namespace steemit {
                                         break;
                                     case operation::tag<limit_order_create_operation>::value:
                                     case operation::tag<limit_order_cancel_operation>::value:
-                                    case operation::tag<fill_convert_request_operation>::value:
-                                    case operation::tag<fill_order_operation>::value:
                                         //   eacnt.market_history[item.first] =  item.second;
                                         break;
                                     case operation::tag<vote_operation>::value:
