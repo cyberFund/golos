@@ -25,12 +25,11 @@
 
 #include <steemit/app/api.hpp>
 
-#include <graphene/time/time.hpp>
 #include <graphene/utilities/key_conversion.hpp>
+#include <graphene/utilities/git_revision.hpp>
 
 #include <fc/smart_ref_impl.hpp>
-
-#include <graphene/utilities/git_revision.hpp>
+#include <fc/time.hpp>
 #include <fc/git_revision.hpp>
 
 namespace steemit {
@@ -63,7 +62,7 @@ namespace steemit {
                 }
                 if (memcmp(hash_obj.data(), acc_password_hash.c_str(), hash_obj.data_size()) !=
                     0) {
-                        return false;
+                    return false;
                 }
             }
 
@@ -128,7 +127,7 @@ namespace steemit {
                     return false;
                 }
 
-                fc::time_point_sec now = graphene::time::now();
+                fc::time_point_sec now = fc::time_point::now();
                 std::shared_ptr<database> db = _app.chain_database();
                 const dynamic_global_property_object &dgpo = db->get_dynamic_global_properties();
 

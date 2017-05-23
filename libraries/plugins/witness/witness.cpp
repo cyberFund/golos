@@ -27,11 +27,10 @@
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/steem_objects.hpp>
 
-#include <graphene/time/time.hpp>
-
 #include <graphene/utilities/key_conversion.hpp>
 
 #include <fc/smart_ref_impl.hpp>
+#include <fc/time.hpp>
 
 using namespace steemit::witness_plugin;
 using std::string;
@@ -155,8 +154,6 @@ void witness_plugin::plugin_startup() {
     try {
         ilog("witness plugin:  plugin_startup() begin");
         chain::database &d = database();
-        //Start NTP time client
-        graphene::time::now();
 
         if (!_witnesses.empty()) {
             ilog("Launching block production for ${n} witnesses.", ("n", _witnesses.size()));
@@ -181,7 +178,6 @@ void witness_plugin::plugin_startup() {
 }
 
 void witness_plugin::plugin_shutdown() {
-    graphene::time::shutdown_ntp_time();
     if (!_miners.empty()) {
         ilog("shutting downing mining threads");
         _thread_pool.clear();
@@ -192,10 +188,9 @@ void witness_plugin::plugin_shutdown() {
 void witness_plugin::schedule_production_loop() {
     //Schedule for the next second's tick regardless of chain state
     // If we would wait less than 50ms, wait for the whole second.
-    fc::time_point ntp_now = graphene::time::now();
     fc::time_point fc_now = fc::time_point::now();
     int64_t time_to_next_second =
-            1000000 - (ntp_now.time_since_epoch().count() % 1000000);
+            1000000 - (fc_now.time_since_epoch().count() % 1000000);
     if (time_to_next_second < 50000) {      // we must sleep for at least 50ms
         time_to_next_second += 1000000;
     }
@@ -271,7 +266,7 @@ block_production_condition::block_production_condition_enum witness_plugin::bloc
 
 block_production_condition::block_production_condition_enum witness_plugin::maybe_produce_block(fc::mutable_variant_object &capture) {
     chain::database &db = database();
-    fc::time_point now_fine = graphene::time::now();
+    fc::time_point now_fine = fc::time_point::now();
     fc::time_point_sec now = now_fine + fc::microseconds(500000);
 
     // If the next block production opportunity is in the present or future, we're synced.
@@ -464,7 +459,7 @@ void witness_plugin::start_mining(
                 op.props = _miner_prop_vote;
 
                 while (true) {
-                    if (graphene::time::nonblocking_now() > stop) {
+                    if (time::now() > stop) {
                         // ilog( "stop mining due to time out, nonce: ${n}", ("n",op.nonce) );
                         return;
                     }
@@ -514,7 +509,7 @@ void witness_plugin::start_mining(
                 op.props = _miner_prop_vote;
                 while (true) {
                     //  if( ((op.nonce/num_threads) % 1000) == 0 ) idump((op.nonce));
-                    if (graphene::time::nonblocking_now() > stop) {
+                    if (time::now() > stop) {
                         // ilog( "stop mining due to time out, nonce: ${n}", ("n",op.nonce) );
                         return;
                     }
