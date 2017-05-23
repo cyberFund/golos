@@ -211,7 +211,9 @@ namespace steemit {
             if (o.owner) {
 #ifndef STEEMIT_BUILD_TESTNET
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_11))
-                    FC_ASSERT( _db.head_block_time() - account_auth.last_owner_update > STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour." );
+                    FC_ASSERT(_db.head_block_time() -
+                              account_auth.last_owner_update >
+                              STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
 
 #endif
 
@@ -397,12 +399,15 @@ namespace steemit {
                 const comment_object *parent = nullptr;
                 if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
                     parent = &_db.get_comment(o.parent_author, o.parent_permlink);
-                          if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__84 ) )
-         FC_ASSERT( parent->depth < STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17) );
-      else if( _db.is_producing() )
-         FC_ASSERT( parent->depth < STEEMIT_SOFT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_SOFT_MAX_COMMENT_DEPTH) );
-      else
-         FC_ASSERT( parent->depth < STEEMIT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_MAX_COMMENT_DEPTH) );
+                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__84))
+                        FC_ASSERT(parent->depth <
+                                  STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x", parent->depth)("y", STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17));
+                    else if (_db.is_producing())
+                        FC_ASSERT(parent->depth <
+                                  STEEMIT_SOFT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x", parent->depth)("y", STEEMIT_SOFT_MAX_COMMENT_DEPTH));
+                    else
+                        FC_ASSERT(parent->depth <
+                                  STEEMIT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x", parent->depth)("y", STEEMIT_MAX_COMMENT_DEPTH));
 
                 }
                 auto now = _db.head_block_time();
@@ -557,7 +562,14 @@ namespace steemit {
                 {
                     const auto &comment = *itr;
 
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__306))
+                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__85)) {
+                        // This will be moved to the witness plugin in a later release
+                        if (_db.is_producing()) {
+                            // For now, use the same editting rules, but implement it as a soft fork.
+                            FC_ASSERT(comment.mode !=
+                                      archived, "The comment is archived.");
+                        }
+                    } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__306))
                         FC_ASSERT(comment.mode !=
                                   archived, "The comment is archived.");
                     else if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
@@ -1308,7 +1320,8 @@ namespace steemit {
                                 cv.weight = static_cast<uint64_t>( rshares3 /
                                                                    total2 );
                             } else {// cv.weight = W(R_1) - W(R_0)
-                                const uint128_t two_s = 2 * utilities::get_content_constant_s();
+                                const uint128_t two_s =
+                                        2 * utilities::get_content_constant_s();
                                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     uint64_t old_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
