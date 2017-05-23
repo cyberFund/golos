@@ -8,7 +8,7 @@ else()
             tags_plugin.cpp)
 endif()
 
-target_link_libraries(golos_tags golos_chain golos_protocol golos::application golos::time)
+target_link_libraries(golos_tags golos_chain golos_protocol golos::application)
 target_include_directories(golos_tags
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 

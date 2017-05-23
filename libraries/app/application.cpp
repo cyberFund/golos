@@ -25,9 +25,9 @@
 
 #include <steemit/chain/database_exceptions.hpp>
 
-#include <graphene/net/exceptions.hpp>
+#include <fc/time.hpp>
 
-#include <steemit/time/time.hpp>
+#include <graphene/net/exceptions.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -294,8 +294,6 @@ namespace steemit {
                                 ilog("All transaction signatures will be validated");
                                 _force_validate = true;
                             }
-
-                            steemit::time::now();
                         } else {
                             ilog("Starting Golos node in read mode.");
                             _chain_db->open(_data_dir /
@@ -433,7 +431,7 @@ namespace steemit {
                                                 ("n", blk_msg.block.block_num()));
                             }
 
-                            time_point_sec now = steemit::time::now();
+                            time_point_sec now = fc::time_point::now();
 
                             uint64_t max_accept_time = now.sec_since_epoch();
                             max_accept_time += allow_future_time;

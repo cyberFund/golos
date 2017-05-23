@@ -10,7 +10,7 @@ else()
             )
 endif()
 
-target_link_libraries(golos_account_history golos_chain golos_protocol golos::application golos::time)
+target_link_libraries(golos_account_history golos_chain golos_protocol golos::application)
 target_include_directories(golos_account_history
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
