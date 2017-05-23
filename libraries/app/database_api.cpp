@@ -1118,8 +1118,7 @@ namespace steemit {
 
         std::map<uint32_t, applied_operation> database_api::get_account_history(std::string account, uint64_t from, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
-                FC_ASSERT(limit <=
-                          2000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
+                FC_ASSERT( limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l",limit) );
                 FC_ASSERT(from >= limit, "From must be greater than limit");
                 //   idump((account)(from)(limit));
                 const auto &idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
