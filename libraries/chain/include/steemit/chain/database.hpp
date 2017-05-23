@@ -33,6 +33,10 @@ namespace steemit {
 
         struct operation_notification;
 
+        namespace utilities {
+            struct comment_reward_context;
+        }
+
         /**
          *   @class database
          *   @brief tracks the blockchain state in an extensible manner
@@ -384,7 +388,7 @@ namespace steemit {
 
             share_type pay_curators(const comment_object &c, share_type max_rewards);
 
-            void cashout_comment_helper(const comment_object &comment);
+            void cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment);
 
             void process_comment_cashout();
 

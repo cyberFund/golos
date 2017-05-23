@@ -1948,14 +1948,16 @@ namespace steemit {
             ctx.max_sbd = comment.max_accepted_payout;
         }
 
-        void database::cashout_comment_helper(const comment_object &comment) {
+        void database::cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
             try {
                 const auto &cat = get_category(comment.category);
 
                 if (comment.net_rshares > 0) {
-                    utilities::comment_reward_context ctx;
                     fill_comment_reward_context_local_state(ctx, comment);
-                    fill_comment_reward_context_global_state(ctx, *this);
+                    if (!has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
+                        fill_comment_reward_context_global_state(ctx, *this);
+                    }
+
                     const share_type reward = utilities::get_rshare_reward(ctx);
                     uint128_t reward_tokens = uint128_t(reward.value);
 
@@ -2094,6 +2096,9 @@ namespace steemit {
                 return;
             }
 
+            utilities::comment_reward_context ctx;
+            fill_comment_reward_context_global_state(ctx, *this);
+
             int count = 0;
             const auto &cidx = get_index<comment_index>().indices().get<by_cashout_time>();
             const auto &com_by_root = get_index<comment_index>().indices().get<by_root>();
@@ -2106,7 +2111,7 @@ namespace steemit {
                        itr->root_comment == current->root_comment) {
                     const auto &comment = *itr;
                     ++itr;
-                    cashout_comment_helper(comment);
+                    cashout_comment_helper(ctx, comment);
                     ++count;
                 }
                 current = cidx.begin();
