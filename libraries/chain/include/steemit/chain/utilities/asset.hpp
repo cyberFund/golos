@@ -24,7 +24,6 @@ namespace steemit {
                 }
                 return sbd * p;
             }
-
         }
     }
 }

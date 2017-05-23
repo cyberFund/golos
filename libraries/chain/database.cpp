@@ -22,6 +22,7 @@
 
 #include <steemit/chain/utilities/asset.hpp>
 #include <steemit/chain/utilities/reward.hpp>
+#include <steemit/chain/utilities/uint256.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -66,13 +67,6 @@ namespace steemit {
     namespace chain {
 
         using boost::container::flat_set;
-
-        inline u256 to256(const fc::uint128 &t) {
-            u256 v(t.hi);
-            v <<= 64;
-            v += t.lo;
-            return v;
-        }
 
         class database_impl {
         public:
@@ -1917,8 +1911,8 @@ namespace steemit {
 
                     if (cur.net_rshares > 0) {
                         auto claim = static_cast< uint64_t >(
-                                (to256(calculate_vshares(cur.net_rshares.value)) *
-                                 max_rewards.value) / to256(total_rshares2));
+                                (utilities::to256(calculate_vshares(cur.net_rshares.value)) *
+                                 max_rewards.value) / utilities::to256(total_rshares2));
                         unclaimed_rewards -= claim;
 
                         if (claim > 0) {
@@ -2493,9 +2487,9 @@ namespace steemit {
 
                 u256 rs(rshares.value);
                 u256 rf(props.total_reward_fund_steem.amount.value);
-                u256 total_rshares2 = to256(props.total_reward_shares2);
+                u256 total_rshares2 = utilities::to256(props.total_reward_shares2);
 
-                u256 rs2 = to256(calculate_vshares(rshares.value));
+                u256 rs2 = utilities::to256(calculate_vshares(rshares.value));
                 rs2 = (rs2 * reward_weight) / STEEMIT_100_PERCENT;
 
                 u256 payout_u256 = (rf * rs2) / total_rshares2;
