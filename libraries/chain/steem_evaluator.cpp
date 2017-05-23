@@ -201,7 +201,7 @@ namespace steemit {
 
             if ((_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
                  _db.is_producing()) && o.posting) { // TODO: Add HF 15
-                     o.posting->validate();
+                o.posting->validate();
             }
 
             const auto &account = _db.get_account(o.account);
@@ -854,18 +854,24 @@ namespace steemit {
                     a.withdrawn = 0;
                 });
             } else {
-                int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                int vesting_withdraw_intervals = 0;
+
+                if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__103)) {
                     vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
-                } /// 13 weeks = 1 quarter of a year
+                } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_17;
+                } else {
+                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
+                }
 
                 _db.modify(account, [&](account_object &a) {
                     auto new_vesting_withdraw_rate = asset(
                             o.vesting_shares.amount /
                             vesting_withdraw_intervals, VESTS_SYMBOL);
 
-                    if (new_vesting_withdraw_rate.amount == 0)
+                    if (new_vesting_withdraw_rate.amount == 0) {
                         new_vesting_withdraw_rate.amount = 1;
+                    }
 
                     if (_db.is_producing() ||
                         _db.has_hardfork(STEEMIT_HARDFORK_0_5__57))
@@ -1140,7 +1146,7 @@ namespace steemit {
                          used_power) / (STEEMIT_100_PERCENT)).to_uint64();
                 if (!_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
                     abs_rshares == 0) {
-                        abs_rshares = 1;
+                    abs_rshares = 1;
                 }
 
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
@@ -1192,13 +1198,13 @@ namespace steemit {
 
                     if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                         !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                            new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
-                                    STEEMIT_CASHOUT_WINDOW_SECONDS;
+                        new_cashout_time_sec =
+                                _db.head_block_time().sec_since_epoch() +
+                                STEEMIT_CASHOUT_WINDOW_SECONDS;
                     } else {
-                            new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
-                                    STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+                        new_cashout_time_sec =
+                                _db.head_block_time().sec_since_epoch() +
+                                STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
                     }
 
                     auto avg_cashout_sec =
@@ -1231,16 +1237,16 @@ namespace steemit {
                         c.children_abs_rshares += abs_rshares;
                         if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                             c.last_payout > fc::time_point_sec::min()) {
-                                c.cashout_time = c.last_payout +
-                                                 STEEMIT_SECOND_CASHOUT_WINDOW;
+                            c.cashout_time = c.last_payout +
+                                             STEEMIT_SECOND_CASHOUT_WINDOW;
                         } else {
-                                c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
+                            c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
                         }
 
                         if (c.max_cashout_time ==
                             fc::time_point_sec::maximum()) {
-                                c.max_cashout_time = _db.head_block_time() +
-                                                     fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                            c.max_cashout_time = _db.head_block_time() +
+                                                 fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
                         }
                     });
 
@@ -1394,24 +1400,24 @@ namespace steemit {
 
                     if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                         !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                            new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
-                                    STEEMIT_CASHOUT_WINDOW_SECONDS;
+                        new_cashout_time_sec =
+                                _db.head_block_time().sec_since_epoch() +
+                                STEEMIT_CASHOUT_WINDOW_SECONDS;
                     } else {
-                            new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
-                                    STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+                        new_cashout_time_sec =
+                                _db.head_block_time().sec_since_epoch() +
+                                STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
                     }
 
                     fc::uint128_t avg_cashout_sec;
                     if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
                         abs_rshares == 0) {
-                            avg_cashout_sec = cur_cashout_time_sec;
+                        avg_cashout_sec = cur_cashout_time_sec;
                     } else {
-                            avg_cashout_sec =
-                                    (cur_cashout_time_sec * old_root_abs_rshares +
-                                     new_cashout_time_sec * abs_rshares) /
-                                    (old_root_abs_rshares + abs_rshares);
+                        avg_cashout_sec =
+                                (cur_cashout_time_sec * old_root_abs_rshares +
+                                 new_cashout_time_sec * abs_rshares) /
+                                (old_root_abs_rshares + abs_rshares);
                     }
 
                     _db.modify(comment, [&](comment_object &c) {
@@ -1439,16 +1445,16 @@ namespace steemit {
                         c.children_abs_rshares += abs_rshares;
                         if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                             c.last_payout > fc::time_point_sec::min()) {
-                                c.cashout_time = c.last_payout +
-                                                 STEEMIT_SECOND_CASHOUT_WINDOW;
+                            c.cashout_time = c.last_payout +
+                                             STEEMIT_SECOND_CASHOUT_WINDOW;
                         } else {
-                                c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
+                            c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
                         }
 
                         if (c.max_cashout_time ==
                             fc::time_point_sec::maximum()) {
-                                c.max_cashout_time = _db.head_block_time() +
-                                                     fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                            c.max_cashout_time = _db.head_block_time() +
+                                                 fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
                         }
                     });
 
