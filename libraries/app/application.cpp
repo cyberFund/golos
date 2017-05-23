@@ -797,9 +797,9 @@ namespace steemit {
                     } FC_CAPTURE_AND_RETHROW((block_id))
                 }
 
-                /** returns steemit::time::now() */
+                /** returns fc::time_point::now() */
                 virtual fc::time_point_sec get_blockchain_now() override {
-                    return steemit::time::now();
+                    return fc::time_point::now();
                 }
 
                 virtual item_hash_t get_head_block_id() const override {
