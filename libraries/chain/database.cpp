@@ -20,6 +20,9 @@
 #include <steemit/chain/shared_db_merkle.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
+#include <steemit/chain/utilities/asset.hpp>
+#include <steemit/chain/utilities/reward.hpp>
+
 #include <fc/smart_ref_impl.hpp>
 
 #include <fc/container/deque.hpp>
@@ -2471,23 +2474,11 @@ namespace steemit {
         }
 
         asset database::to_sbd(const asset &steem) const {
-            FC_ASSERT(steem.symbol == STEEM_SYMBOL);
-            const auto &feed_history = get_feed_history();
-            if (feed_history.current_median_history.is_null()) {
-                return asset(0, SBD_SYMBOL);
-            }
-
-            return steem * feed_history.current_median_history;
+            return utilities::to_sbd(get_feed_history().current_median_history, steem);
         }
 
         asset database::to_steem(const asset &sbd) const {
-            FC_ASSERT(sbd.symbol == SBD_SYMBOL);
-            const auto &feed_history = get_feed_history();
-            if (feed_history.current_median_history.is_null()) {
-                return asset(0, STEEM_SYMBOL);
-            }
-
-            return sbd * feed_history.current_median_history;
+            return utilities::to_steem(get_feed_history().current_median_history, sbd);
         }
 
 /**
@@ -2512,13 +2503,9 @@ namespace steemit {
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
-                asset sbd_payout_value = to_sbd(asset(payout, STEEM_SYMBOL));
-
-                if (sbd_payout_value < STEEMIT_MIN_PAYOUT_SBD) {
-                    payout = 0;
+                if (utilities::is_comment_payout_dust(get_feed_history().current_median_history, payout)) {
+                    payout = std::min(payout, uint64_t(max_steem.amount.value));
                 }
-
-                payout = std::min(payout, uint64_t(max_steem.amount.value));
 
                 modify(props, [&](dynamic_global_property_object &p) {
                     p.total_reward_fund_steem.amount -= payout;
