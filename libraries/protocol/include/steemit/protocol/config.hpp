@@ -95,7 +95,7 @@
 
 #define STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define STEEMIT_BANDWIDTH_PRECISION             1000000ll ///< 1 million
-#define STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17      6
+#define STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17      5
 #define STEEMIT_MAX_COMMENT_DEPTH               0xffff // 64k
 #define STEEMIT_SOFT_MAX_COMMENT_DEPTH          0xff // 255
 
@@ -294,7 +294,7 @@
 
 #define STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define STEEMIT_BANDWIDTH_PRECISION             1000000ll ///< 1 million
-#define STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17      6
+#define STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17      5
 #define STEEMIT_MAX_COMMENT_DEPTH               0xffff // 64k
 #define STEEMIT_SOFT_MAX_COMMENT_DEPTH          0xff // 255
 
