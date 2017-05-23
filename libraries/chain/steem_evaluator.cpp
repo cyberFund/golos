@@ -3,6 +3,7 @@
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/utilities/reward.hpp>
 
 #ifndef IS_LOW_MEM
 
@@ -1247,8 +1248,8 @@ namespace steemit {
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
                     /// calculate rshares2 value
-                    new_rshares = _db.calculate_vshares(new_rshares);
-                    old_rshares = _db.calculate_vshares(old_rshares);
+                    new_rshares = utilities::calculate_vshares(new_rshares);
+                    old_rshares = utilities::calculate_vshares(old_rshares);
 
                     const auto &cat = _db.get_category(comment.category);
                     _db.modify(cat, [&](category_object &c) {
@@ -1302,16 +1303,17 @@ namespace steemit {
                                 cv.weight = static_cast<uint64_t>( rshares3 /
                                                                    total2 );
                             } else {// cv.weight = W(R_1) - W(R_0)
+                                const uint128_t two_s = 2 * utilities::get_content_constant_s();
                                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     uint64_t old_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(old_vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
+                                            (2 * two_s +
                                              old_vote_rshares.value)).to_uint64();
                                     uint64_t new_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(comment.vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
+                                            (2 * two_s +
                                              comment.vote_rshares.value)).to_uint64();
                                     cv.weight = new_weight - old_weight;
                                 } else {
@@ -1319,14 +1321,14 @@ namespace steemit {
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(10000 *
                                                            old_vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
+                                            (2 * two_s +
                                              (10000 *
                                               old_vote_rshares.value))).to_uint64();
                                     uint64_t new_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(10000 *
                                                            comment.vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
+                                            (2 * two_s +
                                              (10000 *
                                               comment.vote_rshares.value))).to_uint64();
                                     cv.weight = new_weight - old_weight;
@@ -1455,8 +1457,8 @@ namespace steemit {
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
                     /// calculate rshares2 value
-                    new_rshares = _db.calculate_vshares(new_rshares);
-                    old_rshares = _db.calculate_vshares(old_rshares);
+                    new_rshares = utilities::calculate_vshares(new_rshares);
+                    old_rshares = utilities::calculate_vshares(old_rshares);
 
                     _db.modify(comment, [&](comment_object &c) {
                         c.total_vote_weight -= itr->weight;

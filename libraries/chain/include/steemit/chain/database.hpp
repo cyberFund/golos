@@ -404,8 +404,6 @@ namespace steemit {
 
             void update_median_feed();
 
-            share_type claim_rshare_reward(share_type rshares, uint16_t reward_weight, asset max_steem);
-
             asset get_liquidity_reward() const;
 
             asset get_content_reward() const;
@@ -419,10 +417,6 @@ namespace steemit {
             uint16_t get_discussion_rewards_percent() const;
 
             uint16_t get_curation_rewards_percent() const;
-
-            uint128_t get_content_constant_s() const;
-
-            uint128_t calculate_vshares(uint128_t rshares) const;
 
             void pay_liquidity_reward();
 

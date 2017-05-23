@@ -55,6 +55,8 @@ list(APPEND CURRENT_TARGET_SOURCES
         shared_authority.cpp
         steem_evaluator.cpp
         steem_objects.cpp
+
+        utilities/reward.cpp
         )
 
 if(BUILD_SHARED_LIBRARIES)

@@ -12,7 +12,7 @@ else()
             )
 endif()
 
-target_link_libraries(golos_blockchain_statistics golos_chain golos_protocol golos_app)
+target_link_libraries(golos_blockchain_statistics golos_chain golos_protocol golos::application)
 target_include_directories(golos_blockchain_statistics
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 

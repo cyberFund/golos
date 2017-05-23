@@ -10,7 +10,7 @@ else()
             )
 endif()
 
-target_link_libraries(golos_witness golos_chain golos_protocol golos_app graphene_time)
+target_link_libraries(golos_witness golos_chain golos_protocol golos::application graphene_time)
 target_include_directories(golos_witness
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 

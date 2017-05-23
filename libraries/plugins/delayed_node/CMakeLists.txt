@@ -10,7 +10,7 @@ else()
             )
 endif()
 
-target_link_libraries(golos_delayed_node golos_chain golos_protocol golos_app)
+target_link_libraries(golos_delayed_node golos_chain golos_protocol golos::application)
 target_include_directories(golos_delayed_node
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
