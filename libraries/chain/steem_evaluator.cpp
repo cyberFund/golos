@@ -871,10 +871,15 @@ namespace steemit {
                     a.withdrawn = 0;
                 });
             } else {
-                int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                int vesting_withdraw_intervals = 0;
+
+                if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__103)) {
                     vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
-                } /// 13 weeks = 1 quarter of a year
+                } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_17;
+                } else {
+                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
+                }
 
                 _db.modify(account, [&](account_object &a) {
                     auto new_vesting_withdraw_rate = asset(
