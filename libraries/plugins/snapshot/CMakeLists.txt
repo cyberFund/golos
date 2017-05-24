@@ -1,14 +1,12 @@
-set(CURRENT_TARGET account_by_key)
+set(CURRENT_TARGET snapshot)
 
 list(APPEND CURRENT_TARGET_HEADERS
-        include/steemit/account_by_key/account_by_key_plugin.hpp
-        include/steemit/account_by_key/account_by_key_api.hpp
-        include/steemit/account_by_key/account_by_key_objects.hpp
+        include/steemit/snapshot/snapshot_plugin.hpp
+        include/steemit/snapshot/snapshot_state.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES
-        account_by_key_plugin.cpp
-        account_by_key_api.cpp
+        snapshot_plugin.cpp
         )
 
 if(BUILD_SHARED_LIBRARIES)
@@ -26,14 +24,6 @@ endif()
 add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
 set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
 
-target_link_libraries(golos_${CURRENT_TARGET} golos::chain golos::protocol golos::application)
+target_link_libraries(golos_${CURRENT_TARGET} golos::application golos::chain golos::account_by_key fc)
 target_include_directories(golos_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-install(TARGETS
-        golos_${CURRENT_TARGET}
-
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        )

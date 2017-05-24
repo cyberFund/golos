@@ -888,6 +888,7 @@ namespace steemit {
             default_plugins.push_back("witness");
             default_plugins.push_back("account_history");
             default_plugins.push_back("account_by_key");
+            default_plugins.push_back("snapshot");
             std::string str_default_plugins = boost::algorithm::join(default_plugins, " ");
 
             configuration_file_options.add_options()
