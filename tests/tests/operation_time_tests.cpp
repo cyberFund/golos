@@ -2667,7 +2667,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                                                            STEEMIT_BLOCK_INTERVAL) /
                                                           STEEMIT_POST_AVERAGE_WINDOW);
             auto reward_weight =
-                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF_17 * STEEMIT_100_PERCENT) /
+                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF17 * STEEMIT_100_PERCENT) /
                     (alice_post_bandwidth * alice_post_bandwidth);
             bandwidth = db.get<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple("alice", bandwidth_type::post)).average_bandwidth;
 
@@ -2743,45 +2743,6 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             generate_blocks(db.get_comment("alice", string("test")).cashout_time, true);
 
-            BOOST_REQUIRE(db.get_comment("alice", string("test")).last_payout ==
-                          db.head_block_time());
-            BOOST_REQUIRE(
-                    db.get_comment("alice", string("test")).cashout_time ==
-                    db.head_block_time() + STEEMIT_SECOND_CASHOUT_WINDOW);
-
-            tx.operations.clear();
-            tx.signatures.clear();
-
-            tx.operations.push_back(vote);
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
-            tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-            vote.voter = "sam";
-
-            tx.operations.clear();
-            tx.signatures.clear();
-
-            tx.operations.push_back(vote);
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
-            tx.sign(sam_private_key, db.get_chain_id());
-            db.push_transaction(tx, 0);
-
-            comment.body = "test3";
-
-            tx.operations.clear();
-            tx.signatures.clear();
-
-            tx.operations.push_back(comment);
-            tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, 0);
-
-            generate_blocks(db.get_comment("alice", string("test")).cashout_time, true);
-
-            BOOST_REQUIRE(db.get_comment("alice", string("test")).last_payout ==
-                          db.head_block_time());
             BOOST_REQUIRE(
                     db.get_comment("alice", string("test")).cashout_time ==
                     fc::time_point_sec::maximum());

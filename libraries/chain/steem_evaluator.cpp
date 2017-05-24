@@ -478,7 +478,7 @@ namespace steemit {
                                               STEEMIT_POST_AVERAGE_WINDOW;
                             post_bandwidth = (old_weight + STEEMIT_100_PERCENT);
                             reward_weight = uint16_t(std::min(
-                                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF_17 *
+                                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF17 *
                                      STEEMIT_100_PERCENT) /
                                     (post_bandwidth.value *
                                      post_bandwidth.value), uint64_t(STEEMIT_100_PERCENT)));
@@ -518,7 +518,8 @@ namespace steemit {
                             com.cashout_time = _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)
                                                ?
                                                _db.head_block_time() +
-                                               STEEMIT_CASHOUT_WINDOW_SECONDS :
+                                               STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17
+                                               :
                                                fc::time_point_sec::maximum();
                         } else {
                             com.parent_author = parent->author;
@@ -527,6 +528,11 @@ namespace steemit {
                             com.category = parent->category;
                             com.root_comment = parent->root_comment;
                             com.cashout_time = fc::time_point_sec::maximum();
+                        }
+
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            com.cashout_time = com.created +
+                                               STEEMIT_CASHOUT_WINDOW_SECONDS;
                         }
 
 #ifndef IS_LOW_MEM
@@ -890,9 +896,9 @@ namespace steemit {
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__103)) {
                     vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
                 } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_17;
+                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF17;
                 } else {
-                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
+                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16;
                 }
 
                 _db.modify(account, [&](account_object &a) {
@@ -1098,14 +1104,16 @@ namespace steemit {
                 const auto &comment = _db.get_comment(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
+                if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                     FC_ASSERT(!(voter.owner_challenged ||
                                 voter.active_challenged), "Operation cannot be processed because the account is currently challenged.");
+                }
 
                 FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
-                if (o.weight > 0)
+                if (o.weight > 0) {
                     FC_ASSERT(comment.allow_votes, "Votes are not allowed on the comment.");
+                }
 
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                     _db.calculate_discussion_payout_time(comment) ==
@@ -1138,9 +1146,10 @@ namespace steemit {
                 int64_t elapsed_seconds = (_db.head_block_time() -
                                            voter.last_vote_time).to_seconds();
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_11))
+                if (_db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
                     FC_ASSERT(elapsed_seconds >=
                               STEEMIT_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 3 seconds.");
+                }
 
                 int64_t regenerated_power =
                         (STEEMIT_100_PERCENT * elapsed_seconds) /
@@ -1193,8 +1202,9 @@ namespace steemit {
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
                     if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_12__177))
-                        FC_ASSERT(false, "Cannot vote again on a comment after payout.");
+                        _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)) {
+                            FC_ASSERT(false, "Cannot vote again on a comment after payout.");
+                    }
 
                     _db.remove(*itr);
                     itr = comment_vote_idx.end();
@@ -1206,9 +1216,16 @@ namespace steemit {
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (rshares > 0 && _db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) -
-                                  STEEMIT_UPVOTE_LOCKOUT, "Cannot increase reward of post within the last minute before payout.");
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            FC_ASSERT(_db.head_block_time() <
+                                      comment.cashout_time -
+                                      STEEMIT_UPVOTE_LOCKOUT, "Cannot increase reward of post within the last minute before payout.");
+                        } else {
+                            FC_ASSERT(_db.head_block_time() <
+                                      _db.calculate_discussion_payout_time(comment) -
+                                      STEEMIT_UPVOTE_LOCKOUT, "Cannot increase reward of post within the last minute before payout.");
+                        }
+
                     }
 
                     //used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread their votes around over 50+ posts day for a week
@@ -1224,24 +1241,28 @@ namespace steemit {
                     const auto &root = _db.get(comment.root_comment);
                     auto old_root_abs_rshares = root.children_abs_rshares.value;
 
-                    fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
-                    fc::uint128_t new_cashout_time_sec;
+                    fc::uint128_t avg_cashout_sec;
 
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                        !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                        new_cashout_time_sec =
-                                _db.head_block_time().sec_since_epoch() +
-                                STEEMIT_CASHOUT_WINDOW_SECONDS;
-                    } else {
-                        new_cashout_time_sec =
-                                _db.head_block_time().sec_since_epoch() +
-                                STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
+                        fc::uint128_t new_cashout_time_sec;
+
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                            !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
+                            new_cashout_time_sec =
+                                    _db.head_block_time().sec_since_epoch() +
+                                    STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                        } else {
+                            new_cashout_time_sec =
+                                    _db.head_block_time().sec_since_epoch() +
+                                    STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+                        }
+
+                        avg_cashout_sec =
+                                (cur_cashout_time_sec * old_root_abs_rshares +
+                                 new_cashout_time_sec * abs_rshares) /
+                                (old_root_abs_rshares + abs_rshares);
                     }
-
-                    auto avg_cashout_sec =
-                            (cur_cashout_time_sec * old_root_abs_rshares +
-                             new_cashout_time_sec * abs_rshares) /
-                            (old_root_abs_rshares + abs_rshares);
 
                     FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
@@ -1259,25 +1280,28 @@ namespace steemit {
                             c.net_votes--;
                         }
                         if (!_db.has_hardfork(STEEMIT_HARDFORK_0_6__114) &&
-                            c.net_rshares == -c.abs_rshares)
-                            FC_ASSERT(c.net_votes <
-                                      0, "Comment has negative net votes?");
+                            c.net_rshares == -c.abs_rshares) {
+                                FC_ASSERT(c.net_votes <
+                                          0, "Comment has negative net votes?");
+                        }
                     });
 
                     _db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                            c.last_payout > fc::time_point_sec::min()) {
-                            c.cashout_time = c.last_payout +
-                                             STEEMIT_SECOND_CASHOUT_WINDOW;
-                        } else {
-                            c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
-                        }
+                        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                                c.last_payout > fc::time_point_sec::min()) {
+                                c.cashout_time = c.last_payout +
+                                                 STEEMIT_SECOND_CASHOUT_WINDOW;
+                            } else {
+                                c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
+                            }
 
-                        if (c.max_cashout_time ==
-                            fc::time_point_sec::maximum()) {
-                            c.max_cashout_time = _db.head_block_time() +
-                                                 fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                            if (c.max_cashout_time ==
+                                fc::time_point_sec::maximum()) {
+                                c.max_cashout_time = _db.head_block_time() +
+                                                     fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                            }
                         }
                     });
 
@@ -1405,18 +1429,20 @@ namespace steemit {
                               STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
 
                     if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_6__112))
-                        FC_ASSERT(itr->vote_percent !=
-                                  o.weight, "You have already voted in a similar way.");
+                        _db.has_hardfork(STEEMIT_HARDFORK_0_6__112)) {
+                            FC_ASSERT(itr->vote_percent !=
+                                      o.weight, "You have already voted in a similar way.");
+                    }
 
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (itr->rshares < rshares &&
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_7))
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) -
-                                  STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
+                        _db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
+                            FC_ASSERT(_db.head_block_time() <
+                                      _db.calculate_discussion_payout_time(comment) -
+                                      STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
+                    }
 
                     _db.modify(voter, [&](account_object &a) {
                         a.voting_power = current_power - used_power;
@@ -1428,29 +1454,34 @@ namespace steemit {
                     const auto &root = _db.get(comment.root_comment);
                     auto old_root_abs_rshares = root.children_abs_rshares.value;
 
-                    fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
-                    fc::uint128_t new_cashout_time_sec;
-
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                        !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                        new_cashout_time_sec =
-                                _db.head_block_time().sec_since_epoch() +
-                                STEEMIT_CASHOUT_WINDOW_SECONDS;
-                    } else {
-                        new_cashout_time_sec =
-                                _db.head_block_time().sec_since_epoch() +
-                                STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
-                    }
-
                     fc::uint128_t avg_cashout_sec;
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
-                        abs_rshares == 0) {
-                        avg_cashout_sec = cur_cashout_time_sec;
-                    } else {
-                        avg_cashout_sec =
-                                (cur_cashout_time_sec * old_root_abs_rshares +
-                                 new_cashout_time_sec * abs_rshares) /
-                                (old_root_abs_rshares + abs_rshares);
+
+                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
+                        fc::uint128_t new_cashout_time_sec;
+
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                            !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
+                            new_cashout_time_sec =
+                                    _db.head_block_time().sec_since_epoch() +
+                                    STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                        } else {
+                            new_cashout_time_sec =
+                                    _db.head_block_time().sec_since_epoch() +
+                                    STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+                        }
+
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
+                            abs_rshares == 0) {
+                            avg_cashout_sec = cur_cashout_time_sec;
+                        } else {
+                            avg_cashout_sec = (cur_cashout_time_sec *
+                                               old_root_abs_rshares +
+                                               new_cashout_time_sec *
+                                               abs_rshares) /
+                                              (old_root_abs_rshares +
+                                               abs_rshares);
+                        }
                     }
 
                     _db.modify(comment, [&](comment_object &c) {
@@ -1476,18 +1507,20 @@ namespace steemit {
 
                     _db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                            c.last_payout > fc::time_point_sec::min()) {
-                            c.cashout_time = c.last_payout +
-                                             STEEMIT_SECOND_CASHOUT_WINDOW;
-                        } else {
-                            c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
-                        }
+                        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                                c.last_payout > fc::time_point_sec::min()) {
+                                c.cashout_time = c.last_payout +
+                                                 STEEMIT_SECOND_CASHOUT_WINDOW;
+                            } else {
+                                c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
+                            }
 
-                        if (c.max_cashout_time ==
-                            fc::time_point_sec::maximum()) {
-                            c.max_cashout_time = _db.head_block_time() +
-                                                 fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                            if (c.max_cashout_time ==
+                                fc::time_point_sec::maximum()) {
+                                c.max_cashout_time = _db.head_block_time() +
+                                                     fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                            }
                         }
                     });
 
@@ -1512,7 +1545,8 @@ namespace steemit {
                     _db.adjust_rshares2(comment, old_rshares, new_rshares);
                 }
 
-            } FC_CAPTURE_AND_RETHROW((o))
+            }
+            FC_CAPTURE_AND_RETHROW((o))
         }
 
         void custom_evaluator::do_apply(const custom_operation &o) {
@@ -1766,7 +1800,7 @@ namespace steemit {
             const auto &fhistory = _db.get_feed_history();
             FC_ASSERT(!fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed.");
 
-            auto steem_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF_16;
+            auto steem_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF16;
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 steem_conversion_delay = STEEMIT_CONVERSION_DELAY;
             }
