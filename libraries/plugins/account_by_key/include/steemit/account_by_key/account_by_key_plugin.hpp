@@ -28,6 +28,8 @@ namespace steemit {
 
             virtual void plugin_startup() override;
 
+            void update_key_lookup(const account_authority_object &a);
+
             friend class detail::account_by_key_plugin_impl;
 
             std::unique_ptr<detail::account_by_key_plugin_impl> my;

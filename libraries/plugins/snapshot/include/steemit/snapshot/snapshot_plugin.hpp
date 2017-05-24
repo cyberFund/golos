@@ -1,8 +1,10 @@
 #ifndef GOLOS_SNAPSHOT_PLUGIN_HPP
 #define GOLOS_SNAPSHOT_PLUGIN_HPP
 
-#include <steemit/application/application.hpp>
-#include <steemit/application/plugin.hpp>
+#include <steemit/app/application.hpp>
+#include <steemit/app/plugin.hpp>
+
+#include <boost/bimap.hpp>
 
 #include <sstream>
 #include <string>
@@ -16,13 +18,13 @@ namespace steemit {
                 class snapshot_plugin_impl;
             }
 
-            class snapshot_plugin : public steemit::application::plugin {
+            class snapshot_plugin : public steemit::app::plugin {
             public:
                 /**
                  * The plugin requires a constructor which takes app.  This is called regardless of whether the plugin is loaded.
                  * The app parameter should be passed up to the superclass constructor.
                  */
-                snapshot_plugin(steemit::application::application *app);
+                snapshot_plugin(steemit::app::application *app);
 
                 /**
                  * Plugin is destroyed via base class pointer, so a virtual destructor must be provided.
@@ -48,18 +50,18 @@ namespace steemit {
                  */
                 virtual void plugin_startup() override;
 
-                const unordered_map<string, std::string> &get_loaded_snapshots() const;
+                const boost::bimap<std::string, std::string> &get_loaded_snapshots() const;
 
             private:
                 boost::program_options::variables_map options;
 
-                std::unordered_map<std::string, std::string> loaded_snapshots;
+                boost::bimap<std::string, std::string> loaded_snapshots;
 
                 friend class detail::snapshot_plugin_impl;
 
                 std::unique_ptr<detail::snapshot_plugin_impl> impl;
 
-                steemit::application::application *application;
+                steemit::app::application *application;
             };
         }
     }

@@ -2,6 +2,8 @@
 #include <steemit/app/application.hpp>
 #include <steemit/app/database_api.hpp>
 
+#include <steemit/snapshot/snapshot_plugin.hpp>
+
 #include <steemit/chain/utilities/reward.hpp>
 
 #include <steemit/protocol/get_config.hpp>
@@ -211,8 +213,7 @@ namespace steemit {
 #ifndef STEEMIT_BUILD_TESTNET
             try {
                 FC_ASSERT(
-                        ctx.app.get_plugin<plugin::snapshot::snapshot_plugin>(SNAPSHOT_PLUGIN_NAME)->get_loaded_snapshots().at("snapshot5392323.json") ==
-                        "75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c", "Steemit accounts snapsnot is invalid");
+                        ctx.app.get_plugin<steemit::plugin::snapshot::snapshot_plugin>(SNAPSHOT_PLUGIN_NAME)->get_loaded_snapshots().right.at("75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c").find("snapshot5392323.json"), "Steemit accounts snapsnot is invalid");
 
             } catch (fc::assert_exception) {
                 ilog("Snapshots plugin not loaded");
