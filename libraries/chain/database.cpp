@@ -2119,13 +2119,17 @@ namespace steemit {
             auto current = cidx.begin();
             while (current != cidx.end() &&
                    current->cashout_time <= head_block_time()) {
-                auto itr = com_by_root.lower_bound(current->root_comment);
-                while (itr != com_by_root.end() &&
-                       itr->root_comment == current->root_comment) {
-                    const auto &comment = *itr;
-                    ++itr;
-                    cashout_comment_helper(ctx, comment);
-                    ++count;
+                if (has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                    cashout_comment_helper(ctx, *current);
+                } else {
+                    auto itr = com_by_root.lower_bound(current->root_comment);
+                    while (itr != com_by_root.end() &&
+                           itr->root_comment == current->root_comment) {
+                        const auto &comment = *itr;
+                        ++itr;
+                        cashout_comment_helper(ctx, comment);
+                        ++count;
+                    }
                 }
                 current = cidx.begin();
             }
@@ -2305,7 +2309,7 @@ namespace steemit {
 
                 return pay;
             } else {
-                auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF_16);
+                auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16);
 
                 /// pay witness in vesting shares
                 if (props.head_block_number >=
@@ -2343,7 +2347,7 @@ namespace steemit {
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 return std::max(percent, STEEMIT_MIN_POW_REWARD);
             } else {
-                return std::max(percent, STEEMIT_MIN_POW_REWARD_PRE_HF_16);
+                return std::max(percent, STEEMIT_MIN_POW_REWARD_PRE_HF16);
             }
         }
 
@@ -3132,7 +3136,7 @@ namespace steemit {
 
                     modify(get_feed_history(), [&](feed_history_object &fho) {
                         fho.price_history.push_back(median_feed);
-                        size_t steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
+                        size_t steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF16;
                         if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                             steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
                         }
@@ -4184,6 +4188,31 @@ namespace steemit {
                     break;
 
                 case STEEMIT_HARDFORK_0_17:
+                    /*
+     * For all current comments we will either keep their current cashout time, or extend it to 1 week
+     * after creation.
+     *
+     * We cannot do a simple iteration by cashout time because we are editting cashout time.
+     * More specifically, we will be adding an explicit cashout time to all comments with parents.
+     * This will result in a very complex and redundant iteration. The simple solution, albeit
+     * containing inefficiencies is a simple iteration over all comments.
+     *
+     * by_root will iterate over all root posts first, which will adjust the calls to calculate_discussion_payout_time
+     * before calling on a child commment.
+     */
+                    const auto &comment_idx = get_index<comment_index, by_root>();
+                    for (auto itr = comment_idx.begin();
+                         itr != comment_idx.end(); ++itr) {
+                        if (itr->cashout_time ==
+                            fc::time_point_sec::maximum()) {
+                                continue;
+                        }
+
+                        modify(*itr, [&](comment_object &c) {
+                            c.cashout_time = std::max(calculate_discussion_payout_time(c),
+                                    c.created + STEEMIT_CASHOUT_WINDOW_SECONDS);
+                        });
+                    }
                     break;
 
                 default:
@@ -4360,7 +4389,7 @@ namespace steemit {
                         a.withdrawn *= magnitude;
                         a.to_withdraw *= magnitude;
                         a.vesting_withdraw_rate = asset(a.to_withdraw /
-                                                        STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16, VESTS_SYMBOL);
+                                                        STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16, VESTS_SYMBOL);
                         if (a.vesting_withdraw_rate.amount == 0) {
                             a.vesting_withdraw_rate.amount = 1;
                         }
