@@ -207,6 +207,17 @@ namespace steemit {
             catch (fc::assert_exception) {
                 ilog("Follow Plugin not loaded");
             }
+
+#ifndef STEEMIT_BUILD_TESTNET
+            try {
+                FC_ASSERT(
+                        ctx.app.get_plugin<plugin::snapshot::snapshot_plugin>(SNAPSHOT_PLUGIN_NAME)->get_loaded_snapshots().at("snapshot5392323.json") ==
+                        "75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c", "Steemit accounts snapsnot is invalid");
+
+            } catch (fc::assert_exception) {
+                ilog("Snapshots plugin not loaded");
+            }
+#endif
         }
 
         database_api_impl::~database_api_impl() {
