@@ -41,6 +41,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/steem_objects.hpp
         include/steemit/chain/transaction_object.hpp
         include/steemit/chain/witness_objects.hpp
+        include/steemit/chain/witness_schedule.hpp
 
         include/steemit/chain/utilities/asset.hpp
         include/steemit/chain/utilities/reward.hpp
@@ -48,13 +49,13 @@ list(APPEND CURRENT_TARGET_HEADERS
         )
 
 list(APPEND CURRENT_TARGET_SOURCES
-        #            transaction_object.cpp
         block_log.cpp
         database.cpp
         fork_database.cpp
         shared_authority.cpp
         steem_evaluator.cpp
         steem_objects.cpp
+        witness_schedule.cpp
 
         utilities/reward.cpp
         )

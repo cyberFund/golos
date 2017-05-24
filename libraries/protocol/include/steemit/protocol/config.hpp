@@ -210,6 +210,9 @@
 
 #define STEEMIT_IRREVERSIBLE_THRESHOLD          (75 * STEEMIT_1_PERCENT)
 
+#define VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128(uint64_t(-1)) )
+#define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128::max_value() )
+
 #else // IS LIVE STEEM NETWORK
 
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "GLS7KVuKX87DK44xmhAD92hqJeR8Acd1TBKCtVnGLC5VDpER5CtWE"
@@ -411,6 +414,9 @@
 #define GRAPHENE_CURRENT_DB_VERSION             "GPH2.4"
 
 #define STEEMIT_IRREVERSIBLE_THRESHOLD          (75 * STEEMIT_1_PERCENT)
+
+#define VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128(uint64_t(-1)) )
+#define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128::max_value() )
 
 #endif
 
