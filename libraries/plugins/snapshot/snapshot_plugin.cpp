@@ -128,6 +128,8 @@ namespace steemit {
                     for (const vector<string>::value_type &iterator : snapshots) {
                         FC_ASSERT(fc::exists(iterator), "Snapshot file '${file}' was not found.", ("file", iterator));
 
+                        ilog("Loading snapshot from ${s}", ("s", iterator));
+
                         std::string snapshot_hash(fc::sha256(boost::iostreams::mapped_file_source(fc::path(iterator).string()).data()));
 
                         snapshot_state snapshot = fc::json::from_file(fc::path(iterator)).as<snapshot_state>();

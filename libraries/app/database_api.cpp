@@ -216,7 +216,7 @@ namespace steemit {
                         ctx.app.get_plugin<steemit::plugin::snapshot::snapshot_plugin>(SNAPSHOT_PLUGIN_NAME)->get_loaded_snapshots().right.at("75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c").find("snapshot5392323.json"), "Steemit accounts snapsnot is invalid");
 
             } catch (fc::assert_exception) {
-                ilog("Snapshots plugin not loaded");
+                elog("Snapshots plugin not loaded");
             }
 #endif
         }
