@@ -53,15 +53,17 @@ namespace steemit {
                 const boost::bimap<std::string, std::string> &get_loaded_snapshots() const;
 
             private:
+                void load_snapshots(const std::vector<std::string> &snapshots);
+
                 boost::program_options::variables_map options;
 
                 boost::bimap<std::string, std::string> loaded_snapshots;
 
                 friend class detail::snapshot_plugin_impl;
 
-                std::unique_ptr<detail::snapshot_plugin_impl> impl;
-
                 steemit::app::application *application;
+
+                std::unique_ptr<detail::snapshot_plugin_impl> impl;
             };
         }
     }

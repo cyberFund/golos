@@ -65,9 +65,9 @@ namespace steemit {
                         if (op.hardfork_id == STEEMIT_HARDFORK_0_17) {
                             auto &db = _plugin.database();
 
-                            if (_plugin.get_loaded_snapshots().right.find("75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c") !=
+                            if (_plugin.get_loaded_snapshots().right.find("1f0617dfc2e7aa49b0d6c394b36087ead02bc7f781e7550dae13e8cb12f13436") !=
                                 _plugin.get_loaded_snapshots().right.end()) {
-                                snapshot_state snapshot = fc::json::from_file(fc::path(_plugin.get_loaded_snapshots().right.at("75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c"))).as<snapshot_state>();
+                                snapshot_state snapshot = fc::json::from_file(fc::path(_plugin.get_loaded_snapshots().right.at("1f0617dfc2e7aa49b0d6c394b36087ead02bc7f781e7550dae13e8cb12f13436"))).as<snapshot_state>();
                                 for (account_summary &account : snapshot.accounts) {
                                     db.modify(*db.find_account(account.name), [&](chain::account_object &a) {
                                         std::size_t position = a.json_metadata.find("created_at: 'GENESIS'");
@@ -105,6 +105,7 @@ namespace steemit {
 
             snapshot_plugin::snapshot_plugin(steemit::app::application *app)
                     : plugin(app),
+                      application(app),
                       impl(new detail::snapshot_plugin_impl(*this)) {
             }
 
@@ -119,52 +120,6 @@ namespace steemit {
                 ilog("Initializing snapshot plugin");
 
                 this->options = options;
-
-                if (!options.count("snapshot-file")) {
-                    this->options.insert({"snapshot-file", boost::program_options::variable_value("snapshot5392323.json", false)});
-                    this->options.notify();
-                }
-
-                chain::database &db = database();
-
-                const vector<string> snapshots = this->options["snapshot-file"].as<vector<string>>();
-
-                for (const vector<string>::value_type &iterator : snapshots) {
-                    FC_ASSERT(fc::exists(iterator), "Snapshot file '${file}' was not found.", ("file", iterator));
-
-                    ilog("Loading snapshot from ${s}", ("s", iterator));
-
-                    std::string snapshot_hash(fc::sha256(boost::iostreams::mapped_file_source(fc::path(iterator).string()).data()));
-
-                    snapshot_state snapshot = fc::json::from_file(fc::path(iterator)).as<snapshot_state>();
-                    for (account_summary &account : snapshot.accounts) {
-                        db.create<chain::account_object>([&](chain::account_object &a) {
-                            a.name = account.name;
-                            a.memo_key = account.keys.memo_key;
-
-                            if (snapshot_hash ==
-                                "75b7287ca7d39fcfb742ba184f6e2f6debb49cf70f0c7e3dcfffe45b518ee64c") {
-                                a.json_metadata = "{created_at: 'GENESIS'}";
-                                a.recovery_account = STEEMIT_INIT_MINER_NAME;
-                            } else {
-                                a.json_metadata = account.json_metadata.data();
-                                a.recovery_account = account.recovery_account;
-                            }
-                        });
-
-                        impl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
-                            auth.account = account.name;
-                            auth.owner.weight_threshold = 1;
-                            auth.owner = account.keys.owner_key;
-                            auth.active = account.keys.active_key;
-                            auth.posting = account.keys.posting_key;
-                        }));
-                    }
-
-                    loaded_snapshots.insert({iterator,
-                                             fc::sha256(boost::iostreams::mapped_file_source(fc::path(iterator).string()).data())
-                    });
-                }
             }
 
             void snapshot_plugin::plugin_set_program_options(boost::program_options::options_description &command_line_options, boost::program_options::options_description &config_file_options) {
@@ -175,11 +130,56 @@ namespace steemit {
             }
 
             void snapshot_plugin::plugin_startup() {
-
+                if (options.count("snapshot-file")) {
+                    load_snapshots(options["snapshot-file"].as<vector<string>>());
+                } else {
+                    load_snapshots({"snapshot5392323.json"});
+                }
             }
 
             const boost::bimap<string, string> &snapshot_plugin::get_loaded_snapshots() const {
                 return loaded_snapshots;
+            }
+
+            void snapshot_plugin::load_snapshots(const std::vector<std::string> &snapshots) {
+                chain::database &db = database();
+
+                for (const vector<string>::value_type &iterator : snapshots) {
+                    FC_ASSERT(fc::exists(iterator), "Snapshot file '${file}' was not found.", ("file", iterator));
+
+                    ilog("Loading snapshot from ${s}", ("s", iterator));
+
+                    std::string snapshot_hash(fc::sha256::hash(boost::iostreams::mapped_file_source(fc::path(iterator).string()).data()));
+
+                    snapshot_state snapshot = fc::json::from_file(fc::path(iterator)).as<snapshot_state>();
+                    for (account_summary &account : snapshot.accounts) {
+                        if (!db.find_account(account.name)) {
+                            db.create<chain::account_object>([&](chain::account_object &a) {
+                                a.name = account.name;
+                                a.memo_key = account.keys.memo_key;
+
+                                if (snapshot_hash ==
+                                    "1f0617dfc2e7aa49b0d6c394b36087ead02bc7f781e7550dae13e8cb12f13436") {
+                                    a.json_metadata = "{created_at: 'GENESIS'}";
+                                    a.recovery_account = STEEMIT_INIT_MINER_NAME;
+                                } else {
+                                    a.json_metadata = account.json_metadata.data();
+                                    a.recovery_account = account.recovery_account;
+                                }
+                            });
+
+                            impl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
+                                auth.account = account.name;
+                                auth.owner.weight_threshold = 1;
+                                auth.owner = account.keys.owner_key;
+                                auth.active = account.keys.active_key;
+                                auth.posting = account.keys.posting_key;
+                            }));
+                        }
+                    }
+
+                    loaded_snapshots.insert({iterator, snapshot_hash});
+                }
             }
         }
     }
