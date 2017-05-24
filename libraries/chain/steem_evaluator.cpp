@@ -1244,9 +1244,7 @@ namespace steemit {
 
                         if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                             !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                            new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
-                                    STEEMIT_CASHOUT_WINDOW_SECONDS;
+                            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                         } else {
                             new_cashout_time_sec =
                                     _db.head_block_time().sec_since_epoch() +
@@ -1285,8 +1283,7 @@ namespace steemit {
                         if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                             if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                                 c.last_payout > fc::time_point_sec::min()) {
-                                c.cashout_time = c.last_payout +
-                                                 STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                                c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
                             } else {
                                 c.cashout_time = fc::time_point_sec(std::min(uint32_t(avg_cashout_sec.to_uint64()), c.max_cashout_time.sec_since_epoch()));
                             }
@@ -1448,17 +1445,13 @@ namespace steemit {
 
                     fc::uint128_t avg_cashout_sec;
 
-
                     if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                         fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
-
                         if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                             !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                            new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
-                                    STEEMIT_CASHOUT_WINDOW_SECONDS;
+                            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                         } else {
                             new_cashout_time_sec =
                                     _db.head_block_time().sec_since_epoch() +
