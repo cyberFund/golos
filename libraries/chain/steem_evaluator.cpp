@@ -1667,6 +1667,7 @@ namespace steemit {
 
         void pow2_evaluator::do_apply(const pow2_operation &o) {
             database &db = this->db();
+            FC_ASSERT(!db.has_hardfork(STEEMIT_HARDFORK_0_17__770), "mining is now disabled");
             const auto &dgp = db.get_dynamic_global_properties();
             uint32_t target_pow = db.get_pow_summary_target();
             account_name_type worker_account;
