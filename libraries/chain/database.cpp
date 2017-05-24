@@ -4197,10 +4197,10 @@ namespace steemit {
      * This will result in a very complex and redundant iteration. The simple solution, albeit
      * containing inefficiencies is a simple iteration over all comments.
      *
-     * by_root will iterate over all root posts first, which will adjust the calls to calculate_discussion_payout_time
+     * by_parent will iterate over all parent posts first, which will adjust the calls to calculate_discussion_payout_time
      * before calling on a child commment.
      */
-                    const auto &comment_idx = get_index<comment_index, by_root>();
+                    const auto &comment_idx = get_index<comment_index, by_parent>();
                     for (auto itr = comment_idx.begin();
                          itr != comment_idx.end(); ++itr) {
                         auto cashout_time = calculate_discussion_payout_time(*itr);
