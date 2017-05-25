@@ -450,7 +450,7 @@ namespace steemit {
         }
 
         void tags_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
-            ilog("Intializing tags plugin");
+            ilog("Initializing tags plugin");
             database().post_apply_operation.connect([&](const operation_notification &note) { my->on_operation(note); });
 
             app().register_api_factory<tag_api>("tag_api");
