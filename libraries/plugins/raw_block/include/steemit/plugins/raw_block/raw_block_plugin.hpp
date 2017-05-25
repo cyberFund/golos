@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 
 namespace steemit {
     namespace plugin {

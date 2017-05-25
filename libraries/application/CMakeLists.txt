@@ -1,16 +1,16 @@
 set(CURRENT_TARGET application)
 
 list(APPEND CURRENT_TARGET_HEADERS
-        include/steemit/app/api.hpp
-        include/steemit/app/api_access.hpp
-        include/steemit/app/api_context.hpp
-        include/steemit/app/application.hpp
-        include/steemit/app/applied_operation.hpp
-        include/steemit/app/database_api.hpp
-        include/steemit/app/impacted.hpp
-        include/steemit/app/plugin.hpp
-        include/steemit/app/state.hpp
-        include/steemit/app/steem_api_objects.hpp
+        include/steemit/application/api.hpp
+        include/steemit/application/api_access.hpp
+        include/steemit/application/api_context.hpp
+        include/steemit/application/application.hpp
+        include/steemit/application/applied_operation.hpp
+        include/steemit/application/database_api.hpp
+        include/steemit/application/impacted.hpp
+        include/steemit/application/plugin.hpp
+        include/steemit/application/state.hpp
+        include/steemit/application/steem_api_objects.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES

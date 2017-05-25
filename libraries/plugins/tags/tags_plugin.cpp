@@ -1,6 +1,6 @@
 #include <steemit/tags/tags_plugin.hpp>
 
-#include <steemit/app/impacted.hpp>
+#include <steemit/application/impacted.hpp>
 
 #include <steemit/protocol/config.hpp>
 

@@ -23,7 +23,7 @@
  */
 #include <cctype>
 
-#include <steemit/app/api.hpp>
+#include <steemit/application/api.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 #include <graphene/utilities/git_revision.hpp>

@@ -1,6 +1,6 @@
 
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/plugins/raw_block/raw_block_api.hpp>
 #include <steemit/plugins/raw_block/raw_block_plugin.hpp>

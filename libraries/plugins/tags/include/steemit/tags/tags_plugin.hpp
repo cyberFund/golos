@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/comment_object.hpp>
 

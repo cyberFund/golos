@@ -1,8 +1,8 @@
 #ifndef GOLOS_SNAPSHOT_PLUGIN_HPP
 #define GOLOS_SNAPSHOT_PLUGIN_HPP
 
-#include <steemit/app/application.hpp>
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/application.hpp>
+#include <steemit/application/plugin.hpp>
 
 #include <boost/bimap.hpp>
 

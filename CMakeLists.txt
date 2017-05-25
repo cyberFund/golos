@@ -199,7 +199,7 @@ if(ENABLE_COVERAGE_TESTING)
     set(CMAKE_CXX_FLAGS "--coverage ${CMAKE_CXX_FLAGS}")
 endif()
 
-# external_plugins needs to be compiled first because libraries/app depends on GOLOSIT_EXTERNAL_PLUGINS being fully populated
+# external_plugins needs to be compiled first because libraries/application depends on GOLOSIT_EXTERNAL_PLUGINS being fully populated
 add_subdirectory(external_plugins)
 add_subdirectory(libraries)
 add_subdirectory(programs)

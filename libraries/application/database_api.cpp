@@ -1,6 +1,6 @@
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
-#include <steemit/app/database_api.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/application.hpp>
+#include <steemit/application/database_api.hpp>
 
 #include <steemit/snapshot/snapshot_plugin.hpp>
 

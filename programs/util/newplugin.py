@@ -55,7 +55,7 @@ templates = {
         """
         #pragma once
 
-        #include <steemit/app/plugin.hpp>
+        #include <steemit/application/plugin.hpp>
 
         namespace {plugin_provider} {{ namespace plugin {{ namespace {plugin_name} {{
 
@@ -83,8 +83,8 @@ templates = {
 
     "{plugin_name}_api.cpp":
         """
-        #include <steemit/app/api_context.hpp>
-        #include <steemit/app/application.hpp>
+        #include <steemit/application/api_context.hpp>
+        #include <steemit/application/application.hpp>
 
         #include <{plugin_provider}/plugins/{plugin_name}/{plugin_name}_api.hpp>
         #include <{plugin_provider}/plugins/{plugin_name}/{plugin_name}_plugin.hpp>

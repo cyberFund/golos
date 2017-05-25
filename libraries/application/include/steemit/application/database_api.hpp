@@ -1,7 +1,7 @@
 #pragma once
 
-#include <steemit/app/applied_operation.hpp>
-#include <steemit/app/state.hpp>
+#include <steemit/application/applied_operation.hpp>
+#include <steemit/application/state.hpp>
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/steem_objects.hpp>

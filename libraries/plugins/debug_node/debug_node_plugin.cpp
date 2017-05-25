@@ -1,6 +1,6 @@
 
-#include <steemit/app/application.hpp>
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/application.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/plugins/debug_node/debug_node_api.hpp>
 #include <steemit/plugins/debug_node/debug_node_plugin.hpp>
 

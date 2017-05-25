@@ -23,7 +23,7 @@
  */
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/chain/steem_objects.hpp>
 
 namespace steemit {

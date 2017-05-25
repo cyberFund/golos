@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <steemit/app/api.hpp>
+#include <steemit/application/api.hpp>
 
 #include <steemit/chain/database_exceptions.hpp>
 

@@ -24,7 +24,7 @@
 
 #include <steemit/delayed_node/delayed_node_plugin.hpp>
 
-#include <steemit/app/api.hpp>
+#include <steemit/application/api.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 

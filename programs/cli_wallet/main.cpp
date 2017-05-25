@@ -37,7 +37,7 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
-#include <steemit/app/api.hpp>
+#include <steemit/application/api.hpp>
 #include <steemit/wallet/wallet.hpp>
 
 #include <fc/interprocess/signals.hpp>

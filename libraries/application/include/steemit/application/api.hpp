@@ -23,8 +23,8 @@
  */
 #pragma once
 
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/database_api.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/database_api.hpp>
 #include <steemit/protocol/types.hpp>
 
 #include <graphene/net/node.hpp>

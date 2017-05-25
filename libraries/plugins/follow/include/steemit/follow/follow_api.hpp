@@ -1,7 +1,7 @@
 #pragma once
 
-#include <steemit/app/application.hpp>
-#include <steemit/app/steem_api_objects.hpp>
+#include <steemit/application/application.hpp>
+#include <steemit/application/steem_api_objects.hpp>
 
 #include <steemit/follow/follow_objects.hpp>
 

@@ -1,4 +1,4 @@
-#include <steemit/app/application.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/witness/witness.hpp>
 #include <steemit/manifest/plugins.hpp>
@@ -21,7 +21,7 @@
 # include <signal.h>
 #else
 
-# include <csignal>
+#include <csignal>
 
 #endif
 
