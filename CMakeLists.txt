@@ -52,7 +52,7 @@ option(Boost_USE_STATIC_LIBS "Build with Boost static libraries usage" TRUE)
 
 option(BUILD_SHARED_LIBRARIES "Build shared libraries" FALSE)
 
-option(BUILD_GOLOS_TESTNET "Build source for test network (ON OR OFF)" OFF)
+option(BUILD_GOLOS_TESTNET "Build source for test network (ON OR OFF)" FALSE)
 message(STATUS "BUILD_GOLOS_TESTNET: ${BUILD_GOLOS_TESTNET}")
 if(BUILD_GOLOS_TESTNET)
     message(STATUS "     ")
@@ -79,7 +79,7 @@ if(CHAINBASE_CHECK_LOCKING)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCHAINBASE_CHECK_LOCKING")
 endif()
 
-option(CLEAR_VOTES "Build source to clear old votes from memory" ON)
+option(CLEAR_VOTES "Build source to clear old votes from memory" FALSE)
 if(CLEAR_VOTES)
     message(STATUS "   CONFIGURING TO CLEAR OLD VOTES FROM MEMORY")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCLEAR_VOTES")
