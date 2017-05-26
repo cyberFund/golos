@@ -193,5 +193,5 @@ namespace graphene {
 
 
     }
-} // namespace graphene::net
+} // namespace graphene::network
 
