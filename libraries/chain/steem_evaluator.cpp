@@ -364,7 +364,8 @@ namespace steemit {
 
                 _db.modify(_c, [&](comment_object &c) {
                     for (auto &b : cpb.beneficiaries) {
-                        FC_ASSERT(_db.find(b.first) !=
+                        auto acc = _db.find<account_object, by_name>(b.first);
+                        FC_ASSERT(acc !=
                                   nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.first));
                         c.beneficiaries.push_back(b);
                     }

@@ -174,7 +174,7 @@ namespace steemit {
             string permlink;
         };
 
-        struct comment_benefactor_reward_operation {
+        struct comment_benefactor_reward_operation : public virtual_operation {
             comment_benefactor_reward_operation() {
             }
 
