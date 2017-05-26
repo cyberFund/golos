@@ -69,6 +69,22 @@ namespace steemit {
             }
         }
 
+        void comment_payout_beneficiaries::validate() const {
+            uint32_t sum = 0;
+
+            FC_ASSERT(beneficiaries.size() <
+                      128, "Cannot specify more than 127 beneficiaries."); // Require size serializtion fits in one byte.
+
+            for (auto &route : beneficiaries) {
+                validate_account_name(route.first);
+                FC_ASSERT(route.second <=
+                          STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");
+                sum += route.second;
+                FC_ASSERT(sum <=
+                          STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
+            }
+        }
+
         void comment_options_operation::validate() const {
             validate_account_name(author);
             FC_ASSERT(percent_steem_dollars <=

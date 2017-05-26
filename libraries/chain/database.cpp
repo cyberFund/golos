@@ -1587,6 +1587,14 @@ namespace steemit {
 
                         author_tokens += pay_curators(comment, curation_tokens);
 
+                                    for( auto& b : comment.beneficiaries )
+            {
+               auto benefactor_tokens = ( author_tokens * b.second ) / STEEMIT_100_PERCENT;
+               auto vest_created = create_vesting( get_account( b.first ), benefactor_tokens );
+               push_virtual_operation( comment_benefactor_reward_operation( b.first, comment.author, comment.permlink, vest_created ) );
+               author_tokens -= benefactor_tokens;
+            }
+
                         auto sbd_steem = (author_tokens *
                                           comment.percent_steem_dollars) /
                                          (2 * STEEMIT_100_PERCENT);
