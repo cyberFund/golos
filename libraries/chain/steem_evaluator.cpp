@@ -415,7 +415,7 @@ namespace steemit {
                 if (itr == by_permlink_idx.end()) {
                     if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
                         FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177))
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) && !_db.has_hardfork(STEEMIT_HARDFORK_0_17__97))
                             FC_ASSERT(
                                     _db.calculate_discussion_payout_time(*parent) !=
                                     fc::time_point_sec::maximum(), "Discussion is frozen.");
