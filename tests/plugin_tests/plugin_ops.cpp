@@ -84,7 +84,7 @@ STEEMIT_DEFINE_PLUGIN( test, steemit::plugin_tests::test_plugin )
 FC_REFLECT( steemit::plugin_tests::test_a_operation, (account) )
 FC_REFLECT( steemit::plugin_tests::test_b_operation, (account) )
 
-DECLARE_OPERATION_TYPE( steemit::plugin_tests::test_op );
+STEEMIT_DECLARE_OPERATION_TYPE( steemit::plugin_tests::test_op );
 FC_REFLECT_TYPENAME( steemit::plugin_tests::test_op );
 DEFINE_OPERATION_TYPE( steemit::plugin_tests::test_op );
 */
