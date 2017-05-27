@@ -170,7 +170,7 @@ namespace steemit {
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true;
 
-                     bip::vector<protocol::beneficiary_route_type, allocator< beneficiary_route_type > > beneficiaries;
+            bip::vector <protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries;
         };
 
 

@@ -49,6 +49,6 @@ namespace steemit {
 FC_REFLECT(steemit::follow::follow_operation, (follower)(following)(what))
 FC_REFLECT(steemit::follow::reblog_operation, (account)(author)(permlink))
 
-DECLARE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)
+STEEMIT_DECLARE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)
 
 FC_REFLECT_TYPENAME(steemit::follow::follow_plugin_operation)

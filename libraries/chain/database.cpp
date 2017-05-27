@@ -30,8 +30,6 @@
 namespace steemit {
     namespace chain {
 
-//namespace db2 = graphene::db2;
-
         struct object_schema_repr {
             std::pair<uint16_t, uint16_t> space_type;
             std::string type;
@@ -947,7 +945,7 @@ namespace steemit {
 
         inline const void database::push_virtual_operation(const operation &op, bool force) {
             if (!force) {
-#if defined( IS_LOW_MEM ) && !defined( STEEMIT_BUILD_TESTNET )
+#if defined( STEEMIT_BUILD_LOW_MEMORY ) && !defined( STEEMIT_BUILD_TESTNET )
                 return;
 #endif
             }
@@ -1530,7 +1528,7 @@ namespace steemit {
 
                             push_virtual_operation(curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                             modify(voter, [&](account_object &a) {
                                 a.curation_rewards += claim;
                             });
@@ -1586,14 +1584,16 @@ namespace steemit {
                         share_type author_tokens =
                                 reward_tokens.to_uint64() - curation_tokens;
 
-                        curation_tokens = pay_curators(comment, curation_tokens);
-                        author_tokens += curation_tokens;
+                        author_tokens += pay_curators(comment, curation_tokens);
+
                         share_type total_beneficiary = 0;
 
                         for (auto &b : comment.beneficiaries) {
-                                           auto benefactor_tokens = ( author_tokens * b.weight ) / STEEMIT_100_PERCENT;
-               auto vest_created = create_vesting( get_account( b.account ), benefactor_tokens);
-               push_virtual_operation( comment_benefactor_reward_operation( b.account, comment.author, to_string( comment.permlink ), vest_created ) );
+                            auto benefactor_tokens =
+                                    (author_tokens * b.weight) /
+                                    STEEMIT_100_PERCENT;
+                            auto vest_created = create_vesting(get_account(b.account), benefactor_tokens);
+                            push_virtual_operation(comment_benefactor_reward_operation(b.account, comment.author, to_string(comment.permlink), vest_created));
                             author_tokens -= benefactor_tokens;
                             total_beneficiary += benefactor_tokens;
                         }
@@ -1624,7 +1624,7 @@ namespace steemit {
                         push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first, sbd_payout.second, vest_created));
                         push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                         modify(comment, [&](comment_object &c) {
                             c.author_rewards += author_tokens;
                         });
@@ -4040,7 +4040,7 @@ namespace steemit {
             for (auto itr = cidx.begin(); itr != cidx.end(); ++itr) {
                 if (itr->parent_author != STEEMIT_ROOT_POST_PARENT) {
 // Low memory nodes only need immediate child count, full nodes track total children
-#ifdef IS_LOW_MEM
+#ifdef STEEMIT_BUILD_LOW_MEMORY
                     modify(get_comment(itr->parent_author, itr->parent_permlink), [&](comment_object &c) {
                         c.children++;
                     });
