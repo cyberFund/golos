@@ -202,7 +202,7 @@ namespace steemit {
 
         void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation &o) {
             database &_db = db();
-            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_17__818), "Account creation with delegation is not enabled until hardfork 17");
+            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
 
             const auto &creator = _db.get_account(o.creator);
             const auto &props = _db.get_dynamic_global_properties();
