@@ -541,6 +541,8 @@ namespace steemit {
 
             void clear_expired_transactions();
 
+            void clear_expired_delegations();
+
             void clear_expired_orders();
 
             void process_header_extensions(const signed_block &next_block);

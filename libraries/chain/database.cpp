@@ -487,7 +487,7 @@ namespace steemit {
                         b.last_bandwidth_update = now;
                     });
 
-                    fc::uint128 account_vshares(a.vesting_shares.amount.value);
+                    fc::uint128 account_vshares(a.effective_vesting_shares().amount.value);
                     fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
 
                     fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
@@ -2204,6 +2204,8 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
             _my->_evaluator_registry.register_evaluator<reset_account_evaluator>();
             _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator>();
+            _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
+            _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2247,6 +2249,8 @@ namespace steemit {
             add_core_index<escrow_index>(*this);
             add_core_index<savings_withdraw_index>(*this);
             add_core_index<decline_voting_rights_request_index>(*this);
+            add_core_index<vesting_delegation_index>(*this);
+            add_core_index<vesting_delegation_expiration_index>(*this);
 
             _plugin_index_signal();
         }
@@ -2610,6 +2614,7 @@ namespace steemit {
                 create_block_summary(next_block);
                 clear_expired_transactions();
                 clear_expired_orders();
+                clear_expired_delegations();
                 update_witness_schedule(*this);
 
                 update_median_feed();
@@ -3328,6 +3333,22 @@ namespace steemit {
             }
         }
 
+        void database::clear_expired_delegations() {
+            auto now = head_block_time();
+            const auto &delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
+            auto itr = delegations_by_exp.begin();
+            while (itr != delegations_by_exp.end() && itr->expiration < now) {
+                modify(get_account(itr->delegator), [&](account_object &a) {
+                    a.delegated_vesting_shares -= itr->vesting_shares;
+                });
+
+                push_virtual_operation(return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
+
+                remove(*itr);
+                itr = delegations_by_exp.begin();
+            }
+        }
+
         void database::clear_expired_orders() {
             auto now = head_block_time();
             const auto &orders_by_exp = get_index<limit_order_index>().indices().get<by_expiration>();
@@ -3644,17 +3665,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:

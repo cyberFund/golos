@@ -52,6 +52,8 @@ namespace steemit {
         typedef chain::witness_vote_object witness_vote_api_obj;
         typedef chain::witness_schedule_object witness_schedule_api_obj;
         typedef chain::account_bandwidth_object account_bandwidth_api_obj;
+        typedef chain::vesting_delegation_object vesting_delegation_api_obj;
+        typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
 
         struct comment_api_obj {
             comment_api_obj(const chain::comment_object &o) :
