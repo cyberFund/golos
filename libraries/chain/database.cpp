@@ -1576,7 +1576,7 @@ namespace steemit {
 
                     const share_type reward = has_hardfork(STEEMIT_HARDFORK_0_17__774)
                                               ?
-                                              utilities::get_rshare_reward(ctx, get_reward_fund(comment).name)
+                                              utilities::get_rshare_reward(ctx, get_reward_fund(comment))
                                               : utilities::get_rshare_reward(ctx);
                     uint128_t reward_tokens = uint128_t(reward.value);
 
@@ -1773,7 +1773,7 @@ namespace steemit {
                        current->cashout_time <= head_block_time()) {
                     if (current->net_rshares > 0) {
                         const auto &rf = get_reward_fund(*current);
-                        funds[rf.id._id].recent_rshares2 += util::calculate_vshares(current->net_rshares.value, rf.name);
+                        funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
                         FC_ASSERT(funds[rf.id._id].recent_rshares2 <
                                   std::numeric_limits<uint64_t>::max());
                         ++current;
@@ -1815,7 +1815,7 @@ namespace steemit {
 
                         if (funds.size()) {
                             const auto &rf = get_reward_fund(*current);
-                            funds[rf.id._id].recent_rshares2 += util::calculate_vshares(current->net_rshares.value, rf.name);
+                            funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
                         }
 
                         auto reward = cashout_comment_helper(ctx, comment);
@@ -3886,12 +3886,15 @@ namespace steemit {
                         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
+                                    rfo.content_constant = util::get_content_constant_s().to_uint64();
                     });
 
                     create<reward_fund_object>([&](reward_fund_object &rfo) {
                         rfo.name = STEEMIT_COMMENT_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
+                                    rfo.content_constant = util::get_content_constant_s().to_uint64();
+
                     });
                 }
                     break;

@@ -32,7 +32,7 @@ namespace steemit {
 
             uint64_t get_rshare_reward(const comment_reward_context &ctx);
 
-            uint64_t get_rshare_reward( const comment_reward_context& ctx, const reward_fund_name_type& rf );
+            uint64_t get_rshare_reward( const comment_reward_context& ctx, const reward_fund_object& rf );
 
             inline uint128_t get_content_constant_s() {
                 return uint128_t(uint64_t(2000000000000ll)); // looking good for posters
@@ -40,7 +40,7 @@ namespace steemit {
 
             uint128_t calculate_vshares(const uint128_t &rshares);
 
-            uint128_t calculate_vshares( const uint128_t& rshares, const reward_fund_name_type& rf );
+            uint128_t calculate_vshares( const uint128_t& rshares, const reward_fund_object& rf );
 
             inline bool is_comment_payout_dust(const price &p, uint64_t steem_payout) {
                 return to_sbd(p, asset(steem_payout, STEEM_SYMBOL)) <
