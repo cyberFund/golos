@@ -1,6 +1,8 @@
 #pragma once
 
+#include <steemit/application/application.hpp>
 #include <steemit/application/plugin.hpp>
+
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/comment_object.hpp>
 
@@ -14,7 +16,7 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
-        using steemit::application::application;
+      using steemit::application::application;
 
         using chainbase::object;
         using chainbase::oid;
@@ -603,6 +605,7 @@ namespace steemit {
         public:
             language_api() {
             };
+
 
             language_api(const steemit::application::api_context &ctx) {
             }//:_app(&ctx.app){}

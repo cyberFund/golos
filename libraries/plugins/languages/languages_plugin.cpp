@@ -85,7 +85,7 @@ namespace steemit {
                     const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.language));
                     if (itr != idx.end() && itr->author == tag.author &&
-                        itr->tag == tag.language) {
+                        itr->language == tag.language) {
                         _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts--;
                         });
@@ -103,48 +103,7 @@ namespace steemit {
                         stats.language = tag;
                     });
                 }
-
-                comment_metadata filter_tags(const comment_object &c) const {
-                    comment_metadata meta;
-
-                    if (c.json_metadata.size()) {
-                        try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
-                        }
-                        catch (const fc::exception &e) {
-                            // Do nothing on malformed json_metadata
-                        }
-                    }
-
-                    set<string> lower_tags;
-                    if (c.category != "") {
-                        meta.tags.insert(fc::to_lower(to_string(c.category)));
-                    }
-
-                    uint8_t tag_limit = 5;
-                    uint8_t count = 0;
-                    for (const auto &tag : meta.tags) {
-                        ++count;
-                        if (count > tag_limit ||
-                            lower_tags.size() > tag_limit) {
-                            break;
-                        }
-                        if (tag == "") {
-                            continue;
-                        }
-                        lower_tags.insert(fc::to_lower(tag));
-                    }
-
-                    /// the universal tag applies to everything safe for work or nsfw with a non-negative payout
-                    if (c.net_rshares >= 0) {
-                        lower_tags.insert(string()); /// add it to the universal tag
-                    }
-
-                    meta.tags = std::move(lower_tags);
-
-                    return meta;
-                }
-
+              
                 void update_tag(const language_object &current, const comment_object &comment, double hot, double trending) const {
                     const auto &stats = get_stats(current.language);
                     remove_stats(current, stats);
@@ -200,14 +159,14 @@ namespace steemit {
                     const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(author, tag));
                     if (itr != idx.end() && itr->author == author &&
-                        itr->tag == tag) {
+                        itr->language == tag) {
                         _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts++;
                         });
                     } else {
                         _db.create<author_language_stats_object>([&](author_language_stats_object &stats) {
                             stats.author = author;
-                            stats.tag = tag;
+                            stats.language = tag;
                             stats.total_posts = 1;
                         });
                     }
@@ -230,8 +189,7 @@ namespace steemit {
                         sign = -1;
                     }
 
-                    return sign * order +
-                           double(created.sec_since_epoch()) / double(T);
+                    return sign * order + double(created.sec_since_epoch()) / double(T);
                 }
 
                 inline double calculate_hot(const share_type &score, const time_point_sec &created) const {
@@ -245,19 +203,22 @@ namespace steemit {
                 /** finds tags that have been added or removed or updated */
                 void update_tags(const comment_object &c) const {
                     try {
-
+/*
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        auto meta = filter_tags(c);
+                        //auto meta = filter_tags(c);
                         const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
                         auto citr = comment_idx.lower_bound(c.id);
 
                         map<string, const language_object *> existing_tags;
-                        vector<const language_object *> remove_queue;
-                        while (citr != comment_idx.end() &&
+
+                        //vector<const language_object *> remove_queue;
+
+while (citr != comment_idx.end() &&
                                citr->comment == c.id) {
                             const language_object *tag = &*citr;
                             ++citr;
+
                             if (meta.tags.find(tag->language) ==
                                 meta.tags.end()) {
                                 remove_queue.push_back(tag);
@@ -282,6 +243,7 @@ namespace steemit {
                         if (c.parent_author.size()) {
                             update_tags(_db.get_comment(c.parent_author, c.parent_permlink));
                         }
+                        */
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
                 }
 
@@ -402,14 +364,6 @@ namespace steemit {
                 void operator()(const comment_reward_operation &op) const {
                     const auto &c = _db.get_comment(op.author, op.permlink);
                     update_tags(c);
-
-                    auto meta = filter_tags(c);
-
-                    for (auto tag : meta.tags) {
-                        _db.modify(get_stats(tag), [&](language_stats_object &ts) {
-                            ts.total_payout += op.payout;
-                        });
-                    }
                 }
 
                 void operator()(const comment_payout_update_operation &op) const {
@@ -457,7 +411,7 @@ namespace steemit {
         }
 
         void languages_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
-            ilog("Intializing tags plugin");
+            ilog("Intializing languages plugin");
             database().post_apply_operation.connect([&](const operation_notification &note) { my->on_operation(note); });
 
             app().register_api_factory<language_api>("language_api");
@@ -465,6 +419,7 @@ namespace steemit {
 
 
         void languages_plugin::plugin_startup() {
+            ilog("startup languages plugin");
         }
 
     }
