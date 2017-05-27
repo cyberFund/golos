@@ -71,7 +71,8 @@ namespace steemit {
             escrow_object_type,
             savings_withdraw_object_type,
             decline_voting_rights_request_object_type,
-            block_stats_object_type
+            block_stats_object_type,
+            reward_fund_object_type
         };
 
         class dynamic_global_property_object;
@@ -128,6 +129,8 @@ namespace steemit {
 
         class block_stats_object;
 
+        class reward_fund_object;
+
         typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
         typedef oid<account_object> account_id_type;
         typedef oid<account_authority_object> account_authority_id_type;
@@ -155,6 +158,7 @@ namespace steemit {
         typedef oid<savings_withdraw_object> savings_withdraw_id_type;
         typedef oid<decline_voting_rights_request_object> decline_voting_rights_request_id_type;
         typedef oid<block_stats_object> block_stats_id_type;
+        typedef oid< reward_fund_object                     > reward_fund_id_type;
 
         enum bandwidth_type {
             post,    ///< Rate limiting posting reward eligibility over time
@@ -261,6 +265,7 @@ FC_REFLECT_ENUM(steemit::chain::object_type,
                 (savings_withdraw_object_type)
                 (decline_voting_rights_request_object_type)
                 (block_stats_object_type)
+                (reward_fund_object_type)
 )
 
 FC_REFLECT_TYPENAME(steemit::chain::shared_string)
