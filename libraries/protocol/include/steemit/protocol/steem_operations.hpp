@@ -59,6 +59,7 @@ namespace steemit {
             account_name_type author;
             string permlink;
 
+            string languages;
             string title;
             string body;
             string json_metadata;
@@ -1020,7 +1021,7 @@ FC_REFLECT(steemit::protocol::set_withdraw_vesting_route_operation, (from_accoun
 FC_REFLECT(steemit::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee))
 FC_REFLECT(steemit::protocol::account_witness_vote_operation, (account)(witness)(approve))
 FC_REFLECT(steemit::protocol::account_witness_proxy_operation, (account)(proxy))
-FC_REFLECT(steemit::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
+FC_REFLECT(steemit::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(languages)(title)(body)(json_metadata))
 FC_REFLECT(steemit::protocol::vote_operation, (voter)(author)(permlink)(weight))
 FC_REFLECT(steemit::protocol::custom_operation, (required_auths)(id)(data))
 FC_REFLECT(steemit::protocol::custom_json_operation, (required_auths)(required_posting_auths)(id)(json))

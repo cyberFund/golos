@@ -107,12 +107,13 @@ namespace steemit {
             template<typename Constructor, typename Allocator>
             comment_object(Constructor &&c, allocator <Allocator> a)
                     :category(a), parent_permlink(a), permlink(a), title(a),
-                     body(a), json_metadata(a) {
+                     body(a), json_metadata(a),languages(a) {
                 c(*this);
             }
 
             id_type id;
 
+            shared_string languages;
             shared_string category;
             account_name_type parent_author;
             shared_string parent_permlink;
@@ -330,7 +331,7 @@ FC_REFLECT_ENUM(steemit::chain::comment_mode, (first_payout)(second_payout)(arch
 FC_REFLECT(steemit::chain::comment_object,
         (id)(author)(permlink)
                 (category)(parent_author)(parent_permlink)
-                (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
+                (languages)(title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
                 (depth)(children)(children_rshares2)
                 (net_rshares)(abs_rshares)(vote_rshares)
                 (children_abs_rshares)(cashout_time)(max_cashout_time)

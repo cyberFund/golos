@@ -2140,13 +2140,14 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::post_comment(string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast) {
+        annotated_signed_transaction wallet_api::post_comment(string author, string permlink, string parent_author, string parent_permlink,string title, string body, string json, bool broadcast) {
             FC_ASSERT(!is_locked());
             comment_operation op;
             op.parent_author = parent_author;
             op.parent_permlink = parent_permlink;
             op.author = author;
             op.permlink = permlink;
+            op.languages = "rus";
             op.title = title;
             op.body = body;
             op.json_metadata = json;
