@@ -1238,7 +1238,8 @@ namespace steemit {
                 const Index &tidx, StartItr tidx_itr,
                 const std::function<bool(const comment_api_obj &)> &filter,
                 const std::function<bool(const comment_api_obj &)> &exit,
-                const std::function<bool(const tags::tag_object &)> &tag_exit) const {
+                const std::function<bool(const tags::tag_object &)> &tag_exit,
+                bool ignore_parent) const {
 //   idump((query));
 
             std::multimap<tags::tag_object, discussion, Compare> result;
@@ -1262,7 +1263,8 @@ namespace steemit {
             uint64_t filter_count = 0;
             uint64_t exc_count = 0;
             while (count > 0 && tidx_itr != tidx.end()) {
-                if (tidx_itr->tag != tag || tidx_itr->parent != parent) {
+                if (tidx_itr->tag != tag ||
+                    (!ignore_parent && tidx_itr->parent != parent)) {
                     break;
                 }
 
@@ -1319,14 +1321,14 @@ namespace steemit {
                         }
                     }
 
-                    return c.children_rshares2 <= 0 || c.mode != first_payout ||
+                    return c.net_rshares <= 0 ||
                            query.filter_tags.find(c.category) !=
                            query.filter_tags.end();
                 };
 
-                const auto &tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_mode_parent_children_rshares2>();
+                const auto &tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_trending>();
 
-                std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result;
+                std::multimap<tags::tag_object, discussion, tags::by_parent_trending> map_result;
                 std::vector<discussion> return_result;
                 std::string tag;
 
@@ -1334,19 +1336,19 @@ namespace steemit {
                     for (const std::set<std::string>::value_type &iterator : query.select_tags) {
                         tag = fc::to_lower(iterator);
 
-                        auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, first_payout, parent, fc::uint128_t::max_value()));
+                        auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<double>::max()));
 
-                        std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> result = get_discussions<tags::by_mode_parent_children_rshares2>(query, tag, parent, tidx, tidx_itr, filter_function);
+                        std::multimap<tags::tag_object, discussion, tags::by_parent_trending> result = get_discussions<tags::by_parent_trending>(query, tag, parent, tidx, tidx_itr, filter_function);
 
                         map_result.insert(result.cbegin(), result.cend());
                     }
                 } else {
-                    auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, first_payout, parent, fc::uint128_t::max_value()));
+                    auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<double>::max()));
 
-                    map_result = get_discussions<tags::by_mode_parent_children_rshares2>(query, tag, parent, tidx, tidx_itr, filter_function);
+                    map_result = get_discussions<tags::by_parent_trending>(query, tag, parent, tidx, tidx_itr, filter_function);
                 }
 
-                for (const std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2>::value_type &iterator : map_result) {
+                for (const std::multimap<tags::tag_object, discussion, tags::by_parent_trending>::value_type &iterator : map_result) {
                     return_result.push_back(iterator.second);
                 }
 
@@ -1667,7 +1669,7 @@ namespace steemit {
                         }
                     }
 
-                    return c.net_rshares <= 0 ||
+                    return c.children_rshares2 <= 0 ||
                            query.filter_tags.find(c.category) !=
                            query.filter_tags.end();
                 };
@@ -1684,14 +1686,14 @@ namespace steemit {
 
                         auto tidx_itr = tidx.lower_bound(tag);
 
-                        std::multimap<tags::tag_object, discussion, tags::by_net_rshares> result = get_discussions<tags::by_net_rshares>(query, tag, parent, tidx, tidx_itr, filter_function);
+                        std::multimap<tags::tag_object, discussion, tags::by_net_rshares> result = get_discussions<tags::by_net_rshares>(query, tag, parent, tidx, tidx_itr, filter_function, exit_default, tag_exit_default, true);
 
                         map_result.insert(result.cbegin(), result.cend());
                     }
                 } else {
                     auto tidx_itr = tidx.lower_bound(tag);
 
-                    map_result = get_discussions<tags::by_net_rshares>(query, tag, parent, tidx, tidx_itr, filter_function);
+                    map_result = get_discussions<tags::by_net_rshares>(query, tag, parent, tidx, tidx_itr, filter_function, exit_default, tag_exit_default, true);
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_net_rshares>::value_type &iterator : map_result) {
@@ -2477,24 +2479,23 @@ namespace steemit {
                         auto &didx = _state.discussion_idx[tag];
                         for (const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
-                            didx.trending.push_back(key);
+                            didx.payout.push_back(key);
                             if (d.author.size()) {
                                 accounts.insert(d.author);
                             }
                             _state.content[key] = std::move(d);
                         }
-                    } else if (part[0] == "trending30") {
+                    } else if (part[0] == "payout") {
                         discussion_query q;
-                        q.select_tags.insert(tag);
+                        q.tag = tag;
                         q.limit = 20;
                         q.truncate_body = 1024;
-
-                        auto trending_disc = get_discussions_by_trending30(q);
+                        auto trending_disc = get_discussions_by_payout(q);
 
                         auto &didx = _state.discussion_idx[tag];
                         for (const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
-                            didx.trending30.push_back(key);
+                            didx.trending.push_back(key);
                             if (d.author.size()) {
                                 accounts.insert(d.author);
                             }
