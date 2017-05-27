@@ -1,10 +1,12 @@
 #pragma once
 
-namespace steemit { namespace chain {
+namespace steemit {
+    namespace chain {
 
-class database;
+        class database;
 
-void update_witness_schedule( database& db );
-void reset_virtual_schedule_time( database& db );
+        void update_witness_schedule(database &db);
 
-} }
+        void reset_virtual_schedule_time(database &db);
+    }
+}

@@ -24,7 +24,7 @@
 
 #include <steemit/private_message/private_message_evaluators.hpp>
 
-#include <steemit/app/impacted.hpp>
+#include <steemit/application/impacted.hpp>
 
 #include <steemit/chain/index.hpp>
 #include <steemit/chain/generic_custom_operation_interpreter.hpp>

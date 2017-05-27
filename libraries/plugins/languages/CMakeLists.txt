@@ -1,22 +1,34 @@
-file(GLOB HEADERS "include/steemit/languages/*.hpp")
+set(CURRENT_TARGET languages)
 
+list(APPEND CURRENT_TARGET_HEADERS
+        include/steemit/languages/languages_plugin.hpp
+        )
+
+list(APPEND CURRENT_TARGET_SOURCES
+        languages_plugin.cpp
+        )
 
 if(BUILD_SHARED_LIBRARIES)
-    add_library(golos_languages SHARED
-            languages_plugin.cpp)
+    add_library(golos_${CURRENT_TARGET} SHARED
+            ${CURRENT_TARGET_HEADERS}
+            ${CURRENT_TARGET_SOURCES}
+            )
 else()
-    add_library(golos_languages STATIC
-            languages_plugin.cpp)
+    add_library(golos_${CURRENT_TARGET} STATIC
+            ${CURRENT_TARGET_HEADERS}
+            ${CURRENT_TARGET_SOURCES}
+            )
 endif()
 
+add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
+set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
 
-
-target_link_libraries(golos_languages golos_chain golos_protocol golos::application)
-target_include_directories(golos_languages
+target_link_libraries(golos_${CURRENT_TARGET} golos::chain golos::protocol golos::application golos::time)
+target_include_directories(golos_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 install(TARGETS
-        golos_languages
+        golos_${CURRENT_TARGET}
 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib

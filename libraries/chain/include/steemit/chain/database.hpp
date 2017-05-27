@@ -339,7 +339,7 @@ namespace steemit {
 
             asset create_vesting(const account_object &to_account, asset steem);
 
-            void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value);
+            void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value, const asset &beneficiary_value);
 
             void adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_bid);
 

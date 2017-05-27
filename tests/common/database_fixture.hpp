@@ -1,7 +1,7 @@
 #ifndef DATABASE_FIXTURE_HPP
 #define DATABASE_FIXTURE_HPP
 
-#include <steemit/app/application.hpp>
+#include <steemit/application/application.hpp>
 #include <steemit/chain/database.hpp>
 
 #include <fc/io/json.hpp>

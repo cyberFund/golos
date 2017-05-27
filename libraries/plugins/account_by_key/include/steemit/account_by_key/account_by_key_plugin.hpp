@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/chain/database.hpp>
 
 #include <steemit/account_by_key/account_by_key_api.hpp>
@@ -27,6 +27,8 @@ namespace steemit {
             virtual void plugin_initialize(const boost::program_options::variables_map &options) override;
 
             virtual void plugin_startup() override;
+
+            void update_key_lookup(const account_authority_object &a);
 
             friend class detail::account_by_key_plugin_impl;
 

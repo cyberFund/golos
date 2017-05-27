@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/app/application.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/account_by_key/account_by_key_objects.hpp>
 

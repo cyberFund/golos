@@ -2,8 +2,8 @@
 #include <fc/filesystem.hpp>
 #include <fc/variant_object.hpp>
 
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/chain/account_object.hpp>
 

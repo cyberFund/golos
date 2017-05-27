@@ -1,6 +1,6 @@
 #include <steemit/languages/languages_plugin.hpp>
 
-#include <steemit/app/impacted.hpp>
+#include <steemit/application/impacted.hpp>
 
 #include <steemit/protocol/config.hpp>
 
@@ -103,48 +103,7 @@ namespace steemit {
                         stats.language = tag;
                     });
                 }
-/*
-                comment_metadata filter_tags(const comment_object &c) const {
-                    comment_metadata meta;
-
-                    if (c.json_metadata.size()) {
-                        try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
-                        }
-                        catch (const fc::exception &e) {
-                            // Do nothing on malformed json_metadata
-                        }
-                    }
-
-                    set<string> lower_tags;
-                    if (c.category != "") {
-                        meta.tags.insert(fc::to_lower(to_string(c.category)));
-                    }
-
-                    uint8_t tag_limit = 5;
-                    uint8_t count = 0;
-                    for (const auto &tag : meta.tags) {
-                        ++count;
-                        if (count > tag_limit ||
-                            lower_tags.size() > tag_limit) {
-                            break;
-                        }
-                        if (tag == "") {
-                            continue;
-                        }
-                        lower_tags.insert(fc::to_lower(tag));
-                    }
-
-                    /// the universal tag applies to everything safe for work or nsfw with a non-negative payout
-                    if (c.net_rshares >= 0) {
-                        lower_tags.insert(string()); /// add it to the universal tag
-                    }
-
-                    meta.tags = std::move(lower_tags);
-
-                    return meta;
-                }
-*/
+              
                 void update_tag(const language_object &current, const comment_object &comment, double hot, double trending) const {
                     const auto &stats = get_stats(current.language);
                     remove_stats(current, stats);
@@ -252,23 +211,21 @@ namespace steemit {
                         auto citr = comment_idx.lower_bound(c.id);
 
                         map<string, const language_object *> existing_tags;
+
                         //vector<const language_object *> remove_queue;
-                        while (citr != comment_idx.end() &&
+
+while (citr != comment_idx.end() &&
                                citr->comment == c.id) {
                             const language_object *tag = &*citr;
                             ++citr;
 
-
-                            if (meta.tags.find(tag->language) == meta.tags.end()) {
+                            if (meta.tags.find(tag->language) ==
+                                meta.tags.end()) {
                                 remove_queue.push_back(tag);
                             } else {
-
                                 existing_tags[tag->language] = tag;
                             }
-
-
                         }
-
 
                         for (const auto &tag : meta.tags) {
                             auto existing = existing_tags.find(tag);
@@ -282,7 +239,6 @@ namespace steemit {
                         for (const auto &item : remove_queue) {
                             remove_tag(*item);
                         }
-
 
                         if (c.parent_author.size()) {
                             update_tags(_db.get_comment(c.parent_author, c.parent_permlink));
@@ -408,14 +364,6 @@ namespace steemit {
                 void operator()(const comment_reward_operation &op) const {
                     const auto &c = _db.get_comment(op.author, op.permlink);
                     update_tags(c);
-
-                    //auto meta = filter_tags(c);
-
-                    /*for (auto tag : meta.tags) {
-                        _db.modify(get_stats(tag), [&](language_stats_object &ts) {
-                            ts.total_payout += op.payout;
-                        });
-                    }*/
                 }
 
                 void operator()(const comment_payout_update_operation &op) const {
@@ -444,7 +392,8 @@ namespace steemit {
 
         } /// end detail namespace
 
-        languages_plugin::languages_plugin(application *app) : plugin(app), my(new detail::languages_plugin_impl(*this)) {
+        languages_plugin::languages_plugin(application *app)
+                : plugin(app), my(new detail::languages_plugin_impl(*this)) {
             chain::database &db = database();
             add_plugin_index<language_index>(db);
             add_plugin_index<language_stats_index>(db);

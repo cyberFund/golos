@@ -1,6 +1,6 @@
 #include <steemit/account_history/account_history_plugin.hpp>
 
-#include <steemit/app/impacted.hpp>
+#include <steemit/application/impacted.hpp>
 
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/history_object.hpp>

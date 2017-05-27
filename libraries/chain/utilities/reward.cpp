@@ -39,7 +39,6 @@ namespace steemit {
                 uint128_t rshares_plus_s = rshares + s;
                 return rshares_plus_s * rshares_plus_s - s * s;
             }
-
         }
     }
 }

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <steemit/app/application.hpp>
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/application.hpp>
+#include <steemit/application/plugin.hpp>
+
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/comment_object.hpp>
 
@@ -15,7 +16,7 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
-        using steemit::app::application;
+      using steemit::application::application;
 
         using chainbase::object;
         using chainbase::oid;
@@ -574,7 +575,7 @@ namespace steemit {
  *  This plugin will scan all changes to posts and/or their meta data and
  *
  */
-        class languages_plugin : public steemit::app::plugin {
+        class languages_plugin : public steemit::application::plugin {
         public:
             languages_plugin(application *app);
 
@@ -605,7 +606,8 @@ namespace steemit {
             language_api() {
             };
 
-            language_api(const steemit::app::api_context &ctx) {
+
+            language_api(const steemit::application::api_context &ctx) {
             }//:_app(&ctx.app){}
 
             void on_api_startup() {

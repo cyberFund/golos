@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/plugins/block_info/block_info.hpp>
 
 #include <string>

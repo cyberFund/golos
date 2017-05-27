@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 
 #include <steemit/chain/steem_object_types.hpp>
 
