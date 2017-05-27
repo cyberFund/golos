@@ -99,9 +99,9 @@ namespace steemit {
                 while (itr != by_num_idx.end()) {
                     if ((*itr)->num <
                         std::max(int64_t(0), int64_t(_head->num) - _max_size)) {
-                            by_num_idx.erase(itr);
+                        by_num_idx.erase(itr);
                     } else {
-                            break;
+                        break;
                     }
                     itr = by_num_idx.begin();
                 }
@@ -112,9 +112,9 @@ namespace steemit {
                 while (itr != by_num_idx.end()) {
                     if ((*itr)->num <
                         std::max(int64_t(0), int64_t(_head->num) - _max_size)) {
-                            by_num_idx.erase(itr);
+                        by_num_idx.erase(itr);
                     } else {
-                            break;
+                        break;
                     }
                     itr = by_num_idx.begin();
                 }

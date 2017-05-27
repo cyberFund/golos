@@ -1574,13 +1574,12 @@ namespace steemit {
                 if (comment.net_rshares > 0) {
                     fill_comment_reward_context_local_state(ctx, comment);
 
-                    const share_type reward = has_hardfork(STEEMIT_HARDFORK_0_17__774)
+                    const share_type reward = has_hardfork(STEEMIT_HARDFORK_0_17__86)
                                               ?
                                               utilities::get_rshare_reward(ctx, get_reward_fund(comment))
                                               : utilities::get_rshare_reward(ctx);
                     uint128_t reward_tokens = uint128_t(reward.value);
 
-                    asset total_payout;
                     if (reward_tokens > 0) {
                         share_type curation_tokens = ((reward_tokens *
                                                        get_curation_rewards_percent(comment)) /
@@ -1625,11 +1624,9 @@ namespace steemit {
                            adjust_total_payout( comment, to_sbd( asset( vesting_steem + sbd_steem, STEEM_SYMBOL ) ), to_sbd( asset( reward_tokens.to_uint64() - author_tokens, STEEM_SYMBOL ) ) );
                            */
 
-                        // stats only.. TODO: Move to plugin...
-                        total_payout = to_sbd(asset(reward_tokens.to_uint64(), STEEM_SYMBOL));
 
                         push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first, sbd_payout.second, vest_created));
-                        push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
+                        push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), to_sbd(asset(claimed_reward, STEEM_SYMBOL))));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                         modify(comment, [&](comment_object &c) {
@@ -1642,7 +1639,7 @@ namespace steemit {
 #endif
 
                         modify(cat, [&](category_object &c) {
-                            c.total_payouts += total_payout;
+                            c.total_payouts += to_sbd(asset(claimed_reward, STEEM_SYMBOL));
                         });
 
                     }
@@ -1776,8 +1773,9 @@ namespace steemit {
                         funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
                         FC_ASSERT(funds[rf.id._id].recent_rshares2 <
                                   std::numeric_limits<uint64_t>::max());
-                        ++current;
                     }
+
+                    ++current;
                 }
 
                 current = cidx.begin();
@@ -1813,6 +1811,9 @@ namespace steemit {
                         ctx.total_reward_shares2 = gpo.total_reward_shares2;
                         ctx.total_reward_fund_steem = gpo.total_reward_fund_steem;
 
+                        // This extra logic is for when the funds are created in HF 16. We are using this data to preload
+                        // recent rshares 2 to prevent any downtime in payouts at HF 17. After HF 17, we can capture
+                        // the value of recent rshare 2 and set it at the hardfork instead of computing it every reindex
                         if (funds.size()) {
                             const auto &rf = get_reward_fund(*current);
                             funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
@@ -3886,27 +3887,28 @@ namespace steemit {
                         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                                    rfo.content_constant = util::get_content_constant_s().to_uint64();
+                        rfo.content_constant = util::get_content_constant_s().to_uint64();
                     });
 
                     create<reward_fund_object>([&](reward_fund_object &rfo) {
                         rfo.name = STEEMIT_COMMENT_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                                    rfo.content_constant = util::get_content_constant_s().to_uint64();
-
+                        rfo.content_constant = util::get_content_constant_s().to_uint64();
                     });
                 }
                     break;
 
                 case STEEMIT_HARDFORK_0_17: {
-                    const auto& gpo = get_dynamic_global_properties();
+                    const auto &gpo = get_dynamic_global_properties();
                     auto reward_steem = gpo.total_reward_fund_steem;
 
 
                     modify(get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
                         rfo.percent_content_rewards = STEEMIT_POST_REWARD_FUND_PERCENT;
-                        rfo.reward_balance = asset( ( reward_steem.amount.value * rfo.percent_content_rewards ) / STEEMIT_100_PERCENT, STEEM_SYMBOL );
+                        rfo.reward_balance = asset((reward_steem.amount.value *
+                                                    rfo.percent_content_rewards) /
+                                                   STEEMIT_100_PERCENT, STEEM_SYMBOL);
                         reward_steem -= rfo.reward_balance;
 
                     });
@@ -3916,9 +3918,8 @@ namespace steemit {
                         rfo.reward_balance = reward_steem;
                     });
 
-                    modify( gpo, [&]( dynamic_global_property_object& g )
-                    {
-                        g.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
+                    modify(gpo, [&](dynamic_global_property_object &g) {
+                        g.total_reward_fund_steem = asset(0, STEEM_SYMBOL);
                         g.total_reward_shares2 = 0;
 
                     });
@@ -4103,10 +4104,10 @@ namespace steemit {
                     }
                 }
 
-                const auto& reward_idx = get_index< reward_fund_index, by_id >();
+                const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
-                for( auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr )
-                {
+                for (auto itr = reward_idx.begin();
+                     itr != reward_idx.end(); ++itr) {
                     total_supply += itr->reward_balance;
                 }
 

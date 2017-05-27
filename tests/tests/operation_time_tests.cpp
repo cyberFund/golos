@@ -3109,5 +3109,156 @@ BOOST_AUTO_TEST_CASE( nested_comments )
         FC_LOG_AND_RETHROW()
     }
 
+    BOOST_AUTO_TEST_CASE( reward_funds )
+{
+   try
+   {
+      BOOST_TEST_MESSAGE( "Testing: reward_funds" );
+
+      ACTORS( (alice)(bob) )
+      generate_block();
+
+      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      generate_block();
+
+      comment_operation comment;
+      vote_operation vote;
+      signed_transaction tx;
+
+      comment.author = "alice";
+      comment.permlink = "test";
+      comment.parent_permlink = "test";
+      comment.title = "foo";
+      comment.body = "bar";
+      vote.voter = "alice";
+      vote.author = "alice";
+      vote.permlink = "test";
+      vote.weight = STEEMIT_100_PERCENT;
+      tx.operations.push_back( comment );
+      tx.operations.push_back( vote );
+      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+
+      generate_blocks( 5 );
+
+      comment.author = "bob";
+      comment.parent_author = "alice";
+      vote.voter = "bob";
+      vote.author = "bob";
+      tx.clear();
+      tx.operations.push_back( comment );
+      tx.operations.push_back( vote );
+      tx.sign( bob_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+
+      generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
+
+      {
+         const auto& post_rf = db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
+         const auto& comment_rf = db.get< reward_fund_object, by_name >( STEEMIT_COMMENT_REWARD_FUND_NAME );
+
+         BOOST_REQUIRE( post_rf.reward_balance.amount == 0 );
+         BOOST_REQUIRE( comment_rf.reward_balance.amount > 0 );
+         BOOST_REQUIRE( db.get_account( "alice" ).reward_sbd_balance.amount > 0 );
+         BOOST_REQUIRE( db.get_account( "bob" ).reward_sbd_balance.amount == 0 );
+         validate_database();
+      }
+
+      generate_blocks( db.get_comment( "bob", string( "test" ) ).cashout_time );
+
+      {
+         const auto& post_rf = db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
+         const auto& comment_rf = db.get< reward_fund_object, by_name >( STEEMIT_COMMENT_REWARD_FUND_NAME );
+
+         BOOST_REQUIRE( post_rf.reward_balance.amount > 0 );
+         BOOST_REQUIRE( comment_rf.reward_balance.amount == 0 );
+         BOOST_REQUIRE( db.get_account( "alice" ).reward_sbd_balance.amount > 0 );
+         BOOST_REQUIRE( db.get_account( "bob" ).reward_sbd_balance.amount > 0 );
+         validate_database();
+      }
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( recent_rshares2_decay )
+{
+   try
+   {
+      BOOST_TEST_MESSAGE( "Testing: recent_rshares_2decay" );
+      ACTORS( (alice)(bob) )
+      generate_block();
+
+      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      generate_block();
+
+      comment_operation comment;
+      vote_operation vote;
+      signed_transaction tx;
+
+      comment.author = "alice";
+      comment.permlink = "test";
+      comment.parent_permlink = "test";
+      comment.title = "foo";
+      comment.body = "bar";
+      vote.voter = "alice";
+      vote.author = "alice";
+      vote.permlink = "test";
+      vote.weight = STEEMIT_100_PERCENT;
+      tx.operations.push_back( comment );
+      tx.operations.push_back( vote );
+      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+
+      auto alice_vshares = util::calculate_vshares( db.get_comment( "alice", string( "test" ) ).net_rshares.value, db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ) );
+
+      generate_blocks( 5 );
+
+      comment.author = "bob";
+      vote.voter = "bob";
+      vote.author = "bob";
+      tx.clear();
+      tx.operations.push_back( comment );
+      tx.operations.push_back( vote );
+      tx.sign( bob_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+
+      generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
+
+      {
+         const auto& post_rf = db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
+
+         BOOST_REQUIRE( post_rf.recent_rshares2 == alice_vshares );
+         validate_database();
+      }
+
+      auto bob_cashout_time = db.get_comment( "bob", string( "test" ) ).cashout_time;
+      auto bob_vshares = util::calculate_vshares( db.get_comment( "bob", string( "test" ) ).net_rshares.value, db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ) );
+
+      generate_block();
+
+      while( db.head_block_time() < bob_cashout_time )
+      {
+         alice_vshares -= ( alice_vshares * STEEMIT_BLOCK_INTERVAL ) / STEEMIT_RECENT_RSHARES_DECAY_RATE.to_seconds();
+         const auto& post_rf = db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
+
+         BOOST_REQUIRE( post_rf.recent_rshares2 == alice_vshares );
+
+         generate_block();
+
+      }
+
+      {
+         alice_vshares -= ( alice_vshares * STEEMIT_BLOCK_INTERVAL ) / STEEMIT_RECENT_RSHARES_DECAY_RATE.to_seconds();
+         const auto& post_rf = db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
+
+         BOOST_REQUIRE( post_rf.recent_rshares2 == alice_vshares + bob_vshares );
+         validate_database();
+      }
+   }
+   FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 #endif
