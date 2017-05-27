@@ -68,6 +68,7 @@
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
+#define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
@@ -130,6 +131,10 @@
 #define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
 #define STEEMIT_ACTIVE_CHALLENGE_COOLDOWN       fc::days(1)
 #define STEEMIT_OWNER_CHALLENGE_COOLDOWN        fc::days(1)
+
+#define STEEMIT_POST_REWARD_FUND_NAME           ("post")
+#define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
+#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
 
 // 5ccc e802 de5f
 // int(expm1( log1p( 1 ) / BLOCKS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK / 100000 + 0.5)
@@ -278,6 +283,7 @@
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
+#define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
@@ -340,6 +346,13 @@
 #define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
 #define STEEMIT_ACTIVE_CHALLENGE_COOLDOWN       fc::days(1)
 #define STEEMIT_OWNER_CHALLENGE_COOLDOWN        fc::days(1)
+
+#define STEEMIT_POST_REWARD_FUND_NAME           ("post")
+#define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
+#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
+
+#define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
+#define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
 
 // 5ccc e802 de5f
 // int(expm1( log1p( 1 ) / BLOCKS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK / 100000 + 0.5)

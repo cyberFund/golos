@@ -411,15 +411,15 @@ namespace steemit {
                                 composite_key<vesting_delegation_object,
                                         member<vesting_delegation_object, account_name_type, &vesting_delegation_object::delegator>,
                                         member<vesting_delegation_object, account_name_type, &vesting_delegation_object::delegatee>
-                                            >,
-            composite_key_compare< protocol::string_less, protocol::string_less >
+                                >,
+                                composite_key_compare<protocol::string_less, protocol::string_less>
                         >
                 >,
                 allocator<vesting_delegation_object>
         > vesting_delegation_index;
 
         struct by_expiration;
-           struct by_account_expiration;
+        struct by_account_expiration;
 
         typedef multi_index_container<
                 vesting_delegation_expiration_object,
@@ -432,14 +432,14 @@ namespace steemit {
                                         member<vesting_delegation_expiration_object, vesting_delegation_expiration_id_type, &vesting_delegation_expiration_object::id>
                                 >,
                                 composite_key_compare<std::less<time_point_sec>, std::less<vesting_delegation_expiration_id_type>>
-                                         >,
-         ordered_unique< tag< by_account_expiration >,
-            composite_key< vesting_delegation_expiration_object,
-               member< vesting_delegation_expiration_object, account_name_type, &vesting_delegation_expiration_object::delegator >,
-               member< vesting_delegation_expiration_object, time_point_sec, &vesting_delegation_expiration_object::expiration >,
-               member< vesting_delegation_expiration_object, vesting_delegation_expiration_id_type, &vesting_delegation_expiration_object::id >
-            >,
-            composite_key_compare< std::less< account_name_type >, std::less< time_point_sec >, std::less< vesting_delegation_expiration_id_type > >
+                        >,
+                        ordered_unique<tag<by_account_expiration>,
+                                composite_key<vesting_delegation_expiration_object,
+                                        member<vesting_delegation_expiration_object, account_name_type, &vesting_delegation_expiration_object::delegator>,
+                                        member<vesting_delegation_expiration_object, time_point_sec, &vesting_delegation_expiration_object::expiration>,
+                                        member<vesting_delegation_expiration_object, vesting_delegation_expiration_id_type, &vesting_delegation_expiration_object::id>
+                                >,
+                                composite_key_compare<std::less<account_name_type>, std::less<time_point_sec>, std::less<vesting_delegation_expiration_id_type>>
 
                         >
                 >,

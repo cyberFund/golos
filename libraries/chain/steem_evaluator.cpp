@@ -1348,14 +1348,14 @@ namespace steemit {
                 }
 
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
-                    FC_ASSERT(abs_rshares > 30000000 || o.weight ==
-                                                        0, "Voting weight is too small, please accumulate more voting power or steem power.");
+                    FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD ||
+                              o.weight ==
+                              0, "Voting weight is too small, please accumulate more voting power or steem power.");
                 } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
-                    FC_ASSERT(abs_rshares > 30000000 || abs_rshares ==
-                                                        1, "Voting weight is too small, please accumulate more voting power or steem power.");
+                    FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD ||
+                              abs_rshares ==
+                              1, "Voting weight is too small, please accumulate more voting power or steem power.");
                 }
-
-
 
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
@@ -1502,9 +1502,19 @@ namespace steemit {
                         cv.vote_percent = o.weight;
                         cv.last_update = _db.head_block_time();
 
-                        if (rshares > 0 &&
-                            (comment.last_payout == fc::time_point_sec()) &&
-                            comment.allow_curation_rewards) {
+                        bool curation_reward_eligible = rshares > 0 &&
+                                                        (comment.last_payout ==
+                                                         fc::time_point_sec()) &&
+                                                        comment.allow_curation_rewards;
+
+                        if (curation_reward_eligible &&
+                            _db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                            curation_reward_eligible =
+                                    _db.get_curation_rewards_percent(comment) >
+                                    0;
+                        }
+
+                        if (curation_reward_eligible) {
                             if (comment.created <
                                 fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME)) {
                                 u512 rshares3(rshares);
@@ -1581,7 +1591,9 @@ namespace steemit {
                         });
                     }
 
-                    _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                        _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    }
                 } else {
                     FC_ASSERT(itr->num_changes <
                               STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
@@ -1700,7 +1712,10 @@ namespace steemit {
                         cv.num_changes += 1;
                     });
 
-                    _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                        _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    }
+
                 }
 
             }
