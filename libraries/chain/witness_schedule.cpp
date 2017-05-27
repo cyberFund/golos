@@ -85,7 +85,7 @@ namespace steemit {
                  ++itr) {
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
                     (itr->signing_key == public_key_type())) {
-                        continue;
+                    continue;
                 }
                 selected_voted.insert(itr->id);
                 active_witnesses.push_back(itr->owner);
@@ -141,7 +141,7 @@ namespace steemit {
 
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
                     sitr->signing_key == public_key_type()) {
-                        continue;
+                    continue;
                 } /// skip witnesses without a valid block signing key
 
                 if (selected_miners.find(sitr->id) == selected_miners.end()
@@ -192,17 +192,17 @@ namespace steemit {
                     auto witness = db.get_witness(wso.current_shuffled_witnesses[i]);
                     if (witness_versions.find(witness.running_version) ==
                         witness_versions.end()) {
-                            witness_versions[witness.running_version] = 1;
+                        witness_versions[witness.running_version] = 1;
                     } else {
-                            witness_versions[witness.running_version] += 1;
+                        witness_versions[witness.running_version] += 1;
                     }
 
                     auto version_vote = std::make_tuple(witness.hardfork_version_vote, witness.hardfork_time_vote);
                     if (hardfork_version_votes.find(version_vote) ==
                         hardfork_version_votes.end()) {
-                            hardfork_version_votes[version_vote] = 1;
+                        hardfork_version_votes[version_vote] = 1;
                     } else {
-                            hardfork_version_votes[version_vote] += 1;
+                        hardfork_version_votes[version_vote] += 1;
                     }
                 }
 
@@ -400,7 +400,7 @@ namespace steemit {
                     if (db.head_block_num() >
                         STEEMIT_START_MINER_VOTING_BLOCK ||
                         active_witnesses.size() >= STEEMIT_MAX_WITNESSES) {
-                            break;
+                        break;
                     }
                     ++itr;
                 }
@@ -450,7 +450,7 @@ namespace steemit {
                     if (props.num_pow_witnesses == 0 ||
                         db.head_block_num() >
                         STEEMIT_START_MINER_VOTING_BLOCK) {
-                            _wso.current_virtual_time = new_virtual_time;
+                        _wso.current_virtual_time = new_virtual_time;
                     }
 
                     _wso.next_shuffle_block_num =

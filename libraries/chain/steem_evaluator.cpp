@@ -134,7 +134,14 @@ namespace steemit {
             FC_ASSERT(creator.balance >=
                       o.fee, "Insufficient balance to create account.", ("creator.balance", creator.balance)("required", o.fee));
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+            if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
+                const witness_schedule_object &wso = _db.get_witness_schedule_object();
+                FC_ASSERT(o.fee >= wso.median_props.account_creation_fee *
+                                   asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
+                        ("f", wso.median_props.account_creation_fee *
+                              asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
+                                ("p", o.fee));
+            } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = _db.get_witness_schedule_object();
                 FC_ASSERT(o.fee >=
                           wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
@@ -193,6 +200,102 @@ namespace steemit {
             }
         }
 
+        void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation &o) {
+            database &_db = db();
+            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_17__818), "Account creation with delegation is not enabled until hardfork 17");
+
+            const auto &creator = _db.get_account(o.creator);
+            const auto &props = _db.get_dynamic_global_properties();
+            const witness_schedule_object &wso = _db.get_witness_schedule_object();
+
+            FC_ASSERT(creator.balance >=
+                      o.fee, "Insufficient balance to create account.",
+                    ("creator.balance", creator.balance)
+                            ("required", o.fee));
+
+            FC_ASSERT(
+                    creator.vesting_shares - creator.delegated_vesting_shares >=
+                    o.delegation, "Insufficient vesting shares to delegate to new account.",
+                    ("creator.vesting_shares", creator.vesting_shares)
+                            ("creator.delegated_vesting_shares", creator.delegated_vesting_shares)("required", o.delegation));
+
+            auto target_delegation =
+                    asset(wso.median_props.account_creation_fee.amount *
+                          STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                          STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL) *
+                    props.get_vesting_share_price();
+
+            auto current_delegation = asset(o.fee.amount *
+                                            STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL) *
+                                      props.get_vesting_share_price() +
+                                      o.delegation;
+
+            FC_ASSERT(current_delegation >=
+                      target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
+                    ("f", target_delegation)
+                            ("p", current_delegation)
+                            ("account_creation_fee", wso.median_props.account_creation_fee)
+                            ("o.fee", o.fee)
+                            ("o.delegation", o.delegation));
+
+            FC_ASSERT(o.fee >=
+                      wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
+                    ("f", wso.median_props.account_creation_fee)
+                            ("p", o.fee));
+
+            for (auto &a : o.owner.account_auths) {
+                _db.get_account(a.first);
+            }
+
+            for (auto &a : o.active.account_auths) {
+                _db.get_account(a.first);
+            }
+
+            for (auto &a : o.posting.account_auths) {
+                _db.get_account(a.first);
+            }
+
+            _db.modify(creator, [&](account_object &c) {
+                c.balance -= o.fee;
+                c.delegated_vesting_shares += o.delegation;
+            });
+
+            const auto &new_account = _db.create<account_object>([&](account_object &acc) {
+                acc.name = o.new_account_name;
+                acc.memo_key = o.memo_key;
+                acc.created = props.time;
+                acc.last_vote_time = props.time;
+                acc.mined = false;
+
+                acc.recovery_account = o.creator;
+
+                acc.received_vesting_shares += o.delegation;
+
+#ifndef IS_LOW_MEM
+                from_string(acc.json_metadata, o.json_metadata);
+#endif
+            });
+
+            _db.create<account_authority_object>([&](account_authority_object &auth) {
+                auth.account = o.new_account_name;
+                auth.owner = o.owner;
+                auth.active = o.active;
+                auth.posting = o.posting;
+                auth.last_owner_update = fc::time_point_sec::min();
+            });
+
+            _db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
+                vdo.delegator = o.creator;
+                vdo.delegatee = o.new_account_name;
+                vdo.vesting_shares = o.delegation;
+                vdo.min_delegation_time = _db.head_block_time() +
+                                          STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
+            });
+
+            if (o.fee.amount > 0) {
+                _db.create_vesting(new_account, o.fee);
+            }
+        }
 
         void account_update_evaluator::do_apply(const account_update_operation &o) {
             database &_db = db();
@@ -1048,7 +1151,7 @@ namespace steemit {
 
             if (o.proxy.size()) {
                 const auto &new_proxy = _db.get_account(o.proxy);
-                flat_set <account_id_type> proxy_chain({account.id, new_proxy.id
+                flat_set<account_id_type> proxy_chain({account.id, new_proxy.id
                 });
                 proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
 
@@ -1236,7 +1339,7 @@ namespace steemit {
                           current_power, "Account does not have enough power to vote.");
 
                 int64_t abs_rshares = (
-                        (uint128_t(voter.vesting_shares.amount.value) *
+                        (uint128_t(voter.effective_vesting_shares().amount.value) *
                          used_power) / (STEEMIT_100_PERCENT)).to_uint64();
                 if (!_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
                     abs_rshares == 0) {

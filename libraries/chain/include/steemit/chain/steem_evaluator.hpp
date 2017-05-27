@@ -11,6 +11,8 @@ namespace steemit {
 
         STEEMIT_DEFINE_EVALUATOR(account_create)
 
+        DEFINE_EVALUATOR( account_create_with_delegation )
+
         STEEMIT_DEFINE_EVALUATOR(account_update)
 
         STEEMIT_DEFINE_EVALUATOR(transfer)

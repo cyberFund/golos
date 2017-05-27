@@ -487,7 +487,7 @@ namespace steemit {
                         b.last_bandwidth_update = now;
                     });
 
-                    fc::uint128 account_vshares(a.vesting_shares.amount.value);
+                    fc::uint128 account_vshares(a.effective_vesting_shares().amount.value);
                     fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
 
                     fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
@@ -2247,6 +2247,8 @@ namespace steemit {
             add_core_index<escrow_index>(*this);
             add_core_index<savings_withdraw_index>(*this);
             add_core_index<decline_voting_rights_request_index>(*this);
+            add_core_index<vesting_delegation_index>(*this);
+            add_core_index<vesting_delegation_expiration_index>(*this);
 
             _plugin_index_signal();
         }
