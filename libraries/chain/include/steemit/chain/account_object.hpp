@@ -181,6 +181,7 @@ namespace steemit {
             account_name_type delegator;
             account_name_type delegatee;
             asset vesting_shares;
+                     time_point_sec    min_delegation_time;
         };
 
         class vesting_delegation_expiration_object
@@ -519,7 +520,7 @@ FC_REFLECT(steemit::chain::account_bandwidth_object,
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_bandwidth_object, steemit::chain::account_bandwidth_index)
 
 FC_REFLECT(steemit::chain::vesting_delegation_object,
-        (id)(delegator)(delegatee)(vesting_shares))
+                    (id)(delegator)(delegatee)(vesting_shares)(min_delegation_time) )
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::vesting_delegation_object, steemit::chain::vesting_delegation_index)
 
 FC_REFLECT(steemit::chain::vesting_delegation_expiration_object,
