@@ -2487,7 +2487,7 @@ namespace steemit {
                         }
                     } else if (part[0] == "payout") {
                         discussion_query q;
-                        q.tag = tag;
+                        q.select_tags.insert(tag);
                         q.limit = 20;
                         q.truncate_body = 1024;
                         auto trending_disc = get_discussions_by_payout(q);
