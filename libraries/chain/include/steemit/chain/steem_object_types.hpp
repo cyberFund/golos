@@ -72,7 +72,7 @@ namespace steemit {
             decline_voting_rights_request_object_type,
             block_stats_object_type,
             vesting_delegation_object_type,
-            vesting_delegation_expiration_object_type
+            vesting_delegation_expiration_object_type,
             reward_fund_object_type
         };
 
