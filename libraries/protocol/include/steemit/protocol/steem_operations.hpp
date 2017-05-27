@@ -999,6 +999,18 @@ namespace steemit {
 
             void validate() const;
         };
+
+        struct delegate_vesting_shares_operation : public base_operation {
+            account_name_type delegator;
+            account_name_type delegatee;
+            asset vesting_shares;
+
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+                a.insert(delegator);
+            }
+
+            void validate() const;
+        };
     }
 } // steemit::protocol
 
@@ -1075,3 +1087,4 @@ FC_REFLECT(steemit::protocol::request_account_recovery_operation, (recovery_acco
 FC_REFLECT(steemit::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 FC_REFLECT(steemit::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions));
 FC_REFLECT(steemit::protocol::decline_voting_rights_operation, (account)(decline));
+FC_REFLECT(steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares));

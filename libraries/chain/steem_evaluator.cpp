@@ -364,8 +364,9 @@ namespace steemit {
 
                 _db.modify(_c, [&](comment_object &c) {
                     for (auto &b : cpb.beneficiaries) {
-                                    auto acc = _db.find< account_object, by_name >( b.account );
-            FC_ASSERT( acc != nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account) );
+                        auto acc = _db.find<account_object, by_name>(b.account);
+                        FC_ASSERT(acc !=
+                                  nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account));
                         c.beneficiaries.push_back(b);
                     }
                 });
@@ -451,7 +452,8 @@ namespace steemit {
                 if (itr == by_permlink_idx.end()) {
                     if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
                         FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) && !_db.has_hardfork(STEEMIT_HARDFORK_0_17__97))
+                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                            !_db.has_hardfork(STEEMIT_HARDFORK_0_17__97))
                             FC_ASSERT(
                                     _db.calculate_discussion_payout_time(*parent) !=
                                     fc::time_point_sec::maximum(), "Discussion is frozen.");

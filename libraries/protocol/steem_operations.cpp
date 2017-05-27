@@ -83,27 +83,31 @@ namespace steemit {
         void comment_payout_beneficiaries::validate() const {
             uint32_t sum = 0;
 
-      FC_ASSERT( beneficiaries.size(), "Must specify at least one beneficiary" );
+            FC_ASSERT(beneficiaries.size(), "Must specify at least one beneficiary");
             FC_ASSERT(beneficiaries.size() <
                       128, "Cannot specify more than 127 beneficiaries."); // Require size serializtion fits in one byte.
 
-                  string_less str_cmp;
+            string_less str_cmp;
 
-            validate_account_name( beneficiaries[0].account );
-            FC_ASSERT( beneficiaries[0].weight <= STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account" );
+            validate_account_name(beneficiaries[0].account);
+            FC_ASSERT(beneficiaries[0].weight <=
+                      STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");
             sum += beneficiaries[0].weight;
-            FC_ASSERT( sum <= STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment" ); // Have to check incrementally to avoid overflow
+            FC_ASSERT(sum <=
+                      STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
 
-            for( size_t i = 1; i < beneficiaries.size(); i++ ) {
+            for (size_t i = 1; i < beneficiaries.size(); i++) {
 
 
-                validate_account_name( beneficiaries[i].account );
-         FC_ASSERT( beneficiaries[i].weight <= STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account" );
-         sum += beneficiaries[i].weight;
+                validate_account_name(beneficiaries[i].account);
+                FC_ASSERT(beneficiaries[i].weight <=
+                          STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");
+                sum += beneficiaries[i].weight;
 
                 FC_ASSERT(sum <=
                           STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
-                                            FC_ASSERT( beneficiaries[i - 1] < beneficiaries[i], "Benficiaries must be specified in sorted order (account ascending)" );
+                FC_ASSERT(beneficiaries[i - 1] <
+                          beneficiaries[i], "Benficiaries must be specified in sorted order (account ascending)");
             }
         }
 
@@ -536,6 +540,10 @@ namespace steemit {
                       reset_account, "new reset account cannot be current reset account");
         }
 
-
+        void delegate_vesting_shares_operation::validate() const {
+            validate_account_name(delegator);
+            validate_account_name(delegatee);
+            FC_ASSERT(vesting_shares.symbol == VESTS_SYMBOL);
+        }
     }
 } // steemit::protocol
