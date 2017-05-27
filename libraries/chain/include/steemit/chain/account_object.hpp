@@ -524,7 +524,7 @@ FC_REFLECT(steemit::chain::vesting_delegation_object,
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::vesting_delegation_object, steemit::chain::vesting_delegation_index)
 
 FC_REFLECT(steemit::chain::vesting_delegation_expiration_object,
-        (id)(delegator)(vesting_shares)(expiration) )
+        (id)(delegator)(vesting_shares)(expiration))
 
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::vesting_delegation_expiration_object, steemit::chain::vesting_delegation_expiration_index)
 

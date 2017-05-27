@@ -475,9 +475,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                     fc::seconds(STEEMIT_CASHOUT_WINDOW_SECONDS)));
 
 #ifndef IS_LOW_MEM
-                                                                                                                                    BOOST_REQUIRE( to_string( alice_comment.title ) == op.title );
-         BOOST_REQUIRE( to_string( alice_comment.body ) == op.body );
-         //BOOST_REQUIRE( alice_comment.json_metadata == op.json_metadata );
+            BOOST_REQUIRE(to_string(alice_comment.title) == op.title);
+            BOOST_REQUIRE(to_string(alice_comment.body) == op.body);
+            //BOOST_REQUIRE( alice_comment.json_metadata == op.json_metadata );
 #else
             BOOST_REQUIRE(to_string(alice_comment.title) == "");
             BOOST_REQUIRE(to_string(alice_comment.body) == "");
@@ -6401,150 +6401,475 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
         FC_LOG_AND_RETHROW()
     }
 
-    BOOST_AUTO_TEST_CASE( comment_beneficiaries_validate )
-{
-   try
-   {
-      comment_options_operation op;
+    BOOST_AUTO_TEST_CASE(comment_beneficiaries_validate) {
+        try {
+            comment_options_operation op;
 
-      op.author = "alice";
-      op.permlink = "test";
+            op.author = "alice";
+            op.permlink = "test";
 
-      comment_payout_beneficiaries b;
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "bob" ), STEEMIT_100_PERCENT + 1 ) );
-      op.extensions.insert( b );
-      STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
-
-
-      b.beneficiaries.clear();
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "bob" ), STEEMIT_1_PERCENT * 75 ) );
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "sam" ), STEEMIT_1_PERCENT * 75 ) );
-      op.extensions.clear();
-      op.extensions.insert( b );
-      STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
-
-      b.beneficiaries.clear();
-      for( size_t i = 0; i < 127; i++ )
-      {
-         b.beneficiaries.push_back( std::make_pair( account_name_type( "foo" + fc::to_string( i ) ), 1 ) );
-      }
-
-      op.extensions.clear();
-      op.extensions.insert( b );
-      op.validate();
-
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "bar" ), 1 ) );
-      op.extensions.clear();
-      op.extensions.insert( b );
-      STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Test Comment Beneficiaries" );
-      ACTORS( (alice)(bob)(sam) )
-      generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
-
-      comment_operation comment;
-      vote_operation vote;
-      comment_options_operation op;
-      comment_payout_beneficiaries b;
-      signed_transaction tx;
-
-      comment.author = "alice";
-      comment.permlink = "test";
-      comment.parent_permlink = "test";
-      comment.title = "test";
-      comment.body = "foobar";
-
-      tx.operations.push_back( comment );
-      tx.set_expiration( db.head_block_time() + STEEMIT_MIN_TRANSACTION_EXPIRATION_LIMIT );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx );
+            comment_payout_beneficiaries b;
+            b.beneficiaries.push_back(std::make_pair(account_name_type("bob"),
+                    STEEMIT_100_PERCENT + 1));
+            op.extensions.insert(b);
+            STEEMIT_REQUIRE_THROW(op.validate(), fc::assert_exception);
 
 
-      BOOST_TEST_MESSAGE( "--- Test failure on more than 8 benefactors" );
-      for( size_t i = 0; i < 8; i++ )
-      {
-         b.beneficiaries.push_back( std::make_pair( account_name_type( STEEMIT_INIT_MINER_NAME + fc::to_string( i ) ), STEEMIT_1_PERCENT ) );
-      }
-
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "bob" ), STEEMIT_1_PERCENT ) );
-      op.author = "alice";
-      op.permlink = "test";
-      op.extensions.insert( b );
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );
-
-
-      BOOST_TEST_MESSAGE( "--- Test specifying a non-existent benefactor" );
-      b.beneficiaries.clear();
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "dave" ), STEEMIT_1_PERCENT ) );
+            b.beneficiaries.clear();
+            b.beneficiaries.push_back(std::make_pair(account_name_type("bob"),
+                    STEEMIT_1_PERCENT * 75));
+            b.beneficiaries.push_back(std::make_pair(account_name_type("sam"),
+                    STEEMIT_1_PERCENT * 75));
             op.extensions.clear();
-      op.extensions.insert( b );
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );
+            op.extensions.insert(b);
+            STEEMIT_REQUIRE_THROW(op.validate(), fc::assert_exception);
 
-            BOOST_TEST_MESSAGE( "--- Test setting when comment has been voted on" );
-      vote.author = "alice";
-      vote.permlink = "test";
-      vote.voter = "bob";
-      vote.weight = STEEMIT_100_PERCENT;
+            b.beneficiaries.clear();
+            for (size_t i = 0; i < 127; i++) {
+                b.beneficiaries.push_back(std::make_pair(account_name_type(
+                        "foo" + fc::to_string(i)), 1));
+            }
 
-      b.beneficiaries.clear();
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "bob" ), 25 * STEEMIT_1_PERCENT ) );
-      op.extensions.clear();
-      op.extensions.insert( b );
+            op.extensions.clear();
+            op.extensions.insert(b);
+            op.validate();
 
-      tx.clear();
-      tx.operations.push_back( vote );
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      tx.sign( bob_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );
+            b.beneficiaries.push_back(std::make_pair(account_name_type("bar"), 1));
+            op.extensions.clear();
+            op.extensions.insert(b);
+            STEEMIT_REQUIRE_THROW(op.validate(), fc::assert_exception);
+        }
+        FC_LOG_AND_RETHROW()
+    }
 
+    BOOST_AUTO_TEST_CASE(comment_beneficiaries_apply) {
+        try {
+            BOOST_TEST_MESSAGE("Test Comment Beneficiaries");
+            ACTORS((alice)(bob)(sam))
+            generate_block();
 
-      BOOST_TEST_MESSAGE( "--- Test success" );
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx );
+            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
+            comment_operation comment;
+            vote_operation vote;
+            comment_options_operation op;
+            comment_payout_beneficiaries b;
+            signed_transaction tx;
 
-      BOOST_TEST_MESSAGE( "--- Test setting when there are already beneficiaries" );
-      b.beneficiaries.clear();
-      b.beneficiaries.push_back( std::make_pair( account_name_type( "sam" ), 25 * STEEMIT_1_PERCENT ) );
-      op.extensions.clear();
-      op.extensions.insert( b );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );
+            comment.author = "alice";
+            comment.permlink = "test";
+            comment.parent_permlink = "test";
+            comment.title = "test";
+            comment.body = "foobar";
 
-
-      BOOST_TEST_MESSAGE( "--- Payout and verify rewards were split properly" );
-      tx.clear();
-      tx.operations.push_back( vote );
-      tx.sign( bob_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-
-            generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
+            tx.operations.push_back(comment);
+            tx.set_expiration(db.head_block_time() +
+                              STEEMIT_MIN_TRANSACTION_EXPIRATION_LIMIT);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx);
 
 
-            idump( (db.get_comment( "alice", string( "test" ) ))(db.get_account("alice"))(db.get_account("bob")) );
+            BOOST_TEST_MESSAGE("--- Test failure on more than 8 benefactors");
+            for (size_t i = 0; i < 8; i++) {
+                b.beneficiaries.push_back(std::make_pair(account_name_type(
+                        STEEMIT_INIT_MINER_NAME +
+                        fc::to_string(i)), STEEMIT_1_PERCENT));
+            }
 
-   }
-   FC_LOG_AND_RETHROW()
-}
+            b.beneficiaries.push_back(std::make_pair(account_name_type("bob"), STEEMIT_1_PERCENT));
+            op.author = "alice";
+            op.permlink = "test";
+            op.extensions.insert(b);
+            tx.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx), fc::assert_exception);
+
+
+            BOOST_TEST_MESSAGE("--- Test specifying a non-existent benefactor");
+            b.beneficiaries.clear();
+            b.beneficiaries.push_back(std::make_pair(account_name_type("dave"), STEEMIT_1_PERCENT));
+            op.extensions.clear();
+            op.extensions.insert(b);
+            tx.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx), fc::assert_exception);
+
+            BOOST_TEST_MESSAGE("--- Test setting when comment has been voted on");
+            vote.author = "alice";
+            vote.permlink = "test";
+            vote.voter = "bob";
+            vote.weight = STEEMIT_100_PERCENT;
+
+            b.beneficiaries.clear();
+            b.beneficiaries.push_back(std::make_pair(account_name_type("bob"),
+                    25 * STEEMIT_1_PERCENT));
+            op.extensions.clear();
+            op.extensions.insert(b);
+
+            tx.clear();
+            tx.operations.push_back(vote);
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            tx.sign(bob_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx), fc::assert_exception);
+
+
+            BOOST_TEST_MESSAGE("--- Test success");
+            tx.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx);
+
+
+            BOOST_TEST_MESSAGE("--- Test setting when there are already beneficiaries");
+            b.beneficiaries.clear();
+            b.beneficiaries.push_back(std::make_pair(account_name_type("sam"),
+                    25 * STEEMIT_1_PERCENT));
+            op.extensions.clear();
+            op.extensions.insert(b);
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx), fc::assert_exception);
+
+
+            BOOST_TEST_MESSAGE("--- Payout and verify rewards were split properly");
+            tx.clear();
+            tx.operations.push_back(vote);
+            tx.sign(bob_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+
+            generate_blocks(db.get_comment("alice", string("test")).cashout_time);
+
+
+            idump((db.get_comment("alice", string("test")))(db.get_account("alice"))(db.get_account("bob")));
+
+        }
+        FC_LOG_AND_RETHROW()
+    }
+
+    BOOST_AUTO_TEST_CASE(account_create_with_delegation_authorities) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: account_create_authorities");
+
+            signed_transaction tx;
+            ACTORS((alice));
+            generate_blocks(1);
+            fund("alice", ASSET("1000.000 TESTS"));
+            vest("alice", ASSET("10000.000 VESTS"));
+            private_key_type priv_key = generate_private_key("temp_key");
+            account_create_with_delegation_operation op;
+            op.fee = ASSET("0.000 TESTS");
+            op.delegation = asset(100, VESTS_SYMBOL);
+            op.creator = "alice";
+            op.new_account_name = "bob";
+            op.owner = authority(1, priv_key.get_public_key(), 1);
+            op.active = authority(2, priv_key.get_public_key(), 2);
+            op.memo_key = priv_key.get_public_key();
+            op.json_metadata = "{\"foo\":\"bar\"}";
+
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+
+            BOOST_TEST_MESSAGE("--- Test failure when no signatures");
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+
+            BOOST_TEST_MESSAGE("--- Test success with witness signature");
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
+            tx.operations.clear();
+            tx.signatures.clear();
+            op.new_account_name = "sam";
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+
+            BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
+            tx.signatures.clear();
+            tx.sign(init_account_priv_key, db.get_chain_id());
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+
+            BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
+            tx.signatures.clear();
+            tx.sign(init_account_priv_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            validate_database();
+        }
+        FC_LOG_AND_RETHROW()
+
+    }
+
+    BOOST_AUTO_TEST_CASE(account_create_with_delegation_apply) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: account_create_with_delegation_apply");
+            signed_transaction tx;
+            ACTORS((alice));
+
+            // 150 * fee = ( 5 * STEEM ) + SP
+            auto gpo = db.get_dynamic_global_properties();
+            const witness_schedule_object &wso = db.get_witness_schedule_object();
+            generate_blocks(1);
+            fund("alice", ASSET("1510.000 TESTS"));
+            vest("alice", ASSET("1000000000000.000 VESTS"));
+
+            private_key_type priv_key = generate_private_key("temp_key");
+            account_create_with_delegation_operation op;
+            op.fee = ASSET("10.000 TESTS");
+            op.delegation = asset(10000, VESTS_SYMBOL);
+            op.creator = "alice";
+            op.new_account_name = "bob";
+            op.owner = authority(1, priv_key.get_public_key(), 1);
+            op.active = authority(2, priv_key.get_public_key(), 2);
+            op.memo_key = priv_key.get_public_key();
+            op.json_metadata = "{\"foo\":\"bar\"}";
+
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            BOOST_TEST_MESSAGE("--- Test success under normal conditions. ");
+            db.push_transaction(tx, 0);
+            generate_blocks(1);
+            const account_object &bob_acc = db.get_account("bob");
+            const account_object &alice_acc = db.get_account("alice");
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares ==
+                          asset(10000, VESTS_SYMBOL));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares ==
+                          asset(10000, VESTS_SYMBOL));
+            BOOST_REQUIRE(bob_acc.effective_vesting_shares() ==
+                          bob_acc.vesting_shares -
+                          bob_acc.delegated_vesting_shares +
+                          bob_acc.received_vesting_shares);
+
+            BOOST_TEST_MESSAGE("--- Test delegator object integrety. ");
+
+            auto delegation = db.find<vesting_delegation_object, by_delegation>(boost::make_tuple(op.creator, op.new_account_name));
+
+            BOOST_REQUIRE(delegation != nullptr);
+            BOOST_REQUIRE(delegation->delegator == op.creator);
+            BOOST_REQUIRE(
+                    delegation->vesting_shares == ASSET("300.000000 VESTS"));
+
+            BOOST_REQUIRE(
+                    delegation->vesting_shares == asset(10000, VESTS_SYMBOL));
+
+
+            db.modify(wso, [&](witness_schedule_object &w) {
+                w.median_props.account_creation_fee = ASSET("10.000 TESTS");
+            });
+            generate_blocks(1);
+            tx.clear();
+            op.fee = asset(wso.median_props.account_creation_fee.amount *
+                           STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                           STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL);
+            op.delegation = asset(0, VESTS_SYMBOL);
+            op.new_account_name = "sam";
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            BOOST_TEST_MESSAGE("--- Test success using only STEEM to reach target delegation.");
+            db.push_transaction(tx, 0);
+            generate_blocks(1);
+            tx.clear();
+            op.fee = ASSET("10.000 TESTS");
+            op.delegation = asset(0.000, VESTS_SYMBOL);
+            op.new_account_name = "pam";
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            BOOST_TEST_MESSAGE("--- Test failure when insufficient funds to process transaction.");
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+            fund("alice", asset(wso.median_props.account_creation_fee.amount *
+                                STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                                STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL));
+            BOOST_TEST_MESSAGE("--- Test failure when insufficient fee fo reach target delegation.");
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+
+            validate_database();
+        }
+        FC_LOG_AND_RETHROW()
+    }
+
+    BOOST_AUTO_TEST_CASE(delegate_vesting_shares_authorities) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: delegate_vesting_shares_authorities");
+            signed_transaction tx;
+            ACTORS((alice)(bob))
+            vest("alice", ASSET("10000.000000 VESTS"));
+
+            delegate_vesting_shares_operation op;
+            op.vesting_shares = ASSET("300.000000 VESTS");
+            op.delegator = "alice";
+            op.delegatee = "bob";
+
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+
+            BOOST_TEST_MESSAGE("--- Test failure when no signatures");
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+
+            BOOST_TEST_MESSAGE("--- Test success with witness signature");
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
+            tx.operations.clear();
+            tx.signatures.clear();
+            op.delegatee = "sam";
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+
+            BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
+            tx.signatures.clear();
+            tx.sign(init_account_priv_key, db.get_chain_id());
+            tx.sign(alice_private_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+
+            BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
+            tx.signatures.clear();
+            tx.sign(init_account_priv_key, db.get_chain_id());
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            validate_database();
+        }
+        FC_LOG_AND_RETHROW()
+    }
+
+    BOOST_AUTO_TEST_CASE(delegate_vesting_shares_apply) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: delegate_vesting_shares_apply");
+            signed_transaction tx;
+            ACTORS((alice)(bob))
+            vest("alice", ASSET("10000.000000 VESTS"));
+
+            delegate_vesting_shares_operation op;
+            op.vesting_shares = ASSET("300.000000 VESTS");
+            op.delegator = "alice";
+            op.delegatee = "bob";
+
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            generate_blocks(1);
+            const account_object &alice_acc = db.get_account("alice");
+            const account_object &bob_acc = db.get_account("bob");
+
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares ==
+                          ASSET("300.000000 VESTS"));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares ==
+                          ASSET("300.000000 VESTS"));
+
+            BOOST_TEST_MESSAGE("--- Test that the delegation object is correct. ");
+
+            auto delegation = db.find<vesting_delegation_object, by_delegation>(boost::make_tuple(op.delegator, op.delegatee));
+
+            BOOST_REQUIRE(delegation != nullptr);
+            BOOST_REQUIRE(delegation->delegator == op.delegator);
+            BOOST_REQUIRE(
+                    delegation->vesting_shares == ASSET("300.000000 VESTS"));
+
+            validate_database();
+            tx.clear();
+            op.vesting_shares = ASSET("400.000000 VESTS");
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            generate_blocks(1);
+
+            BOOST_REQUIRE(delegation != nullptr);
+            BOOST_REQUIRE(delegation->delegator == op.delegator);
+            BOOST_REQUIRE(
+                    delegation->vesting_shares == ASSET("400.000000 VESTS"));
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares ==
+                          ASSET("400.000000 VESTS"));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares ==
+                          ASSET("400.000000 VESTS"));
+
+
+            tx.clear();
+            op.delegator = "alice";
+            op.vesting_shares = ASSET("000.000000 VESTS");
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            generate_blocks(1);
+
+            BOOST_REQUIRE(delegation != nullptr);
+            BOOST_REQUIRE(delegation->delegator == op.delegator);
+            BOOST_REQUIRE(
+                    delegation->vesting_shares == ASSET("0.000000 VESTS"));
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares ==
+                          ASSET("0.000000 VESTS"));
+            BOOST_REQUIRE(
+                    bob_acc.received_vesting_shares == ASSET("0.000000 VESTS"));
+
+            BOOST_TEST_MESSAGE("--- Test that effective vesting shares is accurate and being applied.");
+            tx.operations.clear();
+            tx.signatures.clear();
+
+            comment_operation comment_op;
+            comment_op.author = "alice";
+            comment_op.permlink = "foo";
+            comment_op.parent_permlink = "test";
+            comment_op.title = "bar";
+            comment_op.body = "foo bar";
+            tx.operations.push_back(comment_op);
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            tx.signatures.clear();
+            tx.operations.clear();
+            vote_operation vote_op;
+            vote_op.voter = "bob";
+            vote_op.author = "alice";
+            vote_op.permlink = "foo";
+            vote_op.weight = STEEMIT_100_PERCENT;
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.operations.push_back(vote_op);
+            tx.sign(bob_private_key, db.get_chain_id());
+            auto old_voting_power = bob_acc.voting_power;
+
+            db.push_transaction(tx, 0);
+            generate_blocks(1);
+
+            const auto &vote_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+
+            auto &alice_comment = db.get_comment("alice", string("foo"));
+            auto itr = vote_idx.find(std::make_tuple(alice_comment.id, bob_acc.id));
+            int64_t max_vote_denom =
+                    (db.get_dynamic_global_properties().vote_regeneration_per_day *
+                     STEEMIT_VOTE_REGENERATION_SECONDS) / (60 * 60 * 24);
+            BOOST_REQUIRE(alice_comment.net_rshares.value ==
+                          bob_acc.effective_vesting_shares().amount.value *
+                          (old_voting_power - bob_acc.voting_power) /
+                          STEEMIT_100_PERCENT);
+            BOOST_REQUIRE(itr->rshares ==
+                          bob_acc.effective_vesting_shares().amount.value *
+                          (old_voting_power - bob_acc.voting_power) /
+                          STEEMIT_100_PERCENT);
+
+        }
+        FC_LOG_AND_RETHROW()
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 #endif
