@@ -1615,7 +1615,7 @@ namespace steemit {
 
                         adjust_total_payout(comment, sbd_payout.first +
                                                      to_sbd(sbd_payout.second +
-                                                            asset(vesting_steem, STEEM_SYMBOL)), to_sbd(asset(curation_tokens, STEEM_SYMBOL)));
+                                                            asset(vesting_steem, STEEM_SYMBOL)), to_sbd(asset(curation_tokens, STEEM_SYMBOL)), to_sbd(asset(total_beneficiary, STEEM_SYMBOL)));
 
 
                         /*if( sbd_created.symbol == SBD_SYMBOL )
@@ -3887,14 +3887,14 @@ namespace steemit {
                         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                        rfo.content_constant = util::get_content_constant_s().to_uint64();
+                        rfo.content_constant = utilities::get_content_constant_s().to_uint64();
                     });
 
                     create<reward_fund_object>([&](reward_fund_object &rfo) {
                         rfo.name = STEEMIT_COMMENT_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                        rfo.content_constant = util::get_content_constant_s().to_uint64();
+                        rfo.content_constant = utilities::get_content_constant_s().to_uint64();
                     });
                 }
                     break;
