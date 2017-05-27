@@ -1010,7 +1010,7 @@ FC_API(steemit::wallet::wallet_api,
                 (update_account_auth_threshold)
                 (update_account_meta)
                 (update_account_memo_key)
-                        (delegate_vesting_shares)
+                (delegate_vesting_shares)
                 (update_witness)
                 (set_voting_proxy)
                 (vote_for_witness)

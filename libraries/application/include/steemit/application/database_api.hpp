@@ -259,8 +259,9 @@ namespace steemit {
 
             std::vector<savings_withdraw_api_obj> get_savings_withdraw_to(std::string account) const;
 
-                  vector< vesting_delegation_api_obj > get_vesting_delegations( string account, string from, uint32_t limit = 100 )const;
-      vector< vesting_delegation_expiration_api_obj > get_expiring_vesting_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
+            vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
+
+            vector<vesting_delegation_expiration_api_obj> get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit = 100) const;
 
             ///////////////
             // Witnesses //
@@ -601,8 +602,8 @@ FC_API(steemit::app::database_api,
                 (get_account_bandwidth)
                 (get_savings_withdraw_from)
                 (get_savings_withdraw_to)
-                   (get_vesting_delegations)
-   (get_expiring_vesting_delegations)
+                (get_vesting_delegations)
+                (get_expiring_vesting_delegations)
 
                 // Market
                 (get_order_book)
