@@ -30,8 +30,6 @@
 namespace steemit {
     namespace chain {
 
-//namespace db2 = graphene::db2;
-
         struct object_schema_repr {
             std::pair<uint16_t, uint16_t> space_type;
             std::string type;
@@ -947,7 +945,7 @@ namespace steemit {
 
         inline const void database::push_virtual_operation(const operation &op, bool force) {
             if (!force) {
-#if defined( IS_LOW_MEM ) && !defined( STEEMIT_BUILD_TESTNET )
+#if defined( STEEMIT_BUILD_LOW_MEMORY ) && !defined( STEEMIT_BUILD_TESTNET )
                 return;
 #endif
             }
@@ -1492,11 +1490,12 @@ namespace steemit {
             }
         }
 
-        void database::adjust_total_payout(const comment_object &cur, const asset &sbd_created, const asset &curator_sbd_value) {
+        void database::adjust_total_payout(const comment_object &cur, const asset &sbd_created, const asset &curator_sbd_value, const asset &beneficiary_value) {
             modify(cur, [&](comment_object &c) {
                 if (c.total_payout_value.symbol == sbd_created.symbol) {
                     c.total_payout_value += sbd_created;
                 }
+                c.beneficiary_payout_value += beneficiary_value;
                 c.curator_payout_value += curator_sbd_value;
             });
             /// TODO: potentially modify author's total payout numbers as well
@@ -1529,7 +1528,7 @@ namespace steemit {
 
                             push_virtual_operation(curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                             modify(voter, [&](account_object &a) {
                                 a.curation_rewards += claim;
                             });
@@ -1587,6 +1586,18 @@ namespace steemit {
 
                         author_tokens += pay_curators(comment, curation_tokens);
 
+                        share_type total_beneficiary = 0;
+
+                        for (auto &b : comment.beneficiaries) {
+                            auto benefactor_tokens =
+                                    (author_tokens * b.weight) /
+                                    STEEMIT_100_PERCENT;
+                            auto vest_created = create_vesting(get_account(b.account), benefactor_tokens);
+                            push_virtual_operation(comment_benefactor_reward_operation(b.account, comment.author, to_string(comment.permlink), vest_created));
+                            author_tokens -= benefactor_tokens;
+                            total_beneficiary += benefactor_tokens;
+                        }
+
                         auto sbd_steem = (author_tokens *
                                           comment.percent_steem_dollars) /
                                          (2 * STEEMIT_100_PERCENT);
@@ -1598,9 +1609,8 @@ namespace steemit {
 
                         adjust_total_payout(comment, sbd_payout.first +
                                                      to_sbd(sbd_payout.second +
-                                                            asset(vesting_steem, STEEM_SYMBOL)), to_sbd(asset(
-                                reward_tokens.to_uint64() -
-                                author_tokens, STEEM_SYMBOL)));
+                                                            asset(vesting_steem, STEEM_SYMBOL)), to_sbd(asset(curation_tokens, STEEM_SYMBOL)), to_sbd(asset(total_beneficiary, STEEM_SYMBOL)));
+
 
                         /*if( sbd_created.symbol == SBD_SYMBOL )
                            adjust_total_payout( comment, sbd_created + to_sbd( asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( reward_tokens.to_uint64() - author_tokens, STEEM_SYMBOL ) ) );
@@ -1614,7 +1624,7 @@ namespace steemit {
                         push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first, sbd_payout.second, vest_created));
                         push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                         modify(comment, [&](comment_object &c) {
                             c.author_rewards += author_tokens;
                         });
@@ -4030,7 +4040,7 @@ namespace steemit {
             for (auto itr = cidx.begin(); itr != cidx.end(); ++itr) {
                 if (itr->parent_author != STEEMIT_ROOT_POST_PARENT) {
 // Low memory nodes only need immediate child count, full nodes track total children
-#ifdef IS_LOW_MEM
+#ifdef STEEMIT_BUILD_LOW_MEMORY
                     modify(get_comment(itr->parent_author, itr->parent_permlink), [&](comment_object &c) {
                         c.children++;
                     });

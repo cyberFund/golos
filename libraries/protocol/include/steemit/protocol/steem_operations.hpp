@@ -22,7 +22,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -30,21 +30,21 @@ namespace steemit {
 
         struct account_update_operation : public base_operation {
             account_name_type account;
-            optional<authority> owner;
-            optional<authority> active;
-            optional<authority> posting;
+            optional <authority> owner;
+            optional <authority> active;
+            optional <authority> posting;
             public_key_type memo_key;
             string json_metadata;
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (owner) {
                     a.insert(account);
                 }
             }
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 if (!owner) {
                     a.insert(account);
                 }
@@ -65,10 +65,39 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(author);
             }
         };
+
+        struct beneficiary_route_type {
+            beneficiary_route_type() {
+            }
+
+            beneficiary_route_type(const account_name_type &a, const uint16_t &w)
+                    : account(a), weight(w) {
+            }
+
+            account_name_type account;
+            uint16_t weight;
+
+            // For use by std::sort such that the route is sorted first by name (ascending)
+            bool operator<(const beneficiary_route_type &o) const {
+                return string_less()(account, o.account);
+            }
+        };
+
+        struct comment_payout_beneficiaries {
+            vector <beneficiary_route_type> beneficiaries;
+
+            void validate() const;
+        };
+
+        typedef static_variant <
+        comment_payout_beneficiaries
+        > comment_options_extension;
+
+        typedef flat_set <comment_options_extension> comment_options_extensions_type;
 
 
         /**
@@ -87,11 +116,11 @@ namespace steemit {
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
-            extensions_type extensions;
+            comment_options_extensions_type extensions;
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(author);
             }
         };
@@ -104,7 +133,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(challenger);
             }
         };
@@ -115,13 +144,13 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 if (!require_owner) {
                     a.insert(challenged);
                 }
             }
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (require_owner) {
                     a.insert(challenged);
                 }
@@ -135,7 +164,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(author);
             }
         };
@@ -149,7 +178,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(voter);
             }
         };
@@ -173,13 +202,13 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 if (amount.symbol != VESTS_SYMBOL) {
                     a.insert(from);
                 }
             }
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (amount.symbol == VESTS_SYMBOL) {
                     a.insert(from);
                 }
@@ -222,7 +251,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from);
             }
         };
@@ -244,7 +273,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(who);
             }
         };
@@ -265,7 +294,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(who);
             }
         };
@@ -294,7 +323,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(who);
             }
         };
@@ -313,7 +342,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from);
             }
         };
@@ -336,7 +365,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -357,7 +386,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from_account);
             }
         };
@@ -418,7 +447,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -436,7 +465,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -448,7 +477,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -461,13 +490,13 @@ namespace steemit {
          * There is no validation for this operation other than that required auths are valid
          */
         struct custom_operation : public base_operation {
-            flat_set<account_name_type> required_auths;
+            flat_set <account_name_type> required_auths;
             uint16_t id = 0;
             vector<char> data;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 for (const auto &i : required_auths) {
                     a.insert(i);
                 }
@@ -479,20 +508,20 @@ namespace steemit {
          * this operation is designed to be human readable/developer friendly.
          **/
         struct custom_json_operation : public base_operation {
-            flat_set<account_name_type> required_auths;
-            flat_set<account_name_type> required_posting_auths;
+            flat_set <account_name_type> required_auths;
+            flat_set <account_name_type> required_posting_auths;
             string id; ///< must be less than 32 characters long
             string json; ///< must be proper utf8 / JSON string.
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 for (const auto &i : required_auths) {
                     a.insert(i);
                 }
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 for (const auto &i : required_posting_auths) {
                     a.insert(i);
                 }
@@ -501,35 +530,35 @@ namespace steemit {
 
 
         struct custom_binary_operation : public base_operation {
-            flat_set<account_name_type> required_owner_auths;
-            flat_set<account_name_type> required_active_auths;
-            flat_set<account_name_type> required_posting_auths;
-            vector<authority> required_auths;
+            flat_set <account_name_type> required_owner_auths;
+            flat_set <account_name_type> required_active_auths;
+            flat_set <account_name_type> required_posting_auths;
+            vector <authority> required_auths;
 
             string id; ///< must be less than 32 characters long
             vector<char> data;
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 for (const auto &i : required_owner_auths) {
                     a.insert(i);
                 }
             }
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 for (const auto &i : required_active_auths) {
                     a.insert(i);
                 }
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 for (const auto &i : required_posting_auths) {
                     a.insert(i);
                 }
             }
 
-            void get_required_authorities(vector<authority> &a) const {
+            void get_required_authorities(vector <authority> &a) const {
                 for (const auto &i : required_auths) {
                     a.push_back(i);
                 }
@@ -547,7 +576,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(publisher);
             }
         };
@@ -564,7 +593,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -583,7 +612,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(owner);
             }
 
@@ -591,7 +620,7 @@ namespace steemit {
                 return amount_to_sell / min_to_receive;
             }
 
-            pair<asset_symbol_type, asset_symbol_type> get_market() const {
+            pair <asset_symbol_type, asset_symbol_type> get_market() const {
                 return amount_to_sell.symbol < min_to_receive.symbol ?
                        std::make_pair(amount_to_sell.symbol, min_to_receive.symbol)
                                                                      :
@@ -614,7 +643,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(owner);
             }
 
@@ -622,7 +651,7 @@ namespace steemit {
                 return exchange_rate;
             }
 
-            pair<asset_symbol_type, asset_symbol_type> get_market() const {
+            pair <asset_symbol_type, asset_symbol_type> get_market() const {
                 return exchange_rate.base.symbol < exchange_rate.quote.symbol ?
                        std::make_pair(exchange_rate.base.symbol, exchange_rate.quote.symbol)
                                                                               :
@@ -640,7 +669,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -674,7 +703,7 @@ namespace steemit {
             }
 
             /** there is no need to verify authority, the proof of work is sufficient */
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
             }
         };
 
@@ -710,14 +739,14 @@ namespace steemit {
 
         struct pow2_operation : public base_operation {
             pow2_work work;
-            optional<public_key_type> new_owner_key;
+            optional <public_key_type> new_owner_key;
             chain_properties props;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const;
+            void get_required_active_authorities(flat_set <account_name_type> &a) const;
 
-            void get_required_authorities(vector<authority> &a) const {
+            void get_required_authorities(vector <authority> &a) const {
                 if (new_owner_key) {
                     a.push_back(authority(1, *new_owner_key, 1));
                 }
@@ -784,7 +813,7 @@ namespace steemit {
 
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(recovery_account);
             }
 
@@ -838,7 +867,7 @@ namespace steemit {
 
             extensions_type extensions;                ///< Extensions. Not currently used.
 
-            void get_required_authorities(vector<authority> &a) const {
+            void get_required_authorities(vector <authority> &a) const {
                 a.push_back(new_owner_authority);
                 a.push_back(recent_owner_authority);
             }
@@ -856,7 +885,7 @@ namespace steemit {
             account_name_type account_to_reset;
             authority new_owner_authority;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(reset_account);
             }
 
@@ -874,13 +903,13 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (current_reset_account.size()) {
                     a.insert(account);
                 }
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 if (!current_reset_account.size()) {
                     a.insert(account);
                 }
@@ -911,7 +940,7 @@ namespace steemit {
             account_name_type new_recovery_account;   ///< The account that creates the recover request
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account_to_recover);
             }
 
@@ -925,7 +954,7 @@ namespace steemit {
             asset amount;
             string memo;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from);
             }
 
@@ -940,7 +969,7 @@ namespace steemit {
             asset amount;
             string memo;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from);
             }
 
@@ -952,7 +981,7 @@ namespace steemit {
             account_name_type from;
             uint32_t request_id = 0;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from);
             }
 
@@ -964,7 +993,7 @@ namespace steemit {
             account_name_type account;
             bool decline = true;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
 
@@ -1030,6 +1059,10 @@ FC_REFLECT(steemit::protocol::limit_order_create2_operation, (owner)(orderid)(am
 FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(orderid))
 
 FC_REFLECT(steemit::protocol::delete_comment_operation, (author)(permlink));
+
+FC_REFLECT(steemit::protocol::beneficiary_route_type, (account)(weight))
+FC_REFLECT(steemit::protocol::comment_payout_beneficiaries, (beneficiaries))
+FC_REFLECT_TYPENAME(steemit::protocol::comment_options_extension)
 FC_REFLECT(steemit::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions))
 
 FC_REFLECT(steemit::protocol::escrow_transfer_operation, (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));

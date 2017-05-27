@@ -59,6 +59,7 @@ namespace steemit {
                 decline_voting_rights_operation,
                 reset_account_operation,
                 set_reset_account_operation,
+                comment_benefactor_reward_operation,
 
                 /// virtual operations below this point
                 fill_convert_request_operation,

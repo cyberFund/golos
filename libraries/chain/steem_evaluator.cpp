@@ -342,6 +342,36 @@ namespace steemit {
             _db.remove(comment);
         }
 
+        struct comment_options_extension_visitor {
+            comment_options_extension_visitor(const comment_object &c, database &db)
+                    : _c(c), _db(db) {
+            }
+
+            typedef void result_type;
+
+            const comment_object &_c;
+            database &_db;
+
+            void operator()(const comment_payout_beneficiaries &cpb) const {
+                if (_db.is_producing())
+                    FC_ASSERT(cpb.beneficiaries.size() <=
+                              8, "Cannot specify more than 8 beneficiaries.");
+
+                FC_ASSERT(_c.beneficiaries.size() ==
+                          0, "Comment already has beneficiaries specified.");
+                FC_ASSERT(_c.abs_rshares ==
+                          0, "Comment must not have been voted on before specifying beneficiaries.");
+
+                _db.modify(_c, [&](comment_object &c) {
+                    for (auto &b : cpb.beneficiaries) {
+                                    auto acc = _db.find< account_object, by_name >( b.account );
+            FC_ASSERT( acc != nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account) );
+                        c.beneficiaries.push_back(b);
+                    }
+                });
+            }
+        };
+
         void comment_options_evaluator::do_apply(const comment_options_operation &o) {
             database &_db = db();
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
@@ -357,8 +387,10 @@ namespace steemit {
                 FC_ASSERT(comment.abs_rshares ==
                           0, "One of the included comment options requires the comment to have no rshares allocated to it.");
 
-            FC_ASSERT(o.extensions.size() ==
-                      0, "Operation extensions for the comment_options_operation are not currently supported.");
+            if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__102)) // TODO: Remove after hardfork 17
+                FC_ASSERT(o.extensions.size() ==
+                          0, "Operation extensions for the comment_options_operation are not currently supported.");
+
             FC_ASSERT(comment.allow_curation_rewards >=
                       o.allow_curation_rewards, "Curation rewards cannot be re-enabled.");
             FC_ASSERT(comment.allow_votes >=
@@ -374,6 +406,10 @@ namespace steemit {
                 c.allow_votes = o.allow_votes;
                 c.allow_curation_rewards = o.allow_curation_rewards;
             });
+
+            for (auto &e : o.extensions) {
+                e.visit(comment_options_extension_visitor(comment, _db));
+            }
         }
 
         void comment_evaluator::do_apply(const comment_operation &o) {
@@ -1203,7 +1239,7 @@ namespace steemit {
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
                     if (_db.is_producing() ||
                         _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)) {
-                            FC_ASSERT(false, "Cannot vote again on a comment after payout.");
+                        FC_ASSERT(false, "Cannot vote again on a comment after payout.");
                     }
 
                     _db.remove(*itr);
@@ -1281,8 +1317,8 @@ namespace steemit {
                         }
                         if (!_db.has_hardfork(STEEMIT_HARDFORK_0_6__114) &&
                             c.net_rshares == -c.abs_rshares) {
-                                FC_ASSERT(c.net_votes <
-                                          0, "Comment has negative net votes?");
+                            FC_ASSERT(c.net_votes <
+                                      0, "Comment has negative net votes?");
                         }
                     });
 
@@ -1430,8 +1466,8 @@ namespace steemit {
 
                     if (_db.is_producing() ||
                         _db.has_hardfork(STEEMIT_HARDFORK_0_6__112)) {
-                            FC_ASSERT(itr->vote_percent !=
-                                      o.weight, "You have already voted in a similar way.");
+                        FC_ASSERT(itr->vote_percent !=
+                                  o.weight, "You have already voted in a similar way.");
                     }
 
                     /// this is the rshares voting for or against the post
@@ -1439,9 +1475,9 @@ namespace steemit {
 
                     if (itr->rshares < rshares &&
                         _db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                            FC_ASSERT(_db.head_block_time() <
-                                      _db.calculate_discussion_payout_time(comment) -
-                                      STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
+                        FC_ASSERT(_db.head_block_time() <
+                                  _db.calculate_discussion_payout_time(comment) -
+                                  STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
                     }
 
                     _db.modify(voter, [&](account_object &a) {
