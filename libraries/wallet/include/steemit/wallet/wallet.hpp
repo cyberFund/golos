@@ -817,6 +817,28 @@ namespace steemit {
              */
             annotated_signed_transaction post_comment(string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast);
 
+            /**
+             * Extend the comment payout window by passing the required SBD to spend
+             *
+             * @param payer the name of the account paying for the transaction
+             * @param author the name of the account authoring the comment
+             * @param permlink comment permlink
+             * @param extension_cost SBD amount payer will spend on payout window extension
+             * @param broadcast true if you wish to broadcast the transaction
+             */
+            annotated_signed_transaction extend_payout_by_cost(string payer, string author, string permlink, asset extension_cost, bool broadcast);
+
+            /**
+             * Extend the comment payout window by passing the required SBD to spend
+             *
+             * @param payer the name of the account paying for the transaction
+             * @param author the name of the account authoring the comment
+             * @param permlink comment permlink
+             * @param extension_time the payout window final time point
+             * @param broadcast true if you wish to broadcast the transaction
+             */
+            annotated_signed_transaction extend_payout_by_time(string payer, string author, string permlink, fc::time_point_sec extension_time, bool broadcast);
+
             annotated_signed_transaction send_private_message(string from, string to, string subject, string body, bool broadcast);
 
             vector<extended_message_object> get_inbox(string account, fc::time_point newest, uint32_t limit);
@@ -1015,6 +1037,8 @@ FC_API(steemit::wallet::wallet_api,
                 (create_order)
                 (cancel_order)
                 (post_comment)
+                (extend_payout_by_cost)
+                (extend_payout_by_time)
                 (vote)
                 (set_transaction_expiration)
                 (challenge)

@@ -2158,6 +2158,38 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction(tx, broadcast);
         }
 
+        annotated_signed_transaction wallet_api::extend_payout_by_cost(string payer, string author, string permlink, asset extension_cost, bool broadcast) {
+            FC_ASSERT(!is_locked());
+
+            comment_payout_extension_operation op;
+            op.payer = payer;
+            op.author = author;
+            op.permlink = permlink;
+            op.amount = extension_cost;
+
+            signed_transaction tx;
+            tx.operations.push_back(op);
+            tx.validate();
+
+            return my->sign_transaction(tx, broadcast);
+        }
+
+        annotated_signed_transaction wallet_api::extend_payout_by_time(string payer, string author, string permlink, fc::time_point_sec extension_time, bool broadcast) {
+            FC_ASSERT(!is_locked());
+
+            comment_payout_extension_operation op;
+            op.payer = payer;
+            op.author = author;
+            op.permlink = permlink;
+            op.extension_time = extension_time;
+
+            signed_transaction tx;
+            tx.operations.push_back(op);
+            tx.validate();
+
+            return my->sign_transaction(tx, broadcast);
+        }
+
         annotated_signed_transaction wallet_api::vote(string voter, string author, string permlink, int16_t weight, bool broadcast) {
             FC_ASSERT(!is_locked());
             FC_ASSERT(abs(weight) <=
