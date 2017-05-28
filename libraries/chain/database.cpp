@@ -1967,7 +1967,7 @@ namespace steemit {
             return asset(((input_time - fc::time_point::now()).to_seconds() *
                           STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
                           (input_comment.net_rshares * 60 * 60 *
-                           24), SBD_SYMBOL);
+                           24), SBD_SYMBOL));
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
@@ -1979,7 +1979,7 @@ namespace steemit {
             return fc::time_point::now() +
                    fc::seconds(((input_cost.amount * 60 * 60 * 24 *
                                  input_comment.net_rshares) /
-                                STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY);
+                                STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
         }
 
         void database::pay_liquidity_reward() {
