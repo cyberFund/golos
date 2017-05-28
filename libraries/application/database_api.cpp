@@ -1150,6 +1150,14 @@ namespace steemit {
             });
         }
 
+        asset database_api::get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const {
+            return my->_db.get_payout_extension_cost(my->_db.get_comment(author, permlink), time);
+        }
+
+        fc::time_point_sec database_api::get_payout_extension_time(const string &author, const string &permlink, asset cost) const {
+            return my->_db.get_payout_extension_time(my->_db.get_comment(author, permlink), cost);
+        }
+
         std::vector<pair<std::string, uint32_t>> database_api::get_tags_used_by_author(const std::string &author) const {
             return my->_db.with_read_lock([&]() {
                 const auto *acnt = my->_db.find_account(author);
