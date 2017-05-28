@@ -1064,3 +1064,4 @@ FC_REFLECT(steemit::protocol::request_account_recovery_operation, (recovery_acco
 FC_REFLECT(steemit::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 FC_REFLECT(steemit::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions));
 FC_REFLECT(steemit::protocol::decline_voting_rights_operation, (account)(decline));
+FC_REFLECT(steemit::protocol::comment_payout_extension_operation, (payer)(author)(permlink)(extension_time)(amount));
