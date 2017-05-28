@@ -96,6 +96,28 @@ namespace steemit {
             }
         };
 
+        struct comment_payout_extension_operation : public base_operation {
+            account_name_type payer;
+            account_name_type author;
+            string permlink;
+
+            optional<fc::time_point_sec> extension_time;
+            optional<asset> amount;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                if (amount && amount->symbol == SBD_SYMBOL) {
+                    a.insert(payer);
+                }
+            }
+
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+                if (amount && amount->symbol == SBD_SYMBOL) {
+                    a.insert(payer);
+                }
+            }
+        };
 
         struct challenge_authority_operation : public base_operation {
             account_name_type challenger;

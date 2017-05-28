@@ -105,6 +105,8 @@
 
 #define STEEMIT_MAX_RESERVE_RATIO   (20000)
 
+#define STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY   10
+
 #define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
 #define STEEMIT_MINING_REWARD_PRE_HF16         asset( 1000, STEEM_SYMBOL )
 #define STEEMIT_EQUIHASH_N                      140
@@ -311,8 +313,10 @@
 
 #define STEEMIT_MAX_RESERVE_RATIO   (20000)
 
+#define STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY   10
+
 #define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
-#define STEEMIT_MINING_REWARD_PRE_HF16         asset( 1000, STEEM_SYMBOL )
+#define STEEMIT_MINING_REWARD_PRE_HF16          asset( 1000, STEEM_SYMBOL )
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 

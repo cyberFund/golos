@@ -414,6 +414,10 @@ namespace steemit {
 
             asset get_pow_reward() const;
 
+            asset get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const;
+
+            time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const;
+
             uint16_t get_curation_rewards_percent() const;
 
             void pay_liquidity_reward();

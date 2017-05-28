@@ -376,6 +376,42 @@ namespace steemit {
             });
         }
 
+        void comment_payout_extension_evaluator::do_apply(const comment_payout_extension_operation &o) {
+            const account_object &from_account = this->_db.get_account(o.payer);
+            const account_object &to_account = this->_db.get_account(STEEMIT_NULL_ACCOUNT);
+
+            if (from_account.active_challenged) {
+                this->_db.modify(from_account, [&](account_object &a) {
+                    a.active_challenged = false;
+                    a.last_active_proved = this->_db.head_block_time();
+                });
+            }
+
+            const comment_object &comment = this->_db.get_comment(o.author, o.permlink);
+
+            if (o.amount) {
+                FC_ASSERT(
+                        this->_db.get_balance(from_account, o.amount->symbol) >=
+                        *o.amount, "Account does not have sufficient funds for transfer.");
+                this->_db.adjust_balance(from_account, -*o.amount);
+                this->_db.adjust_balance(to_account, *o.amount);
+
+                this->_db.modify(comment, [&](comment_object &c) {
+                    c.cashout_time = this->_db.get_payout_extension_time(comment, *o.amount);
+                    c.mode = comment_mode::first_payout;
+                });
+            } else if (o.extension_time) {
+                asset amount = this->_db.get_payout_extension_cost(comment, *o.extension_time);
+                this->_db.adjust_balance(from_account, -amount);
+                this->_db.adjust_balance(to_account, amount);
+
+                this->_db.modify(comment, [&](comment_object &c) {
+                    c.cashout_time = *o.extension_time;
+                    c.mode = comment_mode::first_payout;
+                });
+            }
+        }
+
         void comment_evaluator::do_apply(const comment_operation &o) {
             try {
                 database &_db = db();
@@ -1203,7 +1239,7 @@ namespace steemit {
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
                     if (_db.is_producing() ||
                         _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)) {
-                            FC_ASSERT(false, "Cannot vote again on a comment after payout.");
+                        FC_ASSERT(false, "Cannot vote again on a comment after payout.");
                     }
 
                     _db.remove(*itr);
@@ -1281,8 +1317,8 @@ namespace steemit {
                         }
                         if (!_db.has_hardfork(STEEMIT_HARDFORK_0_6__114) &&
                             c.net_rshares == -c.abs_rshares) {
-                                FC_ASSERT(c.net_votes <
-                                          0, "Comment has negative net votes?");
+                            FC_ASSERT(c.net_votes <
+                                      0, "Comment has negative net votes?");
                         }
                     });
 
@@ -1430,8 +1466,8 @@ namespace steemit {
 
                     if (_db.is_producing() ||
                         _db.has_hardfork(STEEMIT_HARDFORK_0_6__112)) {
-                            FC_ASSERT(itr->vote_percent !=
-                                      o.weight, "You have already voted in a similar way.");
+                        FC_ASSERT(itr->vote_percent !=
+                                  o.weight, "You have already voted in a similar way.");
                     }
 
                     /// this is the rshares voting for or against the post
@@ -1439,9 +1475,9 @@ namespace steemit {
 
                     if (itr->rshares < rshares &&
                         _db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                            FC_ASSERT(_db.head_block_time() <
-                                      _db.calculate_discussion_payout_time(comment) -
-                                      STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
+                        FC_ASSERT(_db.head_block_time() <
+                                  _db.calculate_discussion_payout_time(comment) -
+                                  STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
                     }
 
                     _db.modify(voter, [&](account_object &a) {
