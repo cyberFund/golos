@@ -488,6 +488,26 @@ namespace steemit {
              */
             std::map<uint32_t, applied_operation> get_account_history(std::string account, uint64_t from, uint32_t limit) const;
 
+            /**
+             * Used to retrieve comment payout window extension cost by time
+             * @param author comment author
+             * @param permlink comment permlink
+             * @param time deadline time the payout window pretends to be extended for
+             * @return SBD amount required to set payout window duration up to time passed
+             */
+
+            asset get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const;
+
+            /**
+             * Used o retrieve comment payout window extension time by cost
+             * @param author comment author
+             * @param permlink comment permlink
+             * @param cost SBD amount pretended to be spent on extension
+             * @return deadline time the payout window pretends to be extended for
+             */
+
+            fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset cost) const;
+
             ////////////////////////////
             // Handlers - not exposed //
             ////////////////////////////
@@ -628,7 +648,8 @@ FC_API(steemit::app::database_api,
                 (get_content_replies)
                 (get_discussions_by_author_before_date)
                 (get_replies_by_last_update)
-
+                (get_payout_extension_cost)
+                (get_payout_extension_time)
 
                 // Witnesses
                 (get_witnesses)

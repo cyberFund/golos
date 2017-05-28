@@ -132,6 +132,29 @@ namespace steemit {
             }
         }
 
+        void comment_payout_extension_operation::validate() const {
+            validate_account_name(payer);
+            validate_account_name(author);
+            validate_permlink(permlink);
+
+            FC_ASSERT((amount || extension_time) && !(amount &&
+                                                      extension_time), "Payout window can be extended by required SBD amount or by required time amount");
+
+            if (amount) {
+                FC_ASSERT(amount->symbol ==
+                          SBD_SYMBOL, "Payout window extension is only available with SBD");
+                FC_ASSERT(amount->amount >
+                          0, "Cannot extend payout window with 0 SBD");
+            }
+
+            if (extension_time) {
+                FC_ASSERT(*extension_time <=
+                          fc::time_point_sec(STEEMIT_CASHOUT_WINDOW_SECONDS), "Payout window extension cannot be larger than a week");
+                FC_ASSERT(*extension_time >
+                          fc::time_point_sec(0), "Payout window extension cannot be extended for 0 seconds");
+            }
+        }
+
         void comment_options_operation::validate() const {
             validate_account_name(author);
             FC_ASSERT(percent_steem_dollars <=

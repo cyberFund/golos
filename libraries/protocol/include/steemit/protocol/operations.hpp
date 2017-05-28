@@ -61,7 +61,8 @@ namespace steemit {
                 set_reset_account_operation,
                 comment_benefactor_reward_operation,
                 delegate_vesting_shares_operation,
-                            account_create_with_delegation_operation,
+                account_create_with_delegation_operation,
+                comment_payout_extension_operation,
 
                 /// virtual operations below this point
                 fill_convert_request_operation,

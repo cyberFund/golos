@@ -145,6 +145,28 @@ namespace steemit {
             }
         };
 
+        struct comment_payout_extension_operation : public base_operation {
+            account_name_type payer;
+            account_name_type author;
+            string permlink;
+
+            optional<fc::time_point_sec> extension_time;
+            optional<asset> amount;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                if (amount && amount->symbol == SBD_SYMBOL) {
+                    a.insert(payer);
+                }
+            }
+
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+                if (amount && amount->symbol == SBD_SYMBOL) {
+                    a.insert(payer);
+                }
+            }
+        };
 
         struct challenge_authority_operation : public base_operation {
             account_name_type challenger;
@@ -1130,3 +1152,4 @@ FC_REFLECT(steemit::protocol::recover_account_operation, (account_to_recover)(ne
 FC_REFLECT(steemit::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions));
 FC_REFLECT(steemit::protocol::decline_voting_rights_operation, (account)(decline));
 FC_REFLECT(steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares));
+FC_REFLECT(steemit::protocol::comment_payout_extension_operation, (payer)(author)(permlink)(extension_time)(amount));

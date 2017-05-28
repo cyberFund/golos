@@ -419,6 +419,10 @@ namespace steemit {
 
             share_type pay_reward_funds(share_type reward);
 
+            asset get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const;
+
+            time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const;
+
             void pay_liquidity_reward();
 
             /**

@@ -521,6 +521,42 @@ namespace steemit {
             }
         }
 
+        void comment_payout_extension_evaluator::do_apply(const comment_payout_extension_operation &o) {
+            const account_object &from_account = this->_db.get_account(o.payer);
+            const account_object &to_account = this->_db.get_account(STEEMIT_NULL_ACCOUNT);
+
+            if (from_account.active_challenged) {
+                this->_db.modify(from_account, [&](account_object &a) {
+                    a.active_challenged = false;
+                    a.last_active_proved = this->_db.head_block_time();
+                });
+            }
+
+            const comment_object &comment = this->_db.get_comment(o.author, o.permlink);
+
+            if (o.amount) {
+                FC_ASSERT(
+                        this->_db.get_balance(from_account, o.amount->symbol) >=
+                        *o.amount, "Account does not have sufficient funds for transfer.");
+                this->_db.adjust_balance(from_account, -*o.amount);
+                this->_db.adjust_balance(to_account, *o.amount);
+
+                this->_db.modify(comment, [&](comment_object &c) {
+                    c.cashout_time = this->_db.get_payout_extension_time(comment, *o.amount);
+                    c.mode = comment_mode::first_payout;
+                });
+            } else if (o.extension_time) {
+                asset amount = this->_db.get_payout_extension_cost(comment, *o.extension_time);
+                this->_db.adjust_balance(from_account, -amount);
+                this->_db.adjust_balance(to_account, amount);
+
+                this->_db.modify(comment, [&](comment_object &c) {
+                    c.cashout_time = *o.extension_time;
+                    c.mode = comment_mode::first_payout;
+                });
+            }
+        }
+
         void comment_evaluator::do_apply(const comment_operation &o) {
             try {
                 database &_db = db();

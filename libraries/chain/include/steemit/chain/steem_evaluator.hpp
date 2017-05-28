@@ -33,6 +33,8 @@ namespace steemit {
 
         STEEMIT_DEFINE_EVALUATOR(comment_options)
 
+        STEEMIT_DEFINE_EVALUATOR(comment_payout_extension)
+
         STEEMIT_DEFINE_EVALUATOR(delete_comment)
 
         STEEMIT_DEFINE_EVALUATOR(vote)
