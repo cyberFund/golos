@@ -124,6 +124,29 @@ namespace steemit {
             uint32_t transaction_num = 0;
         };
 
+        /**
+    *  @brief captures the result of evaluating the operations contained in the transaction
+    *
+    *  When processing a transaction some operations generate
+    *  new object IDs and these IDs cannot be known until the
+    *  transaction is actually included into a block.  When a
+    *  block is produced these new ids are captured and included
+    *  with every transaction.  The index in operation_results should
+    *  correspond to the same index in operations.
+    *
+    *  If an operation did not create any new object IDs then 0
+    *  should be returned.
+    */
+        struct processed_transaction : public signed_transaction {
+            processed_transaction(const signed_transaction &trx = signed_transaction())
+                    : signed_transaction(trx) {
+            }
+
+            vector<operation_result> operation_results;
+
+            digest_type merkle_digest() const;
+        };
+
 
         /// @} transactions group
 

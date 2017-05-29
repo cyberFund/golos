@@ -13,6 +13,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/protocol/operation_util_impl.hpp
         include/steemit/protocol/operations.hpp
         include/steemit/protocol/protocol.hpp
+        include/steemit/protocol/proposal_operations.hpp
         include/steemit/protocol/sign_state.hpp
         include/steemit/protocol/steem_operations.hpp
         include/steemit/protocol/steem_virtual_operations.hpp
@@ -28,6 +29,7 @@ list(APPEND CURRENT_TARGET_SOURCES
         get_config.cpp
         operation_util_impl.cpp
         operations.cpp
+        proposal_operations.cpp
         sign_state.cpp
         steem_operations.cpp
         transaction.cpp

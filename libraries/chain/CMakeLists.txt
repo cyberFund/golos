@@ -33,12 +33,15 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/index.hpp
         include/steemit/chain/node_property_object.hpp
         include/steemit/chain/operation_notification.hpp
+        include/steemit/chain/proposal_evaluator.hpp
+        include/steemit/chain/proposal_object.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp
         include/steemit/chain/snapshot_state.hpp
         include/steemit/chain/steem_evaluator.hpp
         include/steemit/chain/steem_object_types.hpp
         include/steemit/chain/steem_objects.hpp
+        include/steemit/chain/transaction_evaluation_state.hpp
         include/steemit/chain/transaction_object.hpp
         include/steemit/chain/witness_objects.hpp
         include/steemit/chain/witness_schedule.hpp
@@ -54,7 +57,9 @@ list(APPEND CURRENT_TARGET_SOURCES
         fork_database.cpp
         shared_authority.cpp
         steem_evaluator.cpp
+        proposal_evaluator.cpp
         steem_objects.cpp
+        proposal_object.cpp
         witness_schedule.cpp
 
         utilities/reward.cpp

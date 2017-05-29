@@ -73,7 +73,8 @@ namespace steemit {
             block_stats_object_type,
             vesting_delegation_object_type,
             vesting_delegation_expiration_object_type,
-            reward_fund_object_type
+            reward_fund_object_type,
+            proposal_object_type
         };
 
         class dynamic_global_property_object;
