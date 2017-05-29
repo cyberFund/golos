@@ -6653,6 +6653,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(delegation != nullptr);
             BOOST_REQUIRE(delegation->delegator == op.creator);
+                  BOOST_REQUIRE( delegation->delegatee == op.new_account_name );
+
             BOOST_REQUIRE(
                     delegation->vesting_shares == ASSET("300.000000 VESTS"));
 
@@ -6694,6 +6696,24 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             validate_database();
+
+                  tx.clear();
+      delegate_vesting_shares_operation delegate;
+      delegate.delegator = "alice";
+      delegate.delegatee = "bob";
+      delegate.vesting_shares = ASSET( "0.000000 VESTS" );
+      tx.operations.push_back( delegate );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+
+      auto itr = db.get_index< vesting_delegation_expiration_index, by_id >().begin();
+      auto end = db.get_index< vesting_delegation_expiration_index, by_id >().end();
+
+      BOOST_REQUIRE( itr != end );
+      BOOST_REQUIRE( itr->delegator == "alice" );
+      BOOST_REQUIRE( itr->vesting_shares == del_amt );
+      BOOST_REQUIRE( itr->expiration == exp_time );
+      validate_database();
         }
         FC_LOG_AND_RETHROW()
     }
