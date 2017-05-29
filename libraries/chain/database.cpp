@@ -2095,6 +2095,10 @@ namespace steemit {
             }
         }
 
+        asset database::get_name_price(const std::string &name) const {
+            return asset(0, SBD_SYMBOL);
+        }
+
         uint16_t database::get_curation_rewards_percent(const comment_object &c) const {
             if (has_hardfork(STEEMIT_HARDFORK_0_17__86) &&
                 c.parent_author != STEEMIT_ROOT_POST_PARENT) {

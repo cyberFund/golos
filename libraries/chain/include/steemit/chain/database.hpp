@@ -421,6 +421,8 @@ namespace steemit {
 
             void pay_liquidity_reward();
 
+            asset get_name_price(const std::string &name) const;
+
             /**
              * Helper method to return the current sbd value of a given amount of
              * STEEM.  Return 0 SBD if there isn't a current_median_history
