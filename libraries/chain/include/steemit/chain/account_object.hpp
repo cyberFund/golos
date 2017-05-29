@@ -73,13 +73,13 @@ namespace steemit {
              */
             ///@{
             asset sbd_balance = asset(0, SBD_SYMBOL); /// total sbd balance
-            uint128_t sbd_seconds; ///< total sbd * how long it has been hel
+            uint128_t sbd_seconds; ///< total sbd * how long it has been held
             time_point_sec sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec sbd_last_interest_payment; ///< used to pay interest at most once per month
 
 
             asset savings_sbd_balance = asset(0, SBD_SYMBOL); /// total sbd balance
-            uint128_t savings_sbd_seconds; ///< total sbd * how long it has been hel
+            uint128_t savings_sbd_seconds; ///< total sbd * how long it has been held
             time_point_sec savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec savings_sbd_last_interest_payment; ///< used to pay interest at most once per month
 

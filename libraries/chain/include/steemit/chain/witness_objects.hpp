@@ -47,6 +47,7 @@ namespace steemit {
             /** the account that has authority over this witness */
             account_name_type owner;
             time_point_sec created;
+            asset collateral = asset(0, STEEM_SYMBOL);
             shared_string url;
             uint32_t total_missed = 0;
             uint64_t last_aslot = 0;
@@ -248,6 +249,7 @@ FC_REFLECT(steemit::chain::witness_object,
         (id)
                 (owner)
                 (created)
+                (collateral)
                 (url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
                 (last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)
                 (props)

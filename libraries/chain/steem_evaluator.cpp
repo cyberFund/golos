@@ -87,7 +87,7 @@ namespace steemit {
 
         void witness_update_evaluator::do_apply(const witness_update_operation &o) {
             database &_db = db();
-            _db.get_account(o.owner); // verify owner exists
+            const account_object &owner_account = _db.get_account(o.owner); // verify owner exists
 
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 FC_ASSERT(o.url.size() <=
@@ -115,13 +115,28 @@ namespace steemit {
                     w.props = o.props;
                 });
             } else {
-                _db.create<witness_object>([&](witness_object &w) {
-                    w.owner = o.owner;
-                    from_string(w.url, o.url);
-                    w.signing_key = o.block_signing_key;
-                    w.created = _db.head_block_time();
-                    w.props = o.props;
-                });
+                if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__109)) {
+                    asset collateral = asset(_db.get_producer_reward().amount * STEEMIT_WITNESS_COLLATERAL_MULTIPLIER, _db.get_producer_reward().symbol);
+
+                    _db.create<witness_object>([&](witness_object &w) {
+                        w.owner = o.owner;
+                        w.collateral = collateral;
+                        from_string(w.url, o.url);
+                        w.signing_key = o.block_signing_key;
+                        w.created = _db.head_block_time();
+                        w.props = o.props;
+                    });
+
+                    _db.adjust_balance(owner_account, -collateral);
+                } else {
+                    _db.create<witness_object>([&](witness_object &w) {
+                        w.owner = o.owner;
+                        from_string(w.url, o.url);
+                        w.signing_key = o.block_signing_key;
+                        w.created = _db.head_block_time();
+                        w.props = o.props;
+                    });
+                }
             }
         }
 

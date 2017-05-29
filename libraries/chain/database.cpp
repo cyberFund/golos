@@ -2063,7 +2063,6 @@ namespace steemit {
             }
         }
 
-
         void database::pay_liquidity_reward() {
 #ifdef STEEMIT_BUILD_TESTNET
             if (!liquidity_rewards_enabled) {
