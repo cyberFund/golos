@@ -133,7 +133,9 @@ namespace steemit {
                 if (options.count("snapshot-file")) {
                     load_snapshots(options["snapshot-file"].as<vector<string>>());
                 } else {
+                #ifndef STEEMIT_BUILD_TESTNET
                     load_snapshots({"snapshot5392323.json"});
+                #endif
                 }
             }
 
