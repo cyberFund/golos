@@ -2080,7 +2080,8 @@ namespace steemit {
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
             FC_ASSERT(input_cost.symbol ==
                       SBD_SYMBOL, "Extension payment should be in SBD");
-            FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY >
+            FC_ASSERT(
+                    input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY >
                     0, "Extension payment should cover more than a day");
             return fc::time_point::now() +
                    fc::seconds(((input_cost.amount.value * 60 * 60 * 24 *

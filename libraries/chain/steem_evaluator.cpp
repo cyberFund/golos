@@ -2446,7 +2446,9 @@ namespace steemit {
                     obj.vesting_shares = op.vesting_shares;
                 });
             } else {
-                FC_ASSERT( delegation->vesting_shares - op.vesting_shares >= min_delegation || op.vesting_shares.amount == 0, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation) );
+                FC_ASSERT(delegation->vesting_shares - op.vesting_shares >=
+                          min_delegation || op.vesting_shares.amount ==
+                                            0, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation));
 
 
                 auto delta = delegation->vesting_shares - op.vesting_shares;
@@ -2454,7 +2456,8 @@ namespace steemit {
                 _db.create<vesting_delegation_expiration_object>([&](vesting_delegation_expiration_object &obj) {
                     obj.delegator = op.delegator;
                     obj.vesting_shares = delta;
-                    obj.expiration = std::max( _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time );
+                    obj.expiration = std::max(_db.head_block_time() +
+                                              STEEMIT_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time);
 
                 });
 

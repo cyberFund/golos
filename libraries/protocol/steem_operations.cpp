@@ -587,8 +587,9 @@ namespace steemit {
         void delegate_vesting_shares_operation::validate() const {
             validate_account_name(delegator);
             validate_account_name(delegatee);
-            FC_ASSERT( is_asset_type( vesting_shares, VESTS_SYMBOL ), "Delegation must be VESTS" );
-            FC_ASSERT( vesting_shares >= asset( 0, VESTS_SYMBOL ), "Delegation cannot be negative" );
+            FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Delegation must be VESTS");
+            FC_ASSERT(vesting_shares >=
+                      asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
         }
     }
 } // steemit::protocol
