@@ -26,13 +26,17 @@ namespace steemit {
 
             using namespace steemit::protocol;
 
-            class languages_plugin_impl {
+            class languages_plugin_impl final {
             public:
                 languages_plugin_impl(languages_plugin &_plugin)
                         : _self(_plugin) {
                 }
 
                 virtual ~languages_plugin_impl();
+
+                languages_plugin_impl &self() {
+                    return *this;
+                }
 
                 steemit::chain::database &database() {
                     return _self.database();
@@ -41,6 +45,7 @@ namespace steemit {
                 void on_operation(const operation_notification &note);
 
                 languages_plugin &_self;
+                set<string> cache_languages;
             };
 
             languages_plugin_impl::~languages_plugin_impl() {
@@ -48,14 +53,16 @@ namespace steemit {
             }
 
             struct operation_visitor {
-                operation_visitor(database &db) : _db(db) {
+                operation_visitor(languages_plugin_impl &self) : languages_plugin_impl(self), _db(self.database()) {
+
                 };
                 typedef void result_type;
 
-                database &_db;
+                languages_plugin_impl &languages_plugin_impl;
+                steemit::chain::database &_db;
 
                 void remove_stats(const language_object &tag, const language_stats_object &stats) const {
-                    _db.modify(stats, [&](language_stats_object &s) {
+                    languages_plugin_impl.self().database().modify(stats, [&](language_stats_object &s) {
                         if (tag.parent == comment_id_type()) {
                             s.total_children_rshares2 -= tag.children_rshares2;
                             s.top_posts--;
@@ -103,8 +110,13 @@ namespace steemit {
                         stats.language = tag;
                     });
                 }
-              
-                void update_tag(const language_object &current, const comment_object &comment, double hot, double trending) const {
+
+                void update_tag(
+                        const language_object &current,
+                        const comment_object &comment,
+                        double hot,
+                        double trending
+                ) const {
                     const auto &stats = get_stats(current.language);
                     remove_stats(current, stats);
 
@@ -172,6 +184,15 @@ namespace steemit {
                     }
                 }
 
+                string filter_tags(const comment_object &c) const {
+                    string language;
+                    if (c.languages != "") {
+                        language = fc::to_lower(to_string(c.languages));
+                    }
+
+                    return language;
+                }
+
                 /**
                  * https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9#.lcbj6auuw
                  */
@@ -200,51 +221,43 @@ namespace steemit {
                     return calculate_score<10000000, 480000>(score, created);
                 }
 
-                /** finds tags that have been added or removed or updated */
+                /** finds tags that have been added or  updated */
                 void update_tags(const comment_object &c) const {
+
                     try {
-/*
+
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        //auto meta = filter_tags(c);
+                        auto language = filter_tags(c);
                         const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
                         auto citr = comment_idx.lower_bound(c.id);
 
-                        map<string, const language_object *> existing_tags;
+                        map<string, const language_object *> existing_language;
 
-                        //vector<const language_object *> remove_queue;
 
-while (citr != comment_idx.end() &&
-                               citr->comment == c.id) {
-                            const language_object *tag = &*citr;
+                        while (
+                                citr != comment_idx.end()
+                                &&
+                                citr->comment == c.id
+                        ) {
+                            const language_object *language = &*citr;
                             ++citr;
-
-                            if (meta.tags.find(tag->language) ==
-                                meta.tags.end()) {
-                                remove_queue.push_back(tag);
-                            } else {
-                                existing_tags[tag->language] = tag;
-                            }
+                            existing_language[language->language] = language;
                         }
 
-                        for (const auto &tag : meta.tags) {
-                            auto existing = existing_tags.find(tag);
-                            if (existing == existing_tags.end()) {
-                                create_tag(tag, c, hot, trending);
-                            } else {
-                                update_tag(*existing->second, c, hot, trending);
-                            }
-                        }
 
-                        for (const auto &item : remove_queue) {
-                            remove_tag(*item);
+                        auto existing = existing_language.find(language);
+                        if (existing == existing_language.end()) {
+                            create_tag(language, c, hot, trending);
+                        } else {
+                            update_tag(*existing->second, c, hot, trending);
                         }
 
                         if (c.parent_author.size()) {
                             update_tags(_db.get_comment(c.parent_author, c.parent_permlink));
                         }
-                        */
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
+
                 }
 
                 const peer_stats_object &get_or_create_peer_stats(account_id_type voter, account_id_type peer) const {
@@ -277,7 +290,9 @@ while (citr != comment_idx.end() &&
                     });
                 }
 
-                void update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c, int vote) const {
+                void
+                update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c,
+                                  int vote) const {
                     if (voter.id == author.id) {
                         return;
                     } /// ignore votes for yourself
@@ -296,7 +311,7 @@ while (citr != comment_idx.end() &&
                     auto itr = voteidx.lower_bound(boost::make_tuple(comment_id_type(c.id), account_id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
                         update_indirect_vote(voter.id, itr->voter,
-                                (itr->vote_percent > 0) == (vote > 0));
+                                             (itr->vote_percent > 0) == (vote > 0));
                         ++itr;
                     }
                 }
@@ -380,7 +395,7 @@ while (citr != comment_idx.end() &&
             void languages_plugin_impl::on_operation(const operation_notification &note) {
                 try {
                     /// plugins shouldn't ever throw
-                    note.op.visit(operation_visitor(database()));
+                    note.op.visit(operation_visitor(self()));
                 }
                 catch (const fc::exception &e) {
                     edump((e.to_detail_string()));
@@ -412,13 +427,15 @@ while (citr != comment_idx.end() &&
 
         void languages_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
             ilog("Intializing languages plugin");
-            database().post_apply_operation.connect([&](const operation_notification &note) { my->on_operation(note); });
+            database().post_apply_operation.connect(
+                    [&](const operation_notification &note) { my->on_operation(note); });
 
             app().register_api_factory<language_api>("language_api");
         }
 
 
         void languages_plugin::plugin_startup() {
+            //TODO update cache
             ilog("startup languages plugin");
         }
 

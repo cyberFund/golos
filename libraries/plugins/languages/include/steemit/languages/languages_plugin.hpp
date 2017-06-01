@@ -16,7 +16,7 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
-      using steemit::application::application;
+      using steemit::app::application;
 
         using chainbase::object;
         using chainbase::oid;
@@ -575,7 +575,7 @@ namespace steemit {
  *  This plugin will scan all changes to posts and/or their meta data and
  *
  */
-        class languages_plugin : public steemit::application::plugin {
+        class languages_plugin : public steemit::app::plugin {
         public:
             languages_plugin(application *app);
 
@@ -607,7 +607,7 @@ namespace steemit {
             };
 
 
-            language_api(const steemit::application::api_context &ctx) {
+            language_api(const steemit::app::api_context &ctx) {
             }//:_app(&ctx.app){}
 
             void on_api_startup() {
