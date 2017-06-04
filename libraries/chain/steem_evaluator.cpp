@@ -542,7 +542,6 @@ namespace steemit {
 
                 this->_db.modify(comment, [&](comment_object &c) {
                     c.cashout_time = this->_db.get_payout_extension_time(comment, *o.amount);
-                    c.mode = comment_mode::first_payout;
                 });
             } else if (o.extension_time) {
                 asset amount = this->_db.get_payout_extension_cost(comment, *o.extension_time);
@@ -550,7 +549,6 @@ namespace steemit {
 
                 this->_db.modify(comment, [&](comment_object &c) {
                     c.cashout_time = *o.extension_time;
-                    c.mode = comment_mode::first_payout;
                 });
             }
         }

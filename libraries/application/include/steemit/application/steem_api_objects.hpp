@@ -140,8 +140,6 @@ namespace steemit {
 
             comment_id_type root_comment;
 
-            comment_mode mode;
-
             asset max_accepted_payout;
             uint16_t percent_steem_dollars;
             bool allow_replies;
@@ -499,7 +497,7 @@ FC_REFLECT(steemit::app::comment_api_obj,
                 (depth)(children)(children_rshares2)
                 (net_rshares)(abs_rshares)(vote_rshares)
                 (children_abs_rshares)(cashout_time)(max_cashout_time)
-                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)(mode)
+                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
                 (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
                 (beneficiaries)
 )
