@@ -239,7 +239,7 @@ namespace steemit {
                                 citr != comment_idx.end()
                                 &&
                                 citr->comment == c.id
-                        ) {
+                                ) {
                             const language_object *language = &*citr;
                             ++citr;
                             existing_language[language->language] = language;
@@ -435,7 +435,18 @@ namespace steemit {
 
 
         void languages_plugin::plugin_startup() {
-            //TODO update cache
+            database().with_read_lock(
+                    [&]() {
+                        const auto &index = my->database().get_index<language_index>().indices().get<languages::by_comment>();
+
+                        auto itr = index.begin();
+                        for (; itr != index.end(); ++itr) {
+                            fc::variant d;
+                            fc::to_variant(itr->language, d);
+                            my->self().cache_languages.insert(d.as_string());
+                        }
+                    }
+            );
             ilog("startup languages plugin");
         }
 

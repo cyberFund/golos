@@ -106,8 +106,14 @@ namespace steemit {
 
             template<typename Constructor, typename Allocator>
             comment_object(Constructor &&c, allocator <Allocator> a)
-                    : category(a), parent_permlink(a), permlink(a), title(a),
-                      body(a), json_metadata(a), languages(a), beneficiaries(a) {
+                    : languages(a),
+                      category(a),
+                      parent_permlink(a),
+                      permlink(a),
+                      title(a),
+                      body(a),
+                      json_metadata(a),
+                      beneficiaries(a) {
                 c(*this);
             }
 
