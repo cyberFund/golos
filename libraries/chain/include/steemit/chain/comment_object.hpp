@@ -93,12 +93,6 @@ namespace steemit {
         >
         category_index;
 
-        enum comment_mode {
-            first_payout,
-            second_payout,
-            archived
-        };
-
         class comment_object
                 : public object<comment_object_type, comment_object> {
         public:
@@ -161,8 +155,6 @@ namespace steemit {
             int32_t net_votes = 0;
 
             id_type root_comment;
-
-            comment_mode mode = first_payout;
 
             asset max_accepted_payout = asset(1000000000, SBD_SYMBOL);       /// SBD value of the maximum payout this post will receive
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
@@ -329,8 +321,6 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT_ENUM(steemit::chain::comment_mode, (first_payout)(second_payout)(archived))
-
 FC_REFLECT(steemit::chain::comment_object,
         (id)(author)(permlink)
                 (category)(parent_author)(parent_permlink)
@@ -338,7 +328,7 @@ FC_REFLECT(steemit::chain::comment_object,
                 (depth)(children)(children_rshares2)
                 (net_rshares)(abs_rshares)(vote_rshares)
                 (children_abs_rshares)(cashout_time)(max_cashout_time)
-                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)(mode)
+                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)
                 (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
                 (beneficiaries)
 )

@@ -77,7 +77,8 @@ namespace steemit {
                         auto &db = _plugin.database();
                         const auto &c = db.get_comment(op.author, op.permlink);
 
-                        if (c.mode == archived) {
+                        if (db.calculate_discussion_payout_time(c) ==
+                            fc::time_point_sec::maximum()) {
                             return;
                         }
 
@@ -264,7 +265,8 @@ namespace steemit {
                         auto &db = _plugin.database();
                         const auto &comment = db.get_comment(op.author, op.permlink);
 
-                        if (comment.mode == archived) {
+                        if (db.calculate_discussion_payout_time(comment) ==
+                            fc::time_point_sec::maximum()) {
                             return;
                         }
 
@@ -279,7 +281,7 @@ namespace steemit {
                         // Rule #1: Must have non-negative reputation to effect another user's reputation
                         if (voter_rep != rep_idx.end() &&
                             voter_rep->reputation < 0) {
-                                return;
+                            return;
                         }
 
                         if (author_rep == rep_idx.end()) {
@@ -288,7 +290,7 @@ namespace steemit {
                             if (cv->rshares < 0 &&
                                 !(voter_rep != rep_idx.end() &&
                                   voter_rep->reputation > 0)) {
-                                      return;
+                                return;
                             }
 
                             db.create<reputation_object>([&](reputation_object &r) {
@@ -302,7 +304,7 @@ namespace steemit {
                                 !(voter_rep != rep_idx.end() &&
                                   voter_rep->reputation >
                                   author_rep->reputation)) {
-                                      return;
+                                return;
                             }
 
                             db.modify(*author_rep, [&](reputation_object &r) {

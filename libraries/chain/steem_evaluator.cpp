@@ -542,7 +542,6 @@ namespace steemit {
 
                 this->_db.modify(comment, [&](comment_object &c) {
                     c.cashout_time = this->_db.get_payout_extension_time(comment, *o.amount);
-                    c.mode = comment_mode::first_payout;
                 });
             } else if (o.extension_time) {
                 asset amount = this->_db.get_payout_extension_cost(comment, *o.extension_time);
@@ -550,7 +549,6 @@ namespace steemit {
 
                 this->_db.modify(comment, [&](comment_object &c) {
                     c.cashout_time = *o.extension_time;
-                    c.mode = comment_mode::first_payout;
                 });
             }
         }
@@ -772,12 +770,14 @@ namespace steemit {
                         // This will be moved to the witness plugin in a later release
                         if (_db.is_producing()) {
                             // For now, use the same editting rules, but implement it as a soft fork.
-                            FC_ASSERT(comment.mode !=
-                                      archived, "The comment is archived.");
+                            FC_ASSERT(
+                                    _db.calculate_discussion_payout_time(comment) !=
+                                    fc::time_point_sec::maximum(), "The comment is archived.");
                         }
                     } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__306)) {
-                        FC_ASSERT(comment.mode !=
-                                  archived, "The comment is archived.");
+                        FC_ASSERT(
+                                _db.calculate_discussion_payout_time(comment) !=
+                                fc::time_point_sec::maximum(), "The comment is archived.");
                     } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                         FC_ASSERT(comment.last_payout ==
                                   fc::time_point_sec::min(), "Can only edit during the first 24 hours.");
