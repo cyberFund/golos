@@ -104,8 +104,6 @@ namespace steemit {
             FC_ASSERT(beneficiaries.size() <
                       128, "Cannot specify more than 127 beneficiaries."); // Require size serializtion fits in one byte.
 
-            string_less str_cmp;
-
             validate_account_name(beneficiaries[0].account);
             FC_ASSERT(beneficiaries[0].weight <=
                       STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");
@@ -114,8 +112,6 @@ namespace steemit {
                       STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
 
             for (size_t i = 1; i < beneficiaries.size(); i++) {
-
-
                 validate_account_name(beneficiaries[i].account);
                 FC_ASSERT(beneficiaries[i].weight <=
                           STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");

@@ -96,6 +96,10 @@ namespace steemit {
             account_id_type author;
             comment_id_type parent;
             comment_id_type comment;
+
+            bool is_post() const {
+                return parent == comment_id_type();
+            }
         };
 
         typedef oid<tag_object> tag_id_type;
@@ -226,6 +230,16 @@ namespace steemit {
             }
         };
 
+        class by_reward_fund_net_rshares
+                : public comparable_index<tag_object> {
+        public:
+            virtual bool operator()(const tag_object &first, const tag_object &second) const override {
+                return std::less<bool>()(first.is_post(), second.is_post()) &&
+                       std::greater<int64_t>()(first.net_rshares, second.net_rshares) &&
+                       std::less<tag_id_type>()(first.id, second.id);
+            }
+        };
+
         struct by_comment;
         struct by_tag;
 
@@ -347,6 +361,15 @@ namespace steemit {
                                         member<tag_object, tag_id_type, &tag_object::id>
                                 >,
                                 composite_key_compare<std::less<tag_name_type>, std::less<account_id_type>, std::greater<time_point_sec>, std::less<tag_id_type>>
+                        >,
+                        ordered_unique<tag<by_reward_fund_net_rshares>,
+                                composite_key<tag_object,
+                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        const_mem_fun<tag_object, bool, &tag_object::is_post>,
+                                        member<tag_object, int64_t, &tag_object::net_rshares>,
+                                        member<tag_object, tag_id_type, &tag_object::id>
+                                >,
+                                composite_key_compare<std::less<tag_name_type>, std::less<bool>, std::greater<int64_t>, std::less<tag_id_type>>
                         >
                 >,
                 allocator<tag_object>

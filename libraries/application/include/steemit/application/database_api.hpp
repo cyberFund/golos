@@ -412,6 +412,9 @@ namespace steemit {
              **/
             std::vector<discussion> get_discussions_by_payout(const discussion_query &query) const;
 
+            std::vector<discussion> get_post_discussions_by_payout( const discussion_query& query )const;
+            std::vector<discussion> get_comment_discussions_by_payout( const discussion_query& query )const;
+
             /**
              * Used to retrieve the list of discussions sorted by direct votes amount
              * @param query @ref discussion_query
@@ -566,11 +569,13 @@ FC_API(steemit::application::database_api,
                 // tags
                 (get_trending_tags)
                 (get_tags_used_by_author)
+                (get_discussions_by_payout)
+                (get_post_discussions_by_payout)
+                (get_comment_discussions_by_payout)
                 (get_discussions_by_trending)
                 (get_discussions_by_created)
                 (get_discussions_by_active)
                 (get_discussions_by_cashout)
-                (get_discussions_by_payout)
                 (get_discussions_by_votes)
                 (get_discussions_by_children)
                 (get_discussions_by_hot)
