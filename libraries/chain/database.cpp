@@ -1601,9 +1601,10 @@ namespace steemit {
                                     STEEMIT_100_PERCENT;
                             auto vest_created = create_vesting(get_account(b.account), benefactor_tokens);
                             push_virtual_operation(comment_benefactor_reward_operation(b.account, comment.author, to_string(comment.permlink), vest_created));
-                            author_tokens -= benefactor_tokens;
                             total_beneficiary += benefactor_tokens;
                         }
+
+                        author_tokens -= benefactor_tokens;
 
                         auto sbd_steem = (author_tokens *
                                           comment.percent_steem_dollars) /
