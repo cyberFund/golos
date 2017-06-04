@@ -234,7 +234,7 @@ namespace steemit {
                 : public comparable_index<tag_object> {
         public:
             virtual bool operator()(const tag_object &first, const tag_object &second) const override {
-                return std::less<bool>()(first.is_post, second.is_post) &&
+                return std::less<bool>()(first.is_post(), second.is_post()) &&
                        std::greater<int64_t>()(first.net_rshares, second.net_rshares) &&
                        std::less<tag_id_type>()(first.id, second.id);
             }
