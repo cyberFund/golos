@@ -187,7 +187,10 @@ namespace steemit {
 
                     std::shared_ptr<steemit::chain::database> db = app.chain_database();
                     fc::path src_path = fc::path(src_filename);
-                    if (fc::is_directory(src_path)) {
+                    fc::path index_path = fc::path(src_filename + ".index");
+                    if (fc::exists(src_path) && fc::exists(index_path) &&
+                        !fc::is_directory(src_path) &&
+                        !fc::is_directory(index_path)) {
                         ilog("Loading ${n} from block_log ${fn}", ("n", count)("fn", src_filename));
                         idump((src_filename)(count)(skip_validate_invariants));
                         steemit::chain::block_log log;
