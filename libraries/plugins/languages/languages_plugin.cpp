@@ -358,6 +358,7 @@ namespace steemit {
                         ++itr;
                         if (!obj) {
                             _db.remove(tobj);
+                            languages_plugin_impl.self().cache_languages.erase(to_string(obj->languages));
                         }
                     }
                 }
