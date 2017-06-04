@@ -1764,8 +1764,8 @@ namespace steemit {
                 while (current != cidx.end() &&
                        current->cashout_time <= head_block_time()) {
                     if (current->net_rshares > 0) {
-                        const auto &rf = get_reward_fund(*current);
-                        funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
+                        const auto &rf = get_reward_fund(comment);
+                        funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(comment.net_rshares.value, rf);
                         FC_ASSERT(funds[rf.id._id].recent_rshares2 <
                                   std::numeric_limits<uint64_t>::max());
                     }
