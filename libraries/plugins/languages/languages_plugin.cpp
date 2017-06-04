@@ -62,7 +62,7 @@ namespace steemit {
                 steemit::chain::database &_db;
 
                 void remove_stats(const language_object &tag, const language_stats_object &stats) const {
-                    languages_plugin_impl.self().database().modify(stats, [&](language_stats_object &s) {
+                    _db.modify(stats, [&](language_stats_object &s) {
                         if (tag.parent == comment_id_type()) {
                             s.total_children_rshares2 -= tag.children_rshares2;
                             s.top_posts--;
@@ -141,7 +141,7 @@ namespace steemit {
                     }
                 }
 
-                void create_tag(const string &tag, const comment_object &comment, double hot, double trending) const {
+                void create_tag(const string &language, const comment_object &comment, double hot, double trending) const {
                     comment_id_type parent;
                     account_id_type author = _db.get_account(comment.author).id;
 
@@ -150,7 +150,7 @@ namespace steemit {
                     }
 
                     const auto &tag_obj = _db.create<language_object>([&](language_object &obj) {
-                        obj.language = tag;
+                        obj.language = language;
                         obj.comment = comment.id;
                         obj.parent = parent;
                         obj.created = comment.created;
@@ -165,23 +165,25 @@ namespace steemit {
                         obj.hot = hot;
                         obj.trending = trending;
                     });
-                    add_stats(tag_obj, get_stats(tag));
+                    add_stats(tag_obj, get_stats(language));
 
 
                     const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
-                    auto itr = idx.lower_bound(boost::make_tuple(author, tag));
+                    auto itr = idx.lower_bound(boost::make_tuple(author, language));
                     if (itr != idx.end() && itr->author == author &&
-                        itr->language == tag) {
+                        itr->language == language) {
                         _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts++;
                         });
                     } else {
                         _db.create<author_language_stats_object>([&](author_language_stats_object &stats) {
                             stats.author = author;
-                            stats.language = tag;
+                            stats.language = language;
                             stats.total_posts = 1;
                         });
                     }
+
+                    languages_plugin_impl.self().cache_languages.emplace(language);
                 }
 
                 string filter_tags(const comment_object &c) const {
@@ -223,39 +225,25 @@ namespace steemit {
 
                 /** finds tags that have been added or  updated */
                 void update_tags(const comment_object &c) const {
-
-                    try {
+                    try{
 
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        auto language = filter_tags(c);
+                        auto language_ = filter_tags(c);
                         const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
-                        auto citr = comment_idx.lower_bound(c.id);
 
-                        map<string, const language_object *> existing_language;
+                        auto itr=comment_idx.find(c.id);
 
-
-                        while (
-                                citr != comment_idx.end()
-                                &&
-                                citr->comment == c.id
-                                ) {
-                            const language_object *language = &*citr;
-                            ++citr;
-                            existing_language[language->language] = language;
-                        }
-
-
-                        auto existing = existing_language.find(language);
-                        if (existing == existing_language.end()) {
-                            create_tag(language, c, hot, trending);
+                        if (itr == comment_idx.end()) {
+                            create_tag(language_, c, hot, trending);
                         } else {
-                            update_tag(*existing->second, c, hot, trending);
+                            update_tag( *itr, c, hot, trending);
                         }
 
                         if (c.parent_author.size()) {
                             update_tags(_db.get_comment(c.parent_author, c.parent_permlink));
                         }
+
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
 
                 }
@@ -291,8 +279,7 @@ namespace steemit {
                 }
 
                 void
-                update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c,
-                                  int vote) const {
+                update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c, int vote) const {
                     if (voter.id == author.id) {
                         return;
                     } /// ignore votes for yourself
@@ -310,8 +297,7 @@ namespace steemit {
                     const auto &voteidx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
                     auto itr = voteidx.lower_bound(boost::make_tuple(comment_id_type(c.id), account_id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
-                        update_indirect_vote(voter.id, itr->voter,
-                                             (itr->vote_percent > 0) == (vote > 0));
+                        update_indirect_vote(voter.id, itr->voter, (itr->vote_percent > 0) == (vote > 0));
                         ++itr;
                     }
                 }
@@ -438,12 +424,9 @@ namespace steemit {
             database().with_read_lock(
                     [&]() {
                         const auto &index = my->database().get_index<language_index>().indices().get<languages::by_comment>();
-
                         auto itr = index.begin();
                         for (; itr != index.end(); ++itr) {
-                            fc::variant d;
-                            fc::to_variant(itr->language, d);
-                            my->self().cache_languages.insert(d.as_string());
+                            my->self().cache_languages.emplace(itr->language);
                         }
                     }
             );
