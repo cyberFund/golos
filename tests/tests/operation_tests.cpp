@@ -6619,6 +6619,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             vest("alice", ASSET("1000000000000.000 VESTS"));
 
             private_key_type priv_key = generate_private_key("temp_key");
+
+                  BOOST_TEST_MESSAGE( "--- Test failure when VESTS are powering down." );
+      withdraw_vesting_operation withdraw;
+      withdraw.account = "alice";
+      withdraw.vesting_shares = db.get_account( "alice" ).vesting_shares;
+
             account_create_with_delegation_operation op;
             op.fee = ASSET("10.000 TESTS");
             op.delegation = asset(10000, VESTS_SYMBOL);
@@ -6628,9 +6634,17 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.active = authority(2, priv_key.get_public_key(), 2);
             op.memo_key = priv_key.get_public_key();
             op.json_metadata = "{\"foo\":\"bar\"}";
+                  tx.operations.push_back( withdraw );
+      tx.operations.push_back( op );
 
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                          tx.sign( alice_private_key, db.get_chain_id() );
+      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::assert_exception );
+
+
+      BOOST_TEST_MESSAGE( "--- Test success under normal conditions. " );
+      tx.clear();
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             BOOST_TEST_MESSAGE("--- Test success under normal conditions. ");
