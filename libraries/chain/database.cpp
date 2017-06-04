@@ -3274,8 +3274,7 @@ namespace steemit {
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
                             signed_block *block_ptr;
-                            auto blocks = _fork_db.fetch_block_by_number(
-                                    log_head_num + 1);
+                            auto blocks = _fork_db.fetch_block_by_number(log_head_num + 1);
 
                             if (blocks.size() == 1) {
                                 block_ptr = &(blocks[0]->data);
