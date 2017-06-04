@@ -2441,12 +2441,12 @@ namespace steemit {
                     a.received_vesting_shares += op.vesting_shares;
                 });
             } else if (op.vesting_shares >= delegation->vesting_shares) {
-                FC_ASSERT(op.vesting_shares - delegation->vesting_shares >=
+                auto delta = op.vesting_shares - delegation->vesting_shares;
+
+                FC_ASSERT(delta >=
                           min_update, "Steem Power increase is not enough of a different. min_update: ${min}", ("min", min_update));
                 FC_ASSERT(available_shares >= op.vesting_shares -
                                               delegation->vesting_shares, "Account does not have enough vesting shares to delegate.");
-
-                auto delta = op.vesting_shares - delegation->vesting_shares;
 
                 _db.modify(delegator, [&](account_object &a) {
                     a.delegated_vesting_shares += delta;
@@ -2460,9 +2460,11 @@ namespace steemit {
                     obj.vesting_shares = op.vesting_shares;
                 });
             } else {
-                FC_ASSERT(delegation->vesting_shares - op.vesting_shares >=
-                          min_delegation || op.vesting_shares.amount ==
-                                            0, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation));
+                FC_ASSERT(delta >=
+                          min_update, "Steem Power increase is not enough of a different. min_update: ${min}", ("min", min_update));
+                FC_ASSERT(op.vesting_shares >= min_delegation ||
+                          op.vesting_shares.amount ==
+                          0, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation));
 
 
                 auto delta = delegation->vesting_shares - op.vesting_shares;
