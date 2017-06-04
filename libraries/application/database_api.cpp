@@ -19,13 +19,13 @@
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
 namespace steemit {
-    namespace app {
+    namespace application {
         class database_api_impl;
 
         class database_api_impl
                 : public std::enable_shared_from_this<database_api_impl> {
         public:
-            database_api_impl(const steemit::app::api_context &ctx);
+            database_api_impl(const steemit::application::api_context &ctx);
 
             ~database_api_impl();
 
@@ -191,14 +191,14 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        database_api::database_api(const steemit::app::api_context &ctx)
+        database_api::database_api(const steemit::application::api_context &ctx)
                 : my(new database_api_impl(ctx)) {
         }
 
         database_api::~database_api() {
         }
 
-        database_api_impl::database_api_impl(const steemit::app::api_context &ctx)
+        database_api_impl::database_api_impl(const steemit::application::api_context &ctx)
                 : _db(*ctx.app.chain_database()) {
             wlog("creating database api ${x}", ("x", int64_t(this)));
 
@@ -2760,4 +2760,4 @@ namespace steemit {
             });
         }
     }
-} // steemit::app
+} // steemit::application

@@ -36,7 +36,7 @@
 #include <memory>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         using fc::static_variant;
         using fc::unique_ptr;
@@ -147,17 +147,17 @@ namespace steemit {
 #define LOAD_VALUE_SET(options, name, container, type) \
 if( options.count(name) ) { \
       const std::vector<std::string>& ops = options[name].as<std::vector<std::string>>(); \
-      std::transform(ops.begin(), ops.end(), std::inserter(container, container.end()), &steemit::app::dejsonify<type>); \
+      std::transform(ops.begin(), ops.end(), std::inserter(container, container.end()), &steemit::application::dejsonify<type>); \
 }
 /// @}
 
     }
-} //steemit::app
+} //steemit::application
 
 #define STEEMIT_DEFINE_PLUGIN(plugin_name, plugin_class) \
    namespace steemit { namespace plugin { \
-   std::shared_ptr< steemit::app::abstract_plugin > create_ ## plugin_name ## _plugin( app::application* app )  \
-   { return std::make_shared< plugin_class >( app ); } \
+   std::shared_ptr< steemit::application::abstract_plugin > create_ ## plugin_name ## _plugin( application::application* application )  \
+   { return std::make_shared< plugin_class >( application ); } \
    } }
 
 #define DEFINE_PLUGIN_EVALUATOR(PLUGIN, OPERATION, X)                     \

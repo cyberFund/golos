@@ -140,7 +140,7 @@ namespace steemit {
         struct database_fixture {
             // the reason we use an app is to exercise the indexes of built-in
             //   plugins
-            steemit::app::application app;
+            steemit::application::application app;
             chain::database &db;
             signed_transaction trx;
             public_key_type committee_key;

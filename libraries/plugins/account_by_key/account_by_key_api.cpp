@@ -7,13 +7,13 @@ namespace steemit {
 
             class account_by_key_api_impl {
             public:
-                account_by_key_api_impl(steemit::app::application &app)
+                account_by_key_api_impl(steemit::application::application &app)
                         : _app(app) {
                 }
 
                 vector<vector<account_name_type>> get_key_references(vector<public_key_type> &keys) const;
 
-                steemit::app::application &_app;
+                steemit::application::application &_app;
             };
 
             vector<vector<account_name_type>> account_by_key_api_impl::get_key_references(vector<public_key_type> &keys) const {
@@ -40,7 +40,7 @@ namespace steemit {
 
         } // detail
 
-        account_by_key_api::account_by_key_api(const steemit::app::api_context &ctx) {
+        account_by_key_api::account_by_key_api(const steemit::application::api_context &ctx) {
             my = std::make_shared<detail::account_by_key_api_impl>(ctx.app);
         }
 

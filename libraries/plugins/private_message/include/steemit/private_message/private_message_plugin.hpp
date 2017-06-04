@@ -34,7 +34,7 @@
 namespace steemit {
     namespace private_message {
         using namespace chain;
-        using app::application;
+        using application::application;
 
 //
 // Plugins should #define their SPACE_ID's so plugins with
@@ -166,7 +166,7 @@ namespace steemit {
  *   by the posting key.
  *
  */
-        class private_message_plugin : public steemit::app::plugin {
+        class private_message_plugin : public steemit::application::plugin {
         public:
             private_message_plugin(application *app);
 
@@ -195,7 +195,8 @@ namespace steemit {
             private_message_api() {
             };
 
-            private_message_api(const app::api_context &ctx) : _app(&ctx.app) {
+            private_message_api(const steemit::application::api_context &ctx)
+                    : _app(&ctx.app) {
                 ilog("creating private message api");
             }
 
@@ -211,7 +212,7 @@ namespace steemit {
             vector<message_api_obj> get_outbox(string from, time_point newest, uint16_t limit) const;
 
         private:
-            app::application *_app = nullptr;
+            steemit::application::application *_app = nullptr;
         };
 
     }

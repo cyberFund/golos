@@ -13,7 +13,7 @@ using namespace steemit::chain::test;
 /*
 namespace steemit { namespace plugin_tests {
 
-using namespace steemit::app;
+using namespace steemit::application;
 using namespace steemit::chain;
 
 struct test_a_operation : base_operation

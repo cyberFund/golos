@@ -6,7 +6,7 @@ namespace steemit {
         namespace detail {
             class blockchain_statistics_api_impl {
             public:
-                blockchain_statistics_api_impl(steemit::app::application &app)
+                blockchain_statistics_api_impl(steemit::application::application &app)
                         : _app(app) {
                 }
 
@@ -16,7 +16,7 @@ namespace steemit {
 
                 statistics get_lifetime_stats() const;
 
-                steemit::app::application &_app;
+                steemit::application::application &_app;
             };
 
             statistics blockchain_statistics_api_impl::get_stats_for_time(fc::time_point_sec open, uint32_t interval) const {
@@ -66,7 +66,7 @@ namespace steemit {
             }
         } // detail
 
-        blockchain_statistics_api::blockchain_statistics_api(const steemit::app::api_context &ctx) {
+        blockchain_statistics_api::blockchain_statistics_api(const steemit::application::api_context &ctx) {
             my = std::make_shared<detail::blockchain_statistics_api_impl>(ctx.app);
         }
 

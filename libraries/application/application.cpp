@@ -44,7 +44,7 @@
 #include <boost/range/adaptor/reversed.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         using graphene::net::item_hash_t;
         using graphene::net::item_id;
         using graphene::net::message;

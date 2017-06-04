@@ -6,7 +6,7 @@
 #include <steemit/plugins/block_info/block_info.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         struct api_context;
     }
 }
@@ -26,7 +26,7 @@ namespace steemit {
 
             class block_info_api {
             public:
-                block_info_api(const steemit::app::api_context &ctx);
+                block_info_api(const steemit::application::api_context &ctx);
 
                 void on_api_startup();
 

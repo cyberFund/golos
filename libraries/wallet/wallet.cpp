@@ -2175,7 +2175,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return result;
         }
 
-        app::state wallet_api::get_state(string url) {
+        application::state wallet_api::get_state(string url) {
             return my->_remote_db->get_state(url);
         }
 

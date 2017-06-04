@@ -27,7 +27,7 @@
 #include <steemit/application/impacted.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         using namespace fc;
         using namespace steemit::protocol;

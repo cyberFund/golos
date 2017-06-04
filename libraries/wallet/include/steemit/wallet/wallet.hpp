@@ -10,7 +10,7 @@
 #include <fc/real128.hpp>
 #include <fc/crypto/base58.hpp>
 
-using namespace steemit::app;
+using namespace steemit::application;
 using namespace steemit::chain;
 using namespace graphene::utilities;
 using namespace std;
@@ -18,7 +18,7 @@ using namespace std;
 namespace steemit {
     namespace wallet {
 
-        using steemit::app::discussion;
+        using steemit::application::discussion;
         using namespace steemit::private_message;
 
         typedef uint16_t transaction_handle_type;
@@ -152,7 +152,7 @@ namespace steemit {
             /**
              * Returns the state info associated with the URL
              */
-            app::state get_state(string url);
+            application::state get_state(string url);
 
             /**
              * Returns vesting withdraw routes for an account.

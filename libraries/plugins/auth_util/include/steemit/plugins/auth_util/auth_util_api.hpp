@@ -9,7 +9,7 @@
 #include <string>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         struct api_context;
     }
 }
@@ -35,7 +35,7 @@ namespace steemit {
 
             class auth_util_api {
             public:
-                auth_util_api(const steemit::app::api_context &ctx);
+                auth_util_api(const steemit::application::api_context &ctx);
 
                 void on_api_startup();
 

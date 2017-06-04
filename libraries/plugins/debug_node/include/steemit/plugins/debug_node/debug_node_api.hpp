@@ -13,7 +13,7 @@
 #include <steemit/chain/witness_objects.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         struct api_context;
     }
 }
@@ -45,7 +45,7 @@ namespace steemit {
 
             class debug_node_api {
             public:
-                debug_node_api(const steemit::app::api_context &ctx);
+                debug_node_api(const steemit::application::api_context &ctx);
 
                 void on_api_startup();
 

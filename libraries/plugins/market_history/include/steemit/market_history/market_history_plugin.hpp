@@ -29,7 +29,7 @@ namespace steemit {
     namespace market_history {
 
         using namespace chain;
-        using steemit::app::application;
+        using steemit::application::application;
 
         enum market_history_object_types {
             bucket_object_type = (MARKET_HISTORY_SPACE_ID << 8),
@@ -40,7 +40,7 @@ namespace steemit {
             class market_history_plugin_impl;
         }
 
-        class market_history_plugin : public steemit::app::plugin {
+        class market_history_plugin : public steemit::application::plugin {
         public:
             market_history_plugin(application *app);
 

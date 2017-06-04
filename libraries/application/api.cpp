@@ -33,7 +33,7 @@
 #include <fc/git_revision.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         login_api::login_api(const api_context &ctx)
                 : _ctx(ctx) {
@@ -290,4 +290,4 @@ namespace steemit {
         }
 
     }
-} // steemit::app
+} // steemit::application

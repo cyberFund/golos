@@ -25,7 +25,7 @@
 #include <vector>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         using namespace steemit::chain;
         using namespace steemit::protocol;
@@ -107,7 +107,7 @@ namespace steemit {
  */
         class database_api {
         public:
-            database_api(const steemit::app::api_context &ctx);
+            database_api(const steemit::application::api_context &ctx);
 
             ~database_api();
 
@@ -553,17 +553,17 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::app::order, (order_price)(real_price)(steem)(sbd)(created));
-FC_REFLECT(steemit::app::order_book, (asks)(bids));
-FC_REFLECT(steemit::app::scheduled_hardfork, (hf_version)(live_time));
-FC_REFLECT(steemit::app::liquidity_balance, (account)(weight));
-FC_REFLECT(steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
+FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
+FC_REFLECT(steemit::application::order_book, (asks)(bids));
+FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
+FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
+FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
-FC_REFLECT(steemit::app::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit));
+FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit));
 
-FC_REFLECT_ENUM(steemit::app::withdraw_route_type, (incoming)(outgoing)(all));
+FC_REFLECT_ENUM(steemit::application::withdraw_route_type, (incoming)(outgoing)(all));
 
-FC_API(steemit::app::database_api,
+FC_API(steemit::application::database_api,
 // Subscriptions
         (set_subscribe_callback)
                 (set_pending_transaction_callback)

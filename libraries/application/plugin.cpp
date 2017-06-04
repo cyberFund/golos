@@ -25,7 +25,7 @@
 #include <steemit/application/plugin.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         plugin::plugin(application *app) : _app(app) {
             return;
@@ -59,4 +59,4 @@ namespace steemit {
         }
 
     }
-} // steemit::app
+} // steemit::application

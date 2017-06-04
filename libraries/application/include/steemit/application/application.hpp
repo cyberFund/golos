@@ -36,7 +36,7 @@
 #include <boost/program_options.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         namespace detail { class application_impl; }
         using std::string;
 
@@ -166,4 +166,4 @@ namespace steemit {
         }
 
     }
-} // steemit::app
+} // steemit::application

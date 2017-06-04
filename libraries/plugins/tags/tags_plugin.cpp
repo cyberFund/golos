@@ -258,10 +258,10 @@ namespace steemit {
 
                         map<string, const tag_object *> existing_tags;
                         vector<const tag_object *> remove_queue;
-                        while (citr != comment_idx.end() &&
-                               citr->comment == c.id) {
+                        while (citr != comment_idx.end() && citr->comment == c.id) {
                             const tag_object *tag = &*citr;
                             ++citr;
+
                             if (meta.tags.find(tag->tag) == meta.tags.end()) {
                                 remove_queue.push_back(tag);
                             } else {

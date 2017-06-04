@@ -92,7 +92,7 @@ void witness_plugin::plugin_initialize(const boost::program_options::variables_m
 
             const vector<string> miner_to_wif_pair_strings = options["miner"].as<vector<string>>();
             for (auto p : miner_to_wif_pair_strings) {
-                auto m = steemit::app::dejsonify<pair<string, string>>(p);
+                auto m = steemit::application::dejsonify<pair<string, string>>(p);
                 idump((m));
 
                 fc::optional<fc::ecc::private_key> private_key = graphene::utilities::wif_to_key(m.second);
