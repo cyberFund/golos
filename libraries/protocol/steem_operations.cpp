@@ -84,10 +84,6 @@ namespace steemit {
             validate_account_name(author);
             validate_permlink(parent_permlink);
             validate_permlink(permlink);
-
-            if (json_metadata.size() > 0) {
-                FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-            }
         }
 
         struct comment_options_extension_validate_visitor {

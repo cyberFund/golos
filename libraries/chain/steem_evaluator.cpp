@@ -213,7 +213,11 @@ namespace steemit {
                     ("creator.balance", creator.balance)
                             ("required", o.fee));
 
-               FC_ASSERT( creator.vesting_shares - creator.delegated_vesting_shares - asset( creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL ) >= o.delegation, "Insufficient vesting shares to delegate to new account.",
+            FC_ASSERT(
+                    creator.vesting_shares - creator.delegated_vesting_shares -
+                    asset(creator.to_withdraw -
+                          creator.withdrawn, VESTS_SYMBOL) >=
+                    o.delegation, "Insufficient vesting shares to delegate to new account.",
                     ("creator.vesting_shares", creator.vesting_shares)
                             ("creator.delegated_vesting_shares", creator.delegated_vesting_shares)("required", o.delegation));
 
@@ -267,7 +271,7 @@ namespace steemit {
 
                 acc.recovery_account = o.creator;
 
-                      acc.received_vesting_shares = o.delegation;
+                acc.received_vesting_shares = o.delegation;
 
 #ifndef IS_LOW_MEM
                 from_string(acc.json_metadata, o.json_metadata);
@@ -588,6 +592,12 @@ namespace steemit {
                     }
 
                 }
+
+                if ((_db.is_producing() ||
+                     _db.has_hardfork(STEEMIT_HARDFORK_0_17)) &&
+                    o.json_metadata.size())
+                    FC_ASSERT(fc::is_utf8(o.json_metadata), "JSON Metadata must be UTF-8");
+
                 auto now = _db.head_block_time();
 
                 if (itr == by_permlink_idx.end()) {
@@ -722,7 +732,10 @@ namespace steemit {
                         if (o.body.size() < 1024 * 1024 * 128) {
                             from_string(com.body, o.body);
                         }
-                        from_string(com.json_metadata, o.json_metadata);
+                        if (fc::is_utf8(o.json_metadata)) {
+                            from_string(com.json_metadata, o.json_metadata);
+                        } else
+                            wlog("Comment ${a}/${p} contains invalid UTF-8 metadata", ("a", o.author)("p", o.permlink));
 #endif
                     });
 
@@ -801,7 +814,10 @@ namespace steemit {
                             from_string(com.title, o.title);
                         }
                         if (o.json_metadata.size()) {
-                            from_string(com.json_metadata, o.json_metadata);
+                            if (fc::is_utf8(o.json_metadata)) {
+                                from_string(com.json_metadata, o.json_metadata);
+                            } else
+                                wlog("Comment ${a}/${p} contains invalid UTF-8 metadata", ("a", o.author)("p", o.permlink));
                         }
 
                         if (o.body.size()) {
