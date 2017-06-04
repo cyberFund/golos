@@ -149,18 +149,17 @@ namespace steemit {
                     const auto &stats = get_stats(current.tag);
                     remove_stats(current, stats);
 
-                    if (comment.mode != archived) {
+                    if (comment.cashout_time != fc::time_point_sec::maximum()) {
                         _db.modify(current, [&](tag_object &obj) {
                             obj.active = comment.active;
-                            obj.cashout = comment.cashout_time;
+                            obj.cashout = _db.calculate_discussion_payout_time(comment);
                             obj.children = comment.children;
                             obj.net_rshares = comment.net_rshares.value;
                             obj.net_votes = comment.net_votes;
                             obj.children_rshares2 = comment.children_rshares2;
                             obj.hot = hot;
                             obj.trending = trending;
-                            obj.mode = comment.mode;
-                            if (obj.mode != first_payout) {
+                            if (obj.cashout == fc::time_point_sec()) {
                                 obj.promoted_balance = 0;
                             }
                         });
@@ -192,7 +191,6 @@ namespace steemit {
                         obj.net_rshares = comment.net_rshares.value;
                         obj.children_rshares2 = comment.children_rshares2;
                         obj.author = author;
-                        obj.mode = comment.mode;
                         obj.hot = hot;
                         obj.trending = trending;
                     });
@@ -262,7 +260,8 @@ namespace steemit {
                                citr->comment == c.id) {
                             const tag_object *tag = &*citr;
                             ++citr;
-                            if (meta.tags.find(tag->tag) == meta.tags.end()) {
+                            if (meta.tags.find(tag->tag) ==
+                                meta.tags.end()) {
                                 remove_queue.push_back(tag);
                             } else {
                                 existing_tags[tag->tag] = tag;
@@ -364,7 +363,8 @@ namespace steemit {
                                 while (citr != comment_idx.end() &&
                                        citr->comment == c->id) {
                                     _db.modify(*citr, [&](tag_object &t) {
-                                        if (t.mode == first_payout) {
+                                        if (t.cashout !=
+                                            fc::time_point_sec::maximum()) {
                                             t.promoted_balance += op.amount.amount;
                                         }
                                     });
@@ -442,7 +442,9 @@ namespace steemit {
         } /// end detail namespace
 
         tags_plugin::tags_plugin(application *app)
-                : plugin(app), my(new detail::tags_plugin_impl(*this)) {
+                :
+
+                plugin(app), my(new detail::tags_plugin_impl(*this)) {
             chain::database &db = database();
             add_plugin_index<tag_index>(db);
             add_plugin_index<tag_stats_index>(db);

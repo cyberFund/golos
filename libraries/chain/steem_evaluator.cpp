@@ -772,12 +772,14 @@ namespace steemit {
                         // This will be moved to the witness plugin in a later release
                         if (_db.is_producing()) {
                             // For now, use the same editting rules, but implement it as a soft fork.
-                            FC_ASSERT(comment.mode !=
-                                      archived, "The comment is archived.");
+                            FC_ASSERT(
+                                    _db.calculate_discussion_payout_time(comment) !=
+                                    fc::time_point_sec::maximum(), "The comment is archived.");
                         }
                     } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__306)) {
-                        FC_ASSERT(comment.mode !=
-                                  archived, "The comment is archived.");
+                        FC_ASSERT(
+                                _db.calculate_discussion_payout_time(comment) !=
+                                fc::time_point_sec::maximum(), "The comment is archived.");
                     } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                         FC_ASSERT(comment.last_payout ==
                                   fc::time_point_sec::min(), "Can only edit during the first 24 hours.");

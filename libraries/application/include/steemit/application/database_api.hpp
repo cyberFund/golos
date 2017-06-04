@@ -385,13 +385,6 @@ namespace steemit {
             std::vector<discussion> get_discussions_by_trending(const discussion_query &query) const;
 
             /**
-             * Used to retrieve the list of second payout discussions sorted by rshares^2 amount
-             * @param query @ref discussion_query
-             * @return vector of second payout mode discussions sorted by rshares^2 amount
-             **/
-            std::vector<discussion> get_discussions_by_trending30(const discussion_query &query) const;
-
-            /**
              * Used to retrieve the list of discussions sorted by created time
              * @param query @ref discussion_query
              * @return vector of discussions sorted by created time
@@ -574,7 +567,6 @@ FC_API(steemit::app::database_api,
                 (get_trending_tags)
                 (get_tags_used_by_author)
                 (get_discussions_by_trending)
-                (get_discussions_by_trending30)
                 (get_discussions_by_created)
                 (get_discussions_by_active)
                 (get_discussions_by_cashout)

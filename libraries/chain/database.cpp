@@ -435,7 +435,8 @@ namespace steemit {
         }
 
         const time_point_sec database::calculate_discussion_payout_time(const comment_object &comment) const {
-            if (comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
+            if (has_hardfork(STEEMIT_HARDFORK_0_17__91) ||
+                comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
                 return comment.cashout_time;
             } else {
                 return get<comment_object>(comment.root_comment).cashout_time;
@@ -1685,13 +1686,6 @@ namespace steemit {
                         } else {
                             c.cashout_time = fc::time_point_sec::maximum();
                         }
-                    }
-
-                    if (calculate_discussion_payout_time(c) ==
-                        fc::time_point_sec::maximum()) {
-                        c.mode = archived;
-                    } else {
-                        c.mode = second_payout;
                     }
 
                     c.last_payout = head_block_time();
@@ -3871,7 +3865,6 @@ namespace steemit {
                                 modify(*itr, [&](comment_object &c) {
                                     c.cashout_time = head_block_time() +
                                                      STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
-                                    c.mode = first_payout;
                                 });
                             }
                                 // Has been paid out, needs to be on second cashout window
@@ -3879,7 +3872,6 @@ namespace steemit {
                                 modify(*itr, [&](comment_object &c) {
                                     c.cashout_time = c.last_payout +
                                                      STEEMIT_SECOND_CASHOUT_WINDOW;
-                                    c.mode = second_payout;
                                 });
                             }
                         }
