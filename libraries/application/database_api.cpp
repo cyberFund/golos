@@ -1324,7 +1324,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1384,7 +1389,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1449,7 +1459,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1516,7 +1531,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1575,7 +1595,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1634,7 +1659,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1696,7 +1726,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1756,7 +1791,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1815,7 +1855,12 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        }
+                        catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
@@ -1875,7 +1920,11 @@ namespace steemit {
                     tags::comment_metadata meta;
 
                     if (c.json_metadata.size()) {
-                        meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        try {
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                        } catch (const fc::exception &e) {
+                            // Do nothing on malformed json_metadata
+                        }
                     }
 
                     for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
