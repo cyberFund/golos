@@ -1037,8 +1037,7 @@ namespace steemit {
                             d.net_rshares.value > 0 ? d.net_rshares.value
                                                     : 0, my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
                 } else {
-                    vshares = steemit::chain::utilities::calculate_vshares(
-                            d.net_rshares.value > 0 ? d.net_rshares.value : 0);
+                    vshares = steemit::chain::utilities::calculate_vshares(d.net_rshares.value > 0 ? d.net_rshares.value : 0);
                 }
 
                 u256 r2 = to256(vshares); //to256(abs_net_rshares);

@@ -99,7 +99,7 @@ namespace steemit {
             }
         }
 
-        private_message_plugin::private_message_plugin(application *app)
+        private_message_plugin::private_message_plugin(application::application *app)
                 : plugin(app),
                   my(new detail::private_message_plugin_impl(*this)) {
         }

@@ -524,7 +524,7 @@ namespace steemit {
         }
 
         void comment_payout_extension_evaluator::do_apply(const comment_payout_extension_operation &o) {
-        database &_db = db();
+            database &_db = db();
             const account_object &from_account = this->_db.get_account(o.payer);
 
             if (from_account.active_challenged) {

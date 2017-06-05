@@ -3158,9 +3158,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 BOOST_REQUIRE(post_rf.reward_balance.amount == 0);
                 BOOST_REQUIRE(comment_rf.reward_balance.amount > 0);
                 BOOST_REQUIRE(
-                        db.get_account("alice").reward_sbd_balance.amount > 0);
+                        db.get_account("alice").sbd_balance.amount > 0);
                 BOOST_REQUIRE(
-                        db.get_account("bob").reward_sbd_balance.amount == 0);
+                        db.get_account("bob").sbd_balance.amount == 0);
                 validate_database();
             }
 
@@ -3173,9 +3173,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 BOOST_REQUIRE(post_rf.reward_balance.amount > 0);
                 BOOST_REQUIRE(comment_rf.reward_balance.amount == 0);
                 BOOST_REQUIRE(
-                        db.get_account("alice").reward_sbd_balance.amount > 0);
+                        db.get_account("alice").sbd_balance.amount > 0);
                 BOOST_REQUIRE(
-                        db.get_account("bob").reward_sbd_balance.amount > 0);
+                        db.get_account("bob").sbd_balance.amount > 0);
                 validate_database();
             }
         }

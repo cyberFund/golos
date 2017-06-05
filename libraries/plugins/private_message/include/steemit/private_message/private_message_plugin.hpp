@@ -34,7 +34,6 @@
 namespace steemit {
     namespace private_message {
         using namespace chain;
-        using application::application;
 
 //
 // Plugins should #define their SPACE_ID's so plugins with
@@ -168,7 +167,7 @@ namespace steemit {
  */
         class private_message_plugin : public steemit::application::plugin {
         public:
-            private_message_plugin(application *app);
+            private_message_plugin(application::application *app);
 
             virtual ~private_message_plugin();
 
