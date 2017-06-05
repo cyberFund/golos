@@ -53,12 +53,12 @@ namespace steemit {
             }
 
             struct operation_visitor {
-                operation_visitor(languages_plugin_impl &self) : languages_plugin_impl(self), _db(self.database()) {
+                operation_visitor(languages_plugin_impl &self) : languages_plugin(self), _db(self.database()) {
 
                 };
                 typedef void result_type;
 
-                languages_plugin_impl &languages_plugin_impl;
+                languages_plugin_impl &languages_plugin;
                 steemit::chain::database &_db;
 
                 void remove_stats(const language_object &tag, const language_stats_object &stats) const {
@@ -183,7 +183,7 @@ namespace steemit {
                         });
                     }
 
-                    languages_plugin_impl.self().cache_languages.emplace(language);
+                    languages_plugin.self().cache_languages.emplace(language);
                 }
 
                 string filter_tags(const comment_object &c) const {
@@ -358,7 +358,7 @@ namespace steemit {
                         ++itr;
                         if (!obj) {
                             _db.remove(tobj);
-                            languages_plugin_impl.self().cache_languages.erase(to_string(obj->languages));
+                            languages_plugin.self().cache_languages.erase(to_string(obj->languages));
                         }
                     }
                 }
