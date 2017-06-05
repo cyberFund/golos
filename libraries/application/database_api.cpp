@@ -1340,7 +1340,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1405,7 +1405,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1530,7 +1530,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1600,7 +1600,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1664,7 +1664,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1728,7 +1728,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1795,7 +1795,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1860,7 +1860,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -1924,7 +1924,7 @@ namespace steemit {
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
