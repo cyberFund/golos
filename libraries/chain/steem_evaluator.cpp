@@ -86,96 +86,96 @@ namespace steemit {
         };
 
         void witness_update_evaluator::do_apply(const witness_update_operation &o) {
-            database &_db = db();
-            _db.get_account(o.owner); // verify owner exists
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+            this->_db.get_account(o.owner); // verify owner exists
+
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 FC_ASSERT(o.url.size() <=
                           STEEMIT_MAX_WITNESS_URL_LENGTH, "URL is too long");
             } else if (o.url.size() > STEEMIT_MAX_WITNESS_URL_LENGTH) {
                 // after HF, above check can be moved to validate() if reindex doesn't show this warning
                 wlog("URL is too long in block ${b}", ("b",
-                        _db.head_block_num() + 1));
+                        this->_db.head_block_num() + 1));
             }
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__410)) {
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__410)) {
                 FC_ASSERT(o.props.account_creation_fee.symbol == STEEM_SYMBOL);
             } else if (o.props.account_creation_fee.symbol != STEEM_SYMBOL) {
                 // after HF, above check can be moved to validate() if reindex doesn't show this warning
                 wlog("Wrong fee symbol in block ${b}", ("b",
-                        _db.head_block_num() + 1));
+                        this->_db.head_block_num() + 1));
             }
 
-            const auto &by_witness_name_idx = _db.get_index<witness_index>().indices().get<by_name>();
+            const auto &by_witness_name_idx = this->_db.get_index<witness_index>().indices().get<by_name>();
             auto wit_itr = by_witness_name_idx.find(o.owner);
             if (wit_itr != by_witness_name_idx.end()) {
-                _db.modify(*wit_itr, [&](witness_object &w) {
+                this->_db.modify(*wit_itr, [&](witness_object &w) {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
                     w.props = o.props;
                 });
             } else {
-                _db.create<witness_object>([&](witness_object &w) {
+                this->_db.create<witness_object>([&](witness_object &w) {
                     w.owner = o.owner;
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
-                    w.created = _db.head_block_time();
+                    w.created = this->_db.head_block_time();
                     w.props = o.props;
                 });
             }
         }
 
         void account_create_evaluator::do_apply(const account_create_operation &o) {
-            database &_db = db();
-            const auto &creator = _db.get_account(o.creator);
 
-            const auto &props = _db.get_dynamic_global_properties();
+            const auto &creator = this->_db.get_account(o.creator);
+
+            const auto &props = this->_db.get_dynamic_global_properties();
 
             FC_ASSERT(creator.balance >=
                       o.fee, "Insufficient balance to create account.", ("creator.balance", creator.balance)("required", o.fee));
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
-                const witness_schedule_object &wso = _db.get_witness_schedule_object();
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
+                const witness_schedule_object &wso = this->_db.get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee *
                                    asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
                         ("f", wso.median_props.account_creation_fee *
                               asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
                                 ("p", o.fee));
-            } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                const witness_schedule_object &wso = _db.get_witness_schedule_object();
+            } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                const witness_schedule_object &wso = this->_db.get_witness_schedule_object();
                 FC_ASSERT(o.fee >=
                           wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
                         ("f", wso.median_props.account_creation_fee)
                                 ("p", o.fee));
             }
 
-            if (_db.is_producing() ||
-                _db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
+            if (this->_db.is_producing() ||
+                this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
                 for (auto &a : o.owner.account_auths) {
-                    _db.get_account(a.first);
+                    this->_db.get_account(a.first);
                 }
 
                 for (auto &a : o.active.account_auths) {
-                    _db.get_account(a.first);
+                    this->_db.get_account(a.first);
                 }
 
                 for (auto &a : o.posting.account_auths) {
-                    _db.get_account(a.first);
+                    this->_db.get_account(a.first);
                 }
             }
 
-            _db.modify(creator, [&](account_object &c) {
+            this->_db.modify(creator, [&](account_object &c) {
                 c.balance -= o.fee;
             });
 
-            const auto &new_account = _db.create<account_object>([&](account_object &acc) {
+            const auto &new_account = this->_db.create<account_object>([&](account_object &acc) {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = props.time;
                 acc.last_vote_time = props.time;
                 acc.mined = false;
 
-                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
+                if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
                     acc.recovery_account = STEEMIT_INIT_MINER_NAME;
                 } else {
                     acc.recovery_account = o.creator;
@@ -187,7 +187,7 @@ namespace steemit {
 #endif
             });
 
-            _db.create<account_authority_object>([&](account_authority_object &auth) {
+            this->_db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
                 auth.active = o.active;
@@ -196,17 +196,17 @@ namespace steemit {
             });
 
             if (o.fee.amount > 0) {
-                _db.create_vesting(new_account, o.fee);
+                this->_db.create_vesting(new_account, o.fee);
             }
         }
 
         void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation &o) {
-            database &_db = db();
-            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
 
-            const auto &creator = _db.get_account(o.creator);
-            const auto &props = _db.get_dynamic_global_properties();
-            const witness_schedule_object &wso = _db.get_witness_schedule_object();
+            FC_ASSERT(this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
+
+            const auto &creator = this->_db.get_account(o.creator);
+            const auto &props = this->_db.get_dynamic_global_properties();
+            const witness_schedule_object &wso = this->_db.get_witness_schedule_object();
 
             FC_ASSERT(creator.balance >=
                       o.fee, "Insufficient balance to create account.",
@@ -246,23 +246,23 @@ namespace steemit {
                             ("p", o.fee));
 
             for (auto &a : o.owner.account_auths) {
-                _db.get_account(a.first);
+                this->_db.get_account(a.first);
             }
 
             for (auto &a : o.active.account_auths) {
-                _db.get_account(a.first);
+                this->_db.get_account(a.first);
             }
 
             for (auto &a : o.posting.account_auths) {
-                _db.get_account(a.first);
+                this->_db.get_account(a.first);
             }
 
-            _db.modify(creator, [&](account_object &c) {
+            this->_db.modify(creator, [&](account_object &c) {
                 c.balance -= o.fee;
                 c.delegated_vesting_shares += o.delegation;
             });
 
-            const auto &new_account = _db.create<account_object>([&](account_object &acc) {
+            const auto &new_account = this->_db.create<account_object>([&](account_object &acc) {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = props.time;
@@ -278,7 +278,7 @@ namespace steemit {
 #endif
             });
 
-            _db.create<account_authority_object>([&](account_authority_object &auth) {
+            this->_db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
                 auth.active = o.active;
@@ -286,83 +286,85 @@ namespace steemit {
                 auth.last_owner_update = fc::time_point_sec::min();
             });
 
-            _db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
+            this->_db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
                 vdo.delegator = o.creator;
                 vdo.delegatee = o.new_account_name;
                 vdo.vesting_shares = o.delegation;
-                vdo.min_delegation_time = _db.head_block_time() +
+                vdo.min_delegation_time = this->_db.head_block_time() +
                                           STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
             });
 
             if (o.fee.amount > 0) {
-                _db.create_vesting(new_account, o.fee);
+                this->_db.create_vesting(new_account, o.fee);
             }
         }
 
         void account_update_evaluator::do_apply(const account_update_operation &o) {
-            database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 FC_ASSERT(o.account !=
                           STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
             }
 
-            if ((_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                 _db.is_producing()) && o.posting) { // TODO: Add HF 15
+            if ((this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                 this->_db.is_producing()) && o.posting) { // TODO: Add HF 15
                 o.posting->validate();
             }
 
-            const auto &account = _db.get_account(o.account);
-            const auto &account_auth = _db.get<account_authority_object, by_account>(o.account);
+            const auto &account = this->_db.get_account(o.account);
+            const auto &account_auth = this->_db.get<account_authority_object, by_account>(o.account);
 
             if (o.owner) {
 #ifndef STEEMIT_BUILD_TESTNET
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
-                    FC_ASSERT(_db.head_block_time() -
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
+                    FC_ASSERT(this->_db.head_block_time() -
                               account_auth.last_owner_update >
                               STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
                 }
 
 #endif
 
-                if ((_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                     _db.is_producing())) // TODO: Add HF 15
+                if ((this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                     this->_db.is_producing())) // TODO: Add HF 15
                 {
                     for (auto a: o.owner->account_auths) {
-                        _db.get_account(a.first);
+                        this->_db.get_account(a.first);
                     }
                 }
 
 
-                _db.update_owner_authority(account, *o.owner);
+                this->_db.update_owner_authority(account, *o.owner);
             }
 
-            if (o.active && (_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                             _db.is_producing())) // TODO: Add HF 15
+            if (o.active &&
+                (this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                 this->_db.is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.active->account_auths) {
-                    _db.get_account(a.first);
+                    this->_db.get_account(a.first);
                 }
             }
 
-            if (o.posting && (_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                              _db.is_producing())) // TODO: Add HF 15
+            if (o.posting &&
+                (this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                 this->_db.is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.posting->account_auths) {
-                    _db.get_account(a.first);
+                    this->_db.get_account(a.first);
                 }
             }
 
-            _db.modify(account, [&](account_object &acc) {
+            this->_db.modify(account, [&](account_object &acc) {
                 if (o.memo_key != public_key_type()) {
                     acc.memo_key = o.memo_key;
                 }
 
                 if ((o.active || o.owner) && acc.active_challenged) {
                     acc.active_challenged = false;
-                    acc.last_active_proved = _db.head_block_time();
+                    acc.last_active_proved = this->_db.head_block_time();
                 }
 
-                acc.last_account_update = _db.head_block_time();
+                acc.last_account_update = this->_db.head_block_time();
 
 #ifndef IS_LOW_MEM
                 if (o.json_metadata.size() > 0) {
@@ -372,7 +374,7 @@ namespace steemit {
             });
 
             if (o.active || o.posting) {
-                _db.modify(account_auth, [&](account_authority_object &auth) {
+                this->_db.modify(account_auth, [&](account_authority_object &auth) {
                     if (o.active) {
                         auth.active = *o.active;
                     }
@@ -389,18 +391,18 @@ namespace steemit {
  *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
  */
         void delete_comment_evaluator::do_apply(const delete_comment_operation &o) {
-            database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
-                const auto &auth = _db.get_account(o.author);
+
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
+                const auto &auth = this->_db.get_account(o.author);
                 FC_ASSERT(!(auth.owner_challenged ||
                             auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
             }
 
-            const auto &comment = _db.get_comment(o.author, o.permlink);
+            const auto &comment = this->_db.get_comment(o.author, o.permlink);
             FC_ASSERT(comment.children ==
                       0, "Cannot delete a comment with replies.");
 
-            if (_db.is_producing()) {
+            if (this->_db.is_producing()) {
                 FC_ASSERT(comment.net_rshares <=
                           0, "Cannot delete a comment with net positive votes.");
             }
@@ -408,29 +410,29 @@ namespace steemit {
                 return;
             }
 
-            const auto &vote_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+            const auto &vote_idx = this->_db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
 
             auto vote_itr = vote_idx.lower_bound(comment_id_type(comment.id));
             while (vote_itr != vote_idx.end() &&
                    vote_itr->comment == comment.id) {
                 const auto &cur_vote = *vote_itr;
                 ++vote_itr;
-                _db.remove(cur_vote);
+                this->_db.remove(cur_vote);
             }
 
             /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_6__80) &&
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_6__80) &&
                 comment.parent_author != STEEMIT_ROOT_POST_PARENT) {
-                auto parent = &_db.get_comment(comment.parent_author, comment.parent_permlink);
-                auto now = _db.head_block_time();
+                auto parent = &this->_db.get_comment(comment.parent_author, comment.parent_permlink);
+                auto now = this->_db.head_block_time();
                 while (parent) {
-                    _db.modify(*parent, [&](comment_object &p) {
+                    this->_db.modify(*parent, [&](comment_object &p) {
                         p.children--;
                         p.active = now;
                     });
 #ifndef IS_LOW_MEM
                     if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
-                        parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
+                        parent = &this->_db.get_comment(parent->parent_author, parent->parent_permlink);
                     } else
 #endif
                     {
@@ -440,13 +442,13 @@ namespace steemit {
             }
 
             /** TODO move category behavior to a plugin, this is not part of consensus */
-            const category_object *cat = _db.find_category(comment.category);
-            _db.modify(*cat, [&](category_object &c) {
+            const category_object *cat = this->_db.find_category(comment.category);
+            this->_db.modify(*cat, [&](category_object &c) {
                 c.discussions--;
-                c.last_update = _db.head_block_time();
+                c.last_update = this->_db.head_block_time();
             });
 
-            _db.remove(comment);
+            this->_db.remove(comment);
         }
 
         struct comment_options_extension_visitor {
@@ -460,7 +462,7 @@ namespace steemit {
             database &_db;
 
             void operator()(const comment_payout_beneficiaries &cpb) const {
-                if (_db.is_producing()) {
+                if (this->_db.is_producing()) {
                     FC_ASSERT(cpb.beneficiaries.size() <=
                               8, "Cannot specify more than 8 beneficiaries.");
                 }
@@ -470,9 +472,9 @@ namespace steemit {
                 FC_ASSERT(_c.abs_rshares ==
                           0, "Comment must not have been voted on before specifying beneficiaries.");
 
-                _db.modify(_c, [&](comment_object &c) {
+                this->_db.modify(_c, [&](comment_object &c) {
                     for (auto &b : cpb.beneficiaries) {
-                        auto acc = _db.find<account_object, by_name>(b.account);
+                        auto acc = this->_db.find<account_object, by_name>(b.account);
                         FC_ASSERT(acc !=
                                   nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account));
                         c.beneficiaries.push_back(b);
@@ -482,22 +484,21 @@ namespace steemit {
         };
 
         void comment_options_evaluator::do_apply(const comment_options_operation &o) {
-            database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
-                const auto &auth = _db.get_account(o.author);
+
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
+                const auto &auth = this->_db.get_account(o.author);
                 FC_ASSERT(!(auth.owner_challenged ||
                             auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
             }
 
-
-            const auto &comment = _db.get_comment(o.author, o.permlink);
+            const auto &comment = this->_db.get_comment(o.author, o.permlink);
             if (!o.allow_curation_rewards || !o.allow_votes ||
                 o.max_accepted_payout < comment.max_accepted_payout) {
                 FC_ASSERT(comment.abs_rshares ==
                           0, "One of the included comment options requires the comment to have no rshares allocated to it.");
             }
 
-            if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__102)) { // TODO: Remove after hardfork 17
+            if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__102)) { // TODO: Remove after hardfork 17
                 FC_ASSERT(o.extensions.size() ==
                           0, "Operation extensions for the comment_options_operation are not currently supported.");
             }
@@ -511,7 +512,7 @@ namespace steemit {
             FC_ASSERT(comment.percent_steem_dollars >=
                       o.percent_steem_dollars, "A comment cannot accept a greater percent SBD.");
 
-            _db.modify(comment, [&](comment_object &c) {
+            this->_db.modify(comment, [&](comment_object &c) {
                 c.max_accepted_payout = o.max_accepted_payout;
                 c.percent_steem_dollars = o.percent_steem_dollars;
                 c.allow_votes = o.allow_votes;
@@ -519,12 +520,11 @@ namespace steemit {
             });
 
             for (auto &e : o.extensions) {
-                e.visit(comment_options_extension_visitor(comment, _db));
+                e.visit(comment_options_extension_visitor(comment, this->_db));
             }
         }
 
         void comment_payout_extension_evaluator::do_apply(const comment_payout_extension_operation &o) {
-            database &_db = db();
             const account_object &from_account = this->_db.get_account(o.payer);
 
             if (from_account.active_challenged) {
@@ -558,20 +558,18 @@ namespace steemit {
 
         void comment_evaluator::do_apply(const comment_operation &o) {
             try {
-                database &_db = db();
-
-                if (_db.is_producing() ||
-                    _db.has_hardfork(STEEMIT_HARDFORK_0_5__55)) {
+                if (this->_db.is_producing() ||
+                    this->_db.has_hardfork(STEEMIT_HARDFORK_0_5__55)) {
                     FC_ASSERT(o.title.size() + o.body.size() +
                               o.json_metadata.size(), "Cannot update comment because nothing appears to be changing.");
                 }
 
-                const auto &by_permlink_idx = _db.get_index<comment_index>().indices().get<by_permlink>();
+                const auto &by_permlink_idx = this->_db.get_index<comment_index>().indices().get<by_permlink>();
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
 
-                const auto &auth = _db.get_account(o.author); /// prove it exists
+                const auto &auth = this->_db.get_account(o.author); /// prove it exists
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                     FC_ASSERT(!(auth.owner_challenged ||
                                 auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
                 }
@@ -580,11 +578,11 @@ namespace steemit {
 
                 const comment_object *parent = nullptr;
                 if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
-                    parent = &_db.get_comment(o.parent_author, o.parent_permlink);
-                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__84)) {
+                    parent = &this->_db.get_comment(o.parent_author, o.parent_permlink);
+                    if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__84)) {
                         FC_ASSERT(parent->depth <
                                   STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x", parent->depth)("y", STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17));
-                    } else if (_db.is_producing()) {
+                    } else if (this->_db.is_producing()) {
                         FC_ASSERT(parent->depth <
                                   STEEMIT_SOFT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x", parent->depth)("y", STEEMIT_SOFT_MAX_COMMENT_DEPTH));
                     } else {
@@ -594,34 +592,34 @@ namespace steemit {
 
                 }
 
-                if ((_db.is_producing() ||
-                     _db.has_hardfork(STEEMIT_HARDFORK_0_17)) &&
+                if ((this->_db.is_producing() ||
+                     this->_db.has_hardfork(STEEMIT_HARDFORK_0_17)) &&
                     o.json_metadata.size())
                     FC_ASSERT(fc::is_utf8(o.json_metadata), "JSON Metadata must be UTF-8");
 
-                auto now = _db.head_block_time();
+                auto now = this->_db.head_block_time();
 
                 if (itr == by_permlink_idx.end()) {
                     if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
-                        FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                            !_db.has_hardfork(STEEMIT_HARDFORK_0_17__97)) {
+                        FC_ASSERT(this->_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                            !this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__97)) {
                             FC_ASSERT(
-                                    _db.calculate_discussion_payout_time(*parent) !=
+                                    this->_db.calculate_discussion_payout_time(*parent) !=
                                     fc::time_point_sec::maximum(), "Discussion is frozen.");
                         }
                     }
 
-                    auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(o.author, bandwidth_type::post));
+                    auto band = this->_db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(o.author, bandwidth_type::post));
 
                     if (band == nullptr) {
-                        band = &_db.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
+                        band = &this->_db.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
                             b.account = o.author;
                             b.type = bandwidth_type::post;
                         });
                     }
 
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
+                    if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
                         if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             FC_ASSERT((now - band->last_bandwidth_update) >
                                       STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now", now)("last_root_post", band->last_bandwidth_update));
@@ -629,7 +627,7 @@ namespace steemit {
                             FC_ASSERT((now - auth.last_post) >
                                       STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now", now)("auth.last_post", auth.last_post));
                         }
-                    } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_6__113)) {
+                    } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_6__113)) {
                         if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             FC_ASSERT((now - auth.last_post) >
                                       STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now", now)("auth.last_post", auth.last_post));
@@ -647,7 +645,7 @@ namespace steemit {
                     if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                         auto post_bandwidth = band->average_bandwidth;
 
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__78)) {
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__78)) {
                             auto post_delta_time = std::min(
                                     now.sec_since_epoch() -
                                     band->last_bandwidth_update.sec_since_epoch(), STEEMIT_POST_AVERAGE_WINDOW);
@@ -661,7 +659,7 @@ namespace steemit {
                                      STEEMIT_100_PERCENT) /
                                     (post_bandwidth.value *
                                      post_bandwidth.value), uint64_t(STEEMIT_100_PERCENT)));
-                        } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
+                        } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
                             auto post_delta_time = std::min(
                                     now.sec_since_epoch() -
                                     band->last_bandwidth_update.sec_since_epoch(), STEEMIT_POST_AVERAGE_WINDOW);
@@ -677,7 +675,7 @@ namespace steemit {
                                      post_bandwidth.value), uint64_t(STEEMIT_100_PERCENT)));
                         }
 
-                        _db.modify(*band, [&](account_bandwidth_object &b) {
+                        this->_db.modify(*band, [&](account_bandwidth_object &b) {
                             b.last_bandwidth_update = now;
                             b.average_bandwidth = post_bandwidth;
                         });
@@ -688,15 +686,15 @@ namespace steemit {
                         a.post_count++;
                     });
 
-                    const auto &new_comment = _db.create<comment_object>([&](comment_object &com) {
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                    const auto &new_comment = this->_db.create<comment_object>([&](comment_object &com) {
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                             validate_permlink_0_1(o.parent_permlink);
                             validate_permlink_0_1(o.permlink);
                         }
 
                         com.author = o.author;
                         from_string(com.permlink, o.permlink);
-                        com.last_update = _db.head_block_time();
+                        com.last_update = this->_db.head_block_time();
                         com.created = com.last_update;
                         com.active = com.last_update;
                         com.last_payout = fc::time_point_sec::min();
@@ -708,9 +706,9 @@ namespace steemit {
                             from_string(com.parent_permlink, o.parent_permlink);
                             from_string(com.category, o.parent_permlink);
                             com.root_comment = com.id;
-                            com.cashout_time = _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)
+                            com.cashout_time = this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177)
                                                ?
-                                               _db.head_block_time() +
+                                               this->_db.head_block_time() +
                                                STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17
                                                :
                                                fc::time_point_sec::maximum();
@@ -723,7 +721,7 @@ namespace steemit {
                             com.cashout_time = fc::time_point_sec::maximum();
                         }
 
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                             com.cashout_time = com.created +
                                                STEEMIT_CASHOUT_WINDOW_SECONDS;
                         }
@@ -741,32 +739,32 @@ namespace steemit {
                     });
 
                     /** TODO move category behavior to a plugin, this is not part of consensus */
-                    const category_object *cat = _db.find_category(new_comment.category);
+                    const category_object *cat = this->_db.find_category(new_comment.category);
                     if (!cat) {
-                        cat = &_db.create<category_object>([&](category_object &c) {
+                        cat = &this->_db.create<category_object>([&](category_object &c) {
                             c.name = new_comment.category;
                             c.discussions = 1;
-                            c.last_update = _db.head_block_time();
+                            c.last_update = this->_db.head_block_time();
                         });
                     } else {
-                        _db.modify(*cat, [&](category_object &c) {
+                        this->_db.modify(*cat, [&](category_object &c) {
                             c.discussions++;
-                            c.last_update = _db.head_block_time();
+                            c.last_update = this->_db.head_block_time();
                         });
                     }
 
                     id = new_comment.id;
 
 /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
-                    auto now = _db.head_block_time();
+                    auto now = this->_db.head_block_time();
                     while (parent) {
-                        _db.modify(*parent, [&](comment_object &p) {
+                        this->_db.modify(*parent, [&](comment_object &p) {
                             p.children++;
                             p.active = now;
                         });
 #ifndef IS_LOW_MEM
                         if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
-                            parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
+                            parent = &this->_db.get_comment(parent->parent_author, parent->parent_permlink);
                         } else
 #endif
                         {
@@ -778,25 +776,25 @@ namespace steemit {
                 {
                     const auto &comment = *itr;
 
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__85)) {
+                    if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__85)) {
                         // This will be moved to the witness plugin in a later release
-                        if (_db.is_producing()) {
+                        if (this->_db.is_producing()) {
                             // For now, use the same editting rules, but implement it as a soft fork.
                             FC_ASSERT(
-                                    _db.calculate_discussion_payout_time(comment) !=
+                                    this->_db.calculate_discussion_payout_time(comment) !=
                                     fc::time_point_sec::maximum(), "The comment is archived.");
                         }
-                    } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__306)) {
+                    } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__306)) {
                         FC_ASSERT(
-                                _db.calculate_discussion_payout_time(comment) !=
+                                this->_db.calculate_discussion_payout_time(comment) !=
                                 fc::time_point_sec::maximum(), "The comment is archived.");
-                    } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
+                    } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                         FC_ASSERT(comment.last_payout ==
                                   fc::time_point_sec::min(), "Can only edit during the first 24 hours.");
                     }
 
-                    _db.modify(comment, [&](comment_object &com) {
-                        com.last_update = _db.head_block_time();
+                    this->_db.modify(comment, [&](comment_object &com) {
+                        com.last_update = this->_db.head_block_time();
                         com.active = com.last_update;
                         strcmp_equal equal;
 
@@ -853,16 +851,16 @@ namespace steemit {
 
         void escrow_transfer_evaluator::do_apply(const escrow_transfer_operation &o) {
             try {
-                database &_db = db();
 
-                const auto &from_account = _db.get_account(o.from);
-                _db.get_account(o.to);
-                _db.get_account(o.agent);
+
+                const auto &from_account = this->_db.get_account(o.from);
+                this->_db.get_account(o.to);
+                this->_db.get_account(o.agent);
 
                 FC_ASSERT(o.ratification_deadline >
-                          _db.head_block_time(), "The escorw ratification deadline must be after head block time.");
+                          this->_db.head_block_time(), "The escorw ratification deadline must be after head block time.");
                 FC_ASSERT(o.escrow_expiration >
-                          _db.head_block_time(), "The escrow expiration must be after head block time.");
+                          this->_db.head_block_time(), "The escrow expiration must be after head block time.");
 
                 asset steem_spent = o.steem_amount;
                 asset sbd_spent = o.sbd_amount;
@@ -877,10 +875,10 @@ namespace steemit {
                 FC_ASSERT(from_account.sbd_balance >=
                           sbd_spent, "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}", ("r", sbd_spent)("a", from_account.sbd_balance));
 
-                _db.adjust_balance(from_account, -steem_spent);
-                _db.adjust_balance(from_account, -sbd_spent);
+                this->_db.adjust_balance(from_account, -steem_spent);
+                this->_db.adjust_balance(from_account, -sbd_spent);
 
-                _db.create<escrow_object>([&](escrow_object &esc) {
+                this->_db.create<escrow_object>([&](escrow_object &esc) {
                     esc.escrow_id = o.escrow_id;
                     esc.from = o.from;
                     esc.to = o.to;
@@ -897,15 +895,15 @@ namespace steemit {
 
         void escrow_approve_evaluator::do_apply(const escrow_approve_operation &o) {
             try {
-                database &_db = db();
-                const auto &escrow = _db.get_escrow(o.from, o.escrow_id);
+
+                const auto &escrow = this->_db.get_escrow(o.from, o.escrow_id);
 
                 FC_ASSERT(escrow.to ==
                           o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", escrow.to));
                 FC_ASSERT(escrow.agent ==
                           o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).", ("o", o.agent)("e", escrow.agent));
                 FC_ASSERT(escrow.ratification_deadline >=
-                          _db.head_block_time(), "The escrow ratification deadline has passed. Escrow can no longer be ratified.");
+                          this->_db.head_block_time(), "The escrow ratification deadline has passed. Escrow can no longer be ratified.");
 
                 bool reject_escrow = !o.approve;
 
@@ -913,7 +911,7 @@ namespace steemit {
                     FC_ASSERT(!escrow.to_approved, "Account 'to' (${t}) has already approved the escrow.", ("t", o.to));
 
                     if (!reject_escrow) {
-                        _db.modify(escrow, [&](escrow_object &esc) {
+                        this->_db.modify(escrow, [&](escrow_object &esc) {
                             esc.to_approved = true;
                         });
                     }
@@ -922,24 +920,24 @@ namespace steemit {
                     FC_ASSERT(!escrow.agent_approved, "Account 'agent' (${a}) has already approved the escrow.", ("a", o.agent));
 
                     if (!reject_escrow) {
-                        _db.modify(escrow, [&](escrow_object &esc) {
+                        this->_db.modify(escrow, [&](escrow_object &esc) {
                             esc.agent_approved = true;
                         });
                     }
                 }
 
                 if (reject_escrow) {
-                    const auto &from_account = _db.get_account(o.from);
-                    _db.adjust_balance(from_account, escrow.steem_balance);
-                    _db.adjust_balance(from_account, escrow.sbd_balance);
-                    _db.adjust_balance(from_account, escrow.pending_fee);
+                    const auto &from_account = this->_db.get_account(o.from);
+                    this->_db.adjust_balance(from_account, escrow.steem_balance);
+                    this->_db.adjust_balance(from_account, escrow.sbd_balance);
+                    this->_db.adjust_balance(from_account, escrow.pending_fee);
 
-                    _db.remove(escrow);
+                    this->_db.remove(escrow);
                 } else if (escrow.to_approved && escrow.agent_approved) {
-                    const auto &agent_account = _db.get_account(o.agent);
-                    _db.adjust_balance(agent_account, escrow.pending_fee);
+                    const auto &agent_account = this->_db.get_account(o.agent);
+                    this->_db.adjust_balance(agent_account, escrow.pending_fee);
 
-                    _db.modify(escrow, [&](escrow_object &esc) {
+                    this->_db.modify(escrow, [&](escrow_object &esc) {
                         esc.pending_fee.amount = 0;
                     });
                 }
@@ -949,11 +947,11 @@ namespace steemit {
 
         void escrow_dispute_evaluator::do_apply(const escrow_dispute_operation &o) {
             try {
-                database &_db = db();
-                _db.get_account(o.from); // Verify from account exists
 
-                const auto &e = _db.get_escrow(o.from, o.escrow_id);
-                FC_ASSERT(_db.head_block_time() <
+                this->_db.get_account(o.from); // Verify from account exists
+
+                const auto &e = this->_db.get_escrow(o.from, o.escrow_id);
+                FC_ASSERT(this->_db.head_block_time() <
                           e.escrow_expiration, "Disputing the escrow must happen before expiration.");
                 FC_ASSERT(e.to_approved &&
                           e.agent_approved, "The escrow must be approved by all parties before a dispute can be raised.");
@@ -963,7 +961,7 @@ namespace steemit {
                 FC_ASSERT(e.agent ==
                           o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).", ("o", o.agent)("e", e.agent));
 
-                _db.modify(e, [&](escrow_object &esc) {
+                this->_db.modify(e, [&](escrow_object &esc) {
                     esc.disputed = true;
                 });
             }
@@ -972,11 +970,11 @@ namespace steemit {
 
         void escrow_release_evaluator::do_apply(const escrow_release_operation &o) {
             try {
-                database &_db = db();
-                _db.get_account(o.from); // Verify from account exists
-                const auto &receiver_account = _db.get_account(o.receiver);
 
-                const auto &e = _db.get_escrow(o.from, o.escrow_id);
+                this->_db.get_account(o.from); // Verify from account exists
+                const auto &receiver_account = this->_db.get_account(o.receiver);
+
+                const auto &e = this->_db.get_escrow(o.from, o.escrow_id);
                 FC_ASSERT(e.steem_balance >=
                           o.steem_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.steem_amount)("b", e.steem_balance));
                 FC_ASSERT(e.sbd_balance >=
@@ -998,7 +996,7 @@ namespace steemit {
                     FC_ASSERT(o.who == e.from || o.who ==
                                                  e.to, "Only 'from' (${f}) and 'to' (${t}) can release funds from a non-disputed escrow", ("f", e.from)("t", e.to));
 
-                    if (e.escrow_expiration > _db.head_block_time()) {
+                    if (e.escrow_expiration > this->_db.head_block_time()) {
                         // If there is no dispute and escrow has not expired, either party can release funds to the other.
                         if (o.who == e.from) {
                             FC_ASSERT(o.receiver ==
@@ -1011,56 +1009,56 @@ namespace steemit {
                 }
                 // If escrow expires and there is no dispute, either party can release funds to either party.
 
-                _db.adjust_balance(receiver_account, o.steem_amount);
-                _db.adjust_balance(receiver_account, o.sbd_amount);
+                this->_db.adjust_balance(receiver_account, o.steem_amount);
+                this->_db.adjust_balance(receiver_account, o.sbd_amount);
 
-                _db.modify(e, [&](escrow_object &esc) {
+                this->_db.modify(e, [&](escrow_object &esc) {
                     esc.steem_balance -= o.steem_amount;
                     esc.sbd_balance -= o.sbd_amount;
                 });
 
                 if (e.steem_balance.amount == 0 && e.sbd_balance.amount == 0) {
-                    _db.remove(e);
+                    this->_db.remove(e);
                 }
             }
             FC_CAPTURE_AND_RETHROW((o))
         }
 
         void transfer_evaluator::do_apply(const transfer_operation &o) {
-            database &_db = db();
-            const auto &from_account = _db.get_account(o.from);
-            const auto &to_account = _db.get_account(o.to);
+
+            const auto &from_account = this->_db.get_account(o.from);
+            const auto &to_account = this->_db.get_account(o.to);
 
             if (from_account.active_challenged) {
-                _db.modify(from_account, [&](account_object &a) {
+                this->_db.modify(from_account, [&](account_object &a) {
                     a.active_challenged = false;
-                    a.last_active_proved = _db.head_block_time();
+                    a.last_active_proved = this->_db.head_block_time();
                 });
             }
 
-            FC_ASSERT(_db.get_balance(from_account, o.amount.symbol) >=
+            FC_ASSERT(this->_db.get_balance(from_account, o.amount.symbol) >=
                       o.amount, "Account does not have sufficient funds for transfer.");
-            _db.adjust_balance(from_account, -o.amount);
-            _db.adjust_balance(to_account, o.amount);
+            this->_db.adjust_balance(from_account, -o.amount);
+            this->_db.adjust_balance(to_account, o.amount);
         }
 
         void transfer_to_vesting_evaluator::do_apply(const transfer_to_vesting_operation &o) {
-            database &_db = db();
 
-            const auto &from_account = _db.get_account(o.from);
-            const auto &to_account = o.to.size() ? _db.get_account(o.to)
+
+            const auto &from_account = this->_db.get_account(o.from);
+            const auto &to_account = o.to.size() ? this->_db.get_account(o.to)
                                                  : from_account;
 
-            FC_ASSERT(_db.get_balance(from_account, STEEM_SYMBOL) >=
+            FC_ASSERT(this->_db.get_balance(from_account, STEEM_SYMBOL) >=
                       o.amount, "Account does not have sufficient GOLOS for transfer.");
-            _db.adjust_balance(from_account, -o.amount);
-            _db.create_vesting(to_account, o.amount);
+            this->_db.adjust_balance(from_account, -o.amount);
+            this->_db.create_vesting(to_account, o.amount);
         }
 
         void withdraw_vesting_evaluator::do_apply(const withdraw_vesting_operation &o) {
-            database &_db = db();
 
-            const auto &account = _db.get_account(o.account);
+
+            const auto &account = this->_db.get_account(o.account);
 
             FC_ASSERT(account.vesting_shares >=
                       asset(0, VESTS_SYMBOL), "Account does not have sufficient Golos Power for withdraw.");
@@ -1068,28 +1066,29 @@ namespace steemit {
                     account.vesting_shares - account.delegated_vesting_shares >=
                     o.vesting_shares, "Account does not have sufficient Steem Power for withdraw.");
 
-            if (!account.mined && _db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                const auto &props = _db.get_dynamic_global_properties();
-                const witness_schedule_object &wso = _db.get_witness_schedule_object();
+            if (!account.mined &&
+                this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                const auto &props = this->_db.get_dynamic_global_properties();
+                const witness_schedule_object &wso = this->_db.get_witness_schedule_object();
 
                 asset min_vests = wso.median_props.account_creation_fee *
                                   props.get_vesting_share_price();
                 min_vests.amount.value *= 10;
 
                 FC_ASSERT(account.vesting_shares > min_vests ||
-                          (_db.has_hardfork(STEEMIT_HARDFORK_0_16__562) &&
+                          (this->_db.has_hardfork(STEEMIT_HARDFORK_0_16__562) &&
                            o.vesting_shares.amount == 0),
                         "Account registered by another account requires 10x account creation fee worth of Golos Power before it can be powered down.");
             }
 
             if (o.vesting_shares.amount == 0) {
-                if (_db.is_producing() ||
-                    _db.has_hardfork(STEEMIT_HARDFORK_0_5__57)) {
+                if (this->_db.is_producing() ||
+                    this->_db.has_hardfork(STEEMIT_HARDFORK_0_5__57)) {
                     FC_ASSERT(account.vesting_withdraw_rate.amount !=
                               0, "This operation would not change the vesting withdraw rate.");
                 }
 
-                _db.modify(account, [&](account_object &a) {
+                this->_db.modify(account, [&](account_object &a) {
                     a.vesting_withdraw_rate = asset(0, VESTS_SYMBOL);
                     a.next_vesting_withdrawal = time_point_sec::maximum();
                     a.to_withdraw = 0;
@@ -1098,15 +1097,15 @@ namespace steemit {
             } else {
                 int vesting_withdraw_intervals = 0;
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__103)) {
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__103)) {
                     vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
-                } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                     vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF17;
                 } else {
                     vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16;
                 }
 
-                _db.modify(account, [&](account_object &a) {
+                this->_db.modify(account, [&](account_object &a) {
                     auto new_vesting_withdraw_rate = asset(
                             o.vesting_shares.amount /
                             vesting_withdraw_intervals, VESTS_SYMBOL);
@@ -1115,14 +1114,14 @@ namespace steemit {
                         new_vesting_withdraw_rate.amount = 1;
                     }
 
-                    if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_5__57)) {
+                    if (this->_db.is_producing() ||
+                        this->_db.has_hardfork(STEEMIT_HARDFORK_0_5__57)) {
                         FC_ASSERT(account.vesting_withdraw_rate !=
                                   new_vesting_withdraw_rate, "This operation would not change the vesting withdraw rate.");
                     }
 
                     a.vesting_withdraw_rate = new_vesting_withdraw_rate;
-                    a.next_vesting_withdrawal = _db.head_block_time() +
+                    a.next_vesting_withdrawal = this->_db.head_block_time() +
                                                 fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
                     a.to_withdraw = o.vesting_shares.amount;
                     a.withdrawn = 0;
@@ -1132,10 +1131,10 @@ namespace steemit {
 
         void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_route_operation &o) {
             try {
-                database &_db = db();
-                const auto &from_account = _db.get_account(o.from_account);
-                const auto &to_account = _db.get_account(o.to_account);
-                const auto &wd_idx = _db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+
+                const auto &from_account = this->_db.get_account(o.from_account);
+                const auto &to_account = this->_db.get_account(o.to_account);
+                const auto &wd_idx = this->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
                 auto itr = wd_idx.find(boost::make_tuple(from_account.id, to_account.id));
 
                 if (itr == wd_idx.end()) {
@@ -1144,24 +1143,24 @@ namespace steemit {
                     FC_ASSERT(from_account.withdraw_routes <
                               STEEMIT_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes.");
 
-                    _db.create<withdraw_vesting_route_object>([&](withdraw_vesting_route_object &wvdo) {
+                    this->_db.create<withdraw_vesting_route_object>([&](withdraw_vesting_route_object &wvdo) {
                         wvdo.from_account = from_account.id;
                         wvdo.to_account = to_account.id;
                         wvdo.percent = o.percent;
                         wvdo.auto_vest = o.auto_vest;
                     });
 
-                    _db.modify(from_account, [&](account_object &a) {
+                    this->_db.modify(from_account, [&](account_object &a) {
                         a.withdraw_routes++;
                     });
                 } else if (o.percent == 0) {
-                    _db.remove(*itr);
+                    this->_db.remove(*itr);
 
-                    _db.modify(from_account, [&](account_object &a) {
+                    this->_db.modify(from_account, [&](account_object &a) {
                         a.withdraw_routes--;
                     });
                 } else {
-                    _db.modify(*itr, [&](withdraw_vesting_route_object &wvdo) {
+                    this->_db.modify(*itr, [&](withdraw_vesting_route_object &wvdo) {
                         wvdo.from_account = from_account.id;
                         wvdo.to_account = to_account.id;
                         wvdo.percent = o.percent;
@@ -1185,8 +1184,8 @@ namespace steemit {
         }
 
         void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_operation &o) {
-            database &_db = db();
-            const auto &account = _db.get_account(o.account);
+
+            const auto &account = this->_db.get_account(o.account);
             FC_ASSERT(account.proxy != o.proxy, "Proxy must change.");
 
             FC_ASSERT(account.can_vote, "Account has declined the ability to vote and cannot proxy votes.");
@@ -1197,10 +1196,10 @@ namespace steemit {
             for (int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
                 delta[i + 1] = -account.proxied_vsf_votes[i];
             }
-            _db.adjust_proxied_witness_votes(account, delta);
+            this->_db.adjust_proxied_witness_votes(account, delta);
 
             if (o.proxy.size()) {
-                const auto &new_proxy = _db.get_account(o.proxy);
+                const auto &new_proxy = this->_db.get_account(o.proxy);
                 flat_set<account_id_type> proxy_chain({account.id, new_proxy.id
                 });
                 proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
@@ -1208,7 +1207,7 @@ namespace steemit {
                 /// check for proxy loops and fail to update the proxy if it would create a loop
                 auto cprox = &new_proxy;
                 while (cprox->proxy.size() != 0) {
-                    const auto next_proxy = _db.get_account(cprox->proxy);
+                    const auto next_proxy = this->_db.get_account(cprox->proxy);
                     FC_ASSERT(proxy_chain.insert(next_proxy.id).second, "This proxy would create a proxy loop.");
                     cprox = &next_proxy;
                     FC_ASSERT(proxy_chain.size() <=
@@ -1216,9 +1215,9 @@ namespace steemit {
                 }
 
                 /// clear all individual vote records
-                _db.clear_witness_votes(account);
+                this->_db.clear_witness_votes(account);
 
-                _db.modify(account, [&](account_object &a) {
+                this->_db.modify(account, [&](account_object &a) {
                     a.proxy = o.proxy;
                 });
 
@@ -1226,9 +1225,9 @@ namespace steemit {
                 for (int i = 0; i <= STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
                     delta[i] = -delta[i];
                 }
-                _db.adjust_proxied_witness_votes(account, delta);
+                this->_db.adjust_proxied_witness_votes(account, delta);
             } else { /// we are clearing the proxy which means we simply update the account
-                _db.modify(account, [&](account_object &a) {
+                this->_db.modify(account, [&](account_object &a) {
                     a.proxy = o.proxy;
                 });
             }
@@ -1236,8 +1235,8 @@ namespace steemit {
 
 
         void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation &o) {
-            database &_db = db();
-            const auto &voter = _db.get_account(o.account);
+
+            const auto &voter = this->_db.get_account(o.account);
             FC_ASSERT(voter.proxy.size() ==
                       0, "A proxy is currently set, please clear the proxy before voting for a witness.");
 
@@ -1245,73 +1244,73 @@ namespace steemit {
                 FC_ASSERT(voter.can_vote, "Account has declined its voting rights.");
             }
 
-            const auto &witness = _db.get_witness(o.witness);
+            const auto &witness = this->_db.get_witness(o.witness);
 
-            const auto &by_account_witness_idx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+            const auto &by_account_witness_idx = this->_db.get_index<witness_vote_index>().indices().get<by_account_witness>();
             auto itr = by_account_witness_idx.find(boost::make_tuple(voter.id, witness.id));
 
             if (itr == by_account_witness_idx.end()) {
                 FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
                     FC_ASSERT(voter.witnesses_voted_for <
                               STEEMIT_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
 
-                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
+                    this->_db.create<witness_vote_object>([&](witness_vote_object &v) {
                         v.witness = witness.id;
                         v.account = voter.id;
                     });
 
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
-                        _db.adjust_witness_vote(witness, voter.witness_vote_weight());
+                    if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
+                        this->_db.adjust_witness_vote(witness, voter.witness_vote_weight());
                     } else {
-                        _db.adjust_proxied_witness_votes(voter, voter.witness_vote_weight());
+                        this->_db.adjust_proxied_witness_votes(voter, voter.witness_vote_weight());
                     }
 
                 } else {
 
-                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
+                    this->_db.create<witness_vote_object>([&](witness_vote_object &v) {
                         v.witness = witness.id;
                         v.account = voter.id;
                     });
-                    _db.modify(witness, [&](witness_object &w) {
+                    this->_db.modify(witness, [&](witness_object &w) {
                         w.votes += voter.witness_vote_weight();
                     });
 
                 }
-                _db.modify(voter, [&](account_object &a) {
+                this->_db.modify(voter, [&](account_object &a) {
                     a.witnesses_voted_for++;
                 });
 
             } else {
                 FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
-                        _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
+                    if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
+                        this->_db.adjust_witness_vote(witness, -voter.witness_vote_weight());
                     } else {
-                        _db.adjust_proxied_witness_votes(voter, -voter.witness_vote_weight());
+                        this->_db.adjust_proxied_witness_votes(voter, -voter.witness_vote_weight());
                     }
                 } else {
-                    _db.modify(witness, [&](witness_object &w) {
+                    this->_db.modify(witness, [&](witness_object &w) {
                         w.votes -= voter.witness_vote_weight();
                     });
                 }
-                _db.modify(voter, [&](account_object &a) {
+                this->_db.modify(voter, [&](account_object &a) {
                     a.witnesses_voted_for--;
                 });
-                _db.remove(*itr);
+                this->_db.remove(*itr);
             }
         }
 
         void vote_evaluator::do_apply(const vote_operation &o) {
             try {
-                database &_db = db();
 
-                const auto &comment = _db.get_comment(o.author, o.permlink);
-                const auto &voter = _db.get_account(o.voter);
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
+                const auto &comment = this->_db.get_comment(o.author, o.permlink);
+                const auto &voter = this->_db.get_account(o.voter);
+
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                     FC_ASSERT(!(voter.owner_challenged ||
                                 voter.active_challenged), "Operation cannot be processed because the account is currently challenged.");
                 }
@@ -1322,38 +1321,38 @@ namespace steemit {
                     FC_ASSERT(comment.allow_votes, "Votes are not allowed on the comment.");
                 }
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                    _db.calculate_discussion_payout_time(comment) ==
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                    this->_db.calculate_discussion_payout_time(comment) ==
                     fc::time_point_sec::maximum()) {
 #ifndef CLEAR_VOTES
-                                                                                                                                            const auto& comment_vote_idx = _db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
+                                                                                                                                            const auto& comment_vote_idx = this->_db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
       auto itr = comment_vote_idx.find( std::make_tuple( comment.id, voter.id ) );
 
       if( itr == comment_vote_idx.end() )
-         _db.create< comment_vote_object >( [&]( comment_vote_object& cvo )
+         this->_db.create< comment_vote_object >( [&]( comment_vote_object& cvo )
          {
             cvo.voter = voter.id;
             cvo.comment = comment.id;
             cvo.vote_percent = o.weight;
-            cvo.last_update = _db.head_block_time();
+            cvo.last_update = this->_db.head_block_time();
          });
       else
-         _db.modify( *itr, [&]( comment_vote_object& cvo )
+         this->_db.modify( *itr, [&]( comment_vote_object& cvo )
          {
             cvo.vote_percent = o.weight;
-            cvo.last_update = _db.head_block_time();
+            cvo.last_update = this->_db.head_block_time();
          });
 #endif
                     return;
                 }
 
-                const auto &comment_vote_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+                const auto &comment_vote_idx = this->_db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
                 auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
 
-                int64_t elapsed_seconds = (_db.head_block_time() -
+                int64_t elapsed_seconds = (this->_db.head_block_time() -
                                            voter.last_vote_time).to_seconds();
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
                     FC_ASSERT(elapsed_seconds >=
                               STEEMIT_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 3 seconds.");
                 }
@@ -1370,7 +1369,7 @@ namespace steemit {
                 int64_t used_power =
                         (current_power * abs_weight) / STEEMIT_100_PERCENT;
 
-                const dynamic_global_property_object &dgpo = _db.get_dynamic_global_properties();
+                const dynamic_global_property_object &dgpo = this->_db.get_dynamic_global_properties();
 
                 // used_power = (current_power * abs_weight / STEEMIT_100_PERCENT) * (reserve / max_vote_denom)
                 // The second multiplication is rounded up as of HF 259
@@ -1379,7 +1378,7 @@ namespace steemit {
                                          (60 * 60 * 24);
                 FC_ASSERT(max_vote_denom > 0);
 
-                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
+                if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
                     used_power = (used_power / max_vote_denom) + 1;
                 } else {
                     used_power =
@@ -1391,16 +1390,16 @@ namespace steemit {
                 int64_t abs_rshares = (
                         (uint128_t(voter.effective_vesting_shares().amount.value) *
                          used_power) / (STEEMIT_100_PERCENT)).to_uint64();
-                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
+                if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
                     abs_rshares == 0) {
                     abs_rshares = 1;
                 }
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
+                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD ||
                               o.weight ==
                               0, "Voting weight is too small, please accumulate more voting power or steem power.");
-                } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
+                } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD ||
                               abs_rshares ==
                               1, "Voting weight is too small, please accumulate more voting power or steem power.");
@@ -1408,12 +1407,12 @@ namespace steemit {
 
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
-                    if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)) {
+                    if (this->_db.is_producing() ||
+                        this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177)) {
                         FC_ASSERT(false, "Cannot vote again on a comment after payout.");
                     }
 
-                    _db.remove(*itr);
+                    this->_db.remove(*itr);
                     itr = comment_vote_idx.end();
                 }
 
@@ -1422,14 +1421,15 @@ namespace steemit {
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
-                    if (rshares > 0 && _db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                            FC_ASSERT(_db.head_block_time() <
+                    if (rshares > 0 &&
+                        this->_db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            FC_ASSERT(this->_db.head_block_time() <
                                       comment.cashout_time -
                                       STEEMIT_UPVOTE_LOCKOUT, "Cannot increase reward of post within the last minute before payout.");
                         } else {
-                            FC_ASSERT(_db.head_block_time() <
-                                      _db.calculate_discussion_payout_time(comment) -
+                            FC_ASSERT(this->_db.head_block_time() <
+                                      this->_db.calculate_discussion_payout_time(comment) -
                                       STEEMIT_UPVOTE_LOCKOUT, "Cannot increase reward of post within the last minute before payout.");
                         }
 
@@ -1438,30 +1438,30 @@ namespace steemit {
                     //used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread their votes around over 50+ posts day for a week
                     //if( used_power == 0 ) used_power = 1;
 
-                    _db.modify(voter, [&](account_object &a) {
+                    this->_db.modify(voter, [&](account_object &a) {
                         a.voting_power = current_power - used_power;
-                        a.last_vote_time = _db.head_block_time();
+                        a.last_vote_time = this->_db.head_block_time();
                     });
 
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                     fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-                    const auto &root = _db.get(comment.root_comment);
+                    const auto &root = this->_db.get(comment.root_comment);
                     auto old_root_abs_rshares = root.children_abs_rshares.value;
 
                     fc::uint128_t avg_cashout_sec;
 
-                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                        fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
+                    if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        fc::uint128_t cur_cashout_time_sec = this->_db.calculate_discussion_payout_time(comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                            !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                            !this->_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
                             new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
+                                    this->_db.head_block_time().sec_since_epoch() +
                                     STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                         } else {
                             new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
+                                    this->_db.head_block_time().sec_since_epoch() +
                                     STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
                         }
 
@@ -1475,7 +1475,7 @@ namespace steemit {
 
                     auto old_vote_rshares = comment.vote_rshares;
 
-                    _db.modify(comment, [&](comment_object &c) {
+                    this->_db.modify(comment, [&](comment_object &c) {
                         c.net_rshares += rshares;
                         c.abs_rshares += abs_rshares;
                         if (rshares > 0) {
@@ -1486,17 +1486,17 @@ namespace steemit {
                         } else {
                             c.net_votes--;
                         }
-                        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_6__114) &&
+                        if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_6__114) &&
                             c.net_rshares == -c.abs_rshares) {
                             FC_ASSERT(c.net_votes <
                                       0, "Comment has negative net votes?");
                         }
                     });
 
-                    _db.modify(root, [&](comment_object &c) {
+                    this->_db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
-                        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                        if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                                 c.last_payout > fc::time_point_sec::min()) {
                                 c.cashout_time = c.last_payout +
                                                  STEEMIT_SECOND_CASHOUT_WINDOW;
@@ -1506,8 +1506,9 @@ namespace steemit {
 
                             if (c.max_cashout_time ==
                                 fc::time_point_sec::maximum()) {
-                                c.max_cashout_time = _db.head_block_time() +
-                                                     fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                                c.max_cashout_time =
+                                        this->_db.head_block_time() +
+                                        fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
                             }
                         }
                     });
@@ -1518,10 +1519,10 @@ namespace steemit {
                     new_rshares = utilities::calculate_vshares(new_rshares);
                     old_rshares = utilities::calculate_vshares(old_rshares);
 
-                    const auto &cat = _db.get_category(comment.category);
-                    _db.modify(cat, [&](category_object &c) {
+                    const auto &cat = this->_db.get_category(comment.category);
+                    this->_db.modify(cat, [&](category_object &c) {
                         c.abs_rshares += abs_rshares;
-                        c.last_update = _db.head_block_time();
+                        c.last_update = this->_db.head_block_time();
                     });
 
                     uint64_t max_vote_weight = 0;
@@ -1544,12 +1545,12 @@ namespace steemit {
        *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit integer.
        *
       **/
-                    _db.create<comment_vote_object>([&](comment_vote_object &cv) {
+                    this->_db.create<comment_vote_object>([&](comment_vote_object &cv) {
                         cv.voter = voter.id;
                         cv.comment = comment.id;
                         cv.rshares = rshares;
                         cv.vote_percent = o.weight;
-                        cv.last_update = _db.head_block_time();
+                        cv.last_update = this->_db.head_block_time();
 
                         bool curation_reward_eligible = rshares > 0 &&
                                                         (comment.last_payout ==
@@ -1557,9 +1558,9 @@ namespace steemit {
                                                         comment.allow_curation_rewards;
 
                         if (curation_reward_eligible &&
-                            _db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                            this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                             curation_reward_eligible =
-                                    _db.get_curation_rewards_percent(comment) >
+                                    this->_db.get_curation_rewards_percent(comment) >
                                     0;
                         }
 
@@ -1569,7 +1570,7 @@ namespace steemit {
                                 u512 rshares3(rshares);
                                 u256 total2(comment.abs_rshares.value);
 
-                                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                                if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     rshares3 *= 10000;
                                     total2 *= 10000;
                                 }
@@ -1582,7 +1583,7 @@ namespace steemit {
                             } else {// cv.weight = W(R_1) - W(R_0)
                                 const uint128_t two_s =
                                         2 * utilities::get_content_constant_s();
-                                if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                                if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     uint64_t old_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(old_vote_rshares.value)) /
@@ -1615,7 +1616,7 @@ namespace steemit {
 
                             max_vote_weight = cv.weight;
 
-                            if (_db.head_block_time() >
+                            if (this->_db.head_block_time() >
                                 fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME))  /// start enforcing this prior to the hardfork
                             {
                                 /// discount weight by time
@@ -1635,20 +1636,20 @@ namespace steemit {
 
                     if (max_vote_weight) // Optimization
                     {
-                        _db.modify(comment, [&](comment_object &c) {
+                        this->_db.modify(comment, [&](comment_object &c) {
                             c.total_vote_weight += max_vote_weight;
                         });
                     }
 
-                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                        _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                        this->_db.adjust_rshares2(comment, old_rshares, new_rshares);
                     }
                 } else {
                     FC_ASSERT(itr->num_changes <
                               STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
 
-                    if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_6__112)) {
+                    if (this->_db.is_producing() ||
+                        this->_db.has_hardfork(STEEMIT_HARDFORK_0_6__112)) {
                         FC_ASSERT(itr->vote_percent !=
                                   o.weight, "You have already voted in a similar way.");
                     }
@@ -1657,40 +1658,40 @@ namespace steemit {
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (itr->rshares < rshares &&
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) -
+                        this->_db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
+                        FC_ASSERT(this->_db.head_block_time() <
+                                  this->_db.calculate_discussion_payout_time(comment) -
                                   STEEMIT_UPVOTE_LOCKOUT, "Cannot increase payout within last minute before payout.");
                     }
 
-                    _db.modify(voter, [&](account_object &a) {
+                    this->_db.modify(voter, [&](account_object &a) {
                         a.voting_power = current_power - used_power;
-                        a.last_vote_time = _db.head_block_time();
+                        a.last_vote_time = this->_db.head_block_time();
                     });
 
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                     fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-                    const auto &root = _db.get(comment.root_comment);
+                    const auto &root = this->_db.get(comment.root_comment);
                     auto old_root_abs_rshares = root.children_abs_rshares.value;
 
                     fc::uint128_t avg_cashout_sec;
 
-                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                        fc::uint128_t cur_cashout_time_sec = _db.calculate_discussion_payout_time(comment).sec_since_epoch();
+                    if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        fc::uint128_t cur_cashout_time_sec = this->_db.calculate_discussion_payout_time(comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                            !_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                            !this->_db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
                             new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
+                                    this->_db.head_block_time().sec_since_epoch() +
                                     STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                         } else {
                             new_cashout_time_sec =
-                                    _db.head_block_time().sec_since_epoch() +
+                                    this->_db.head_block_time().sec_since_epoch() +
                                     STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
                         }
 
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
+                        if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) &&
                             abs_rshares == 0) {
                             avg_cashout_sec = cur_cashout_time_sec;
                         } else {
@@ -1703,7 +1704,7 @@ namespace steemit {
                         }
                     }
 
-                    _db.modify(comment, [&](comment_object &c) {
+                    this->_db.modify(comment, [&](comment_object &c) {
                         c.net_rshares -= itr->rshares;
                         c.net_rshares += rshares;
                         c.abs_rshares += abs_rshares;
@@ -1724,10 +1725,10 @@ namespace steemit {
                         }
                     });
 
-                    _db.modify(root, [&](comment_object &c) {
+                    this->_db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
-                        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                        if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                                 c.last_payout > fc::time_point_sec::min()) {
                                 c.cashout_time = c.last_payout +
                                                  STEEMIT_SECOND_CASHOUT_WINDOW;
@@ -1737,8 +1738,9 @@ namespace steemit {
 
                             if (c.max_cashout_time ==
                                 fc::time_point_sec::maximum()) {
-                                c.max_cashout_time = _db.head_block_time() +
-                                                     fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                                c.max_cashout_time =
+                                        this->_db.head_block_time() +
+                                        fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
                             }
                         }
                     });
@@ -1749,20 +1751,20 @@ namespace steemit {
                     new_rshares = utilities::calculate_vshares(new_rshares);
                     old_rshares = utilities::calculate_vshares(old_rshares);
 
-                    _db.modify(comment, [&](comment_object &c) {
+                    this->_db.modify(comment, [&](comment_object &c) {
                         c.total_vote_weight -= itr->weight;
                     });
 
-                    _db.modify(*itr, [&](comment_vote_object &cv) {
+                    this->_db.modify(*itr, [&](comment_vote_object &cv) {
                         cv.rshares = rshares;
                         cv.vote_percent = o.weight;
-                        cv.last_update = _db.head_block_time();
+                        cv.last_update = this->_db.head_block_time();
                         cv.weight = 0;
                         cv.num_changes += 1;
                     });
 
-                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                        _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    if (!this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                        this->_db.adjust_rshares2(comment, old_rshares, new_rshares);
                     }
 
                 }
@@ -2004,54 +2006,54 @@ namespace steemit {
         }
 
         void feed_publish_evaluator::do_apply(const feed_publish_operation &o) {
-            database &_db = db();
-            const auto &witness = _db.get_witness(o.publisher);
-            _db.modify(witness, [&](witness_object &w) {
+
+            const auto &witness = this->_db.get_witness(o.publisher);
+            this->_db.modify(witness, [&](witness_object &w) {
                 w.sbd_exchange_rate = o.exchange_rate;
-                w.last_sbd_exchange_update = _db.head_block_time();
+                w.last_sbd_exchange_update = this->_db.head_block_time();
             });
         }
 
         void convert_evaluator::do_apply(const convert_operation &o) {
-            database &_db = db();
-            const auto &owner = _db.get_account(o.owner);
-            FC_ASSERT(_db.get_balance(owner, o.amount.symbol) >=
+
+            const auto &owner = this->_db.get_account(o.owner);
+            FC_ASSERT(this->_db.get_balance(owner, o.amount.symbol) >=
                       o.amount, "Account does not have sufficient balance for conversion.");
 
-            _db.adjust_balance(owner, -o.amount);
+            this->_db.adjust_balance(owner, -o.amount);
 
-            const auto &fhistory = _db.get_feed_history();
+            const auto &fhistory = this->_db.get_feed_history();
             FC_ASSERT(!fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed.");
 
             auto steem_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF16;
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 steem_conversion_delay = STEEMIT_CONVERSION_DELAY;
             }
 
-            _db.create<convert_request_object>([&](convert_request_object &obj) {
+            this->_db.create<convert_request_object>([&](convert_request_object &obj) {
                 obj.owner = o.owner;
                 obj.requestid = o.requestid;
                 obj.amount = o.amount;
                 obj.conversion_date =
-                        _db.head_block_time() + steem_conversion_delay;
+                        this->_db.head_block_time() + steem_conversion_delay;
             });
 
         }
 
         void limit_order_create_evaluator::do_apply(const limit_order_create_operation &o) {
-            database &_db = db();
+
             FC_ASSERT(o.expiration >
-                      _db.head_block_time(), "Limit order has to expire after head block time.");
+                      this->_db.head_block_time(), "Limit order has to expire after head block time.");
 
-            const auto &owner = _db.get_account(o.owner);
+            const auto &owner = this->_db.get_account(o.owner);
 
-            FC_ASSERT(_db.get_balance(owner, o.amount_to_sell.symbol) >=
+            FC_ASSERT(this->_db.get_balance(owner, o.amount_to_sell.symbol) >=
                       o.amount_to_sell, "Account does not have sufficient funds for limit order.");
 
-            _db.adjust_balance(owner, -o.amount_to_sell);
+            this->_db.adjust_balance(owner, -o.amount_to_sell);
 
-            const auto &order = _db.create<limit_order_object>([&](limit_order_object &obj) {
-                obj.created = _db.head_block_time();
+            const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
+                obj.created = this->_db.head_block_time();
                 obj.seller = o.owner;
                 obj.orderid = o.orderid;
                 obj.for_sale = o.amount_to_sell.amount;
@@ -2059,7 +2061,7 @@ namespace steemit {
                 obj.expiration = o.expiration;
             });
 
-            bool filled = _db.apply_order(order);
+            bool filled = this->_db.apply_order(order);
 
             if (o.fill_or_kill) {
                 FC_ASSERT(filled, "Cancelling order because it was not filled.");
@@ -2067,19 +2069,19 @@ namespace steemit {
         }
 
         void limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &o) {
-            database &_db = db();
+
             FC_ASSERT(o.expiration >
-                      _db.head_block_time(), "Limit order has to expire after head block time.");
+                      this->_db.head_block_time(), "Limit order has to expire after head block time.");
 
-            const auto &owner = _db.get_account(o.owner);
+            const auto &owner = this->_db.get_account(o.owner);
 
-            FC_ASSERT(_db.get_balance(owner, o.amount_to_sell.symbol) >=
+            FC_ASSERT(this->_db.get_balance(owner, o.amount_to_sell.symbol) >=
                       o.amount_to_sell, "Account does not have sufficient funds for limit order.");
 
-            _db.adjust_balance(owner, -o.amount_to_sell);
+            this->_db.adjust_balance(owner, -o.amount_to_sell);
 
-            const auto &order = _db.create<limit_order_object>([&](limit_order_object &obj) {
-                obj.created = _db.head_block_time();
+            const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
+                obj.created = this->_db.head_block_time();
                 obj.seller = o.owner;
                 obj.orderid = o.orderid;
                 obj.for_sale = o.amount_to_sell.amount;
@@ -2087,7 +2089,7 @@ namespace steemit {
                 obj.expiration = o.expiration;
             });
 
-            bool filled = _db.apply_order(order);
+            bool filled = this->_db.apply_order(order);
 
             if (o.fill_or_kill) {
                 FC_ASSERT(filled, "Cancelling order because it was not filled.");
@@ -2095,35 +2097,36 @@ namespace steemit {
         }
 
         void limit_order_cancel_evaluator::do_apply(const limit_order_cancel_operation &o) {
-            database &_db = db();
-            _db.cancel_order(_db.get_limit_order(o.owner, o.orderid));
+
+            this->_db.cancel_order(this->_db.get_limit_order(o.owner, o.orderid));
         }
 
         void report_over_production_evaluator::do_apply(const report_over_production_operation &o) {
-            database &_db = db();
-            FC_ASSERT(!_db.has_hardfork(STEEMIT_HARDFORK_0_4), "report_over_production_operation is disabled.");
+
+            FC_ASSERT(!this->_db.has_hardfork(STEEMIT_HARDFORK_0_4), "report_over_production_operation is disabled.");
         }
 
         void challenge_authority_evaluator::do_apply(const challenge_authority_operation &o) {
-            database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__307)) {
+
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__307)) {
                 FC_ASSERT(false, "Challenge authority operation is currently disabled.");
             }
-            const auto &challenged = _db.get_account(o.challenged);
-            const auto &challenger = _db.get_account(o.challenger);
+            const auto &challenged = this->_db.get_account(o.challenged);
+            const auto &challenger = this->_db.get_account(o.challenger);
 
             if (o.require_owner) {
                 FC_ASSERT(challenged.reset_account ==
                           o.challenger, "Owner authority can only be challenged by its reset account.");
                 FC_ASSERT(challenger.balance >= STEEMIT_OWNER_CHALLENGE_FEE);
                 FC_ASSERT(!challenged.owner_challenged);
-                FC_ASSERT(_db.head_block_time() - challenged.last_owner_proved >
+                FC_ASSERT(this->_db.head_block_time() -
+                          challenged.last_owner_proved >
                           STEEMIT_OWNER_CHALLENGE_COOLDOWN);
 
-                _db.adjust_balance(challenger, -STEEMIT_OWNER_CHALLENGE_FEE);
-                _db.create_vesting(_db.get_account(o.challenged), STEEMIT_OWNER_CHALLENGE_FEE);
+                this->_db.adjust_balance(challenger, -STEEMIT_OWNER_CHALLENGE_FEE);
+                this->_db.create_vesting(this->_db.get_account(o.challenged), STEEMIT_OWNER_CHALLENGE_FEE);
 
-                _db.modify(challenged, [&](account_object &a) {
+                this->_db.modify(challenged, [&](account_object &a) {
                     a.owner_challenged = true;
                 });
             } else {
@@ -2132,48 +2135,49 @@ namespace steemit {
                 FC_ASSERT(!(challenged.owner_challenged ||
                             challenged.active_challenged), "Account is already challenged.");
                 FC_ASSERT(
-                        _db.head_block_time() - challenged.last_active_proved >
+                        this->_db.head_block_time() -
+                        challenged.last_active_proved >
                         STEEMIT_ACTIVE_CHALLENGE_COOLDOWN, "Account cannot be challenged because it was recently challenged.");
 
-                _db.adjust_balance(challenger, -STEEMIT_ACTIVE_CHALLENGE_FEE);
-                _db.create_vesting(_db.get_account(o.challenged), STEEMIT_ACTIVE_CHALLENGE_FEE);
+                this->_db.adjust_balance(challenger, -STEEMIT_ACTIVE_CHALLENGE_FEE);
+                this->_db.create_vesting(this->_db.get_account(o.challenged), STEEMIT_ACTIVE_CHALLENGE_FEE);
 
-                _db.modify(challenged, [&](account_object &a) {
+                this->_db.modify(challenged, [&](account_object &a) {
                     a.active_challenged = true;
                 });
             }
         }
 
         void prove_authority_evaluator::do_apply(const prove_authority_operation &o) {
-            database &_db = db();
-            const auto &challenged = _db.get_account(o.challenged);
+
+            const auto &challenged = this->_db.get_account(o.challenged);
             FC_ASSERT(challenged.owner_challenged ||
                       challenged.active_challenged, "Account is not challeneged. No need to prove authority.");
 
-            _db.modify(challenged, [&](account_object &a) {
+            this->_db.modify(challenged, [&](account_object &a) {
                 a.active_challenged = false;
-                a.last_active_proved = _db.head_block_time();
+                a.last_active_proved = this->_db.head_block_time();
                 if (o.require_owner) {
                     a.owner_challenged = false;
-                    a.last_owner_proved = _db.head_block_time();
+                    a.last_owner_proved = this->_db.head_block_time();
                 }
             });
         }
 
         void request_account_recovery_evaluator::do_apply(const request_account_recovery_operation &o) {
-            database &_db = db();
-            const auto &account_to_recover = _db.get_account(o.account_to_recover);
+
+            const auto &account_to_recover = this->_db.get_account(o.account_to_recover);
 
             if (account_to_recover.recovery_account.length()) {   // Make sure recovery matches expected recovery account
                 FC_ASSERT(account_to_recover.recovery_account ==
                           o.recovery_account, "Cannot recover an account that does not have you as there recovery partner.");
             } else {                                                  // Empty string recovery account defaults to top witness
                 FC_ASSERT(
-                        _db.get_index<witness_index>().indices().get<by_vote_name>().begin()->owner ==
+                        this->_db.get_index<witness_index>().indices().get<by_vote_name>().begin()->owner ==
                         o.recovery_account, "Top witness must recover an account with no recovery partner.");
             }
 
-            const auto &recovery_request_idx = _db.get_index<account_recovery_request_index>().indices().get<by_account>();
+            const auto &recovery_request_idx = this->_db.get_index<account_recovery_request_index>().indices().get<by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
 
             if (request == recovery_request_idx.end()) // New Request
@@ -2182,54 +2186,55 @@ namespace steemit {
                 FC_ASSERT(o.new_owner_authority.weight_threshold, "Cannot recover using an open authority.");
 
                 // Check accounts in the new authority exist
-                if ((_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                     _db.is_producing())) {
+                if ((this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                     this->_db.is_producing())) {
                     for (auto &a : o.new_owner_authority.account_auths) {
-                        _db.get_account(a.first);
+                        this->_db.get_account(a.first);
                     }
                 }
 
-                _db.create<account_recovery_request_object>([&](account_recovery_request_object &req) {
+                this->_db.create<account_recovery_request_object>([&](account_recovery_request_object &req) {
                     req.account_to_recover = o.account_to_recover;
                     req.new_owner_authority = o.new_owner_authority;
-                    req.expires = _db.head_block_time() +
+                    req.expires = this->_db.head_block_time() +
                                   STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
                 });
             } else if (o.new_owner_authority.weight_threshold ==
                        0) // Cancel Request if authority is open
             {
-                _db.remove(*request);
+                this->_db.remove(*request);
             } else // Change Request
             {
                 FC_ASSERT(!o.new_owner_authority.is_impossible(), "Cannot recover using an impossible authority.");
 
                 // Check accounts in the new authority exist
-                if ((_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                     _db.is_producing())) {
+                if ((this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                     this->_db.is_producing())) {
                     for (auto &a : o.new_owner_authority.account_auths) {
-                        _db.get_account(a.first);
+                        this->_db.get_account(a.first);
                     }
                 }
 
-                _db.modify(*request, [&](account_recovery_request_object &req) {
+                this->_db.modify(*request, [&](account_recovery_request_object &req) {
                     req.new_owner_authority = o.new_owner_authority;
-                    req.expires = _db.head_block_time() +
+                    req.expires = this->_db.head_block_time() +
                                   STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
                 });
             }
         }
 
         void recover_account_evaluator::do_apply(const recover_account_operation &o) {
-            database &_db = db();
-            const auto &account = _db.get_account(o.account_to_recover);
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12)) {
+            const auto &account = this->_db.get_account(o.account_to_recover);
+
+            if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_12)) {
                 FC_ASSERT(
-                        _db.head_block_time() - account.last_account_recovery >
+                        this->_db.head_block_time() -
+                        account.last_account_recovery >
                         STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
             }
 
-            const auto &recovery_request_idx = _db.get_index<account_recovery_request_index>().indices().get<by_account>();
+            const auto &recovery_request_idx = this->_db.get_index<account_recovery_request_index>().indices().get<by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
 
             FC_ASSERT(request !=
@@ -2237,7 +2242,7 @@ namespace steemit {
             FC_ASSERT(request->new_owner_authority ==
                       o.new_owner_authority, "New owner authority does not match recovery request.");
 
-            const auto &recent_auth_idx = _db.get_index<owner_authority_history_index>().indices().get<by_account>();
+            const auto &recent_auth_idx = this->_db.get_index<owner_authority_history_index>().indices().get<by_account>();
             auto hist = recent_auth_idx.lower_bound(o.account_to_recover);
             bool found = false;
 
@@ -2253,66 +2258,66 @@ namespace steemit {
 
             FC_ASSERT(found, "Recent authority not found in authority history.");
 
-            _db.remove(*request); // Remove first, update_owner_authority may invalidate iterator
-            _db.update_owner_authority(account, o.new_owner_authority);
-            _db.modify(account, [&](account_object &a) {
-                a.last_account_recovery = _db.head_block_time();
+            this->_db.remove(*request); // Remove first, update_owner_authority may invalidate iterator
+            this->_db.update_owner_authority(account, o.new_owner_authority);
+            this->_db.modify(account, [&](account_object &a) {
+                a.last_account_recovery = this->_db.head_block_time();
             });
         }
 
         void change_recovery_account_evaluator::do_apply(const change_recovery_account_operation &o) {
-            database &_db = db();
-            _db.get_account(o.new_recovery_account); // Simply validate account exists
-            const auto &account_to_recover = _db.get_account(o.account_to_recover);
 
-            const auto &change_recovery_idx = _db.get_index<change_recovery_account_request_index>().indices().get<by_account>();
+            this->_db.get_account(o.new_recovery_account); // Simply validate account exists
+            const auto &account_to_recover = this->_db.get_account(o.account_to_recover);
+
+            const auto &change_recovery_idx = this->_db.get_index<change_recovery_account_request_index>().indices().get<by_account>();
             auto request = change_recovery_idx.find(o.account_to_recover);
 
             if (request == change_recovery_idx.end()) // New request
             {
-                _db.create<change_recovery_account_request_object>([&](change_recovery_account_request_object &req) {
+                this->_db.create<change_recovery_account_request_object>([&](change_recovery_account_request_object &req) {
                     req.account_to_recover = o.account_to_recover;
                     req.recovery_account = o.new_recovery_account;
-                    req.effective_on = _db.head_block_time() +
+                    req.effective_on = this->_db.head_block_time() +
                                        STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
                 });
             } else if (account_to_recover.recovery_account !=
                        o.new_recovery_account) // Change existing request
             {
-                _db.modify(*request, [&](change_recovery_account_request_object &req) {
+                this->_db.modify(*request, [&](change_recovery_account_request_object &req) {
                     req.recovery_account = o.new_recovery_account;
-                    req.effective_on = _db.head_block_time() +
+                    req.effective_on = this->_db.head_block_time() +
                                        STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
                 });
             } else // Request exists and changing back to current recovery account
             {
-                _db.remove(*request);
+                this->_db.remove(*request);
             }
         }
 
         void transfer_to_savings_evaluator::do_apply(const transfer_to_savings_operation &op) {
-            database &_db = db();
-            const auto &from = _db.get_account(op.from);
-            const auto &to = _db.get_account(op.to);
-            FC_ASSERT(_db.get_balance(from, op.amount.symbol) >=
+
+            const auto &from = this->_db.get_account(op.from);
+            const auto &to = this->_db.get_account(op.to);
+            FC_ASSERT(this->_db.get_balance(from, op.amount.symbol) >=
                       op.amount, "Account does not have sufficient funds to transfer to savings.");
 
-            _db.adjust_balance(from, -op.amount);
-            _db.adjust_savings_balance(to, op.amount);
+            this->_db.adjust_balance(from, -op.amount);
+            this->_db.adjust_savings_balance(to, op.amount);
         }
 
         void transfer_from_savings_evaluator::do_apply(const transfer_from_savings_operation &op) {
-            database &_db = db();
-            const auto &from = _db.get_account(op.from);
-            _db.get_account(op.to); // Verify to account exists
+
+            const auto &from = this->_db.get_account(op.from);
+            this->_db.get_account(op.to); // Verify to account exists
 
             FC_ASSERT(from.savings_withdraw_requests <
                       STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests.");
 
-            FC_ASSERT(_db.get_savings_balance(from, op.amount.symbol) >=
+            FC_ASSERT(this->_db.get_savings_balance(from, op.amount.symbol) >=
                       op.amount);
-            _db.adjust_savings_balance(from, -op.amount);
-            _db.create<savings_withdraw_object>([&](savings_withdraw_object &s) {
+            this->_db.adjust_savings_balance(from, -op.amount);
+            this->_db.create<savings_withdraw_object>([&](savings_withdraw_object &s) {
                 s.from = op.from;
                 s.to = op.to;
                 s.amount = op.amount;
@@ -2321,99 +2326,101 @@ namespace steemit {
 #endif
                 s.request_id = op.request_id;
                 s.complete =
-                        _db.head_block_time() + STEEMIT_SAVINGS_WITHDRAW_TIME;
+                        this->_db.head_block_time() +
+                        STEEMIT_SAVINGS_WITHDRAW_TIME;
             });
 
-            _db.modify(from, [&](account_object &a) {
+            this->_db.modify(from, [&](account_object &a) {
                 a.savings_withdraw_requests++;
             });
         }
 
         void cancel_transfer_from_savings_evaluator::do_apply(const cancel_transfer_from_savings_operation &op) {
-            database &_db = db();
-            const auto &swo = _db.get_savings_withdraw(op.from, op.request_id);
-            _db.adjust_savings_balance(_db.get_account(swo.from), swo.amount);
-            _db.remove(swo);
 
-            const auto &from = _db.get_account(op.from);
-            _db.modify(from, [&](account_object &a) {
+            const auto &swo = this->_db.get_savings_withdraw(op.from, op.request_id);
+            this->_db.adjust_savings_balance(this->_db.get_account(swo.from), swo.amount);
+            this->_db.remove(swo);
+
+            const auto &from = this->_db.get_account(op.from);
+            this->_db.modify(from, [&](account_object &a) {
                 a.savings_withdraw_requests--;
             });
         }
 
         void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_operation &o) {
-            database &_db = db();
-            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_14__324));
 
-            const auto &account = _db.get_account(o.account);
-            const auto &request_idx = _db.get_index<decline_voting_rights_request_index>().indices().get<by_account>();
+            FC_ASSERT(this->_db.has_hardfork(STEEMIT_HARDFORK_0_14__324));
+
+            const auto &account = this->_db.get_account(o.account);
+            const auto &request_idx = this->_db.get_index<decline_voting_rights_request_index>().indices().get<by_account>();
             auto itr = request_idx.find(account.id);
 
             if (o.decline) {
                 FC_ASSERT(itr ==
                           request_idx.end(), "Cannot create new request because one already exists.");
 
-                _db.create<decline_voting_rights_request_object>([&](decline_voting_rights_request_object &req) {
+                this->_db.create<decline_voting_rights_request_object>([&](decline_voting_rights_request_object &req) {
                     req.account = account.id;
-                    req.effective_date = _db.head_block_time() +
+                    req.effective_date = this->_db.head_block_time() +
                                          STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
                 });
             } else {
                 FC_ASSERT(itr !=
                           request_idx.end(), "Cannot cancel the request because it does not exist.");
-                _db.remove(*itr);
+                this->_db.remove(*itr);
             }
         }
 
         void reset_account_evaluator::do_apply(const reset_account_operation &op) {
-            database &_db = db();
+
             FC_ASSERT(false, "Reset Account Operation is currently disabled.");
 
-            const auto &acnt = _db.get_account(op.account_to_reset);
-            auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(op.account_to_reset, bandwidth_type::old_forum));
+            const auto &acnt = this->_db.get_account(op.account_to_reset);
+            auto band = this->_db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(op.account_to_reset, bandwidth_type::old_forum));
             if (band != nullptr) {
                 FC_ASSERT(
-                        (_db.head_block_time() - band->last_bandwidth_update) >
+                        (this->_db.head_block_time() -
+                         band->last_bandwidth_update) >
                         fc::days(60), "Account must be inactive for 60 days to be eligible for reset");
             }
             FC_ASSERT(acnt.reset_account ==
                       op.reset_account, "Reset account does not match reset account on account.");
 
-            _db.update_owner_authority(acnt, op.new_owner_authority);
+            this->_db.update_owner_authority(acnt, op.new_owner_authority);
         }
 
         void set_reset_account_evaluator::do_apply(const set_reset_account_operation &op) {
-            database &_db = db();
+
             FC_ASSERT(false, "Set Reset Account Operation is currently disabled.");
 
-            const auto &acnt = _db.get_account(op.account);
-            _db.get_account(op.reset_account);
+            const auto &acnt = this->_db.get_account(op.account);
+            this->_db.get_account(op.reset_account);
 
             FC_ASSERT(acnt.reset_account ==
                       op.current_reset_account, "Current reset account does not match reset account on account.");
             FC_ASSERT(acnt.reset_account !=
                       op.reset_account, "Reset account must change");
 
-            _db.modify(acnt, [&](account_object &a) {
+            this->_db.modify(acnt, [&](account_object &a) {
                 a.reset_account = op.reset_account;
             });
         }
 
         void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation &op) {
-            database &_db = db();
-            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "delegate_vesting_shares_operation is not enabled until HF 17"); //TODO: Delete after hardfork
 
-            const auto &delegator = _db.get_account(op.delegator);
-            const auto &delegatee = _db.get_account(op.delegatee);
-            auto delegation = _db.find<vesting_delegation_object, by_delegation>(boost::make_tuple(op.delegator, op.delegatee));
+            FC_ASSERT(this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "delegate_vesting_shares_operation is not enabled until HF 17"); //TODO: Delete after hardfork
+
+            const auto &delegator = this->_db.get_account(op.delegator);
+            const auto &delegatee = this->_db.get_account(op.delegatee);
+            auto delegation = this->_db.find<vesting_delegation_object, by_delegation>(boost::make_tuple(op.delegator, op.delegatee));
 
             auto available_shares = delegator.vesting_shares -
                                     delegator.delegated_vesting_shares -
                                     asset(delegator.to_withdraw -
                                           delegator.withdrawn, VESTS_SYMBOL);
 
-            const auto &wso = _db.get_witness_schedule_object();
-            const auto &gpo = _db.get_dynamic_global_properties();
+            const auto &wso = this->_db.get_witness_schedule_object();
+            const auto &gpo = this->_db.get_dynamic_global_properties();
             auto min_delegation =
                     asset(wso.median_props.account_creation_fee.amount *
                           10, STEEM_SYMBOL) * gpo.get_vesting_share_price();
@@ -2427,18 +2434,18 @@ namespace steemit {
                 FC_ASSERT(op.vesting_shares >=
                           min_delegation, "Account must delegate a minimum of ${v}", ("v", min_delegation));
 
-                _db.create<vesting_delegation_object>([&](vesting_delegation_object &obj) {
+                this->_db.create<vesting_delegation_object>([&](vesting_delegation_object &obj) {
                     obj.delegator = op.delegator;
                     obj.delegatee = op.delegatee;
                     obj.vesting_shares = op.vesting_shares;
-                    obj.min_delegation_time = _db.head_block_time();
+                    obj.min_delegation_time = this->_db.head_block_time();
                 });
 
-                _db.modify(delegator, [&](account_object &a) {
+                this->_db.modify(delegator, [&](account_object &a) {
                     a.delegated_vesting_shares += op.vesting_shares;
                 });
 
-                _db.modify(delegatee, [&](account_object &a) {
+                this->_db.modify(delegatee, [&](account_object &a) {
                     a.received_vesting_shares += op.vesting_shares;
                 });
             } else if (op.vesting_shares >= delegation->vesting_shares) {
@@ -2449,15 +2456,15 @@ namespace steemit {
                 FC_ASSERT(available_shares >= op.vesting_shares -
                                               delegation->vesting_shares, "Account does not have enough vesting shares to delegate.");
 
-                _db.modify(delegator, [&](account_object &a) {
+                this->_db.modify(delegator, [&](account_object &a) {
                     a.delegated_vesting_shares += delta;
                 });
 
-                _db.modify(delegatee, [&](account_object &a) {
+                this->_db.modify(delegatee, [&](account_object &a) {
                     a.received_vesting_shares += delta;
                 });
 
-                _db.modify(*delegation, [&](vesting_delegation_object &obj) {
+                this->_db.modify(*delegation, [&](vesting_delegation_object &obj) {
                     obj.vesting_shares = op.vesting_shares;
                 });
             } else {
@@ -2469,24 +2476,24 @@ namespace steemit {
                           op.vesting_shares.amount ==
                           0, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation));
 
-                _db.create<vesting_delegation_expiration_object>([&](vesting_delegation_expiration_object &obj) {
+                this->_db.create<vesting_delegation_expiration_object>([&](vesting_delegation_expiration_object &obj) {
                     obj.delegator = op.delegator;
                     obj.vesting_shares = delta;
-                    obj.expiration = std::max(_db.head_block_time() +
+                    obj.expiration = std::max(this->_db.head_block_time() +
                                               STEEMIT_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time);
 
                 });
 
-                _db.modify(delegatee, [&](account_object &a) {
+                this->_db.modify(delegatee, [&](account_object &a) {
                     a.received_vesting_shares -= delta;
                 });
 
                 if (op.vesting_shares.amount > 0) {
-                    _db.modify(*delegation, [&](vesting_delegation_object &obj) {
+                    this->_db.modify(*delegation, [&](vesting_delegation_object &obj) {
                         obj.vesting_shares = op.vesting_shares;
                     });
                 } else {
-                    _db.remove(*delegation);
+                    this->_db.remove(*delegation);
                 }
             }
         }

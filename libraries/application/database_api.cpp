@@ -1341,8 +1341,7 @@ namespace steemit {
                     if (c.json_metadata.size()) {
                         try {
                             meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
-                        }
-                        catch (const fc::exception &e) {
+                        } catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
                         }
                     }
