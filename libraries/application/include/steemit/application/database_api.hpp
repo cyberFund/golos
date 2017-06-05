@@ -184,12 +184,6 @@ namespace steemit {
             fc::variant_object get_config() const;
 
             /**
-             * @brief Return a JSON description of object representations
-             * @return JSON description of object representations in a string
-             */
-            std::string get_schema() const;
-
-            /**
              * @brief Retrieve the current @ref dynamic_global_property_object
              */
             dynamic_global_property_api_obj get_dynamic_global_properties() const;
@@ -206,7 +200,7 @@ namespace steemit {
 
             scheduled_hardfork get_next_scheduled_hardfork() const;
 
-                  reward_fund_api_obj              get_reward_fund( string name )const;
+            reward_fund_api_obj get_reward_fund(string name) const;
 
             //////////
             // Keys //
@@ -412,8 +406,9 @@ namespace steemit {
              **/
             std::vector<discussion> get_discussions_by_payout(const discussion_query &query) const;
 
-            std::vector<discussion> get_post_discussions_by_payout( const discussion_query& query )const;
-            std::vector<discussion> get_comment_discussions_by_payout( const discussion_query& query )const;
+            std::vector<discussion> get_post_discussions_by_payout(const discussion_query &query) const;
+
+            std::vector<discussion> get_comment_discussions_by_payout(const discussion_query &query) const;
 
             /**
              * Used to retrieve the list of discussions sorted by direct votes amount
@@ -603,7 +598,7 @@ FC_API(steemit::application::database_api,
                 (get_witness_schedule)
                 (get_hardfork_version)
                 (get_next_scheduled_hardfork)
-                   (get_reward_fund)
+                (get_reward_fund)
 
                 // Keys
                 (get_key_references)
