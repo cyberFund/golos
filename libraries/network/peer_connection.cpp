@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <graphene/net/peer_connection.hpp>
+#include <graphene/network/peer_connection.hpp>
 
 #include <fc/thread/thread.hpp>
 
@@ -37,7 +37,7 @@
 #endif
 
 namespace graphene {
-    namespace net {
+    namespace network {
         message peer_connection::real_queued_message::get_message(peer_connection_delegate *) {
             if (message_send_time_field_offset != (size_t)-1) {
                 // patch the current time into the message.  Since this operates on the packed version of the structure,

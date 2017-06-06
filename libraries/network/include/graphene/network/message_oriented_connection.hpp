@@ -24,10 +24,10 @@
 #pragma once
 
 #include <fc/network/tcp_socket.hpp>
-#include <graphene/net/message.hpp>
+#include <graphene/network/message.hpp>
 
 namespace graphene {
-    namespace net {
+    namespace network {
 
         namespace detail { class message_oriented_connection_impl; }
 

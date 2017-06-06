@@ -23,7 +23,7 @@
  */
 #pragma once
 
-#include <graphene/net/config.hpp>
+#include <graphene/network/config.hpp>
 #include <steemit/protocol/block.hpp>
 
 #include <fc/crypto/ripemd160.hpp>
@@ -40,7 +40,7 @@
 #include <vector>
 
 namespace graphene {
-    namespace net {
+    namespace network {
         using steemit::protocol::signed_transaction;
         using steemit::protocol::block_id_type;
         using steemit::protocol::transaction_id_type;
@@ -420,9 +420,9 @@ namespace graphene {
 
 
     }
-} // graphene::net
+} // graphene::network
 
-FC_REFLECT_ENUM(graphene::net::core_message_type_enum,
+FC_REFLECT_ENUM(graphene::network::core_message_type_enum,
         (trx_message_type)
                 (block_message_type)
                 (core_message_type_first)
@@ -445,22 +445,22 @@ FC_REFLECT_ENUM(graphene::net::core_message_type_enum,
                 (get_current_connections_reply_message_type)
                 (core_message_type_last))
 
-FC_REFLECT(graphene::net::trx_message, (trx))
-FC_REFLECT(graphene::net::block_message, (block)(block_id))
+FC_REFLECT(graphene::network::trx_message, (trx))
+FC_REFLECT(graphene::network::block_message, (block)(block_id))
 
-FC_REFLECT(graphene::net::item_id, (item_type)
+FC_REFLECT(graphene::network::item_id, (item_type)
         (item_hash))
-FC_REFLECT(graphene::net::item_ids_inventory_message, (item_type)
+FC_REFLECT(graphene::network::item_ids_inventory_message, (item_type)
         (item_hashes_available))
-FC_REFLECT(graphene::net::blockchain_item_ids_inventory_message, (total_remaining_item_count)
+FC_REFLECT(graphene::network::blockchain_item_ids_inventory_message, (total_remaining_item_count)
         (item_type)
         (item_hashes_available))
-FC_REFLECT(graphene::net::fetch_blockchain_item_ids_message, (item_type)
+FC_REFLECT(graphene::network::fetch_blockchain_item_ids_message, (item_type)
         (blockchain_synopsis))
-FC_REFLECT(graphene::net::fetch_items_message, (item_type)
+FC_REFLECT(graphene::network::fetch_items_message, (item_type)
         (items_to_fetch))
-FC_REFLECT(graphene::net::item_not_available_message, (requested_item))
-FC_REFLECT(graphene::net::hello_message, (user_agent)
+FC_REFLECT(graphene::network::item_not_available_message, (requested_item))
+FC_REFLECT(graphene::network::hello_message, (user_agent)
         (core_protocol_version)
         (inbound_address)
         (inbound_port)
@@ -469,8 +469,8 @@ FC_REFLECT(graphene::net::hello_message, (user_agent)
         (signed_shared_secret)
         (user_data))
 
-FC_REFLECT_EMPTY(graphene::net::connection_accepted_message)
-FC_REFLECT_ENUM(graphene::net::rejection_reason_code, (unspecified)
+FC_REFLECT_EMPTY(graphene::network::connection_accepted_message)
+FC_REFLECT_ENUM(graphene::network::rejection_reason_code, (unspecified)
         (different_chain)
         (already_connected)
         (connected_to_self)
@@ -478,40 +478,40 @@ FC_REFLECT_ENUM(graphene::net::rejection_reason_code, (unspecified)
         (blocked)
         (invalid_hello_message)
         (client_too_old))
-FC_REFLECT(graphene::net::connection_rejected_message, (user_agent)
+FC_REFLECT(graphene::network::connection_rejected_message, (user_agent)
         (core_protocol_version)
         (remote_endpoint)
         (reason_code)
         (reason_string))
-FC_REFLECT_EMPTY(graphene::net::address_request_message)
-FC_REFLECT(graphene::net::address_info, (remote_endpoint)
+FC_REFLECT_EMPTY(graphene::network::address_request_message)
+FC_REFLECT(graphene::network::address_info, (remote_endpoint)
         (last_seen_time)
         (latency)
         (node_id)
         (direction)
         (firewalled))
-FC_REFLECT(graphene::net::address_message, (addresses))
-FC_REFLECT(graphene::net::closing_connection_message, (reason_for_closing)
+FC_REFLECT(graphene::network::address_message, (addresses))
+FC_REFLECT(graphene::network::closing_connection_message, (reason_for_closing)
         (closing_due_to_error)
         (error))
-FC_REFLECT_ENUM(graphene::net::peer_connection_direction, (unknown)
+FC_REFLECT_ENUM(graphene::network::peer_connection_direction, (unknown)
         (inbound)
         (outbound))
-FC_REFLECT_ENUM(graphene::net::firewalled_state, (unknown)
+FC_REFLECT_ENUM(graphene::network::firewalled_state, (unknown)
         (firewalled)
         (not_firewalled))
 
-FC_REFLECT(graphene::net::current_time_request_message, (request_sent_time))
-FC_REFLECT(graphene::net::current_time_reply_message, (request_sent_time)
+FC_REFLECT(graphene::network::current_time_request_message, (request_sent_time))
+FC_REFLECT(graphene::network::current_time_reply_message, (request_sent_time)
         (request_received_time)
         (reply_transmitted_time))
-FC_REFLECT_ENUM(graphene::net::firewall_check_result, (unable_to_check)
+FC_REFLECT_ENUM(graphene::network::firewall_check_result, (unable_to_check)
         (unable_to_connect)
         (connection_successful))
-FC_REFLECT(graphene::net::check_firewall_message, (node_id)(endpoint_to_check))
-FC_REFLECT(graphene::net::check_firewall_reply_message, (node_id)(endpoint_checked)(result))
-FC_REFLECT_EMPTY(graphene::net::get_current_connections_request_message)
-FC_REFLECT(graphene::net::current_connection_data, (connection_duration)
+FC_REFLECT(graphene::network::check_firewall_message, (node_id)(endpoint_to_check))
+FC_REFLECT(graphene::network::check_firewall_reply_message, (node_id)(endpoint_checked)(result))
+FC_REFLECT_EMPTY(graphene::network::get_current_connections_request_message)
+FC_REFLECT(graphene::network::current_connection_data, (connection_duration)
         (remote_endpoint)
         (node_id)
         (clock_offset)
@@ -519,7 +519,7 @@ FC_REFLECT(graphene::net::current_connection_data, (connection_duration)
         (connection_direction)
         (firewalled)
         (user_data))
-FC_REFLECT(graphene::net::get_current_connections_reply_message, (upload_rate_one_minute)
+FC_REFLECT(graphene::network::get_current_connections_reply_message, (upload_rate_one_minute)
         (download_rate_one_minute)
         (upload_rate_fifteen_minutes)
         (download_rate_fifteen_minutes)
@@ -533,8 +533,8 @@ FC_REFLECT(graphene::net::get_current_connections_reply_message, (upload_rate_on
 
 namespace std {
     template<>
-    struct hash<graphene::net::item_id> {
-        size_t operator()(const graphene::net::item_id &item_to_hash) const {
+    struct hash<graphene::network::item_id> {
+        size_t operator()(const graphene::network::item_id &item_to_hash) const {
             return fc::city_hash_size_t((char *)&item_to_hash, sizeof(item_to_hash));
         }
     };

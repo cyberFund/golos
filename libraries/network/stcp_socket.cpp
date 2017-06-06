@@ -29,10 +29,10 @@
 #include <fc/crypto/aes.hpp>
 #include <fc/network/ip.hpp>
 
-#include <graphene/net/stcp_socket.hpp>
+#include <graphene/network/stcp_socket.hpp>
 
 namespace graphene {
-    namespace net {
+    namespace network {
 
         stcp_socket::stcp_socket()
 //:_buf_len(0)

@@ -30,11 +30,11 @@
 #include <fc/io/raw.hpp>
 #include <fc/io/json.hpp>
 
-#include <graphene/net/peer_database.hpp>
+#include <graphene/network/peer_database.hpp>
 
 
 namespace graphene {
-    namespace net {
+    namespace network {
         namespace detail {
             using namespace boost::multi_index;
 

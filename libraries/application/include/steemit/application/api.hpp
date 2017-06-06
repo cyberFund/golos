@@ -27,7 +27,7 @@
 #include <steemit/application/database_api.hpp>
 #include <steemit/protocol/types.hpp>
 
-#include <graphene/net/node.hpp>
+#include <graphene/network/node.hpp>
 
 #include <fc/api.hpp>
 #include <fc/optional.hpp>
@@ -144,7 +144,7 @@ namespace steemit {
             /**
              * @brief Get status of all current connections to peers
              */
-            std::vector<graphene::net::peer_status> get_connected_peers() const;
+            std::vector<graphene::network::peer_status> get_connected_peers() const;
 
             /**
              * @brief Get advanced node parameters, such as desired and max
@@ -162,7 +162,7 @@ namespace steemit {
             /**
              * @brief Return list of potential peers
              */
-            std::vector<graphene::net::potential_peer_record> get_potential_peers() const;
+            std::vector<graphene::network::potential_peer_record> get_potential_peers() const;
 
             /// internal method, not exposed via JSON RPC
             void on_api_startup();

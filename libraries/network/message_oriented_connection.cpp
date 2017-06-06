@@ -26,9 +26,9 @@
 #include <fc/thread/scoped_lock.hpp>
 #include <fc/io/enum_type.hpp>
 
-#include <graphene/net/message_oriented_connection.hpp>
-#include <graphene/net/stcp_socket.hpp>
-#include <graphene/net/config.hpp>
+#include <graphene/network/message_oriented_connection.hpp>
+#include <graphene/network/stcp_socket.hpp>
+#include <graphene/network/config.hpp>
 
 #ifdef DEFAULT_LOGGER
 # undef DEFAULT_LOGGER
@@ -42,7 +42,7 @@
 #endif
 
 namespace graphene {
-    namespace net {
+    namespace network {
         namespace detail {
             class message_oriented_connection_impl {
             private:
@@ -337,7 +337,7 @@ namespace graphene {
                 return _sock.get_shared_secret();
             }
 
-        } // end namespace graphene::net::detail
+        } // end namespace graphene::network::detail
 
 
         message_oriented_connection::message_oriented_connection(message_oriented_connection_delegate *delegate)
@@ -401,4 +401,4 @@ namespace graphene {
         }
 
     }
-} // end namespace graphene::net
+}
