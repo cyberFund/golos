@@ -1315,7 +1315,7 @@ namespace steemit {
                             map_result.erase(it++);
                         }
 
-                    } else if ( it->second.languages != query.select_language ) {
+                    } else if ( !(it->second.languages == query.select_language) ) {
                         map_result.erase(it++);
                     } else {
                         ++it;
