@@ -1302,6 +1302,29 @@ namespace steemit {
             });
         }
 
+        template <typename T>
+        void filter_language(const discussion_query &query,T &map_result){
+            if( query.select_language != ""  ) {
+
+                auto end = map_result.end();
+
+                for ( auto it = map_result.begin(); it != end; ) {
+                    if( query.select_language == "all" ) {
+
+                        if ( it->second.languages == "" ) {
+                            map_result.erase(it++);
+                        }
+
+                    } else if ( it->second.languages != query.select_language ) {
+                        map_result.erase(it++);
+                    } else {
+                        ++it;
+                    }
+                }
+
+            }
+        }
+
         std::vector<discussion> database_api::get_discussions_by_trending(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
@@ -1349,6 +1372,8 @@ namespace steemit {
 
                     map_result = get_discussions<tags::by_mode_parent_children_rshares2>(query, tag, parent, tidx, tidx_itr, filter_function);
                 }
+
+                filter_language(query,map_result);
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2>::value_type &iterator : map_result) {
                     return_result.push_back(iterator.second);

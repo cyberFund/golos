@@ -96,6 +96,7 @@ namespace steemit {
             optional<std::string> start_permlink; ///< the permlink of discussion to start searching from
             optional<std::string> parent_author; ///< the author of parent discussion
             optional<std::string> parent_permlink; ///< the permlink of parent discussion
+            optional<std::string> select_language; ///< list of language to select
         };
 
 /**
@@ -532,7 +533,7 @@ FC_REFLECT(steemit::app::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::app::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
-FC_REFLECT(steemit::app::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit));
+FC_REFLECT(steemit::app::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language));
 
 FC_REFLECT_ENUM(steemit::app::withdraw_route_type, (incoming)(outgoing)(all));
 

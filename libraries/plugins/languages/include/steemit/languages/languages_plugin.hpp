@@ -69,7 +69,7 @@ namespace steemit {
                 : public object<language_object_type, language_object> {
         public:
             template<typename Constructor, typename Allocator>
-            language_object(Constructor &&c, allocator<Allocator> a) {
+            language_object(Constructor &&c, allocator<Allocator> a):language("") {
                 c(*this);
             }
 
