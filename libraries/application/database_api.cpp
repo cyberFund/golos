@@ -8,6 +8,8 @@
 
 #include <steemit/protocol/get_config.hpp>
 
+#include <steemit/languages/languages_plugin.hpp>
+
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -1303,32 +1305,29 @@ namespace steemit {
         }
 
         template <typename T>
-        void filter_language(const discussion_query &query,T &map_result){
-            if( query.select_language != ""  ) {
-
+        void filter_language(const discussion_query &query,T &map_result) {
                 auto end = map_result.end();
 
                 for ( auto it = map_result.begin(); it != end; ) {
-                    if( query.select_language == "all" ) {
+                    if( query.filter_language.size() ) {
 
                         if ( it->second.languages == "" ) {
                             map_result.erase(it++);
                         }
 
-                    } else if ( !(it->second.languages == query.select_language) ) {
+                    } else if (query.filter_language.count(it->second.languages)) {
                         map_result.erase(it++);
                     } else {
                         ++it;
                     }
                 }
-
-            }
         }
 
         std::vector<discussion> database_api::get_discussions_by_trending(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
-                auto parent = get_parent(query);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::function<bool(const comment_api_obj &)> filter_function = [&](const comment_api_obj &c) -> bool {
                     if (query.select_authors.size()) {
@@ -1354,28 +1353,39 @@ namespace steemit {
                 const auto &tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_mode_parent_children_rshares2>();
 
                 std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result;
-                std::vector<discussion> return_result;
-                std::string tag;
 
-                if (query.select_tags.size()) {
-                    for (const std::set<std::string>::value_type &iterator : query.select_tags) {
-                        tag = fc::to_lower(iterator);
 
-                        auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, first_payout, parent, fc::uint128_t::max_value()));
+                select<tags::by_mode_parent_children_rshares2>(query.select_tags,query,tidx,map_result,filter_function,[](const comment_api_obj &)->bool{},[](){});
 
-                        std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> result = get_discussions<tags::by_mode_parent_children_rshares2>(query, tag, parent, tidx, tidx_itr, filter_function);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                        map_result.insert(result.cbegin(), result.cend());
+                std::function<bool(const comment_api_obj &)> filter_function_ = [&](const comment_api_obj &c) -> bool {
+
+                    if( query.filter_language.size() ) {
+
+                        if ( c.languages == "" ) {
+                           return false;
+                        }
                     }
-                } else {
-                    auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, first_payout, parent, fc::uint128_t::max_value()));
 
-                    map_result = get_discussions<tags::by_mode_parent_children_rshares2>(query, tag, parent, tidx, tidx_itr, filter_function);
-                }
+                    if (query.filter_language.count(c.languages)) {
+                        return false;
+                    }
 
-                filter_language(query,map_result);
+                };
 
-                for (const std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2>::value_type &iterator : map_result) {
+                const auto &tidx = my->_db.get_index<languages::languages_index>().indices().get<tags::by_mode_parent_children_rshares2>();
+
+                std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result_;
+
+               select<tags::by_mode_parent_children_rshares2>(query.select_language,query,tidx,map_result_,filter_function_,[](const comment_api_obj &)->bool{},[](){});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                std::vector<discussion> return_result;
+
+
+                for (const auto &iterator : map_result) {
                     return_result.push_back(iterator.second);
                 }
 

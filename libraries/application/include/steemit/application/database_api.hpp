@@ -82,9 +82,13 @@ namespace steemit {
                 FC_ASSERT(limit <= 100);
 
                 for (const std::set<std::string>::value_type &iterator : filter_tags) {
-                    FC_ASSERT(select_tags.find(iterator) ==
-                              select_tags.end());
+                    FC_ASSERT(select_tags.find(iterator) == select_tags.end());
                 }
+
+                for (const auto &iterator : filter_language) {
+                    FC_ASSERT(select_language.find(iterator) == select_language.end());
+                }
+
             }
 
             uint32_t limit = 0; ///< the discussions return amount top limit
@@ -96,7 +100,8 @@ namespace steemit {
             optional<std::string> start_permlink; ///< the permlink of discussion to start searching from
             optional<std::string> parent_author; ///< the author of parent discussion
             optional<std::string> parent_permlink; ///< the permlink of parent discussion
-            optional<std::string> select_language; ///< list of language to select
+            std::set<std::string> select_language; ///< list of language to select
+            std::set<std::string> filter_language; ///< list of language to filter
         };
 
 /**
@@ -518,6 +523,37 @@ namespace steemit {
                     const std::function<bool(const comment_api_obj &)> &exit = &database_api::exit_default,
                     const std::function<bool(const tags::tag_object &)> &tag_exit = &database_api::tag_exit_default) const;
 
+
+            template<typename C, typename T, typename I, typename F>
+            void select(
+                    const std::set<std::string>&select_set,
+                    const discussion_query &query,
+                    I& index,
+                    T& map_result,
+                    const std::function<bool(const comment_api_obj &)> &filter,
+                    const std::function<bool(const comment_api_obj &)> &exit,
+                    const F&exit2)const {
+                auto parent = get_parent(query);
+                std::string helper ;
+                if (select_set.size()) {
+                    for (const auto &iterator : select_set) {
+                        helper = fc::to_lower(iterator);
+
+                        auto tidx_itr =  index.lower_bound(boost::make_tuple(helper, first_payout, parent, fc::uint128_t::max_value()));
+
+                        auto result = get_discussions<C>(query, helper, parent, index, tidx_itr,filter,exit,exit2 );
+
+                        map_result.insert(result.cbegin(), result.cend());
+                    }
+                } else {
+                    auto tidx_itr = index.lower_bound(boost::make_tuple(helper, first_payout, parent, fc::uint128_t::max_value()));
+
+                    map_result = get_discussions<C>(query, helper, parent, index, tidx_itr, filter,exit,exit2);
+                }
+            }
+
+
+
             comment_id_type get_parent(const discussion_query &q) const;
 
             void recursively_fetch_content(state &_state, discussion &root, std::set<std::string> &referenced_accounts) const;
@@ -533,7 +569,7 @@ FC_REFLECT(steemit::app::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::app::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
-FC_REFLECT(steemit::app::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language));
+FC_REFLECT(steemit::app::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language)(filter_language));
 
 FC_REFLECT_ENUM(steemit::app::withdraw_route_type, (incoming)(outgoing)(all));
 
