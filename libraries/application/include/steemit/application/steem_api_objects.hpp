@@ -93,6 +93,10 @@ namespace steemit {
                     allow_curation_rewards(o.allow_curation_rewards) {
             }
 
+            bool operator< (const comment_api_obj &right) const {
+                return id < right.id;
+            }
+
             comment_api_obj() {
             }
 

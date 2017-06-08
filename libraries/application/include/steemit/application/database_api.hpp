@@ -526,35 +526,17 @@ namespace steemit {
                     const std::function<bool(const Object &)> &tag_exit /*= &database_api::tag_exit_default*/) const;
 
 
-            template<typename Object,typename C,bool type, typename T, typename I, typename ...Args>
+            template<typename Object,typename IndexType,typename C,bool type, typename T, typename ...Args>
             void select(
                     const std::set<std::string>&select_set,
                     const discussion_query &query,
                     comment_id_type parent,
-                    I& index,
                     T& map_result,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
                     const std::function<bool(const Object &)>&exit2,
                     Args... args
-            ) const {
-                std::string helper ;
-                if (select_set.size()) {
-                    for (const auto &iterator : select_set) {
-                        helper = fc::to_lower(iterator);
-
-                        auto tidx_itr =  index.lower_bound(boost::make_tuple(helper, args...));
-
-                        auto result = get_discussions<Object,C,type>(query, helper, parent, index, tidx_itr,filter,exit,exit2 );
-
-                        map_result.insert(result.cbegin(), result.cend());
-                    }
-                } else {
-                    auto tidx_itr = index.lower_bound(boost::make_tuple(helper,args...));
-
-                    map_result = get_discussions<Object,C,type>(query, helper, parent, index, tidx_itr, filter,exit,exit2);
-                }
-            }
+            ) const ;
 
 
 
