@@ -495,12 +495,12 @@ namespace steemit {
             ////////////////////////////
             void on_api_startup();
 
+            discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
+
         private:
             void set_pending_payout(discussion &d) const;
 
             void set_url(discussion &d) const;
-
-            discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
 
             static bool filter_default(const comment_api_obj &c) {
                 return false;
@@ -514,41 +514,45 @@ namespace steemit {
                 return false;
             }
 
-            template<typename Compare, typename Index, typename StartItr>
-            std::multimap<tags::tag_object, discussion, Compare> get_discussions(const discussion_query &query,
+            template<typename Object,typename Compare,bool type, typename Index, typename StartItr>
+            std::multimap<Object, discussion, Compare> get_discussions(
+                    const discussion_query &query,
                     const std::string &tag,
                     comment_id_type parent,
-                    const Index &tidx, StartItr tidx_itr,
-                    const std::function<bool(const comment_api_obj &)> &filter = &database_api::filter_default,
-                    const std::function<bool(const comment_api_obj &)> &exit = &database_api::exit_default,
-                    const std::function<bool(const tags::tag_object &)> &tag_exit = &database_api::tag_exit_default) const;
+                    const Index &tidx,
+                    StartItr tidx_itr,
+                    const std::function<bool(const comment_api_obj &)> &filter, //= &database_api::filter_default,
+                    const std::function<bool(const comment_api_obj &)> &exit, //= &database_api::exit_default,
+                    const std::function<bool(const Object &)> &tag_exit /*= &database_api::tag_exit_default*/) const;
 
 
-            template<typename C, typename T, typename I, typename F>
+            template<typename Object,typename C,bool type, typename T, typename I, typename ...Args>
             void select(
                     const std::set<std::string>&select_set,
                     const discussion_query &query,
+                    comment_id_type parent,
                     I& index,
                     T& map_result,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
-                    const F&exit2)const {
-                auto parent = get_parent(query);
+                    const std::function<bool(const Object &)>&exit2,
+                    Args... args
+            ) const {
                 std::string helper ;
                 if (select_set.size()) {
                     for (const auto &iterator : select_set) {
                         helper = fc::to_lower(iterator);
 
-                        auto tidx_itr =  index.lower_bound(boost::make_tuple(helper, first_payout, parent, fc::uint128_t::max_value()));
+                        auto tidx_itr =  index.lower_bound(boost::make_tuple(helper, args...));
 
-                        auto result = get_discussions<C>(query, helper, parent, index, tidx_itr,filter,exit,exit2 );
+                        auto result = get_discussions<Object,C,type>(query, helper, parent, index, tidx_itr,filter,exit,exit2 );
 
                         map_result.insert(result.cbegin(), result.cend());
                     }
                 } else {
-                    auto tidx_itr = index.lower_bound(boost::make_tuple(helper, first_payout, parent, fc::uint128_t::max_value()));
+                    auto tidx_itr = index.lower_bound(boost::make_tuple(helper,args...));
 
-                    map_result = get_discussions<C>(query, helper, parent, index, tidx_itr, filter,exit,exit2);
+                    map_result = get_discussions<Object,C,type>(query, helper, parent, index, tidx_itr, filter,exit,exit2);
                 }
             }
 
@@ -559,8 +563,8 @@ namespace steemit {
             void recursively_fetch_content(state &_state, discussion &root, std::set<std::string> &referenced_accounts) const;
 
             std::shared_ptr<database_api_impl> my;
-        };
-    }
+    };
+}
 }
 
 FC_REFLECT(steemit::app::order, (order_price)(real_price)(steem)(sbd)(created));
