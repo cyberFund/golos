@@ -1969,75 +1969,184 @@ namespace steemit {
             });
         }
 
+
+
+
+        auto merge(
+                std::vector< discussion>& result1,
+                std::vector< discussion> & result2,
+                std::vector<discussion>&discussions
+        )->void{
+            //TODO:std::set_intersection(
+            if(!result2.empty()) {
+                std::multimap<comment_id_type,discussion>tmp;
+
+                for(auto&&i:result1){
+                    tmp.emplace(i.id,std::move(i));
+                }
+
+
+                for(auto&&i:result2){
+                    if(tmp.count(i.id)){
+                        discussions.push_back(std::move(i));
+                    }
+                }
+
+                return;
+            }
+
+            discussions=result1;
+
+        }
+
+        template<typename IndexType>
+        void foo_tags(
+                steemit::chain::database &_db,database_api& my,
+                const discussion_query &query,
+                const std::string& start_author,
+                const std::string& start_permlink,
+                std::vector<discussion>& result
+        ){
+            for (const auto &iterator : query.select_authors) {
+                const auto &account = _db.get_account(iterator);
+
+                const auto &tag_idx = _db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
+
+                const auto &c_idx = _db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
+                const auto &f_idx = _db.get_index<follow::feed_index>().indices().get<IndexType>();
+                auto feed_itr = f_idx.lower_bound(account.name);
+
+                if (start_author.size() || start_permlink.size()) {
+                    auto start_c = c_idx.find(boost::make_tuple(_db.get_comment(start_author, start_permlink).id, account.name));
+                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's feed");
+                    feed_itr = f_idx.iterator_to(*start_c);
+                }
+
+                while (result.size() < query.limit && feed_itr != f_idx.end()) {
+                    if (feed_itr->account != account.name) {
+                        break;
+                    }
+                    try {
+                        if (query.select_tags.size()) {
+                            auto tag_itr = tag_idx.lower_bound(feed_itr->comment);
+
+                            bool found = false;
+                            while (tag_itr != tag_idx.end() &&
+                                   tag_itr->comment == feed_itr->comment) {
+                                if (query.select_tags.find(tag_itr->tag) !=
+                                    query.select_tags.end()) {
+                                    found = true;
+                                    break;
+                                }
+                                ++tag_itr;
+                            }
+                            if (!found) {
+                                ++feed_itr;
+                                continue;
+                            }
+                        }
+
+                        result.push_back(my.get_discussion(feed_itr->comment));
+                        if (feed_itr->first_reblogged_by != account_name_type()) {
+                            result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
+                            result.back().first_reblogged_by = feed_itr->first_reblogged_by;
+                            result.back().first_reblogged_on = feed_itr->first_reblogged_on;
+                        }
+                    }
+                    catch (const fc::exception &e) {
+                        edump((e.to_detail_string()));
+                    }
+
+                    ++feed_itr;
+                }
+            }
+        }
+
+
+        template<typename IndexType>
+        void foo_language(
+                steemit::chain::database &_db,database_api& my,
+                const discussion_query &query,
+                const std::string& start_author,
+                const std::string& start_permlink,
+                std::vector<discussion>& result
+        ){
+            for (const auto &iterator : query.select_authors) {
+                const auto &account = _db.get_account(iterator);
+
+                const auto &tag_idx = _db.get_index<languages::language_index>().indices().get<languages::by_comment>();
+
+                const auto &c_idx = _db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
+                const auto &f_idx = _db.get_index<follow::feed_index>().indices().get<IndexType>();
+                auto feed_itr = f_idx.lower_bound(account.name);
+
+                if (start_author.size() || start_permlink.size()) {
+                    auto start_c = c_idx.find(boost::make_tuple(_db.get_comment(start_author, start_permlink).id, account.name));
+                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's feed");
+                    feed_itr = f_idx.iterator_to(*start_c);
+                }
+
+                while (result.size() < query.limit && feed_itr != f_idx.end()) {
+                    if (feed_itr->account != account.name) {
+                        break;
+                    }
+                    try {
+                        if (query.select_language.size()) {
+                            auto tag_itr = tag_idx.lower_bound(feed_itr->comment);
+
+                            bool found = false;
+                            while (tag_itr != tag_idx.end() &&
+                                   tag_itr->comment == feed_itr->comment) {
+                                if (query.select_language.find(tag_itr->language) != query.select_language.end()) {
+                                    found = true;
+                                    break;
+                                }
+                                ++tag_itr;
+                            }
+                            if (!found) {
+                                ++feed_itr;
+                                continue;
+                            }
+                        }
+
+                        result.push_back(my.get_discussion(feed_itr->comment));
+                        if (feed_itr->first_reblogged_by != account_name_type()) {
+                            result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
+                            result.back().first_reblogged_by = feed_itr->first_reblogged_by;
+                            result.back().first_reblogged_on = feed_itr->first_reblogged_on;
+                        }
+                    }
+                    catch (const fc::exception &e) {
+                        edump((e.to_detail_string()));
+                    }
+
+                    ++feed_itr;
+                }
+            }
+        }
+
         std::vector<discussion> database_api::get_discussions_by_feed(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author)
-                                                       : "";
-                auto start_permlink = query.start_permlink
-                                      ? *(query.start_permlink) : "";
+                auto start_author = query.start_author ? *(query.start_author) : "";
+                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
+                ////////////////////////////////////////////////////////////////////////////////////////////////
+                std::vector<discussion> tags;
+
+                foo_tags<follow::by_feed>(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,tag);
+                ////////////////////////////////////////////////////////////////////////////////////////////////
+                std::vector<discussion> languages;
+
+                foo_language<follow::by_feed>(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,languages);
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::vector<discussion> result;
+                merge(tags,languages,result);
 
-                for (const std::set<std::string>::value_type &iterator : query.select_authors) {
-                    const auto &account = my->_db.get_account(iterator);
-
-                    const auto &tag_idx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
-
-                    const auto &c_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
-                    const auto &f_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_feed>();
-                    auto feed_itr = f_idx.lower_bound(account.name);
-
-                    if (start_author.size() || start_permlink.size()) {
-                        auto start_c = c_idx.find(boost::make_tuple(my->_db.get_comment(start_author, start_permlink).id, account.name));
-                        FC_ASSERT(start_c !=
-                                  c_idx.end(), "Comment is not in account's feed");
-                        feed_itr = f_idx.iterator_to(*start_c);
-                    }
-
-                    while (result.size() < query.limit &&
-                           feed_itr != f_idx.end()) {
-                        if (feed_itr->account != account.name) {
-                            break;
-                        }
-                        try {
-                            if (query.select_tags.size()) {
-                                auto tag_itr = tag_idx.lower_bound(feed_itr->comment);
-
-                                bool found = false;
-                                while (tag_itr != tag_idx.end() &&
-                                       tag_itr->comment == feed_itr->comment) {
-                                    if (query.select_tags.find(tag_itr->tag) !=
-                                        query.select_tags.end()) {
-                                        found = true;
-                                        break;
-                                    }
-                                    ++tag_itr;
-                                }
-                                if (!found) {
-                                    ++feed_itr;
-                                    continue;
-                                }
-                            }
-
-                            result.push_back(get_discussion(feed_itr->comment));
-                            if (feed_itr->first_reblogged_by !=
-                                account_name_type()) {
-                                result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
-                                result.back().first_reblogged_by = feed_itr->first_reblogged_by;
-                                result.back().first_reblogged_on = feed_itr->first_reblogged_on;
-                            }
-                        }
-                        catch (const fc::exception &e) {
-                            edump((e.to_detail_string()));
-                        }
-
-                        ++feed_itr;
-                    }
-                }
                 return result;
             });
         }
@@ -2048,67 +2157,22 @@ namespace steemit {
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author)
-                                                       : "";
-                auto start_permlink = query.start_permlink
-                                      ? *(query.start_permlink) : "";
+                auto start_author = query.start_author ? *(query.start_author) : "";
+                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
 
+                ////////////////////////////////////////////////////////////////////////////////////////////////
+                std::vector<discussion> tags;
+
+                foo_tags<follow::by_blog>(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,tags);
+                ////////////////////////////////////////////////////////////////////////////////////////////////
+                std::vector<discussion> languages;
+
+                foo_language<follow::by_blog>(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,languages);
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////
                 std::vector<discussion> result;
+                merge(tags,languages,result);
 
-                for (const std::set<std::string>::value_type &iterator : query.select_authors) {
-
-                    const auto &account = my->_db.get_account(iterator);
-
-                    const auto &tag_idx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
-
-                    const auto &c_idx = my->_db.get_index<follow::blog_index>().indices().get<follow::by_comment>();
-                    const auto &b_idx = my->_db.get_index<follow::blog_index>().indices().get<follow::by_blog>();
-                    auto blog_itr = b_idx.lower_bound(account.name);
-
-                    if (start_author.size() || start_permlink.size()) {
-                        auto start_c = c_idx.find(boost::make_tuple(my->_db.get_comment(start_author, start_permlink).id, account.name));
-                        FC_ASSERT(start_c !=
-                                  c_idx.end(), "Comment is not in account's blog");
-                        blog_itr = b_idx.iterator_to(*start_c);
-                    }
-
-                    while (result.size() < query.limit &&
-                           blog_itr != b_idx.end()) {
-                        if (blog_itr->account != account.name) {
-                            break;
-                        }
-                        try {
-                            if (query.select_tags.size()) {
-                                auto tag_itr = tag_idx.lower_bound(blog_itr->comment);
-
-                                bool found = false;
-                                while (tag_itr != tag_idx.end() &&
-                                       tag_itr->comment == blog_itr->comment) {
-                                    if (query.select_tags.find(tag_itr->tag) !=
-                                        query.select_tags.end()) {
-                                        found = true;
-                                        break;
-                                    }
-                                    ++tag_itr;
-                                }
-                                if (!found) {
-                                    ++blog_itr;
-                                    continue;
-                                }
-                            }
-
-                            result.push_back(get_discussion(blog_itr->comment, query.truncate_body));
-                            if (blog_itr->reblogged_on > time_point_sec()) {
-                                result.back().first_reblogged_on = blog_itr->reblogged_on;
-                            }
-                        }
-                        catch (const fc::exception &e) {
-                            edump((e.to_detail_string()));
-                        }
-
-                        ++blog_itr;
-                    }
-                }
                 return result;
             });
         }
@@ -2120,8 +2184,7 @@ namespace steemit {
                 query.validate();
                 FC_ASSERT(query.start_author, "Must get comments for a specific author");
                 auto start_author = *(query.start_author);
-                auto start_permlink = query.start_permlink
-                                      ? *(query.start_permlink) : "";
+                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
 
                 const auto &c_idx = my->_db.get_index<comment_index>().indices().get<by_permlink>();
                 const auto &t_idx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
@@ -2129,8 +2192,7 @@ namespace steemit {
 
                 if (start_permlink.size()) {
                     auto start_c = c_idx.find(boost::make_tuple(start_author, start_permlink));
-                    FC_ASSERT(start_c !=
-                              c_idx.end(), "Comment is not in account's comments");
+                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's comments");
                     comment_itr = t_idx.iterator_to(*start_c);
                 }
 
