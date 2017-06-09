@@ -16,7 +16,7 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
-      using steemit::app::application;
+        using steemit::app::application;
 
         using chainbase::object;
         using chainbase::oid;
@@ -69,7 +69,8 @@ namespace steemit {
                 : public object<language_object_type, language_object> {
         public:
             template<typename Constructor, typename Allocator>
-            language_object(Constructor &&c, allocator<Allocator> a):name("") {
+            language_object(Constructor &&c, allocator<Allocator> a)
+                    : name("") {
                 c(*this);
             }
 
@@ -621,7 +622,7 @@ namespace steemit {
     }
 } //steemit::language
 
-FC_API(steemit::languages::language_api, );
+FC_API(steemit::languages::language_api,);
 
 FC_REFLECT(steemit::languages::language_object,
         (id)(language)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))

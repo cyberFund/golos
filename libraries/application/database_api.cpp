@@ -1133,8 +1133,7 @@ namespace steemit {
 
         std::map<uint32_t, applied_operation> database_api::get_account_history(std::string account, uint64_t from, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
-                FC_ASSERT(limit <=
-                          10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
+                FC_ASSERT(limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
                 FC_ASSERT(from >= limit, "From must be greater than limit");
                 //   idump((account)(from)(limit));
                 const auto &idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
@@ -1425,7 +1424,6 @@ namespace steemit {
                                 fc::uint128_t::max_value()
                         );
 
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         std::vector<discussion> return_result;
 
@@ -1486,7 +1484,7 @@ namespace steemit {
 
                 std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result;
 
-                select<tags::tag_object, tags::tag_index, tags::by_mode_parent_children_rshares2, true>(
+                select<tags::tag_object, tags::tag_index, tags::by_mode_parent_children_rshares2>(
                         query.select_tags,
                         query,
                         parent,
@@ -1665,8 +1663,6 @@ namespace steemit {
                         [](const tags::tag_object &) -> bool { return false; }
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<languages::language_object, discussion, languages::by_net_rshares> map_result_language;
 
                 select<languages::language_object, languages::language_index, languages::by_net_rshares, false>(
@@ -1678,8 +1674,6 @@ namespace steemit {
                         [](const comment_api_obj &) -> bool { return false; },
                         [](const languages::language_object &) -> bool { return false; }
                 );
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::vector<discussion> return_result;
 
@@ -1694,8 +1688,6 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<tags::tag_object, discussion, tags::by_parent_net_votes> map_result;
 
                 select<tags::tag_object, tags::tag_index, tags::by_parent_net_votes, true>(
@@ -1707,8 +1699,6 @@ namespace steemit {
                         [](const comment_api_obj &) -> bool { return false; },
                         [](const tags::tag_object &) -> bool { return false; }
                 );
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<languages::language_object, discussion, languages::by_parent_net_votes> map_result_language;
 
@@ -1722,8 +1712,6 @@ namespace steemit {
                         [](const languages::language_object &) -> bool { return false; }
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::vector<discussion> return_result;
 
                 merge(map_result, map_result_language, return_result);
@@ -1736,8 +1724,6 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto parent = get_parent(query);
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<tags::tag_object, discussion, tags::by_parent_children> map_result;
 
@@ -1753,8 +1739,6 @@ namespace steemit {
                         std::numeric_limits<int32_t>::max()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<languages::language_object, discussion, languages::by_parent_children> map_result_language;
 
                 select<languages::language_object, languages::language_index, languages::by_parent_children, false>(
@@ -1768,8 +1752,6 @@ namespace steemit {
                         parent,
                         std::numeric_limits<int32_t>::max()
                 );
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::vector<discussion> return_result;
 
@@ -1785,8 +1767,6 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<tags::tag_object, discussion, tags::by_parent_hot> map_result;
 
                 select<tags::tag_object, tags::tag_index, tags::by_parent_hot, true>(
@@ -1800,8 +1780,6 @@ namespace steemit {
                         parent,
                         std::numeric_limits<double>::max()
                 );
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<languages::language_object, discussion, languages::by_parent_hot> map_result_language;
 
@@ -1817,8 +1795,6 @@ namespace steemit {
                         std::numeric_limits<double>::max()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::vector<discussion> return_result;
 
                 merge(map_result, map_result_language, return_result);
@@ -1828,11 +1804,9 @@ namespace steemit {
         }
 
 
-        auto merge(
-                std::vector<discussion> &result1,
+        auto merge(std::vector<discussion> &result1,
                 std::vector<discussion> &result2,
-                std::vector<discussion> &discussions
-        ) -> void {
+                std::vector<discussion> &discussions) -> void {
             //TODO:std::set_intersection(
             if (!result2.empty()) {
                 std::multimap<comment_id_type, discussion> tmp;
@@ -2146,12 +2120,11 @@ namespace steemit {
                 std::vector<discussion> tags;
 
                 blog_tags(my->_db, const_cast<database_api &>(*this), query, start_author, start_permlink, tags);
-                ////////////////////////////////////////////////////////////////////////////////////////////////
+
                 std::vector<discussion> languages;
 
                 blog_language(my->_db, const_cast<database_api &>(*this), query, start_author, start_permlink, languages);
 
-                ////////////////////////////////////////////////////////////////////////////////////////////////
                 std::vector<discussion> result;
                 merge(tags, languages, result);
 
@@ -2830,14 +2803,14 @@ namespace steemit {
 
                     auto tidx_itr = index.lower_bound(boost::make_tuple(helper, args...));
 
-                    auto result = get_discussions<Object, C, type>(query, helper, parent, index, tidx_itr, filter, exit, exit2);
+                    auto result = get_discussions<Object, C, IndexType>(query, helper, parent, index, tidx_itr, filter, exit, exit2);
 
                     map_result.insert(result.cbegin(), result.cend());
                 }
             } else {
                 auto tidx_itr = index.lower_bound(boost::make_tuple(helper, args...));
 
-                map_result = get_discussions<Object, C, type>(query, helper, parent, index, tidx_itr, filter, exit, exit2);
+                map_result = get_discussions<Object, C, IndexType>(query, helper, parent, index, tidx_itr, filter, exit, exit2);
             }
 
             return map_result;
