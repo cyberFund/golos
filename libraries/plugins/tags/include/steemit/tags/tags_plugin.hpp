@@ -75,7 +75,7 @@ namespace steemit {
 
             id_type id;
 
-            tag_name_type tag;
+            tag_name_type name;
             time_point_sec created;
             time_point_sec active;
             time_point_sec cashout;
@@ -111,7 +111,7 @@ namespace steemit {
         class by_cashout : public comparable_index<tag_object> {
         public:
             virtual bool operator()(const tag_object &first, const tag_object &second) const override {
-                return std::less<tag_name_type>()(first.tag, second.tag) &&
+                return std::less<tag_name_type>()(first.name, second.name) &&
                        std::less<time_point_sec>()(first.cashout, second.cashout) &&
                        std::less<tag_id_type>()(first.id, second.id);
             }
@@ -245,7 +245,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_created>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, time_point_sec, &tag_object::created>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -254,7 +254,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_active>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, time_point_sec, &tag_object::active>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -263,7 +263,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_promoted>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, share_type, &tag_object::promoted_balance>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -272,7 +272,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_net_rshares>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, int64_t, &tag_object::net_rshares>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -281,7 +281,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_net_votes>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, int32_t, &tag_object::net_votes>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -290,7 +290,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_children>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, int32_t, &tag_object::children>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -299,7 +299,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_hot>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, double, &tag_object::hot>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -308,7 +308,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_children_rshares2>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, fc::uint128_t, &tag_object::children_rshares2>,
                                         member<tag_object, tag_id_type, &tag_object::id>
@@ -317,7 +317,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_mode_parent_children_rshares2>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, comment_mode, &tag_object::mode>,
                                         member<tag_object, comment_id_type, &tag_object::parent>,
                                         member<tag_object, fc::uint128_t, &tag_object::children_rshares2>,
@@ -327,7 +327,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_cashout>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, time_point_sec, &tag_object::cashout>,
                                         member<tag_object, tag_id_type, &tag_object::id>
                                 >,
@@ -335,7 +335,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_net_rshares>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, int64_t, &tag_object::net_rshares>,
                                         member<tag_object, tag_id_type, &tag_object::id>
                                 >,
@@ -343,7 +343,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_author_parent_created>,
                                 composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::tag>,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
                                         member<tag_object, account_id_type, &tag_object::author>,
                                         member<tag_object, time_point_sec, &tag_object::created>,
                                         member<tag_object, tag_id_type, &tag_object::id>

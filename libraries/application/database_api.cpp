@@ -22,6 +22,7 @@
 
 namespace steemit {
     namespace app {
+
         class database_api_impl;
 
         class database_api_impl
@@ -1132,7 +1133,8 @@ namespace steemit {
 
         std::map<uint32_t, applied_operation> database_api::get_account_history(std::string account, uint64_t from, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
-                FC_ASSERT( limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l",limit) );
+                FC_ASSERT(limit <=
+                          10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
                 FC_ASSERT(from >= limit, "From must be greater than limit");
                 //   idump((account)(from)(limit));
                 const auto &idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
@@ -1237,152 +1239,9 @@ namespace steemit {
             return d;
         }
 
-        template<bool t>
-        class get_discussions_more;
-
-
-        template<>
-        class get_discussions_more <true>{
-        public:
-            get_discussions_more(steemit::chain::database &_db,database_api& my):_db(_db),my(my){}
-
-            template<typename Object,typename Compare, typename Index, typename StartItr>
-            std::multimap<tags::tag_object, discussion, Compare> get(
-                    const discussion_query &query,
-                    const std::string &tag,
-                    comment_id_type parent,
-                    const Index &tidx,
-                    StartItr tidx_itr,
-                    const std::function<bool(const comment_api_obj &)> &filter,
-                    const std::function<bool(const comment_api_obj &)> &exit,
-                    const std::function<bool(const Object &)> &tag_exit) const {
-//   idump((query));
-
-                std::multimap<Object, discussion, Compare> result;
-
-                const auto &cidx = _db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
-                comment_id_type start;
-
-                if (query.start_author && query.start_permlink) {
-                    start = _db.get_comment(*query.start_author, *query.start_permlink).id;
-                    auto itr = cidx.find(start);
-                    while (itr != cidx.end() && itr->comment == start) {
-                        if (itr->tag == tag) {
-                            tidx_itr = tidx.iterator_to(*itr);
-                            break;
-                        }
-                        ++itr;
-                    }
-                }
-
-                uint32_t count = query.limit;
-                uint64_t filter_count = 0;
-                uint64_t exc_count = 0;
-                while (count > 0 && tidx_itr != tidx.end()) {
-                    if (tidx_itr->tag != tag || tidx_itr->parent != parent) {
-                        break;
-                    }
-
-                    try {
-                        discussion insert_discussion = my.get_discussion(tidx_itr->comment, query.truncate_body);
-                        insert_discussion.promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL);
-
-                        if (filter(insert_discussion)) {
-                            ++filter_count;
-                        } else if (exit(insert_discussion) || tag_exit(*tidx_itr)) {
-                            break;
-                        } else {
-                            result.insert({*tidx_itr, insert_discussion});
-                            --count;
-                        }
-                    } catch (const fc::exception &e) {
-                        ++exc_count;
-                        edump((e.to_detail_string()));
-                    }
-
-                    ++tidx_itr;
-                }
-                return result;
-            }
-        private:
-            steemit::chain::database &_db;
-            database_api& my;
-        };
-
-
-
-        template<>
-        class get_discussions_more <false>{
-        public:
-            get_discussions_more(steemit::chain::database &_db,database_api& my):_db(_db),my(my){}
-
-            template<typename Object,typename Compare, typename Index, typename StartItr>
-            std::multimap<Object, discussion, Compare> get(
-                    const discussion_query &query,
-                    const std::string &language,
-                    comment_id_type parent,
-                    const Index &tidx,
-                    StartItr tidx_itr,
-                    const std::function<bool(const comment_api_obj &)> &filter,
-                    const std::function<bool(const comment_api_obj &)> &exit,
-                    const std::function<bool(const Object &)> &tag_exit) const {
-//   idump((query));
-
-                std::multimap<Object, discussion, Compare> result;
-
-                const auto &cidx = _db.get_index<languages::language_index>().indices().get<languages::by_comment>();
-                comment_id_type start;
-
-                if (query.start_author && query.start_permlink) {
-                    start = _db.get_comment(*query.start_author, *query.start_permlink).id;
-                    auto itr = cidx.find(start);
-                    while (itr != cidx.end() && itr->comment == start) {
-                        if (itr->language == language) {
-                            tidx_itr = tidx.iterator_to(*itr);
-                            break;
-                        }
-                        ++itr;
-                    }
-                }
-
-                uint32_t count = query.limit;
-                uint64_t filter_count = 0;
-                uint64_t exc_count = 0;
-                while (count > 0 && tidx_itr != tidx.end()) {
-                    if (tidx_itr->language != language || tidx_itr->parent != parent) {
-                        break;
-                    }
-
-                    try {
-                        discussion insert_discussion = my.get_discussion(tidx_itr->comment, query.truncate_body);
-                        insert_discussion.promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL);
-
-                        if (filter(insert_discussion)) {
-                            ++filter_count;
-                        } else if (exit(insert_discussion) || tag_exit(*tidx_itr)) {
-                            break;
-                        } else {
-                            result.insert({*tidx_itr, insert_discussion});
-                            --count;
-                        }
-                    } catch (const fc::exception &e) {
-                        ++exc_count;
-                        edump((e.to_detail_string()));
-                    }
-
-                    ++tidx_itr;
-                }
-                return result;
-            }
-        private:
-            steemit::chain::database &_db;
-            database_api& my;
-        };
-
-
-        template<typename Object,typename Compare,bool type, typename Index, typename StartItr>
-        std::multimap<Object, discussion, Compare> database_api::get_discussions(
-                const discussion_query &query,
+        template<typename Object, typename Compare, typename DatabaseIndex,
+                typename DiscussionIndex, typename Index, typename StartItr>
+        std::multimap<Object, discussion, Compare> database_api::get_discussions(const discussion_query &query,
                 const std::string &tag,
                 comment_id_type parent,
                 const Index &tidx,
@@ -1390,9 +1249,52 @@ namespace steemit {
                 const std::function<bool(const comment_api_obj &)> &filter,
                 const std::function<bool(const comment_api_obj &)> &exit,
                 const std::function<bool(const Object &)> &tag_exit) const {
-            get_discussions_more<type> discussions(my->_db, const_cast<database_api&>(*this));
-            return discussions.template get<Object,Compare>(query,tag,parent,tidx,tidx_itr,filter,exit,tag_exit);
+//   idump((query));
 
+            const auto &cidx = my->_db.get_index<DatabaseIndex>().indices().get<DiscussionIndex>();
+            comment_id_type start;
+
+            if (query.start_author && query.start_permlink) {
+                start = my->_db.get_comment(*query.start_author, *query.start_permlink).id;
+                auto itr = cidx.find(start);
+                while (itr != cidx.end() && itr->comment == start) {
+                    if (itr->name == tag) {
+                        tidx_itr = tidx.iterator_to(*itr);
+                        break;
+                    }
+                    ++itr;
+                }
+            }
+
+            uint32_t count = query.limit;
+            uint64_t filter_count = 0;
+            uint64_t exc_count = 0;
+            while (count > 0 && tidx_itr != tidx.end()) {
+                if (tidx_itr->name != tag || tidx_itr->parent != parent) {
+                    break;
+                }
+
+                try {
+                    discussion insert_discussion = get_discussion(tidx_itr->comment, query.truncate_body);
+                    insert_discussion.promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL);
+
+                    if (filter(insert_discussion)) {
+                        ++filter_count;
+                    } else if (exit(insert_discussion) ||
+                               tag_exit(*tidx_itr)) {
+                        break;
+                    } else {
+                        result.insert({*tidx_itr, insert_discussion});
+                        --count;
+                    }
+                } catch (const fc::exception &e) {
+                    ++exc_count;
+                    edump((e.to_detail_string()));
+                }
+
+                ++tidx_itr;
+            }
+            return result;
         }
 
         comment_id_type database_api::get_parent(const discussion_query &query) const {
@@ -1404,6 +1306,7 @@ namespace steemit {
                 return parent;
             });
         }
+
 /*
         template <typename T>
         void filter_language(const discussion_query &query,T &map_result) {
@@ -1425,7 +1328,7 @@ namespace steemit {
         }
 */
 
-        bool filter_tag(const discussion_query &query,const comment_api_obj &c){
+        bool filter_tag(const discussion_query &query, const comment_api_obj &c) {
             if (query.select_authors.size()) {
                 if (query.select_authors.find(c.author) ==
                     query.select_authors.end()) {
@@ -1447,10 +1350,9 @@ namespace steemit {
         };
 
 
-
-        auto filter_language(const discussion_query &query,const comment_api_obj &c) -> bool {
-            if( query.filter_language.size() ) {
-                if ( c.languages == "" ) {
+        auto filter_language(const discussion_query &query, const comment_api_obj &c) -> bool {
+            if (query.filter_language.size()) {
+                if (c.languages == "") {
                     return true;
                 }
             }
@@ -1463,23 +1365,22 @@ namespace steemit {
 
         }
 
-        template<typename CMP1,typename CMP2>
-        auto merge(
-                std::multimap<tags::tag_object, discussion, CMP1>& result1,
-                std::multimap<languages::language_object, discussion,CMP2>& result2,
-                std::vector<discussion>&discussions
-        )->void{
+        template<typename CMP1, typename CMP2>
+        auto merge(std::multimap<tags::tag_object, discussion, CMP1> &result1,
+                std::multimap<languages::language_object, discussion, CMP2> &result2,
+                std::vector<discussion> &discussions
+        ) -> void {
             //TODO:std::set_intersection(
-            if(!result2.empty()) {
-                std::multimap<comment_id_type,discussion>tmp;
+            if (!result2.empty()) {
+                std::multimap<comment_id_type, discussion> tmp;
 
-                for(auto&&i:result1){
-                    tmp.emplace(i.second.id,std::move(i.second));
+                for (auto &&i:result1) {
+                    tmp.emplace(i.second.id, std::move(i.second));
                 }
 
 
-                for(auto&&i:result2){
-                    if(tmp.count(i.second.id)){
+                for (auto &&i:result2) {
+                    if (tmp.count(i.second.id)) {
                         discussions.push_back(std::move(i.second));
                     }
                 }
@@ -1496,52 +1397,42 @@ namespace steemit {
         }
 
         std::vector<discussion> database_api::get_discussions_by_trending(const discussion_query &query) const {
-            return my->_db.with_read_lock(
-                    [&]() {
-
+            return my->_db.with_read_lock([&]() {
                         query.validate();
                         auto parent = get_parent(query);
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                        std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result;
-
-                        select<tags::tag_object,tags::tag_index,tags::by_mode_parent_children_rshares2,true>(
+                        std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result = select<tags::tag_object, tags::tag_index, tags::by_mode_parent_children_rshares2>(
                                 query.select_tags,
                                 query,
                                 parent,
-                                map_result,
-                                std::bind(filter_tag,query,std::placeholders::_1),
-                                [](const comment_api_obj &)->bool { return false;},
-                                [](const tags::tag_object &)->bool{return false;},
+                                std::bind(filter_tag, query, std::placeholders::_1),
+                                [](const comment_api_obj &) -> bool { return false; },
+                                [](const tags::tag_object &) -> bool { return false; },
                                 first_payout,
                                 parent,
                                 fc::uint128_t::max_value()
                         );
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                       std::multimap<languages::language_object, discussion,languages::by_mode_parent_children_rshares2> map_result_;
+                        std::multimap<languages::language_object, discussion, languages::by_mode_parent_children_rshares2> map_result_ = select<languages::language_object, languages::language_index, languages::by_mode_parent_children_rshares2>(
+                                query.select_language,
+                                query,
+                                parent,
+                                std::bind(filter_language, query, std::placeholders::_1),
+                                [](const comment_api_obj &) -> bool { return false; },
+                                [](const languages::language_object &) -> bool { return false; },
+                                first_payout,
+                                parent,
+                                fc::uint128_t::max_value()
+                        );
 
-                       select<languages::language_object,languages::language_index,languages::by_mode_parent_children_rshares2,false>(
-                               query.select_language,
-                               query,
-                               parent,
-                               map_result_,
-                               std::bind(filter_language,query,std::placeholders::_1),
-                               [](const comment_api_obj &)->bool{return false;},
-                               [](const languages::language_object &)->bool{return false;},
-                               first_payout,
-                               parent,
-                               fc::uint128_t::max_value()
-                       );
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         std::vector<discussion> return_result;
 
-                        merge(map_result,map_result_,return_result);
+                        merge(map_result, map_result_, return_result);
 
                         return return_result;
-                }
+                    }
             );
         }
 
@@ -1550,17 +1441,14 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                std::multimap<tags::tag_object, discussion, tags::by_parent_promoted> map_result;
-
-                select<tags::tag_object,tags::tag_index,tags::by_parent_promoted,true>(
+                std::multimap<tags::tag_object, discussion, tags::by_parent_promoted> map_result = select<tags::tag_object, tags::tag_index, tags::by_parent_promoted, true>(
                         query.select_tags,
                         query,
                         parent,
-                        map_result,
-                        std::bind(filter_language,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{return false;},
+                        std::bind(filter_language, query, std::placeholders::_1),
+                        [&](const comment_api_obj &) -> bool {
+                            return false;
+                        },
                         [&](const tags::tag_object &t) {
                             return t.promoted_balance == 0;
                         },
@@ -1568,17 +1456,14 @@ namespace steemit {
                         share_type(STEEMIT_MAX_SHARE_SUPPLY)
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                std::multimap<languages::language_object, discussion, languages::by_parent_promoted> map_result_language;
-
-                select<languages::language_object,languages::language_index,languages::by_parent_promoted,false>(
+                std::multimap<languages::language_object, discussion, languages::by_parent_promoted> map_result_language = select<languages::language_object, languages::language_index, languages::by_parent_promoted, false>(
                         query.select_tags,
                         query,
                         parent,
-                        map_result_language,
-                        std::bind(filter_language,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{return false;},
+                        std::bind(filter_language, query, std::placeholders::_1),
+                        [&](const comment_api_obj &) -> bool {
+                            return false;
+                        },
                         [&](const languages::language_object &t) {
                             return t.promoted_balance == 0;
                         },
@@ -1586,11 +1471,9 @@ namespace steemit {
                         share_type(STEEMIT_MAX_SHARE_SUPPLY)
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1601,45 +1484,41 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_mode_parent_children_rshares2,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_mode_parent_children_rshares2, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; },
                         second_payout,
                         parent,
                         fc::uint128_t::max_value()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<languages::language_object, discussion, languages::by_mode_parent_children_rshares2> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_mode_parent_children_rshares2,false>(
+                select<languages::language_object, languages::language_index, languages::by_mode_parent_children_rshares2, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; },
                         second_payout,
                         parent,
                         fc::uint128_t::max_value()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1649,45 +1528,38 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto parent = get_parent(query);
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<tags::tag_object, discussion, tags::by_parent_created> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_parent_created,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_parent_created, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; },
                         parent,
                         fc::time_point_sec::maximum()
                 );
 
-
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<languages::language_object, discussion, languages::by_parent_created> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_parent_created,false>(
+                select<languages::language_object, languages::language_index, languages::by_parent_created, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; },
                         parent,
                         fc::time_point_sec::maximum()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1698,43 +1570,37 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<tags::tag_object, discussion, tags::by_parent_active> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_parent_active,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_parent_active, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; },
                         parent,
                         fc::time_point_sec::maximum()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<languages::language_object, discussion, languages::by_parent_active> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_parent_active,false>(
+                select<languages::language_object, languages::language_index, languages::by_parent_active, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; },
                         parent,
                         fc::time_point_sec::maximum()
                 );
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1745,44 +1611,38 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<tags::tag_object, discussion, tags::by_cashout> map_result;
 
 
-                select<tags::tag_object,tags::tag_index,tags::by_cashout,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_cashout, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; },
                         fc::time_point::now() - fc::minutes(60)
                 );
-
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<languages::language_object, discussion, languages::by_cashout> map_result_language;
 
 
-                select<languages::language_object,languages::language_index,languages::by_cashout,false>(
+                select<languages::language_object, languages::language_index, languages::by_cashout, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; },
                         fc::time_point::now() - fc::minutes(60)
                 );
 
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1793,39 +1653,37 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 std::multimap<tags::tag_object, discussion, tags::by_net_rshares> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_net_rshares,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_net_rshares, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;}
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; }
                 );
 
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<languages::language_object, discussion, languages::by_net_rshares> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_net_rshares,false>(
+                select<languages::language_object, languages::language_index, languages::by_net_rshares, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;}
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; }
                 );
 
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1840,35 +1698,35 @@ namespace steemit {
 
                 std::multimap<tags::tag_object, discussion, tags::by_parent_net_votes> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_parent_net_votes,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_parent_net_votes, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;}
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; }
                 );
 
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::multimap<languages::language_object, discussion, languages::by_parent_net_votes> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_parent_net_votes,false>(
+                select<languages::language_object, languages::language_index, languages::by_parent_net_votes, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;}
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; }
                 );
 
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1883,14 +1741,14 @@ namespace steemit {
 
                 std::multimap<tags::tag_object, discussion, tags::by_parent_children> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_parent_children,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_parent_children, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; },
                         parent,
                         std::numeric_limits<int32_t>::max()
                 );
@@ -1899,14 +1757,14 @@ namespace steemit {
 
                 std::multimap<languages::language_object, discussion, languages::by_parent_children> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_parent_children,false>(
+                select<languages::language_object, languages::language_index, languages::by_parent_children, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; },
                         parent,
                         std::numeric_limits<int32_t>::max()
                 );
@@ -1915,7 +1773,7 @@ namespace steemit {
 
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
@@ -1931,14 +1789,14 @@ namespace steemit {
 
                 std::multimap<tags::tag_object, discussion, tags::by_parent_hot> map_result;
 
-                select<tags::tag_object,tags::tag_index,tags::by_parent_hot,true>(
+                select<tags::tag_object, tags::tag_index, tags::by_parent_hot, true>(
                         query.select_tags,
                         query,
                         parent,
                         map_result,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const tags::tag_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const tags::tag_object &) -> bool { return false; },
                         parent,
                         std::numeric_limits<double>::max()
                 );
@@ -1947,14 +1805,14 @@ namespace steemit {
 
                 std::multimap<languages::language_object, discussion, languages::by_parent_hot> map_result_language;
 
-                select<languages::language_object,languages::language_index,languages::by_parent_hot,false>(
+                select<languages::language_object, languages::language_index, languages::by_parent_hot, false>(
                         query.select_tags,
                         query,
                         parent,
                         map_result_language,
-                        std::bind(filter_tag,query,std::placeholders::_1),
-                        [](const comment_api_obj &)->bool{ return false;},
-                        [](const languages::language_object &)->bool{return false;},
+                        std::bind(filter_tag, query, std::placeholders::_1),
+                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const languages::language_object &) -> bool { return false; },
                         parent,
                         std::numeric_limits<double>::max()
                 );
@@ -1963,31 +1821,29 @@ namespace steemit {
 
                 std::vector<discussion> return_result;
 
-                merge(map_result,map_result_language,return_result);
+                merge(map_result, map_result_language, return_result);
 
                 return return_result;
             });
         }
 
 
-
-
         auto merge(
-                std::vector< discussion>& result1,
-                std::vector< discussion> & result2,
-                std::vector<discussion>&discussions
-        )->void{
+                std::vector<discussion> &result1,
+                std::vector<discussion> &result2,
+                std::vector<discussion> &discussions
+        ) -> void {
             //TODO:std::set_intersection(
-            if(!result2.empty()) {
-                std::multimap<comment_id_type,discussion>tmp;
+            if (!result2.empty()) {
+                std::multimap<comment_id_type, discussion> tmp;
 
-                for(auto&&i:result1){
-                    tmp.emplace(i.id,std::move(i));
+                for (auto &&i:result1) {
+                    tmp.emplace(i.id, std::move(i));
                 }
 
 
-                for(auto&&i:result2){
-                    if(tmp.count(i.id)){
+                for (auto &&i:result2) {
+                    if (tmp.count(i.id)) {
                         discussions.push_back(std::move(i));
                     }
                 }
@@ -1995,17 +1851,13 @@ namespace steemit {
                 return;
             }
 
-            discussions=result1;
+            discussions = result1;
 
         }
 
-        void feed_tags(
-                steemit::chain::database &_db,database_api& my,
-                const discussion_query &query,
-                const std::string& start_author,
-                const std::string& start_permlink,
-                std::vector<discussion>& result
-        ){
+        std::vector<discussion> database_api::feed_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink) {
+            std::vector<discussion> result;
+
             for (const auto &iterator : query.select_authors) {
                 const auto &account = _db.get_account(iterator);
 
@@ -2017,7 +1869,8 @@ namespace steemit {
 
                 if (start_author.size() || start_permlink.size()) {
                     auto start_c = c_idx.find(boost::make_tuple(_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's feed");
+                    FC_ASSERT(start_c !=
+                              c_idx.end(), "Comment is not in account's feed");
                     feed_itr = f_idx.iterator_to(*start_c);
                 }
 
@@ -2046,7 +1899,8 @@ namespace steemit {
                         }
 
                         result.push_back(my.get_discussion(feed_itr->comment));
-                        if (feed_itr->first_reblogged_by != account_name_type()) {
+                        if (feed_itr->first_reblogged_by !=
+                            account_name_type()) {
                             result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
                             result.back().first_reblogged_by = feed_itr->first_reblogged_by;
                             result.back().first_reblogged_on = feed_itr->first_reblogged_on;
@@ -2059,16 +1913,14 @@ namespace steemit {
                     ++feed_itr;
                 }
             }
+
+            return result;
         }
 
 
-        void feed_language(
-                steemit::chain::database &_db,database_api& my,
-                const discussion_query &query,
-                const std::string& start_author,
-                const std::string& start_permlink,
-                std::vector<discussion>& result
-        ){
+        std::vector<discussion> database_api::feed_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink) {
+            std::vector<discussion> result;
+
             for (const auto &iterator : query.select_authors) {
                 const auto &account = _db.get_account(iterator);
 
@@ -2080,7 +1932,8 @@ namespace steemit {
 
                 if (start_author.size() || start_permlink.size()) {
                     auto start_c = c_idx.find(boost::make_tuple(_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's feed");
+                    FC_ASSERT(start_c !=
+                              c_idx.end(), "Comment is not in account's feed");
                     feed_itr = f_idx.iterator_to(*start_c);
                 }
 
@@ -2095,7 +1948,8 @@ namespace steemit {
                             bool found = false;
                             while (tag_itr != tag_idx.end() &&
                                    tag_itr->comment == feed_itr->comment) {
-                                if (query.select_language.find(tag_itr->language) != query.select_language.end()) {
+                                if (query.select_language.find(tag_itr->language) !=
+                                    query.select_language.end()) {
                                     found = true;
                                     break;
                                 }
@@ -2108,7 +1962,8 @@ namespace steemit {
                         }
 
                         result.push_back(my.get_discussion(feed_itr->comment));
-                        if (feed_itr->first_reblogged_by != account_name_type()) {
+                        if (feed_itr->first_reblogged_by !=
+                            account_name_type()) {
                             result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
                             result.back().first_reblogged_by = feed_itr->first_reblogged_by;
                             result.back().first_reblogged_on = feed_itr->first_reblogged_on;
@@ -2121,6 +1976,8 @@ namespace steemit {
                     ++feed_itr;
                 }
             }
+
+            return result;
         }
 
         std::vector<discussion> database_api::get_discussions_by_feed(const discussion_query &query) const {
@@ -2129,21 +1986,17 @@ namespace steemit {
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author) : "";
-                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
-                ////////////////////////////////////////////////////////////////////////////////////////////////
-                std::vector<discussion> tags;
+                auto start_author = query.start_author ? *(query.start_author)
+                                                       : "";
+                auto start_permlink = query.start_permlink
+                                      ? *(query.start_permlink) : "";
 
-                feed_tags(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,tags);
-                ////////////////////////////////////////////////////////////////////////////////////////////////
-                std::vector<discussion> languages;
+                std::vector<discussion> tags = feed_tags(query, start_author, start_permlink, tags);
 
-                feed_language(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,languages);
-
-                ////////////////////////////////////////////////////////////////////////////////////////////////
+                std::vector<discussion> languages = feed_language(query, start_author, start_permlink);
 
                 std::vector<discussion> result;
-                merge(tags,languages,result);
+                merge(tags, languages, result);
 
                 return result;
             });
@@ -2152,12 +2005,12 @@ namespace steemit {
 
         void blog_tags(
                 steemit::chain::database &_db,
-                database_api& my,
+                database_api &my,
                 const discussion_query &query,
-                const std::string& start_author,
-                const std::string& start_permlink,
-                std::vector<discussion>& result
-        ){
+                const std::string &start_author,
+                const std::string &start_permlink,
+                std::vector<discussion> &result
+        ) {
             for (const auto &iterator : query.select_authors) {
 
                 const auto &account = _db.get_account(iterator);
@@ -2170,7 +2023,8 @@ namespace steemit {
 
                 if (start_author.size() || start_permlink.size()) {
                     auto start_c = c_idx.find(boost::make_tuple(_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's blog");
+                    FC_ASSERT(start_c !=
+                              c_idx.end(), "Comment is not in account's blog");
                     blog_itr = b_idx.iterator_to(*start_c);
                 }
 
@@ -2214,12 +2068,12 @@ namespace steemit {
 
 
         void blog_language(
-                steemit::chain::database &_db,database_api& my,
+                steemit::chain::database &_db, database_api &my,
                 const discussion_query &query,
-                const std::string& start_author,
-                const std::string& start_permlink,
-                std::vector<discussion>& result
-        ){
+                const std::string &start_author,
+                const std::string &start_permlink,
+                std::vector<discussion> &result
+        ) {
             for (const std::set<std::string>::value_type &iterator : query.select_authors) {
 
                 const auto &account = _db.get_account(iterator);
@@ -2232,7 +2086,8 @@ namespace steemit {
 
                 if (start_author.size() || start_permlink.size()) {
                     auto start_c = c_idx.find(boost::make_tuple(_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's blog");
+                    FC_ASSERT(start_c !=
+                              c_idx.end(), "Comment is not in account's blog");
                     blog_itr = b_idx.iterator_to(*start_c);
                 }
 
@@ -2248,7 +2103,8 @@ namespace steemit {
                             bool found = false;
                             while (tag_itr != tag_idx.end() &&
                                    tag_itr->comment == blog_itr->comment) {
-                                if (query.select_language.find(tag_itr->language) != query.select_language.end()) {
+                                if (query.select_language.find(tag_itr->language) !=
+                                    query.select_language.end()) {
                                     found = true;
                                     break;
                                 }
@@ -2275,28 +2131,29 @@ namespace steemit {
         }
 
 
-
         std::vector<discussion> database_api::get_discussions_by_blog(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author) : "";
-                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
+                auto start_author = query.start_author ? *(query.start_author)
+                                                       : "";
+                auto start_permlink = query.start_permlink
+                                      ? *(query.start_permlink) : "";
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////
                 std::vector<discussion> tags;
 
-                blog_tags(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,tags);
+                blog_tags(my->_db, const_cast<database_api &>(*this), query, start_author, start_permlink, tags);
                 ////////////////////////////////////////////////////////////////////////////////////////////////
                 std::vector<discussion> languages;
 
-                blog_language(my->_db, const_cast<database_api&>(*this),query,start_author,start_permlink,languages);
+                blog_language(my->_db, const_cast<database_api &>(*this), query, start_author, start_permlink, languages);
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////
                 std::vector<discussion> result;
-                merge(tags,languages,result);
+                merge(tags, languages, result);
 
                 return result;
             });
@@ -2309,7 +2166,8 @@ namespace steemit {
                 query.validate();
                 FC_ASSERT(query.start_author, "Must get comments for a specific author");
                 auto start_author = *(query.start_author);
-                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
+                auto start_permlink = query.start_permlink
+                                      ? *(query.start_permlink) : "";
 
                 const auto &c_idx = my->_db.get_index<comment_index>().indices().get<by_permlink>();
                 const auto &t_idx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
@@ -2317,7 +2175,8 @@ namespace steemit {
 
                 if (start_permlink.size()) {
                     auto start_c = c_idx.find(boost::make_tuple(start_author, start_permlink));
-                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's comments");
+                    FC_ASSERT(start_c !=
+                              c_idx.end(), "Comment is not in account's comments");
                     comment_itr = t_idx.iterator_to(*start_c);
                 }
 
@@ -2952,34 +2811,36 @@ namespace steemit {
             });
         }
 
-        template<typename Object, typename IndexType, typename C, bool type, typename T, typename ...Args>
-        void database_api::select(
-                const std::set<std::string> &select_set,
+        template<typename Object, typename IndexType, typename C, typename T, typename ...Args>
+        const T database_api::select(const std::set<std::string> &select_set,
                 const discussion_query &query,
-                comment_id_type parent, T &map_result,
+                comment_id_type parent,
                 const std::function<bool(const comment_api_obj &)> &filter,
                 const std::function<bool(const comment_api_obj &)> &exit,
                 const std::function<bool(const Object &)> &exit2,
-                Args... args
-        ) const  {
-            std::string helper ;
+                Args... args) const {
+            T map_result;
+            std::string helper;
+
             const auto &index = my->_db.get_index<IndexType>().indices().template get<C>();
 
             if (select_set.size()) {
                 for (const auto &iterator : select_set) {
                     helper = fc::to_lower(iterator);
 
-                    auto tidx_itr =  index.lower_bound(boost::make_tuple(helper, args...));
+                    auto tidx_itr = index.lower_bound(boost::make_tuple(helper, args...));
 
-                    auto result = get_discussions<Object,C,type>(query, helper, parent, index, tidx_itr,filter,exit,exit2 );
+                    auto result = get_discussions<Object, C, type>(query, helper, parent, index, tidx_itr, filter, exit, exit2);
 
                     map_result.insert(result.cbegin(), result.cend());
                 }
             } else {
-                auto tidx_itr = index.lower_bound(boost::make_tuple(helper,args...));
+                auto tidx_itr = index.lower_bound(boost::make_tuple(helper, args...));
 
-                map_result = get_discussions<Object,C,type>(query, helper, parent, index, tidx_itr, filter,exit,exit2);
+                map_result = get_discussions<Object, C, type>(query, helper, parent, index, tidx_itr, filter, exit, exit2);
             }
+
+            return map_result;
         }
     }
 } // steemit::app

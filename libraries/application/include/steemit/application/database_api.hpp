@@ -86,7 +86,8 @@ namespace steemit {
                 }
 
                 for (const auto &iterator : filter_language) {
-                    FC_ASSERT(select_language.find(iterator) == select_language.end());
+                    FC_ASSERT(select_language.find(iterator) ==
+                              select_language.end());
                 }
 
             }
@@ -514,39 +515,38 @@ namespace steemit {
                 return false;
             }
 
-            template<typename Object,typename Compare,bool type, typename Index, typename StartItr>
-            std::multimap<Object, discussion, Compare> get_discussions(
-                    const discussion_query &query,
+            template<typename Object, typename Compare, typename DatabaseIndex,
+                    typename DiscussionIndex, typename Index, typename StartItr>
+            std::multimap<Object, discussion, Compare> database_api::get_discussions(const discussion_query &query,
                     const std::string &tag,
                     comment_id_type parent,
                     const Index &tidx,
                     StartItr tidx_itr,
-                    const std::function<bool(const comment_api_obj &)> &filter, //= &database_api::filter_default,
-                    const std::function<bool(const comment_api_obj &)> &exit, //= &database_api::exit_default,
-                    const std::function<bool(const Object &)> &tag_exit /*= &database_api::tag_exit_default*/) const;
-
-
-            template<typename Object,typename IndexType,typename C,bool type, typename T, typename ...Args>
-            void select(
-                    const std::set<std::string>&select_set,
-                    const discussion_query &query,
-                    comment_id_type parent,
-                    T& map_result,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
-                    const std::function<bool(const Object &)>&exit2,
-                    Args... args
-            ) const ;
+                    const std::function<bool(const Object &)> &tag_exit) const;
 
 
+            template<typename Object, typename IndexType, typename C, typename T, typename ...Args>
+            const T select(const std::set<std::string> &select_set,
+                    const discussion_query &query,
+                    comment_id_type parent,
+                    const std::function<bool(const comment_api_obj &)> &filter,
+                    const std::function<bool(const comment_api_obj &)> &exit,
+                    const std::function<bool(const Object &)> &exit2,
+                    Args... args) const;
+
+            std::vector<discussion> feed_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink);
+
+            std::vector<discussion> feed_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink);
 
             comment_id_type get_parent(const discussion_query &q) const;
 
             void recursively_fetch_content(state &_state, discussion &root, std::set<std::string> &referenced_accounts) const;
 
             std::shared_ptr<database_api_impl> my;
-    };
-}
+        };
+    }
 }
 
 FC_REFLECT(steemit::app::order, (order_price)(real_price)(steem)(sbd)(created));

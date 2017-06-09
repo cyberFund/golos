@@ -83,9 +83,9 @@ namespace steemit {
                     _db.remove(tag);
 
                     const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
-                    auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.tag));
+                    auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.name));
                     if (itr != idx.end() && itr->author == tag.author &&
-                        itr->tag == tag.tag) {
+                        itr->tag == tag.name) {
                         _db.modify(*itr, [&](author_tag_stats_object &stats) {
                             stats.total_posts--;
                         });
@@ -146,7 +146,7 @@ namespace steemit {
                 }
 
                 void update_tag(const tag_object &current, const comment_object &comment, double hot) const {
-                    const auto &stats = get_stats(current.tag);
+                    const auto &stats = get_stats(current.name);
                     remove_stats(current, stats);
 
                     if (comment.mode != archived) {
@@ -180,7 +180,7 @@ namespace steemit {
                     }
 
                     const auto &tag_obj = _db.create<tag_object>([&](tag_object &obj) {
-                        obj.tag = tag;
+                        obj.name = tag;
                         obj.comment = comment.id;
                         obj.parent = parent;
                         obj.created = comment.created;
@@ -253,10 +253,10 @@ namespace steemit {
                                citr->comment == c.id) {
                             const tag_object *tag = &*citr;
                             ++citr;
-                            if (meta.tags.find(tag->tag) == meta.tags.end()) {
+                            if (meta.tags.find(tag->name) == meta.tags.end()) {
                                 remove_queue.push_back(tag);
                             } else {
-                                existing_tags[tag->tag] = tag;
+                                existing_tags[tag->name] = tag;
                             }
                         }
 

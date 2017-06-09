@@ -90,9 +90,9 @@ namespace steemit {
                     _db.remove(tag);
 
                     const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
-                    auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.language));
+                    auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.name));
                     if (itr != idx.end() && itr->author == tag.author &&
-                        itr->language == tag.language) {
+                        itr->language == tag.name) {
                         _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts--;
                         });
@@ -235,7 +235,7 @@ namespace steemit {
                         auto itr=comment_idx.find(c.id);
 
                         if (itr == comment_idx.end()) {
-                            create_tag(language_, c, hot, trending);
+                            create_tag.name_, c, hot, trending);
                         } else {
                             update_tag( *itr, c, hot, trending);
                         }

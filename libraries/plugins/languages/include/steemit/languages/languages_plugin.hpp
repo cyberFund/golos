@@ -69,7 +69,7 @@ namespace steemit {
                 : public object<language_object_type, language_object> {
         public:
             template<typename Constructor, typename Allocator>
-            language_object(Constructor &&c, allocator<Allocator> a):language("") {
+            language_object(Constructor &&c, allocator<Allocator> a):name("") {
                 c(*this);
             }
 
@@ -78,7 +78,7 @@ namespace steemit {
 
             id_type id;
 
-            language_name_type language;
+            language_name_type name;
             time_point_sec created;
             time_point_sec active;
             time_point_sec cashout;
@@ -115,7 +115,7 @@ namespace steemit {
         class by_cashout : public comparable_index<language_object> {
         public:
             virtual bool operator()(const language_object &first, const language_object &second) const override {
-                return std::less<language_name_type>()(first.language, second.language) &&
+                return std::less<language_name_type>()(first.name, second.name) &&
                        std::less<time_point_sec>()(first.cashout, second.cashout) &&
                        std::less<tag_id_type>()(first.id, second.id);
             }
@@ -259,7 +259,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_created>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, time_point_sec, &language_object::created>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -268,7 +268,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_active>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, time_point_sec, &language_object::active>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -277,7 +277,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_promoted>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, share_type, &language_object::promoted_balance>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -286,7 +286,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_net_rshares>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, int64_t, &language_object::net_rshares>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -295,7 +295,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_net_votes>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, int32_t, &language_object::net_votes>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -304,7 +304,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_children>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, int32_t, &language_object::children>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -313,7 +313,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_hot>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, double, &language_object::hot>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -322,7 +322,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_trending>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, double, &language_object::trending>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -331,7 +331,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_parent_children_rshares2>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, fc::uint128_t, &language_object::children_rshares2>,
                                         member<language_object, tag_id_type, &language_object::id>
@@ -340,7 +340,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_mode_parent_children_rshares2>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_mode, &language_object::mode>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, fc::uint128_t, &language_object::children_rshares2>,
@@ -350,7 +350,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_cashout>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, time_point_sec, &language_object::cashout>,
                                         member<language_object, tag_id_type, &language_object::id>
                                 >,
@@ -358,7 +358,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_net_rshares>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, int64_t, &language_object::net_rshares>,
                                         member<language_object, tag_id_type, &language_object::id>
                                 >,
@@ -366,7 +366,7 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_author_parent_created>,
                                 composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::language>,
+                                        member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, account_id_type, &language_object::author>,
                                         member<language_object, time_point_sec, &language_object::created>,
                                         member<language_object, tag_id_type, &language_object::id>
