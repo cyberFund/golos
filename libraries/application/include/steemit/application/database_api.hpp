@@ -503,18 +503,6 @@ namespace steemit {
 
             void set_url(discussion &d) const;
 
-            static bool filter_default(const comment_api_obj &c) {
-                return false;
-            }
-
-            static bool exit_default(const comment_api_obj &c) {
-                return false;
-            }
-
-            static bool tag_exit_default(const tags::tag_object &c) {
-                return false;
-            }
-
             template<typename Object, typename Compare, typename DatabaseIndex,
                     typename DiscussionIndex, typename Index, typename StartItr>
             std::multimap<Object, discussion, Compare> database_api::get_discussions(const discussion_query &query,
