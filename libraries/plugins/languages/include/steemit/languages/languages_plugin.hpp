@@ -625,7 +625,7 @@ namespace steemit {
 FC_API(steemit::languages::language_api,);
 
 FC_REFLECT(steemit::languages::language_object,
-        (id)(language)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))
+        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_object, steemit::languages::language_index)
 
 FC_REFLECT(steemit::languages::language_stats_object,

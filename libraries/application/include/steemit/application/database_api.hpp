@@ -503,9 +503,16 @@ namespace steemit {
 
             void set_url(discussion &d) const;
 
-            template<typename Object, typename Compare, typename DatabaseIndex,
-                    typename DiscussionIndex, typename Index, typename StartItr>
-            std::multimap<Object, discussion, Compare> database_api::get_discussions(const discussion_query &query,
+            template<
+                    typename Object,
+                    typename DatabaseIndex,
+                    typename DiscussionIndex,
+                    typename CommentIndex,
+                    typename Index,
+                    typename StartItr
+            >
+            std::multimap<Object, discussion, DiscussionIndex> get_discussions(
+                    const discussion_query &query,
                     const std::string &tag,
                     comment_id_type parent,
                     const Index &tidx,
@@ -515,18 +522,30 @@ namespace steemit {
                     const std::function<bool(const Object &)> &tag_exit) const;
 
 
-            template<typename Object, typename IndexType, typename C, typename T, typename ...Args>
-            const T select(const std::set<std::string> &select_set,
+            template<
+                    typename Object,
+                    typename DatabaseIndex,
+                    typename DiscussionIndex,
+                    typename CommentIndex,
+                    typename ...Args
+            >
+            std::multimap<Object, discussion, DiscussionIndex> select(
+                    const std::set<std::string> &select_set,
                     const discussion_query &query,
                     comment_id_type parent,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
                     const std::function<bool(const Object &)> &exit2,
-                    Args... args) const;
+                    Args... args
+            ) const;
 
-            std::vector<discussion> feed_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink);
+            std::vector<discussion> feed_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
 
-            std::vector<discussion> feed_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink);
+            std::vector<discussion> feed_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
+
+            std::vector<discussion> blog_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
+
+            std::vector<discussion> blog_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
 
             comment_id_type get_parent(const discussion_query &q) const;
 

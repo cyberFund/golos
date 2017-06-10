@@ -117,7 +117,7 @@ namespace steemit {
                         double hot,
                         double trending
                 ) const {
-                    const auto &stats = get_stats(current.language);
+                    const auto &stats = get_stats(current.name);
                     remove_stats(current, stats);
 
                     if (comment.mode != archived) {
@@ -150,7 +150,7 @@ namespace steemit {
                     }
 
                     const auto &tag_obj = _db.create<language_object>([&](language_object &obj) {
-                        obj.language = language;
+                        obj.name = language;
                         obj.comment = comment.id;
                         obj.parent = parent;
                         obj.created = comment.created;
@@ -235,7 +235,7 @@ namespace steemit {
                         auto itr=comment_idx.find(c.id);
 
                         if (itr == comment_idx.end()) {
-                            create_tag.name_, c, hot, trending);
+                            create_tag(language_, c, hot, trending);
                         } else {
                             update_tag( *itr, c, hot, trending);
                         }
@@ -427,7 +427,7 @@ namespace steemit {
                         const auto &index = my->database().get_index<language_index>().indices().get<languages::by_comment>();
                         auto itr = index.begin();
                         for (; itr != index.end(); ++itr) {
-                            my->self().cache_languages.emplace(itr->language);
+                            my->self().cache_languages.emplace(itr->name);
                         }
                     }
             );

@@ -627,7 +627,7 @@ namespace steemit {
 FC_API(steemit::tags::tag_api, (get_tags));
 
 FC_REFLECT(steemit::tags::tag_object,
-        (id)(tag)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))
+        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::tag_object, steemit::tags::tag_index)
 
 FC_REFLECT(steemit::tags::tag_stats_object,
