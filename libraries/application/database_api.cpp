@@ -1373,10 +1373,10 @@ namespace steemit {
 
         template<typename CMP1, typename CMP2>
         auto merge(std::multimap<tags::tag_object, discussion, CMP1> &result1,
-                std::multimap<languages::language_object, discussion, CMP2> &result2,
-                std::vector<discussion> &discussions
-        ) -> void {
+                std::multimap<languages::language_object, discussion, CMP2> &result2
+        ) ->  std::vector<discussion> {
             //TODO:std::set_intersection(
+            std::vector<discussion> discussions;
             if (!result2.empty()) {
                 std::multimap<comment_id_type, discussion> tmp;
 
@@ -1391,7 +1391,7 @@ namespace steemit {
                     }
                 }
 
-                return;
+                return discussions;
             }
 
 
@@ -1399,6 +1399,9 @@ namespace steemit {
             for (auto &&iterator : result1) {
                 discussions.push_back(std::move(iterator.second));
             }
+
+            return discussions;
+
 
         }
 
@@ -1440,9 +1443,7 @@ namespace steemit {
                         );
 
 
-                        std::vector<discussion> return_result;
-
-                        merge(map_result, map_result_, return_result);
+                        std::vector<discussion> return_result=merge(map_result, map_result_);
 
                         return return_result;
                     }
@@ -1484,9 +1485,7 @@ namespace steemit {
                         share_type(STEEMIT_MAX_SHARE_SUPPLY)
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1527,9 +1526,7 @@ namespace steemit {
                 );
 
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1564,9 +1561,7 @@ namespace steemit {
                         fc::time_point_sec::maximum()
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1603,9 +1598,7 @@ namespace steemit {
                         fc::time_point_sec::maximum()
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1641,9 +1634,7 @@ namespace steemit {
                 );
 
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1676,9 +1667,7 @@ namespace steemit {
                         [](const languages::language_object &) -> bool { return false; }
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1711,9 +1700,7 @@ namespace steemit {
                         [](const languages::language_object &) -> bool { return false; }
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1750,9 +1737,7 @@ namespace steemit {
                         std::numeric_limits<int32_t>::max()
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
@@ -1790,20 +1775,21 @@ namespace steemit {
                         std::numeric_limits<double>::max()
                 );
 
-                std::vector<discussion> return_result;
-
-                merge(map_result, map_result_language, return_result);
+                std::vector<discussion> return_result=merge(map_result, map_result_language);
 
                 return return_result;
             });
         }
 
 
-        auto merge(std::vector<discussion> &result1,
-                std::vector<discussion> &result2,
-                std::vector<discussion> &discussions) -> void {
+        auto merge(
+                std::vector<discussion> &result1,
+                std::vector<discussion> &result2
+        ) -> std::vector<discussion> {
+
             //TODO:std::set_intersection(
             if (!result2.empty()) {
+                std::vector<discussion>discussions;
                 std::multimap<comment_id_type, discussion> tmp;
 
                 for (auto &&i:result1) {
@@ -1817,85 +1803,33 @@ namespace steemit {
                     }
                 }
 
-                return;
+                return discussions;
             }
 
-            discussions = result1;
-
-        }
-
-        std::vector<discussion> database_api::feed_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink) const{
-            std::vector<discussion> result;
-
-            for (const auto &iterator : query.select_authors) {
-                const auto &account = my->_db.get_account(iterator);
-
-                const auto &tag_idx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
-
-                const auto &c_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
-                const auto &f_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_feed>();
-                auto feed_itr = f_idx.lower_bound(account.name);
-
-                if (start_author.size() || start_permlink.size()) {
-                    auto start_c = c_idx.find(boost::make_tuple(my->_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c !=
-                              c_idx.end(), "Comment is not in account's feed");
-                    feed_itr = f_idx.iterator_to(*start_c);
-                }
-
-                while (result.size() < query.limit && feed_itr != f_idx.end()) {
-                    if (feed_itr->account != account.name) {
-                        break;
-                    }
-                    try {
-                        if (query.select_tags.size()) {
-                            auto tag_itr = tag_idx.lower_bound(feed_itr->comment);
-
-                            bool found = false;
-                            while (tag_itr != tag_idx.end() &&
-                                   tag_itr->comment == feed_itr->comment) {
-                                if (query.select_tags.find(tag_itr->name) != query.select_tags.end()) {
-                                    found = true;
-                                    break;
-                                }
-                                ++tag_itr;
-                            }
-                            if (!found) {
-                                ++feed_itr;
-                                continue;
-                            }
-                        }
-
-                        result.push_back(get_discussion(feed_itr->comment));
-                        if (feed_itr->first_reblogged_by !=
-                            account_name_type()) {
-                            result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
-                            result.back().first_reblogged_by = feed_itr->first_reblogged_by;
-                            result.back().first_reblogged_on = feed_itr->first_reblogged_on;
-                        }
-                    }
-                    catch (const fc::exception &e) {
-                        edump((e.to_detail_string()));
-                    }
-
-                    ++feed_itr;
-                }
-            }
-
-            return result;
+            std::vector<discussion>discussions(result1.begin(),result1.end());
+            return discussions;
         }
 
 
-        std::vector<discussion> database_api::feed_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const {
+        template<
+                typename DatabaseIndex,
+                typename DiscussionIndex
+                >
+        std::vector<discussion> database_api::feed(
+                const std::set<string> &select_set,
+                const discussion_query &query,
+                const std::string &start_author,
+                const std::string &start_permlink
+        ) const {
             std::vector<discussion> result;
 
             for (const auto &iterator : query.select_authors) {
-                const auto &account =my-> _db.get_account(iterator);
+                const auto &account = my-> _db.get_account(iterator);
 
-                const auto &tag_idx =my-> _db.get_index<languages::language_index>().indices().get<languages::by_comment>();
+                const auto &tag_idx = my-> _db.get_index<DatabaseIndex>().indices().template get<DiscussionIndex>();
 
                 const auto &c_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
-                const auto &f_idx =my-> _db.get_index<follow::feed_index>().indices().get<follow::by_feed>();
+                const auto &f_idx = my-> _db.get_index<follow::feed_index>().indices().get<follow::by_feed>();
                 auto feed_itr = f_idx.lower_bound(account.name);
 
                 if (start_author.size() || start_permlink.size()) {
@@ -1909,14 +1843,13 @@ namespace steemit {
                         break;
                     }
                     try {
-                        if (query.select_language.size()) {
+                        if (!select_set.empty()) {
                             auto tag_itr = tag_idx.lower_bound(feed_itr->comment);
 
                             bool found = false;
                             while (tag_itr != tag_idx.end() &&
                                    tag_itr->comment == feed_itr->comment) {
-                                if (query.select_language.find(tag_itr->name) !=
-                                    query.select_language.end()) {
+                                if (select_set.find(tag_itr->name) != select_set.end()) {
                                     found = true;
                                     break;
                                 }
@@ -1929,8 +1862,7 @@ namespace steemit {
                         }
 
                         result.push_back(get_discussion(feed_itr->comment));
-                        if (feed_itr->first_reblogged_by !=
-                            account_name_type()) {
+                        if (feed_itr->first_reblogged_by != account_name_type()) {
                             result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
                             result.back().first_reblogged_by = feed_itr->first_reblogged_by;
                             result.back().first_reblogged_on = feed_itr->first_reblogged_on;
@@ -1953,29 +1885,42 @@ namespace steemit {
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
                 FC_ASSERT(query.select_authors.size(), "No such author to select feed from");
 
-                auto start_author = query.start_author ? *(query.start_author)
-                                                       : "";
+                auto start_author = query.start_author ? *(query.start_author) : "";
                 auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
 
-                std::vector<discussion> tags = feed_tags(query, start_author, start_permlink);
+                std::vector<discussion> tags_ = feed<
+                        tags::tag_index,
+                        tags::by_comment
+                >(query.select_tags, query, start_author, start_permlink);
 
-                std::vector<discussion> languages = feed_language(query, start_author, start_permlink);
+                std::vector<discussion> languages_ = feed<
+                        languages::language_index,
+                        languages::by_comment
+                >(query.select_language, query, start_author, start_permlink);
 
-                std::vector<discussion> result;
-                merge(tags, languages, result);
+                std::vector<discussion> result=merge(tags_, languages_);
 
                 return result;
             });
         }
 
 
-        std::vector<discussion>  database_api::blog_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const{
+        template<
+                typename DatabaseIndex,
+                typename DiscussionIndex
+        >
+        std::vector<discussion> database_api::blog(
+                const std::set<string> &select_set,
+                const discussion_query &query,
+                const std::string &start_author,
+                const std::string &start_permlink
+        ) const {
             std::vector<discussion> result;
             for (const auto &iterator : query.select_authors) {
 
                 const auto &account = my->_db.get_account(iterator);
 
-                const auto &tag_idx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
+                const auto &tag_idx = my->_db.get_index<DatabaseIndex>().indices().template get<DiscussionIndex>();
 
                 const auto &c_idx = my->_db.get_index<follow::blog_index>().indices().get<follow::by_comment>();
                 const auto &b_idx = my->_db.get_index<follow::blog_index>().indices().get<follow::by_blog>();
@@ -1993,13 +1938,13 @@ namespace steemit {
                         break;
                     }
                     try {
-                        if (query.select_tags.size()) {
+                        if (select_set.size()) {
                             auto tag_itr = tag_idx.lower_bound(blog_itr->comment);
 
                             bool found = false;
                             while (tag_itr != tag_idx.end() &&
                                    tag_itr->comment == blog_itr->comment) {
-                                if (query.select_tags.find(tag_itr->name) != query.select_tags.end()) {
+                                if (select_set.find(tag_itr->name) != select_set.end()) {
                                     found = true;
                                     break;
                                 }
@@ -2027,64 +1972,7 @@ namespace steemit {
         }
 
 
-        std::vector<discussion>  database_api::blog_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const {
-            std::vector<discussion> result;
-            for (const std::set<std::string>::value_type &iterator : query.select_authors) {
 
-                const auto &account =my-> _db.get_account(iterator);
-
-                const auto &tag_idx = my->_db.get_index<languages::language_index>().indices().get<languages::by_comment>();
-
-                const auto &c_idx = my->_db.get_index<follow::blog_index>().indices().get<follow::by_comment>();
-                const auto &b_idx = my->_db.get_index<follow::blog_index>().indices().get<follow::by_blog>();
-                auto blog_itr = b_idx.lower_bound(account.name);
-
-                if (start_author.size() || start_permlink.size()) {
-                    auto start_c = c_idx.find(boost::make_tuple(my->_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c !=
-                              c_idx.end(), "Comment is not in account's blog");
-                    blog_itr = b_idx.iterator_to(*start_c);
-                }
-
-                while (result.size() < query.limit &&
-                       blog_itr != b_idx.end()) {
-                    if (blog_itr->account != account.name) {
-                        break;
-                    }
-                    try {
-                        if (query.select_language.size()) {
-                            auto tag_itr = tag_idx.lower_bound(blog_itr->comment);
-
-                            bool found = false;
-                            while (tag_itr != tag_idx.end() &&
-                                   tag_itr->comment == blog_itr->comment) {
-                                if (query.select_language.find(tag_itr->name) !=
-                                    query.select_language.end()) {
-                                    found = true;
-                                    break;
-                                }
-                                ++tag_itr;
-                            }
-                            if (!found) {
-                                ++blog_itr;
-                                continue;
-                            }
-                        }
-
-                        result.push_back(get_discussion(blog_itr->comment, query.truncate_body));
-                        if (blog_itr->reblogged_on > time_point_sec()) {
-                            result.back().first_reblogged_on = blog_itr->reblogged_on;
-                        }
-                    }
-                    catch (const fc::exception &e) {
-                        edump((e.to_detail_string()));
-                    }
-
-                    ++blog_itr;
-                }
-            }
-            return result;
-        }
 
 
         std::vector<discussion> database_api::get_discussions_by_blog(const discussion_query &query) const {
@@ -2096,13 +1984,12 @@ namespace steemit {
                 auto start_author = query.start_author ? *(query.start_author) : "";
                 auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
 
-                ////////////////////////////////////////////////////////////////////////////////////////////////
-                std::vector<discussion> tags=blog_tags( query, start_author, start_permlink);
 
-                std::vector<discussion> languages=blog_language( query, start_author, start_permlink);
+                std::vector<discussion> tags_=blog<tags::tag_index,tags::by_comment>(query.select_tags, query, start_author, start_permlink);
 
-                std::vector<discussion> result;
-                merge(tags, languages, result);
+                std::vector<discussion> languages_=blog<languages::language_index,languages::by_comment>(query.select_language, query, start_author, start_permlink);
+
+                std::vector<discussion> result=merge(tags_, languages_);
 
                 return result;
             });

@@ -539,13 +539,28 @@ namespace steemit {
                     Args... args
             ) const;
 
-            std::vector<discussion> feed_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
+            template<
+                    typename DatabaseIndex,
+                    typename DiscussionIndex
+            >
+            std::vector<discussion> feed(
+                    const std::set<string> &select_set,
+                    const discussion_query &query,
+                    const std::string &start_author,
+                    const std::string &start_permlink
+            ) const;
 
-            std::vector<discussion> feed_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
 
-            std::vector<discussion> blog_language(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
-
-            std::vector<discussion> blog_tags(const discussion_query &query, const std::string &start_author, const std::string &start_permlink)const;
+            template<
+                    typename DatabaseIndex,
+                    typename DiscussionIndex
+            >
+            std::vector<discussion> blog(
+                    const std::set<string> &select_set,
+                    const discussion_query &query,
+                    const std::string &start_author,
+                    const std::string &start_permlink
+            ) const ;
 
             comment_id_type get_parent(const discussion_query &q) const;
 
