@@ -12,7 +12,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/application/plugin.hpp
         include/steemit/application/state.hpp
         include/steemit/application/steem_api_objects.hpp
-        include/steemit/application/comment_api_obj.h
+        include/steemit/application/api_objects/comment_api_obj.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES

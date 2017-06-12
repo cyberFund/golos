@@ -15,27 +15,9 @@
 namespace steemit {
     namespace application {
 
-
     using namespace steemit::chain;
 
-    typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
-    typedef chain::block_summary_object block_summary_api_obj;
-    typedef chain::comment_vote_object comment_vote_api_obj;
-    typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
-    typedef chain::convert_request_object convert_request_api_obj;
-    typedef chain::escrow_object escrow_api_obj;
-    typedef chain::liquidity_reward_balance_object liquidity_reward_balance_api_obj;
-    typedef chain::limit_order_object limit_order_api_obj;
-    typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
-    typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
-    typedef chain::witness_vote_object witness_vote_api_obj;
-    typedef chain::witness_schedule_object witness_schedule_api_obj;
-    typedef chain::account_bandwidth_object account_bandwidth_api_obj;
-    typedef chain::vesting_delegation_object vesting_delegation_api_obj;
-    typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
-    typedef chain::reward_fund_object reward_fund_api_obj;
-
-struct comment_api_obj {
+        struct comment_api_obj {
             comment_api_obj(const chain::comment_object &o) :
                     id(o.id),
                     category(to_string(o.category)),
@@ -134,8 +116,10 @@ struct comment_api_obj {
             vector<protocol::beneficiary_route_type> beneficiaries;
         };
 
-     }}
-        FC_REFLECT(steemit::application::comment_api_obj,
+     }
+}
+
+FC_REFLECT(steemit::application::comment_api_obj,
         (id)(author)(permlink)
                 (languages)(category)(parent_author)(parent_permlink)
                 (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)

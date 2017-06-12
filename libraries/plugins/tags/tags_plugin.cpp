@@ -1,7 +1,7 @@
 #include <steemit/application/impacted.hpp>
 
 #include <steemit/application/discussion_query.hpp>
-#include <steemit/application/comment_api_obj.h>
+#include <steemit/application/api_objects/comment_api_obj.hpp>
 
 #include <steemit/protocol/config.hpp>
 

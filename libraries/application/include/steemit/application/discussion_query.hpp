@@ -1,12 +1,10 @@
 #ifndef GOLOS_DISCUSSION_QUERY_H
 #define GOLOS_DISCUSSION_QUERY_H
 
-
 #include <fc/api.hpp>
 #include <fc/optional.hpp>
 #include <fc/variant_object.hpp>
 #include <fc/network/ip.hpp>
-
 
 #include <map>
 #include <set>
