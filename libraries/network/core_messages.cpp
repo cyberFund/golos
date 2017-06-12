@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <graphene/net/core_messages.hpp>
+#include <graphene/network/core_messages.hpp>
 
 
 namespace graphene {
-    namespace net {
+    namespace network {
 
         const core_message_type_enum trx_message::type = core_message_type_enum::trx_message_type;
         const core_message_type_enum block_message::type = core_message_type_enum::block_message_type;

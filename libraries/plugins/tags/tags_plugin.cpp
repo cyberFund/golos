@@ -145,21 +145,22 @@ namespace steemit {
                     return meta;
                 }
 
-                void update_tag(const tag_object &current, const comment_object &comment, double hot) const {
+
+                void update_tag(const tag_object &current, const comment_object &comment, double hot, double trending) const {
                     const auto &stats = get_stats(current.name);
                     remove_stats(current, stats);
 
-                    if (comment.mode != archived) {
+                    if (comment.cashout_time != fc::time_point_sec::maximum()) {
                         _db.modify(current, [&](tag_object &obj) {
                             obj.active = comment.active;
-                            obj.cashout = comment.cashout_time;
+                            obj.cashout = _db.calculate_discussion_payout_time(comment);
                             obj.children = comment.children;
                             obj.net_rshares = comment.net_rshares.value;
                             obj.net_votes = comment.net_votes;
                             obj.children_rshares2 = comment.children_rshares2;
                             obj.hot = hot;
-                            obj.mode = comment.mode;
-                            if (obj.mode != first_payout) {
+                            obj.trending = trending;
+                            if (obj.cashout == fc::time_point_sec()) {
                                 obj.promoted_balance = 0;
                             }
                         });
@@ -169,7 +170,7 @@ namespace steemit {
                     }
                 }
 
-                void create_tag(const string &tag, const comment_object &comment, double hot) const {
+                void create_tag(const string &tag, const comment_object &comment, double hot, double trending) const {
 
 
                     comment_id_type parent;
@@ -191,7 +192,8 @@ namespace steemit {
                         obj.net_rshares = comment.net_rshares.value;
                         obj.children_rshares2 = comment.children_rshares2;
                         obj.author = author;
-                        obj.mode = comment.mode;
+                        obj.hot = hot;
+                        obj.trending = trending;
                     });
                     add_stats(tag_obj, get_stats(tag));
 
@@ -215,42 +217,47 @@ namespace steemit {
                 /**
                  * https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9#.lcbj6auuw
                  */
-                double calculate_hot(const comment_object &c, const time_point_sec &now) const {
+                template<int64_t S, int32_t T>
+                double calculate_score(const share_type &score, const time_point_sec &created) const {
                     /// new algorithm
-                    auto s = c.net_rshares.value / 10000000;
-                    /*
-                    auto delta = std::max<int32_t>( (now - c.created).to_seconds(), 20*60 );
-                    return s / delta;
-                    */
-
+                    auto mod_score = score.value / S;
 
                     /// reddit algorithm
-                    //s = c.net_votes;
-                    double order = log10(std::max<int64_t>(std::abs(s), 1));
+                    double order = log10(std::max<int64_t>(std::abs(mod_score), 1));
                     int sign = 0;
-                    if (s > 0) {
+
+                    if (mod_score > 0) {
                         sign = 1;
-                    } else if (s < 0) {
+                    } else if (mod_score < 0) {
                         sign = -1;
                     }
-                    auto seconds = c.created.sec_since_epoch();
 
-                    return sign * order + double(seconds) / 10000.0;
+                    return sign * order +
+                           double(created.sec_since_epoch()) / double(T);
                 }
+
+                inline double calculate_hot(const share_type &score, const time_point_sec &created) const {
+                    return calculate_score<10000000, 10000>(score, created);
+                }
+
+                inline double calculate_trending(const share_type &score, const time_point_sec &created) const {
+                    return calculate_score<10000000, 480000>(score, created);
+                }
+
 
                 /** finds tags that have been added or removed or updated */
                 void update_tags(const comment_object &c) const {
                     try {
 
-                        auto hot = calculate_hot(c, _db.head_block_time());
+                        auto hot = calculate_hot(c.net_rshares, c.created);
+                        auto trending = calculate_trending(c.net_rshares, c.created);
                         auto meta = filter_tags(c);
                         const auto &comment_idx = _db.get_index<tag_index>().indices().get<by_comment>();
                         auto citr = comment_idx.lower_bound(c.id);
 
                         map<string, const tag_object *> existing_tags;
                         vector<const tag_object *> remove_queue;
-                        while (citr != comment_idx.end() &&
-                               citr->comment == c.id) {
+                        while (citr != comment_idx.end() && citr->comment == c.id) {
                             const tag_object *tag = &*citr;
                             ++citr;
                             if (meta.tags.find(tag->name) == meta.tags.end()) {
@@ -263,9 +270,9 @@ namespace steemit {
                         for (const auto &tag : meta.tags) {
                             auto existing = existing_tags.find(tag);
                             if (existing == existing_tags.end()) {
-                                create_tag(tag, c, hot);
+                                create_tag(tag, c, hot, trending);
                             } else {
-                                update_tag(*existing->second, c, hot);
+                                update_tag(*existing->second, c, hot, trending);
                             }
                         }
 
@@ -355,7 +362,8 @@ namespace steemit {
                                 while (citr != comment_idx.end() &&
                                        citr->comment == c->id) {
                                     _db.modify(*citr, [&](tag_object &t) {
-                                        if (t.mode == first_payout) {
+                                        if (t.cashout !=
+                                            fc::time_point_sec::maximum()) {
                                             t.promoted_balance += op.amount.amount;
                                         }
                                     });
@@ -445,7 +453,7 @@ namespace steemit {
 
         }
 
-        bool tags_plugin::filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &condition) {
+        bool tags_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
             if (query.select_authors.size()) {
                 if (query.select_authors.find(c.author) == query.select_authors.end()) {
                     return true;
@@ -492,4 +500,5 @@ namespace steemit {
     }
 } /// steemit::tags
 
-STEEMIT_DEFINE_PLUGIN(tags, steemit::tags::tags_plugin)
+STEEMIT_DEFINE_PLUGIN(tags, steemit::tags::tags_plugin
+)

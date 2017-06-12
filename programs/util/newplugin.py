@@ -34,7 +34,7 @@ templates = {
         class {plugin_name}_api
         {{
            public:
-              {plugin_name}_api( const steemit::app::api_context& ctx );
+              {plugin_name}_api( const steemit::application::api_context& ctx );
 
               void on_api_startup();
 
@@ -63,10 +63,10 @@ templates = {
         class {plugin_name}_plugin_impl;
         }}
 
-        class {plugin_name}_plugin : public steemit::app::plugin
+        class {plugin_name}_plugin : public steemit::application::plugin
         {{
            public:
-              {plugin_name}_plugin( steemit::app::application* app );
+              {plugin_name}_plugin( steemit::application::application* app );
               virtual ~{plugin_name}_plugin();
 
               virtual std::string plugin_name()const override;
@@ -96,14 +96,14 @@ templates = {
         class {plugin_name}_api_impl
         {{
            public:
-              {plugin_name}_api_impl( steemit::app::application& _app );
+              {plugin_name}_api_impl( steemit::application::application& _app );
 
               std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin > get_plugin();
 
-              steemit::app::application& app;
+              steemit::application::application& app;
         }};
 
-        {plugin_name}_api_impl::{plugin_name}_api_impl( steemit::app::application& _app ) : app( _app )
+        {plugin_name}_api_impl::{plugin_name}_api_impl( steemit::application::application& _app ) : app( _app )
         {{}}
 
         std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin > {plugin_name}_api_impl::get_plugin()
@@ -113,7 +113,7 @@ templates = {
 
         }} // detail
 
-        {plugin_name}_api::{plugin_name}_api( const steemit::app::api_context& ctx )
+        {plugin_name}_api::{plugin_name}_api( const steemit::application::api_context& ctx )
         {{
            my = std::make_shared< detail::{plugin_name}_api_impl >(ctx.app);
         }}
@@ -138,7 +138,7 @@ templates = {
         class {plugin_name}_plugin_impl
         {{
            public:
-              {plugin_name}_plugin_impl( steemit::app::application& app );
+              {plugin_name}_plugin_impl( steemit::application::application& app );
               virtual ~{plugin_name}_plugin_impl();
 
               virtual std::string plugin_name()const;
@@ -147,11 +147,11 @@ templates = {
               virtual void plugin_shutdown();
               void on_applied_block( const chain::signed_block& b );
 
-              steemit::app::application& _app;
+              steemit::application::application& _app;
               boost::signals2::scoped_connection _applied_block_conn;
         }};
 
-        {plugin_name}_plugin_impl::{plugin_name}_plugin_impl( steemit::app::application& app )
+        {plugin_name}_plugin_impl::{plugin_name}_plugin_impl( steemit::application::application& app )
           : _app(app) {{}}
 
         {plugin_name}_plugin_impl::~{plugin_name}_plugin_impl() {{}}
@@ -182,7 +182,7 @@ templates = {
 
         }}
 
-        {plugin_name}_plugin::{plugin_name}_plugin( steemit::app::application* app )
+        {plugin_name}_plugin::{plugin_name}_plugin( steemit::application::application* app )
            : plugin(app)
         {{
            FC_ASSERT( app != nullptr );

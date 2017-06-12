@@ -47,7 +47,7 @@ namespace steemit {
     }
 }
 
-#define DEFINE_EVALUATOR(X) \
+#define STEEMIT_DEFINE_EVALUATOR(X) \
 class X ## _evaluator : public steemit::chain::evaluator_impl< X ## _evaluator > \
 {                                                                           \
    public:                                                                  \

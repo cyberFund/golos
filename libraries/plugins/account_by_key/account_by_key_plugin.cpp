@@ -179,7 +179,7 @@ namespace steemit {
 
         } // detail
 
-        account_by_key_plugin::account_by_key_plugin(steemit::app::application *app)
+        account_by_key_plugin::account_by_key_plugin(steemit::application::application *app)
                 : plugin(app),
                   my(new detail::account_by_key_plugin_impl(*this)) {
         }

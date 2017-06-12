@@ -8,7 +8,7 @@
 #include <steemit/chain/steem_objects.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         using std::string;
         using std::vector;
 
@@ -26,7 +26,9 @@ namespace steemit {
 
         struct discussion_index {
             string category;    /// category by which everything is filtered
-            vector<string> trending;    /// pending lifetime payout
+            vector<string> trending;    /// trending posts over the last 24 hours
+            vector<string> payout;      /// pending posts by payout
+            vector<string> payout_comments; /// pending comments by payout
             vector<string> trending30;  /// pending lifetime payout
             vector<string> created;     /// creation date
             vector<string> responses;   /// creation date
@@ -162,9 +164,9 @@ namespace steemit {
              *  Tracks the top categories by name, any category in this index
              *  will have its full status stored in the categories map.
              */
-            app::category_index category_idx;
+            category_index category_idx;
 
-            app::tag_index tag_idx;
+            tag_index tag_idx;
 
             /**
              * "" is the global discussion index, otherwise the indicies are ranked by category
@@ -194,23 +196,23 @@ namespace steemit {
     }
 }
 
-FC_REFLECT_DERIVED(steemit::app::extended_account,
-        (steemit::app::account_api_obj),
+FC_REFLECT_DERIVED(steemit::application::extended_account,
+        (steemit::application::account_api_obj),
         (vesting_balance)(reputation)
                 (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(blog_category)(recommended))
 
 
-FC_REFLECT(steemit::app::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time));
-FC_REFLECT(steemit::app::account_vote, (authorperm)(weight)(rshares)(percent)(time));
+FC_REFLECT(steemit::application::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time));
+FC_REFLECT(steemit::application::account_vote, (authorperm)(weight)(rshares)(percent)(time));
 
-FC_REFLECT(steemit::app::discussion_index, (category)(trending)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout))
-FC_REFLECT(steemit::app::category_index, (active)(recent)(best))
-FC_REFLECT(steemit::app::tag_index, (trending))
-FC_REFLECT_DERIVED(steemit::app::discussion, (steemit::app::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))
+FC_REFLECT(steemit::application::discussion_index, (category)(trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout))
+FC_REFLECT(steemit::application::category_index, (active)(recent)(best))
+FC_REFLECT(steemit::application::tag_index, (trending))
+FC_REFLECT_DERIVED(steemit::application::discussion, (steemit::application::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))
 
-FC_REFLECT(steemit::app::state, (current_route)(props)(category_idx)(tag_idx)(categories)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data))
+FC_REFLECT(steemit::application::state, (current_route)(props)(category_idx)(tag_idx)(categories)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data))
 
-FC_REFLECT_DERIVED(steemit::app::extended_limit_order, (steemit::app::limit_order_api_obj), (real_price)(rewarded))
-FC_REFLECT(steemit::app::order_history_item, (time)(type)(sbd_quantity)(steem_quantity)(real_price));
-FC_REFLECT(steemit::app::market, (bids)(asks)(history)(price_history)(available_candlesticks)(available_zoom)(current_candlestick)(current_zoom))
-FC_REFLECT(steemit::app::candle_stick, (open_time)(period)(high)(low)(open)(close)(steem_volume)(dollar_volume));
+FC_REFLECT_DERIVED(steemit::application::extended_limit_order, (steemit::application::limit_order_api_obj), (real_price)(rewarded))
+FC_REFLECT(steemit::application::order_history_item, (time)(type)(sbd_quantity)(steem_quantity)(real_price));
+FC_REFLECT(steemit::application::market, (bids)(asks)(history)(price_history)(available_candlesticks)(available_zoom)(current_candlestick)(current_zoom))
+FC_REFLECT(steemit::application::candle_stick, (open_time)(period)(high)(low)(open)(close)(steem_volume)(dollar_volume));

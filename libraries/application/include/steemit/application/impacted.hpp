@@ -31,7 +31,7 @@
 #include <fc/string.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         using namespace fc;
 
@@ -45,4 +45,4 @@ namespace steemit {
         );
 
     }
-} // steemit::app
+} // steemit::application

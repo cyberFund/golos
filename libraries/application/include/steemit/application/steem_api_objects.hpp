@@ -13,7 +13,7 @@
 #include <steemit/languages/languages_plugin.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         using namespace steemit::chain;
 
@@ -53,6 +53,9 @@ namespace steemit {
         typedef chain::witness_vote_object witness_vote_api_obj;
         typedef chain::witness_schedule_object witness_schedule_api_obj;
         typedef chain::account_bandwidth_object account_bandwidth_api_obj;
+        typedef chain::vesting_delegation_object vesting_delegation_api_obj;
+        typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
+        typedef chain::reward_fund_object reward_fund_api_obj;
 
         struct comment_api_obj {
             comment_api_obj(const chain::comment_object &o) :
@@ -86,12 +89,14 @@ namespace steemit {
                     author_rewards(o.author_rewards),
                     net_votes(o.net_votes),
                     root_comment(o.root_comment),
-                    mode(o.mode),
                     max_accepted_payout(o.max_accepted_payout),
                     percent_steem_dollars(o.percent_steem_dollars),
                     allow_replies(o.allow_replies),
                     allow_votes(o.allow_votes),
                     allow_curation_rewards(o.allow_curation_rewards) {
+                for (auto &route : o.beneficiaries) {
+                    beneficiaries.push_back(route);
+                }
             }
 
             bool operator< (const comment_api_obj &right) const {
@@ -142,13 +147,13 @@ namespace steemit {
 
             comment_id_type root_comment;
 
-            comment_mode mode;
-
             asset max_accepted_payout;
             uint16_t percent_steem_dollars;
             bool allow_replies;
             bool allow_votes;
             bool allow_curation_rewards;
+
+            vector<beneficiary_route_type> beneficiaries;
         };
 
         struct category_api_obj {
@@ -252,6 +257,8 @@ namespace steemit {
                     curation_rewards(a.curation_rewards),
                     posting_rewards(a.posting_rewards),
                     vesting_shares(a.vesting_shares),
+                    delegated_vesting_shares(a.delegated_vesting_shares),
+                    received_vesting_shares(a.received_vesting_shares),
                     vesting_withdraw_rate(a.vesting_withdraw_rate),
                     next_vesting_withdrawal(a.next_vesting_withdrawal),
                     withdrawn(a.withdrawn),
@@ -354,6 +361,8 @@ namespace steemit {
             share_type posting_rewards;
 
             asset vesting_shares;
+            asset delegated_vesting_shares;
+            asset received_vesting_shares;
             asset vesting_withdraw_rate;
             time_point_sec next_vesting_withdrawal;
             share_type withdrawn;
@@ -507,24 +516,25 @@ namespace steemit {
         };
 
     }
-} // steemit::app
+} // steemit::application
 
-FC_REFLECT(steemit::app::comment_api_obj,
+FC_REFLECT(steemit::application::comment_api_obj,
         (id)(author)(permlink)
                 (languages)(category)(parent_author)(parent_permlink)
                 (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
                 (depth)(children)(children_rshares2)
                 (net_rshares)(abs_rshares)(vote_rshares)
                 (children_abs_rshares)(cashout_time)(max_cashout_time)
-                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)(mode)
+                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
                 (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
+                (beneficiaries)
 )
 
-FC_REFLECT(steemit::app::category_api_obj,
+FC_REFLECT(steemit::application::category_api_obj,
         (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update)
 )
 
-FC_REFLECT(steemit::app::account_api_obj,
+FC_REFLECT(steemit::application::account_api_obj,
         (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
                 (created)(mined)
                 (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
@@ -533,7 +543,7 @@ FC_REFLECT(steemit::app::account_api_obj,
                 (savings_balance)
                 (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
                 (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
-                (vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+                (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                 (curation_rewards)
                 (posting_rewards)
                 (proxied_vsf_votes)(witnesses_voted_for)
@@ -543,21 +553,21 @@ FC_REFLECT(steemit::app::account_api_obj,
                 (new_average_bandwidth)(new_average_market_bandwidth)
 )
 
-FC_REFLECT(steemit::app::owner_authority_history_api_obj,
+FC_REFLECT(steemit::application::owner_authority_history_api_obj,
         (id)
                 (account)
                 (previous_owner_authority)
                 (last_valid_time)
 )
 
-FC_REFLECT(steemit::app::account_recovery_request_api_obj,
+FC_REFLECT(steemit::application::account_recovery_request_api_obj,
         (id)
                 (account_to_recover)
                 (new_owner_authority)
                 (expires)
 )
 
-FC_REFLECT(steemit::app::savings_withdraw_api_obj,
+FC_REFLECT(steemit::application::savings_withdraw_api_obj,
         (id)
                 (from)
                 (to)
@@ -567,13 +577,13 @@ FC_REFLECT(steemit::app::savings_withdraw_api_obj,
                 (complete)
 )
 
-FC_REFLECT(steemit::app::feed_history_api_obj,
+FC_REFLECT(steemit::application::feed_history_api_obj,
         (id)
                 (current_median_history)
                 (price_history)
 )
 
-FC_REFLECT(steemit::app::tag_api_obj,
+FC_REFLECT(steemit::application::tag_api_obj,
         (name)
                 (total_children_rshares2)
                 (total_payouts)
@@ -582,7 +592,8 @@ FC_REFLECT(steemit::app::tag_api_obj,
                 (comments)
 )
 
-FC_REFLECT(steemit::app::language_api_obj,
+
+FC_REFLECT(steemit::application::language_api_obj,
         (name)
                 (total_children_rshares2)
                 (total_payouts)
@@ -591,7 +602,8 @@ FC_REFLECT(steemit::app::language_api_obj,
                 (comments)
 )
 
-FC_REFLECT(steemit::app::witness_api_obj,
+
+FC_REFLECT(steemit::application::witness_api_obj,
         (id)
                 (owner)
                 (created)

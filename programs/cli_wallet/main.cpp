@@ -57,7 +57,7 @@
 
 
 using namespace graphene::utilities;
-using namespace steemit::app;
+using namespace steemit::application;
 using namespace steemit::chain;
 using namespace steemit::wallet;
 using namespace std;

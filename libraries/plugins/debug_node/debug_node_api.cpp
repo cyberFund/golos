@@ -38,7 +38,7 @@ namespace steemit {
 
                 class debug_node_api_impl {
                 public:
-                    debug_node_api_impl(steemit::app::application &_app);
+                    debug_node_api_impl(steemit::application::application &_app);
 
                     uint32_t debug_push_blocks(const std::string &src_filename, uint32_t count, bool skip_validate_invariants);
 
@@ -78,7 +78,7 @@ namespace steemit {
 
                     std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> get_plugin();
 
-                    steemit::app::application &app;
+                    steemit::application::application &app;
                     debug_private_key_storage key_storage;
                 };
 
@@ -106,7 +106,7 @@ namespace steemit {
                     return;
                 }
 
-                debug_node_api_impl::debug_node_api_impl(steemit::app::application &_app)
+                debug_node_api_impl::debug_node_api_impl(steemit::application::application &_app)
                         : app(_app) {
 #ifdef STEEMIT_INIT_PRIVATE_KEY
                     fc::ecc::private_key init_key = STEEMIT_INIT_PRIVATE_KEY;
@@ -187,7 +187,10 @@ namespace steemit {
 
                     std::shared_ptr<steemit::chain::database> db = app.chain_database();
                     fc::path src_path = fc::path(src_filename);
-                    if (fc::is_directory(src_path)) {
+                    fc::path index_path = fc::path(src_filename + ".index");
+                    if (fc::exists(src_path) && fc::exists(index_path) &&
+                        !fc::is_directory(src_path) &&
+                        !fc::is_directory(index_path)) {
                         ilog("Loading ${n} from block_log ${fn}", ("n", count)("fn", src_filename));
                         idump((src_filename)(count)(skip_validate_invariants));
                         steemit::chain::block_log log;
@@ -307,7 +310,7 @@ namespace steemit {
 
             } // detail
 
-            debug_node_api::debug_node_api(const steemit::app::api_context &ctx) {
+            debug_node_api::debug_node_api(const steemit::application::api_context &ctx) {
                 my = std::make_shared<detail::debug_node_api_impl>(ctx.app);
             }
 

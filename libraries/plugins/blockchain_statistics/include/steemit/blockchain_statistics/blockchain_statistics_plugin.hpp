@@ -28,7 +28,7 @@ namespace steemit {
     namespace blockchain_statistics {
 
         using namespace steemit::chain;
-        using app::application;
+        using application::application;
 
         enum blockchain_statistics_object_type {
             bucket_object_type = (BLOCKCHAIN_STATISTICS_SPACE_ID << 8)
@@ -38,7 +38,7 @@ namespace steemit {
             class blockchain_statistics_plugin_impl;
         }
 
-        class blockchain_statistics_plugin : public steemit::app::plugin {
+        class blockchain_statistics_plugin : public steemit::application::plugin {
         public:
             blockchain_statistics_plugin(application *app);
 

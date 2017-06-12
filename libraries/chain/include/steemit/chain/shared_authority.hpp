@@ -76,7 +76,7 @@ namespace steemit {
                 add_authorities(auths...);
             }
 
-            vector <public_key_type> get_keys() const;
+            vector<public_key_type> get_keys() const;
 
             bool is_impossible() const;
 

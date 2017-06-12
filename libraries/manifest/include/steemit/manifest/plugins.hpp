@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         class abstract_plugin;
 
@@ -20,7 +20,7 @@ namespace steemit {
 
         void initialize_plugin_factories();
 
-        std::shared_ptr<steemit::app::abstract_plugin> create_plugin(const std::string &name, steemit::app::application *app);
+        std::shared_ptr<steemit::application::abstract_plugin> create_plugin(const std::string &name, steemit::application::application *app);
 
         std::vector<std::string> get_available_plugins();
 

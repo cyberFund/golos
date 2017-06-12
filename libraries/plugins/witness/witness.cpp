@@ -92,7 +92,7 @@ void witness_plugin::plugin_initialize(const boost::program_options::variables_m
 
             const vector<string> miner_to_wif_pair_strings = options["miner"].as<vector<string>>();
             for (auto p : miner_to_wif_pair_strings) {
-                auto m = steemit::app::dejsonify<pair<string, string>>(p);
+                auto m = steemit::application::dejsonify<pair<string, string>>(p);
                 idump((m));
 
                 fc::optional<fc::ecc::private_key> private_key = graphene::utilities::wif_to_key(m.second);
@@ -336,7 +336,7 @@ block_production_condition::block_production_condition_enum witness_plugin::mayb
                     _production_skip_flags
             );
             capture("n", block.block_num())("t", block.timestamp)("c", now)("w", scheduled_witness);
-            fc::async([this, block]() { p2p_node().broadcast(graphene::net::block_message(block)); });
+            fc::async([this, block]() { p2p_node().broadcast(graphene::network::block_message(block)); });
 
             return block_production_condition::produced;
         }
@@ -490,7 +490,7 @@ void witness_plugin::start_mining(
                             try {
                                 database().push_transaction(trx);
                                 ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                p2p_node().broadcast(graphene::net::trx_message(trx));
+                                p2p_node().broadcast(graphene::network::trx_message(trx));
                             }
                             catch (const fc::exception &e) {
                                 // wdump((e.to_detail_string()));
@@ -538,7 +538,7 @@ void witness_plugin::start_mining(
                             try {
                                 database().push_transaction(trx);
                                 ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                p2p_node().broadcast(graphene::net::trx_message(trx));
+                                p2p_node().broadcast(graphene::network::trx_message(trx));
                             }
                             catch (const fc::exception &e) {
                                 // wdump((e.to_detail_string()));

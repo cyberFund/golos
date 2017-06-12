@@ -23,11 +23,11 @@
  */
 #pragma once
 
-#include <graphene/net/node.hpp>
-#include <graphene/net/peer_database.hpp>
-#include <graphene/net/message_oriented_connection.hpp>
-#include <graphene/net/stcp_socket.hpp>
-#include <graphene/net/config.hpp>
+#include <graphene/network/node.hpp>
+#include <graphene/network/peer_database.hpp>
+#include <graphene/network/message_oriented_connection.hpp>
+#include <graphene/network/stcp_socket.hpp>
+#include <graphene/network/config.hpp>
 
 #include <boost/tuple/tuple.hpp>
 
@@ -45,7 +45,7 @@
 #include <fc/thread/future.hpp>
 
 namespace graphene {
-    namespace net {
+    namespace network {
         struct firewall_check_state_data {
             node_id_t expected_node_id;
             fc::ip::endpoint endpoint_to_test;
@@ -353,18 +353,18 @@ namespace graphene {
         typedef std::shared_ptr<peer_connection> peer_connection_ptr;
 
     }
-} // end namespace graphene::net
+} // end namespace graphene::network
 
 // not sent over the wire, just reflected for logging
-FC_REFLECT_ENUM(graphene::net::peer_connection::our_connection_state, (disconnected)
+FC_REFLECT_ENUM(graphene::network::peer_connection::our_connection_state, (disconnected)
         (just_connected)
         (connection_accepted)
         (connection_rejected))
-FC_REFLECT_ENUM(graphene::net::peer_connection::their_connection_state, (disconnected)
+FC_REFLECT_ENUM(graphene::network::peer_connection::their_connection_state, (disconnected)
         (just_connected)
         (connection_accepted)
         (connection_rejected))
-FC_REFLECT_ENUM(graphene::net::peer_connection::connection_negotiation_status, (disconnected)
+FC_REFLECT_ENUM(graphene::network::peer_connection::connection_negotiation_status, (disconnected)
         (connecting)
         (connected)
         (accepting)
@@ -376,4 +376,4 @@ FC_REFLECT_ENUM(graphene::net::peer_connection::connection_negotiation_status, (
         (closing)
         (closed))
 
-FC_REFLECT(graphene::net::peer_connection::timestamped_item_id, (item)(timestamp));
+FC_REFLECT(graphene::network::peer_connection::timestamped_item_id, (item)(timestamp));

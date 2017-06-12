@@ -23,7 +23,7 @@
 #include <vector>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         using namespace steemit::chain;
         using namespace steemit::protocol;
@@ -111,7 +111,7 @@ namespace steemit {
  */
         class database_api {
         public:
-            database_api(const steemit::app::api_context &ctx);
+            database_api(const steemit::application::api_context &ctx);
 
             ~database_api();
 
@@ -188,12 +188,6 @@ namespace steemit {
             fc::variant_object get_config() const;
 
             /**
-             * @brief Return a JSON description of object representations
-             * @return JSON description of object representations in a string
-             */
-            std::string get_schema() const;
-
-            /**
              * @brief Retrieve the current @ref dynamic_global_property_object
              */
             dynamic_global_property_api_obj get_dynamic_global_properties() const;
@@ -209,6 +203,8 @@ namespace steemit {
             hardfork_version get_hardfork_version() const;
 
             scheduled_hardfork get_next_scheduled_hardfork() const;
+
+            reward_fund_api_obj get_reward_fund(string name) const;
 
             //////////
             // Keys //
@@ -262,6 +258,10 @@ namespace steemit {
             std::vector<savings_withdraw_api_obj> get_savings_withdraw_from(std::string account) const;
 
             std::vector<savings_withdraw_api_obj> get_savings_withdraw_to(std::string account) const;
+
+            vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
+
+            vector<vesting_delegation_expiration_api_obj> get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit = 100) const;
 
             ///////////////
             // Witnesses //
@@ -383,13 +383,6 @@ namespace steemit {
             std::vector<discussion> get_discussions_by_trending(const discussion_query &query) const;
 
             /**
-             * Used to retrieve the list of second payout discussions sorted by rshares^2 amount
-             * @param query @ref discussion_query
-             * @return vector of second payout mode discussions sorted by rshares^2 amount
-             **/
-            std::vector<discussion> get_discussions_by_trending30(const discussion_query &query) const;
-
-            /**
              * Used to retrieve the list of discussions sorted by created time
              * @param query @ref discussion_query
              * @return vector of discussions sorted by created time
@@ -416,6 +409,10 @@ namespace steemit {
              * @return vector of discussions sorted by net rshares amount
              **/
             std::vector<discussion> get_discussions_by_payout(const discussion_query &query) const;
+
+            std::vector<discussion> get_post_discussions_by_payout(const discussion_query &query) const;
+
+            std::vector<discussion> get_comment_discussions_by_payout(const discussion_query &query) const;
 
             /**
              * Used to retrieve the list of discussions sorted by direct votes amount
@@ -488,6 +485,26 @@ namespace steemit {
              */
             std::map<uint32_t, applied_operation> get_account_history(std::string account, uint64_t from, uint32_t limit) const;
 
+            /**
+             * Used to retrieve comment payout window extension cost by time
+             * @param author comment author
+             * @param permlink comment permlink
+             * @param time deadline time the payout window pretends to be extended for
+             * @return SBD amount required to set payout window duration up to time passed
+             */
+
+            asset get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const;
+
+            /**
+             * Used o retrieve comment payout window extension time by cost
+             * @param author comment author
+             * @param permlink comment permlink
+             * @param cost SBD amount pretended to be spent on extension
+             * @return deadline time the payout window pretends to be extended for
+             */
+
+            fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset cost) const;
+
             ////////////////////////////
             // Handlers - not exposed //
             ////////////////////////////
@@ -546,6 +563,7 @@ namespace steemit {
                     const std::string &start_permlink) const;
 
 
+
             comment_id_type get_parent(const discussion_query &q) const;
 
             void recursively_fetch_content(state &_state, discussion &root, std::set<std::string> &referenced_accounts) const;
@@ -555,17 +573,18 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::app::order, (order_price)(real_price)(steem)(sbd)(created));
-FC_REFLECT(steemit::app::order_book, (asks)(bids));
-FC_REFLECT(steemit::app::scheduled_hardfork, (hf_version)(live_time));
-FC_REFLECT(steemit::app::liquidity_balance, (account)(weight));
-FC_REFLECT(steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
+FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
+FC_REFLECT(steemit::application::order_book, (asks)(bids));
+FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
+FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
+FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
-FC_REFLECT(steemit::app::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language)(filter_language));
+FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language)(filter_language));
 
-FC_REFLECT_ENUM(steemit::app::withdraw_route_type, (incoming)(outgoing)(all));
 
-FC_API(steemit::app::database_api,
+FC_REFLECT_ENUM(steemit::application::withdraw_route_type, (incoming)(outgoing)(all));
+
+FC_API(steemit::application::database_api,
 // Subscriptions
         (set_subscribe_callback)
                 (set_pending_transaction_callback)
@@ -575,12 +594,13 @@ FC_API(steemit::app::database_api,
                 // tags
                 (get_trending_tags)
                 (get_tags_used_by_author)
+                (get_discussions_by_payout)
+                (get_post_discussions_by_payout)
+                (get_comment_discussions_by_payout)
                 (get_discussions_by_trending)
-                (get_discussions_by_trending30)
                 (get_discussions_by_created)
                 (get_discussions_by_active)
                 (get_discussions_by_cashout)
-                (get_discussions_by_payout)
                 (get_discussions_by_votes)
                 (get_discussions_by_children)
                 (get_discussions_by_hot)
@@ -608,6 +628,7 @@ FC_API(steemit::app::database_api,
                 (get_witness_schedule)
                 (get_hardfork_version)
                 (get_next_scheduled_hardfork)
+                (get_reward_fund)
 
                 // Keys
                 (get_key_references)
@@ -627,6 +648,8 @@ FC_API(steemit::app::database_api,
                 (get_account_bandwidth)
                 (get_savings_withdraw_from)
                 (get_savings_withdraw_to)
+                (get_vesting_delegations)
+                (get_expiring_vesting_delegations)
 
                 // Market
                 (get_order_book)
@@ -650,7 +673,8 @@ FC_API(steemit::app::database_api,
                 (get_content_replies)
                 (get_discussions_by_author_before_date)
                 (get_replies_by_last_update)
-
+                (get_payout_extension_cost)
+                (get_payout_extension_time)
 
                 // Witnesses
                 (get_witnesses)

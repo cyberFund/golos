@@ -33,7 +33,7 @@
 #include <fc/git_revision.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         login_api::login_api(const api_context &ctx)
                 : _ctx(ctx) {
@@ -194,7 +194,11 @@ namespace steemit {
             trx.validate();
 
             if (_app._read_only) {
-                FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or non connected.");
+                // If we are not connected, attempt to connect once and then fail
+                if (!_app._remote_net_api) {
+                    _app.connect_to_write_node();
+                    FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or not currently connected.");
+                }
                 (*_app._remote_net_api)->broadcast_transaction(trx);
             } else {
                 FC_ASSERT(!check_max_block_age(_max_block_age));
@@ -205,7 +209,11 @@ namespace steemit {
 
         fc::variant network_broadcast_api::broadcast_transaction_synchronous(const signed_transaction &trx) {
             if (_app._read_only) {
-                FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or non connected.");
+                // If we are not connected, attempt to connect once and then fail
+                if (!_app._remote_net_api) {
+                    _app.connect_to_write_node();
+                    FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or not currently connected.");
+                }
                 return (*_app._remote_net_api)->broadcast_transaction_synchronous(trx);
             } else {
                 fc::promise<fc::variant>::ptr prom(new fc::promise<fc::variant>());
@@ -218,17 +226,25 @@ namespace steemit {
 
         void network_broadcast_api::broadcast_block(const signed_block &b) {
             if (_app._read_only) {
-                FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or non connected.");
+                // If we are not connected, attempt to connect once and then fail
+                if (!_app._remote_net_api) {
+                    _app.connect_to_write_node();
+                    FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or not currently connected.");
+                }
                 (*_app._remote_net_api)->broadcast_block(b);
             } else {
                 _app.chain_database()->push_block(b);
-                _app.p2p_node()->broadcast(graphene::net::block_message(b));
+                _app.p2p_node()->broadcast(graphene::network::block_message(b));
             }
         }
 
         void network_broadcast_api::broadcast_transaction_with_callback(confirmation_callback cb, const signed_transaction &trx) {
             if (_app._read_only) {
-                FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or non connected.");
+                // If we are not connected, attempt to connect once and then fail
+                if (!_app._remote_net_api) {
+                    _app.connect_to_write_node();
+                    FC_ASSERT(_app._remote_net_api, "Write node RPC not configured properly or not currently connected.");
+                }
                 (*_app._remote_net_api)->broadcast_transaction_with_callback(cb, trx);
             } else {
                 FC_ASSERT(!check_max_block_age(_max_block_age));
@@ -257,11 +273,11 @@ namespace steemit {
             _app.p2p_node()->add_node(ep);
         }
 
-        std::vector<graphene::net::peer_status> network_node_api::get_connected_peers() const {
+        std::vector<graphene::network::peer_status> network_node_api::get_connected_peers() const {
             return _app.p2p_node()->get_connected_peers();
         }
 
-        std::vector<graphene::net::potential_peer_record> network_node_api::get_potential_peers() const {
+        std::vector<graphene::network::potential_peer_record> network_node_api::get_potential_peers() const {
             return _app.p2p_node()->get_potential_peers();
         }
 
@@ -274,4 +290,4 @@ namespace steemit {
         }
 
     }
-} // steemit::app
+} // steemit::application

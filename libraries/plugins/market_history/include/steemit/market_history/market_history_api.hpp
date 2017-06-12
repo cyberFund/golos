@@ -55,7 +55,7 @@ namespace steemit {
 
         class market_history_api {
         public:
-            market_history_api(const steemit::app::api_context &ctx);
+            market_history_api(const steemit::application::api_context &ctx);
 
             void on_api_startup();
 

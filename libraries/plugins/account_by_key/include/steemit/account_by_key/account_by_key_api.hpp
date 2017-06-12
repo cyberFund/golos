@@ -15,7 +15,7 @@ namespace steemit {
 
         class account_by_key_api {
         public:
-            account_by_key_api(const app::api_context &ctx);
+            account_by_key_api(const application::api_context &ctx);
 
             void on_api_startup();
 

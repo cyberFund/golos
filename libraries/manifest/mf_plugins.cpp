@@ -6,7 +6,7 @@
 #include <mf_external_plugins.inc>
 
 #define STEEMIT_DECLARE_PLUGIN_CREATOR(r, data, x) \
-   std::shared_ptr< steemit::app::abstract_plugin > BOOST_PP_CAT( create_, BOOST_PP_CAT( x,  _plugin ) )( steemit::app::application* app );
+   std::shared_ptr< steemit::application::abstract_plugin > BOOST_PP_CAT( create_, BOOST_PP_CAT( x,  _plugin ) )( steemit::application::application* app );
 
 namespace steemit {
     namespace plugin {
@@ -15,20 +15,20 @@ namespace steemit {
 
         BOOST_PP_SEQ_FOR_EACH(STEEMIT_DECLARE_PLUGIN_CREATOR, _, STEEMIT_EXTERNAL_PLUGIN_LIST)
 
-        boost::container::flat_map<std::string, std::function<std::shared_ptr<steemit::app::abstract_plugin>(steemit::app::application *app)>> plugin_factories_by_name;
+        boost::container::flat_map<std::string, std::function<std::shared_ptr<steemit::application::abstract_plugin>(steemit::application::application *app)>> plugin_factories_by_name;
 
 #define STEEMIT_REGISTER_PLUGIN_FACTORY(r, data, x) \
-   plugin_factories_by_name[ #x ] = []( steemit::app::application* app ) -> std::shared_ptr< steemit::app::abstract_plugin >{ return BOOST_PP_CAT( create_, BOOST_PP_CAT( x, _plugin( app ) ) ); };
+   plugin_factories_by_name[ #x ] = []( steemit::application::application* app ) -> std::shared_ptr< steemit::application::abstract_plugin >{ return BOOST_PP_CAT( create_, BOOST_PP_CAT( x, _plugin( app ) ) ); };
 
         void initialize_plugin_factories() {
             BOOST_PP_SEQ_FOR_EACH(STEEMIT_REGISTER_PLUGIN_FACTORY, _, STEEMIT_INTERNAL_PLUGIN_LIST)
             BOOST_PP_SEQ_FOR_EACH(STEEMIT_REGISTER_PLUGIN_FACTORY, _, STEEMIT_EXTERNAL_PLUGIN_LIST)
         }
 
-        std::shared_ptr<steemit::app::abstract_plugin> create_plugin(const std::string &name, steemit::app::application *app) {
+        std::shared_ptr<steemit::application::abstract_plugin> create_plugin(const std::string &name, steemit::application::application *app) {
             auto it = plugin_factories_by_name.find(name);
             if (it == plugin_factories_by_name.end()) {
-                return std::shared_ptr<steemit::app::abstract_plugin>();
+                return std::shared_ptr<steemit::application::abstract_plugin>();
             }
             return it->second(app);
         }

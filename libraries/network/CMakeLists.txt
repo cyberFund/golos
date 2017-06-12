@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/graphene/net/*.hpp")
+file(GLOB HEADERS "include/graphene/network/*.hpp")
 
 set(SOURCES node.cpp
         stcp_socket.cpp
@@ -7,11 +7,7 @@ set(SOURCES node.cpp
         peer_connection.cpp
         message_oriented_connection.cpp)
 
-if(BUILD_SHARED_LIBRARIES)
-    add_library(graphene_net SHARED ${SOURCES} ${HEADERS})
-else()
-    add_library(graphene_net STATIC ${SOURCES} ${HEADERS})
-endif()
+add_library(graphene_net ${SOURCES} ${HEADERS})
 
 target_link_libraries(graphene_net
         PUBLIC fc)
@@ -36,4 +32,4 @@ install(TARGETS
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${HEADERS} DESTINATION "include/graphene/net")
+install(FILES ${HEADERS} DESTINATION "include/graphene/network")

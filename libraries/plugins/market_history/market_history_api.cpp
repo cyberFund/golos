@@ -9,7 +9,7 @@ namespace steemit {
 
             class market_history_api_impl {
             public:
-                market_history_api_impl(steemit::app::application &_app)
+                market_history_api_impl(steemit::application::application &_app)
                         : app(_app) {
                 }
 
@@ -27,7 +27,7 @@ namespace steemit {
 
                 flat_set<uint32_t> get_market_history_buckets() const;
 
-                steemit::app::application &app;
+                steemit::application::application &app;
             };
 
             market_ticker market_history_api_impl::get_ticker() const {
@@ -189,7 +189,7 @@ namespace steemit {
 
         } // detail
 
-        market_history_api::market_history_api(const steemit::app::api_context &ctx) {
+        market_history_api::market_history_api(const steemit::application::api_context &ctx) {
             my = std::make_shared<detail::market_history_api_impl>(ctx.app);
         }
 

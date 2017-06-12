@@ -6,7 +6,7 @@
 #include <fc/api.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         struct api_context;
     }
 }
@@ -32,7 +32,7 @@ namespace steemit {
 
             class raw_block_api {
             public:
-                raw_block_api(const steemit::app::api_context &ctx);
+                raw_block_api(const steemit::application::api_context &ctx);
 
                 void on_api_startup();
 

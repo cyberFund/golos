@@ -4,7 +4,7 @@
 #include <steemit/chain/steem_object_types.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         struct applied_operation {
             applied_operation();
@@ -23,7 +23,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::app::applied_operation,
+FC_REFLECT(steemit::application::applied_operation,
         (trx_id)
                 (block)
                 (trx_in_block)

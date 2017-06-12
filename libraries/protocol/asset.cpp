@@ -104,7 +104,7 @@ namespace steemit {
         bool operator==(const price &a, const price &b) {
             if (std::tie(a.base.symbol, a.quote.symbol) !=
                 std::tie(b.base.symbol, b.quote.symbol)) {
-                    return false;
+                return false;
             }
 
             const auto amult =

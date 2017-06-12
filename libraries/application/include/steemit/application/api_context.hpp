@@ -15,7 +15,7 @@ namespace fc {
 }
 
 namespace steemit {
-    namespace app {
+    namespace application {
 
         class application;
 

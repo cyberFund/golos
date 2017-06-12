@@ -18,13 +18,13 @@ namespace steemit {
                 class snapshot_plugin_impl;
             }
 
-            class snapshot_plugin : public steemit::app::plugin {
+            class snapshot_plugin : public steemit::application::plugin {
             public:
                 /**
                  * The plugin requires a constructor which takes app.  This is called regardless of whether the plugin is loaded.
                  * The app parameter should be passed up to the superclass constructor.
                  */
-                snapshot_plugin(steemit::app::application *app);
+                snapshot_plugin(steemit::application::application *app);
 
                 /**
                  * Plugin is destroyed via base class pointer, so a virtual destructor must be provided.
@@ -61,7 +61,7 @@ namespace steemit {
 
                 friend class detail::snapshot_plugin_impl;
 
-                steemit::app::application *application;
+                steemit::application::application *application;
 
                 std::unique_ptr<detail::snapshot_plugin_impl> impl;
             };

@@ -38,7 +38,7 @@ namespace steemit {
                 add_authorities(auths...);
             }
 
-            vector<public_key_type> get_keys() const;
+            vector <public_key_type> get_keys() const;
 
             bool is_impossible() const;
 
@@ -48,8 +48,8 @@ namespace steemit {
 
             void validate() const;
 
-            typedef flat_map<account_name_type, weight_type, string_less> account_authority_map;
-            typedef flat_map<public_key_type, weight_type> key_authority_map;
+            typedef flat_map <account_name_type, weight_type, string_less> account_authority_map;
+            typedef flat_map <public_key_type, weight_type> key_authority_map;
 
             uint32_t weight_threshold = 0;
             account_authority_map account_auths;
@@ -58,7 +58,7 @@ namespace steemit {
 
         template<typename AuthorityType>
         void add_authority_accounts(
-                flat_set<account_name_type> &result,
+                flat_set <account_name_type> &result,
                 const AuthorityType &a
         ) {
             for (auto &item : a.account_auths) {

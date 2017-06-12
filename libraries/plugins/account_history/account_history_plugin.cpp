@@ -177,7 +177,7 @@ namespace steemit {
                 steemit::chain::database &db = database();
 
                 const operation_object *new_obj = nullptr;
-                app::operation_get_impacted_accounts(note.op, impacted);
+                steemit::application::operation_get_impacted_accounts(note.op, impacted);
 
                 for (const auto &item : impacted) {
                     auto itr = _tracked_accounts.lower_bound(item);

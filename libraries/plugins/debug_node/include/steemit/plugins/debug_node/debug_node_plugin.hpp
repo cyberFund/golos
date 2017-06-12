@@ -27,7 +27,7 @@ namespace graphene {
 namespace steemit {
     namespace plugin {
         namespace debug_node {
-            using app::application;
+            using application::application;
 
             namespace detail { class debug_node_plugin_impl; }
 
@@ -44,7 +44,7 @@ namespace steemit {
                 ) = 0;
             };
 
-            class debug_node_plugin : public steemit::app::plugin {
+            class debug_node_plugin : public steemit::application::plugin {
             public:
                 debug_node_plugin(application *app);
 

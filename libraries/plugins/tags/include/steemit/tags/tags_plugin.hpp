@@ -11,7 +11,7 @@
 #include <fc/api.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         class discussion_query;
 
         struct comment_api_obj;
@@ -21,7 +21,7 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
-        using steemit::app::application;
+        using steemit::application::application;
 
         using chainbase::object;
         using chainbase::oid;
@@ -90,6 +90,7 @@ namespace steemit {
             int32_t net_votes = 0;
             int32_t children = 0;
             double hot = 0;
+            double trending = 0;
             share_type promoted_balance = 0;
 
             /**
@@ -98,11 +99,14 @@ namespace steemit {
              *  be reviewed.
              */
             fc::uint128_t children_rshares2;
-            comment_mode mode;
 
             account_id_type author;
             comment_id_type parent;
             comment_id_type comment;
+
+            bool is_post() const {
+                return parent == comment_id_type();
+            }
         };
 
         typedef oid<tag_object> tag_id_type;
@@ -185,7 +189,17 @@ namespace steemit {
                        std::greater<fc::uint128_t>()(first.children_rshares2, second.children_rshares2) &&
                        std::less<tag_id_type>()(first.id, second.id);
             }
-        }; /// all top level posts by total cumulative payout (aka trending)
+        }; /// all top level posts by total cumulative payout (aka payout)
+
+        class by_parent_trending
+                : public comparable_index<tag_object> {
+        public:
+            virtual bool operator()(const tag_object &first, const tag_object &second) const override {
+                return std::less<comment_id_type>()(first.parent, second.parent) &&
+                       std::greater<double>()(first.trending, second.trending) &&
+                       std::less<tag_id_type>()(first.id, second.id);
+            }
+        }; /// all top level posts by total cumulative payout (aka payout)
 
         class by_parent_children : public comparable_index<tag_object> {
         public:
@@ -223,13 +237,12 @@ namespace steemit {
             }
         };
 
-        class by_mode_parent_children_rshares2
+        class by_reward_fund_net_rshares
                 : public comparable_index<tag_object> {
         public:
             virtual bool operator()(const tag_object &first, const tag_object &second) const override {
-                return std::less<comment_mode>()(first.mode, second.mode) &&
-                       std::less<comment_id_type>()(first.parent, second.parent) &&
-                       std::greater<fc::uint128_t>()(first.children_rshares2, second.children_rshares2) &&
+                return std::less<bool>()(first.is_post(), second.is_post()) &&
+                       std::greater<int64_t>()(first.net_rshares, second.net_rshares) &&
                        std::less<tag_id_type>()(first.id, second.id);
             }
         };
@@ -313,6 +326,15 @@ namespace steemit {
                                 >,
                                 composite_key_compare<std::less<tag_name_type>, std::less<comment_id_type>, std::greater<double>, std::less<tag_id_type>>
                         >,
+                        ordered_unique<tag<by_parent_trending>,
+                                composite_key<tag_object,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
+                                        member<tag_object, comment_id_type, &tag_object::parent>,
+                                        member<tag_object, double, &tag_object::trending>,
+                                        member<tag_object, tag_id_type, &tag_object::id>
+                                >,
+                                composite_key_compare<std::less<tag_name_type>, std::less<comment_id_type>, std::greater<double>, std::less<tag_id_type>>
+                        >,
                         ordered_unique<tag<by_parent_children_rshares2>,
                                 composite_key<tag_object,
                                         member<tag_object, tag_name_type, &tag_object::name>,
@@ -321,16 +343,6 @@ namespace steemit {
                                         member<tag_object, tag_id_type, &tag_object::id>
                                 >,
                                 composite_key_compare<std::less<tag_name_type>, std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
-                        >,
-                        ordered_unique<tag<by_mode_parent_children_rshares2>,
-                                composite_key<tag_object,
-                                        member<tag_object, tag_name_type, &tag_object::name>,
-                                        member<tag_object, comment_mode, &tag_object::mode>,
-                                        member<tag_object, comment_id_type, &tag_object::parent>,
-                                        member<tag_object, fc::uint128_t, &tag_object::children_rshares2>,
-                                        member<tag_object, tag_id_type, &tag_object::id>
-                                >,
-                                composite_key_compare<std::less<tag_name_type>, std::less<comment_mode>, std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
                         >,
                         ordered_unique<tag<by_cashout>,
                                 composite_key<tag_object,
@@ -356,6 +368,15 @@ namespace steemit {
                                         member<tag_object, tag_id_type, &tag_object::id>
                                 >,
                                 composite_key_compare<std::less<tag_name_type>, std::less<account_id_type>, std::greater<time_point_sec>, std::less<tag_id_type>>
+                        >,
+                        ordered_unique<tag<by_reward_fund_net_rshares>,
+                                composite_key<tag_object,
+                                        member<tag_object, tag_name_type, &tag_object::name>,
+                                        const_mem_fun<tag_object, bool, &tag_object::is_post>,
+                                        member<tag_object, int64_t, &tag_object::net_rshares>,
+                                        member<tag_object, tag_id_type, &tag_object::id>
+                                >,
+                                composite_key_compare<std::less<tag_name_type>, std::less<bool>, std::greater<int64_t>, std::less<tag_id_type>>
                         >
                 >,
                 allocator<tag_object>
@@ -582,7 +603,7 @@ namespace steemit {
  *  This plugin will scan all changes to posts and/or their meta data and
  *
  */
-        class tags_plugin : public steemit::app::plugin {
+        class tags_plugin : public steemit::application::plugin {
         public:
             tags_plugin(application *app);
 
@@ -600,7 +621,7 @@ namespace steemit {
 
             virtual void plugin_startup() override;
 
-            static bool filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &condition);
+            static bool filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition);
 
             friend class detail::tags_plugin_impl;
 
@@ -615,7 +636,7 @@ namespace steemit {
             tag_api() {
             };
 
-            tag_api(const app::api_context &ctx) {
+            tag_api(const steemit::application::api_context &ctx) {
             }//:_app(&ctx.app){}
 
             void on_api_startup() {
@@ -626,7 +647,7 @@ namespace steemit {
             }
 
         private:
-            //app::application* _app = nullptr;
+            //application::application* _app = nullptr;
         };
     }
 } //steemit::tag
@@ -634,7 +655,8 @@ namespace steemit {
 FC_API(steemit::tags::tag_api, (get_tags));
 
 FC_REFLECT(steemit::tags::tag_object,
-        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))
+        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(author)(parent)(comment))
+
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::tag_object, steemit::tags::tag_index)
 
 FC_REFLECT(steemit::tags::tag_stats_object,

@@ -25,190 +25,187 @@ using namespace steemit::protocol;
 
 BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
 
-BOOST_AUTO_TEST_CASE( comment_payout_equalize )
-{
-   try
-   {
-      ACTORS( (alice)(bob)(dave)
-              (ulysses)(vivian)(wendy) )
+    BOOST_AUTO_TEST_CASE(comment_payout_equalize) {
+        try {
+            ACTORS((alice)(bob)(dave)
+                    (ulysses)(vivian)(wendy))
 
-      struct author_actor
-      {
-         author_actor(
-            const std::string& n,
-            fc::ecc::private_key pk,
-            fc::optional<asset> mpay = fc::optional<asset>() )
-            : name(n), private_key(pk), max_accepted_payout(mpay) {}
-         std::string             name;
-         fc::ecc::private_key    private_key;
-         fc::optional< asset >   max_accepted_payout;
-      };
+            struct author_actor {
+                author_actor(
+                        const std::string &n,
+                        fc::ecc::private_key pk,
+                        fc::optional<asset> mpay = fc::optional<asset>())
+                        : name(n), private_key(pk), max_accepted_payout(mpay) {
+                }
 
-      struct voter_actor
-      {
-         voter_actor( const std::string& n, fc::ecc::private_key pk, std::string fa )
-            : name(n), private_key(pk), favorite_author(fa) {}
-         std::string             name;
-         fc::ecc::private_key    private_key;
-         std::string             favorite_author;
-      };
+                std::string name;
+                fc::ecc::private_key private_key;
+                fc::optional<asset> max_accepted_payout;
+            };
+
+            struct voter_actor {
+                voter_actor(const std::string &n, fc::ecc::private_key pk, std::string fa)
+                        : name(n), private_key(pk), favorite_author(fa) {
+                }
+
+                std::string name;
+                fc::ecc::private_key private_key;
+                std::string favorite_author;
+            };
 
 
-      std::vector< author_actor > authors;
-      std::vector< voter_actor > voters;
+            std::vector<author_actor> authors;
+            std::vector<voter_actor> voters;
 
-      authors.emplace_back( "alice", alice_private_key );
-      authors.emplace_back( "bob"  , bob_private_key, ASSET( "0.000 TBD" ) );
-      authors.emplace_back( "dave" , dave_private_key );
-      voters.emplace_back( "ulysses", ulysses_private_key, "alice");
-      voters.emplace_back( "vivian" , vivian_private_key , "bob"  );
-      voters.emplace_back( "wendy"  , wendy_private_key  , "dave" );
+            authors.emplace_back("alice", alice_private_key);
+            authors.emplace_back("bob", bob_private_key, ASSET("0.000 TBD"));
+            authors.emplace_back("dave", dave_private_key);
+            voters.emplace_back("ulysses", ulysses_private_key, "alice");
+            voters.emplace_back("vivian", vivian_private_key, "bob");
+            voters.emplace_back("wendy", wendy_private_key, "dave");
 
-      // A,B,D : posters
-      // U,V,W : voters
+            // A,B,D : posters
+            // U,V,W : voters
 
-      // set a ridiculously high STEEM price ($1 / satoshi) to disable dust threshold
-            set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
+            // set a ridiculously high STEEM price ($1 / satoshi) to disable dust threshold
+            set_price_feed(price(ASSET("0.001 TESTS"), ASSET("1.000 TBD")));
 
-      for( const auto& voter : voters )
-      {
-         fund( voter.name, 10000 );
-         vest( voter.name, 10000 );
-      }
+            for (const auto &voter : voters) {
+                fund(voter.name, 10000);
+                vest(voter.name, 10000);
+            }
 
-      // authors all write in the same block, but Bob declines payout
-      for( const auto& author : authors )
-      {
-         signed_transaction tx;
-         comment_operation com;
-         com.author = author.name;
-         com.permlink = "mypost";
-         com.parent_author = STEEMIT_ROOT_POST_PARENT;
-         com.parent_permlink = "test";
-         com.title = "Hello from "+author.name;
-         com.body = "Hello, my name is "+author.name;
-         tx.operations.push_back( com );
+            // authors all write in the same block, but Bob declines payout
+            for (const auto &author : authors) {
+                signed_transaction tx;
+                comment_operation com;
+                com.author = author.name;
+                com.permlink = "mypost";
+                com.parent_author = STEEMIT_ROOT_POST_PARENT;
+                com.parent_permlink = "test";
+                com.title = "Hello from " + author.name;
+                com.body = "Hello, my name is " + author.name;
+                tx.operations.push_back(com);
 
-         if( author.max_accepted_payout.valid() )
-         {
-            comment_options_operation copt;
-            copt.author = com.author;
-            copt.permlink = com.permlink;
-            copt.max_accepted_payout = *(author.max_accepted_payout);
-            tx.operations.push_back( copt );
-         }
+                if (author.max_accepted_payout.valid()) {
+                    comment_options_operation copt;
+                    copt.author = com.author;
+                    copt.permlink = com.permlink;
+                    copt.max_accepted_payout = *(author.max_accepted_payout);
+                    tx.operations.push_back(copt);
+                }
 
-         tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-         tx.sign( author.private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-      }
+                tx.set_expiration(db.head_block_time() +
+                                  STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                tx.sign(author.private_key, db.get_chain_id());
+                db.push_transaction(tx, 0);
+            }
 
-      generate_blocks(1);
+            generate_blocks(1);
 
-      // voters all vote in the same block with the same stake
-      for( const auto& voter : voters )
-      {
-         signed_transaction tx;
-         vote_operation vote;
-         vote.voter = voter.name;
-         vote.author = voter.favorite_author;
-         vote.permlink = "mypost";
-         vote.weight = STEEMIT_100_PERCENT;
-         tx.operations.push_back( vote );
-         tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-         tx.sign( voter.private_key, db.get_chain_id() );
-         db.push_transaction( tx, 0 );
-      }
+            // voters all vote in the same block with the same stake
+            for (const auto &voter : voters) {
+                signed_transaction tx;
+                vote_operation vote;
+                vote.voter = voter.name;
+                vote.author = voter.favorite_author;
+                vote.permlink = "mypost";
+                vote.weight = STEEMIT_100_PERCENT;
+                tx.operations.push_back(vote);
+                tx.set_expiration(db.head_block_time() +
+                                  STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                tx.sign(voter.private_key, db.get_chain_id());
+                db.push_transaction(tx, 0);
+            }
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem;
+            auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem;
 
-      // generate a few blocks to seed the reward fund
-      generate_blocks(10);
-      ilog( "dgpo: ${dgpo}", ("dgpo", db.get_dynamic_global_properties()) );
+            // generate a few blocks to seed the reward fund
+            generate_blocks(10);
+            ilog("dgpo: ${dgpo}", ("dgpo", db.get_dynamic_global_properties()));
 
-      generate_blocks( db.get_comment( "alice", string( "mypost" ) ).cashout_time, true );
-      for( const auto& author : authors )
-      {
-         const account_object& a = db.get_account(author.name);
-         ilog( "${n} : ${steem} ${sbd}", ("n", author.name)("steem", a.balance)("sbd", a.sbd_balance) );
-      }
-      for( const auto& voter : voters )
-      {
-         const account_object& a = db.get_account(voter.name);
-         ilog( "${n} : ${steem} ${sbd}", ("n", voter.name)("steem", a.balance)("sbd", a.sbd_balance) );
-      }
+            generate_blocks(db.get_comment("alice", string("mypost")).cashout_time, true);
+            for (const auto &author : authors) {
+                const account_object &a = db.get_account(author.name);
+                ilog("${n} : ${steem} ${sbd}", ("n", author.name)("steem", a.balance)("sbd", a.sbd_balance));
+            }
+            for (const auto &voter : voters) {
+                const account_object &a = db.get_account(voter.name);
+                ilog("${n} : ${steem} ${sbd}", ("n", voter.name)("steem", a.balance)("sbd", a.sbd_balance));
+            }
 
-      const account_object& alice_account = db.get_account("alice");
-      const account_object& bob_account   = db.get_account("bob");
-      const account_object& dave_account  = db.get_account("dave");
+            const account_object &alice_account = db.get_account("alice");
+            const account_object &bob_account = db.get_account("bob");
+            const account_object &dave_account = db.get_account("dave");
 
-      BOOST_CHECK( alice_account.sbd_balance == ASSET( "10720.000 TBD" ) );
-      BOOST_CHECK( bob_account.sbd_balance == ASSET( "0.000 TBD" ) );
-      BOOST_CHECK( dave_account.sbd_balance == alice_account.sbd_balance );
-   }
-   FC_LOG_AND_RETHROW()
-}
+            BOOST_CHECK(alice_account.sbd_balance == ASSET("10720.000 TBD"));
+            BOOST_CHECK(bob_account.sbd_balance == ASSET("0.000 TBD"));
+            BOOST_CHECK(dave_account.sbd_balance == alice_account.sbd_balance);
+        }
+        FC_LOG_AND_RETHROW()
+    }
 
-BOOST_AUTO_TEST_CASE( comment_payout_dust )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Testing: comment_payout_dust" );
+    BOOST_AUTO_TEST_CASE(comment_payout_dust) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: comment_payout_dust");
 
-      ACTORS( (alice)(bob) )
-      generate_block();
+            ACTORS((alice)(bob))
+            generate_block();
 
-      vest( "alice", ASSET( "10.000 TESTS" ) );
-      vest( "bob", ASSET( "10.000 TESTS" ) );
+            vest("alice", ASSET("10.000 TESTS"));
+            vest("bob", ASSET("10.000 TESTS"));
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-      generate_block();
-      validate_database();
+            generate_block();
+            validate_database();
 
-      comment_operation comment;
-      comment.author = "alice";
-      comment.permlink = "test";
-      comment.parent_permlink = "test";
-      comment.title = "test";
-      comment.body = "test";
-      vote_operation vote;
-      vote.voter = "alice";
-      vote.author = "alice";
-      vote.permlink = "test";
-      vote.weight = 81 * STEEMIT_1_PERCENT;
+            comment_operation comment;
+            comment.author = "alice";
+            comment.permlink = "test";
+            comment.parent_permlink = "test";
+            comment.title = "test";
+            comment.body = "test";
+            vote_operation vote;
+            vote.voter = "alice";
+            vote.author = "alice";
+            vote.permlink = "test";
+            vote.weight = 81 * STEEMIT_1_PERCENT;
 
-      signed_transaction tx;
-      tx.operations.push_back( comment );
-      tx.operations.push_back( vote );
-      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-      validate_database();
+            signed_transaction tx;
+            tx.operations.push_back(comment);
+            tx.operations.push_back(vote);
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            validate_database();
 
-      comment.author = "bob";
-      vote.voter = "bob";
-      vote.author = "bob";
-      vote.weight = 59 * STEEMIT_1_PERCENT;
+            comment.author = "bob";
+            vote.voter = "bob";
+            vote.author = "bob";
+            vote.weight = 59 * STEEMIT_1_PERCENT;
 
-      tx.clear();
-      tx.operations.push_back( comment );
-      tx.operations.push_back( vote );
-      tx.sign( bob_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-      validate_database();
+            tx.clear();
+            tx.operations.push_back(comment);
+            tx.operations.push_back(vote);
+            tx.sign(bob_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            validate_database();
 
-      generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
+            generate_blocks(db.get_comment("alice", string("test")).cashout_time);
 
-      // If comments are paid out independent of order, then the last satoshi of STEEM cannot be divided among them
-      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem == ASSET( "0.001 TESTS" ) );
+            // If comments are paid out independent of order, then the last satoshi of STEEM cannot be divided among them
+            BOOST_REQUIRE(
+                    db.get_dynamic_global_properties().total_reward_fund_steem ==
+                    ASSET("0.001 TESTS"));
 
-      validate_database();
+            validate_database();
 
-      BOOST_TEST_MESSAGE( "Done" );
-   }
-   FC_LOG_AND_RETHROW()
-}
+            BOOST_TEST_MESSAGE("Done");
+        }
+        FC_LOG_AND_RETHROW()
+    }
 
 /*BOOST_AUTO_TEST_CASE( comment_payout )
 {
@@ -2667,7 +2664,8 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                                                            STEEMIT_BLOCK_INTERVAL) /
                                                           STEEMIT_POST_AVERAGE_WINDOW);
             auto reward_weight =
-                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF17 * STEEMIT_100_PERCENT) /
+                    (STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF17 *
+                     STEEMIT_100_PERCENT) /
                     (alice_post_bandwidth * alice_post_bandwidth);
             bandwidth = db.get<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple("alice", bandwidth_type::post)).average_bandwidth;
 
@@ -3105,6 +3103,161 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                     db.get_account("alice").balance == ASSET("2.000 TESTS"));
             BOOST_REQUIRE(
                     db.get_account("alice").sbd_balance == ASSET("3.000 TBD"));
+        }
+        FC_LOG_AND_RETHROW()
+    }
+
+    BOOST_AUTO_TEST_CASE(reward_funds) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: reward_funds");
+
+            ACTORS((alice)(bob))
+            generate_block();
+
+            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            generate_block();
+
+            comment_operation comment;
+            vote_operation vote;
+            signed_transaction tx;
+
+            comment.author = "alice";
+            comment.permlink = "test";
+            comment.parent_permlink = "test";
+            comment.title = "foo";
+            comment.body = "bar";
+            vote.voter = "alice";
+            vote.author = "alice";
+            vote.permlink = "test";
+            vote.weight = STEEMIT_100_PERCENT;
+            tx.operations.push_back(comment);
+            tx.operations.push_back(vote);
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            generate_blocks(5);
+
+            comment.author = "bob";
+            comment.parent_author = "alice";
+            vote.voter = "bob";
+            vote.author = "bob";
+            tx.clear();
+            tx.operations.push_back(comment);
+            tx.operations.push_back(vote);
+            tx.sign(bob_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            generate_blocks(db.get_comment("alice", string("test")).cashout_time);
+
+            {
+                const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+                const auto &comment_rf = db.get<reward_fund_object, by_name>(STEEMIT_COMMENT_REWARD_FUND_NAME);
+
+                BOOST_REQUIRE(post_rf.reward_balance.amount == 0);
+                BOOST_REQUIRE(comment_rf.reward_balance.amount > 0);
+                BOOST_REQUIRE(
+                        db.get_account("alice").sbd_balance.amount > 0);
+                BOOST_REQUIRE(
+                        db.get_account("bob").sbd_balance.amount == 0);
+                validate_database();
+            }
+
+            generate_blocks(db.get_comment("bob", string("test")).cashout_time);
+
+            {
+                const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+                const auto &comment_rf = db.get<reward_fund_object, by_name>(STEEMIT_COMMENT_REWARD_FUND_NAME);
+
+                BOOST_REQUIRE(post_rf.reward_balance.amount > 0);
+                BOOST_REQUIRE(comment_rf.reward_balance.amount == 0);
+                BOOST_REQUIRE(
+                        db.get_account("alice").sbd_balance.amount > 0);
+                BOOST_REQUIRE(
+                        db.get_account("bob").sbd_balance.amount > 0);
+                validate_database();
+            }
+        }
+        FC_LOG_AND_RETHROW()
+    }
+
+    BOOST_AUTO_TEST_CASE(recent_rshares2_decay) {
+        try {
+            BOOST_TEST_MESSAGE("Testing: recent_rshares_2decay");
+            ACTORS((alice)(bob))
+            generate_block();
+
+            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            generate_block();
+
+            comment_operation comment;
+            vote_operation vote;
+            signed_transaction tx;
+
+            comment.author = "alice";
+            comment.permlink = "test";
+            comment.parent_permlink = "test";
+            comment.title = "foo";
+            comment.body = "bar";
+            vote.voter = "alice";
+            vote.author = "alice";
+            vote.permlink = "test";
+            vote.weight = STEEMIT_100_PERCENT;
+            tx.operations.push_back(comment);
+            tx.operations.push_back(vote);
+            tx.set_expiration(
+                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            auto alice_vshares = utilities::calculate_vshares(db.get_comment("alice", string("test")).net_rshares.value, db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
+
+            generate_blocks(5);
+
+            comment.author = "bob";
+            vote.voter = "bob";
+            vote.author = "bob";
+            tx.clear();
+            tx.operations.push_back(comment);
+            tx.operations.push_back(vote);
+            tx.sign(bob_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            generate_blocks(db.get_comment("alice", string("test")).cashout_time);
+
+            {
+                const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+
+                BOOST_REQUIRE(post_rf.recent_rshares2 == alice_vshares);
+                validate_database();
+            }
+
+            auto bob_cashout_time = db.get_comment("bob", string("test")).cashout_time;
+            auto bob_vshares = utilities::calculate_vshares(db.get_comment("bob", string("test")).net_rshares.value, db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
+
+            generate_block();
+
+            while (db.head_block_time() < bob_cashout_time) {
+                alice_vshares -= (alice_vshares * STEEMIT_BLOCK_INTERVAL) /
+                                 STEEMIT_RECENT_RSHARES_DECAY_RATE.to_seconds();
+                const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+
+                BOOST_REQUIRE(post_rf.recent_rshares2 == alice_vshares);
+
+                generate_block();
+
+            }
+
+            {
+                alice_vshares -= (alice_vshares * STEEMIT_BLOCK_INTERVAL) /
+                                 STEEMIT_RECENT_RSHARES_DECAY_RATE.to_seconds();
+                const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+
+                BOOST_REQUIRE(
+                        post_rf.recent_rshares2 == alice_vshares + bob_vshares);
+                validate_database();
+            }
         }
         FC_LOG_AND_RETHROW()
     }

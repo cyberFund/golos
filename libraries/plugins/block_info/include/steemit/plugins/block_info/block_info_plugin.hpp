@@ -17,9 +17,9 @@ namespace steemit {
     namespace plugin {
         namespace block_info {
 
-            using steemit::app::application;
+            using steemit::application::application;
 
-            class block_info_plugin : public steemit::app::plugin {
+            class block_info_plugin : public steemit::application::plugin {
             public:
                 block_info_plugin(application *app);
 

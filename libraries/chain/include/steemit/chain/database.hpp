@@ -129,7 +129,9 @@ namespace steemit {
 
             uint32_t get_pow_summary_target() const;
 
-            block_id_type get_block_id_for_num(uint32_t block_num) const;
+                     block_id_type              get_block_id_for_num( uint32_t block_num )const;
+
+            block_id_type find_block_id_for_num(uint32_t block_num) const;
 
             optional<signed_block> fetch_block_by_id(const block_id_type &id) const;
 
@@ -184,8 +186,9 @@ namespace steemit {
 
             const hardfork_property_object &get_hardfork_property_object() const;
 
-
             const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const;
+
+            const reward_fund_object &get_reward_fund(const comment_object &c) const;
 
             /**
              *  Deducts fee from the account and the share supply
@@ -218,6 +221,8 @@ namespace steemit {
             bool push_block(const signed_block &b, uint32_t skip = skip_nothing);
 
             void push_transaction(const signed_transaction &trx, uint32_t skip = skip_nothing);
+
+            void _maybe_warn_multiple_production(uint32_t height) const;
 
             bool _push_block(const signed_block &b);
 
@@ -384,9 +389,9 @@ namespace steemit {
 
             void process_vesting_withdrawals();
 
-            share_type pay_curators(const comment_object &c, share_type max_rewards);
+            share_type pay_curators(const comment_object &c, share_type &max_rewards);
 
-            void cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment);
+            share_type cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment);
 
             void process_comment_cashout();
 
@@ -414,7 +419,13 @@ namespace steemit {
 
             asset get_pow_reward() const;
 
-            uint16_t get_curation_rewards_percent() const;
+            uint16_t get_curation_rewards_percent(const comment_object &c) const;
+
+            share_type pay_reward_funds(share_type reward);
+
+            asset get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const;
+
+            time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const;
 
             void pay_liquidity_reward();
 
@@ -540,6 +551,8 @@ namespace steemit {
             void update_last_irreversible_block();
 
             void clear_expired_transactions();
+
+            void clear_expired_delegations();
 
             void clear_expired_orders();
 

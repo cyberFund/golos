@@ -37,7 +37,7 @@ fc::optional<fc::logging_config> load_logging_config_from_ini_file(const fc::pat
 
 int main(int argc, char **argv) {
     steemit::plugin::initialize_plugin_factories();
-    app::application *node = new app::application();
+    application::application *node = new application::application();
     fc::oexception unhandled_exception;
     try {
 

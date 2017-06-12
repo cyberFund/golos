@@ -103,7 +103,7 @@ namespace steemit {
                 }
             }
 
-            snapshot_plugin::snapshot_plugin(steemit::app::application *app)
+            snapshot_plugin::snapshot_plugin(steemit::application::application *app)
                     : plugin(app),
                       application(app),
                       impl(new detail::snapshot_plugin_impl(*this)) {

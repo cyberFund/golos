@@ -27,7 +27,7 @@
 #include <steemit/application/database_api.hpp>
 #include <steemit/protocol/types.hpp>
 
-#include <graphene/net/node.hpp>
+#include <graphene/network/node.hpp>
 
 #include <fc/api.hpp>
 #include <fc/optional.hpp>
@@ -42,7 +42,7 @@
 #include <vector>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         using namespace steemit::chain;
         using namespace fc::ecc;
         using namespace std;
@@ -144,7 +144,7 @@ namespace steemit {
             /**
              * @brief Get status of all current connections to peers
              */
-            std::vector<graphene::net::peer_status> get_connected_peers() const;
+            std::vector<graphene::network::peer_status> get_connected_peers() const;
 
             /**
              * @brief Get advanced node parameters, such as desired and max
@@ -162,7 +162,7 @@ namespace steemit {
             /**
              * @brief Return list of potential peers
              */
-            std::vector<graphene::net::potential_peer_record> get_potential_peers() const;
+            std::vector<graphene::network::potential_peer_record> get_potential_peers() const;
 
             /// internal method, not exposed via JSON RPC
             void on_api_startup();
@@ -219,22 +219,22 @@ namespace steemit {
         };
 
     }
-}  // steemit::app
+}  // steemit::application
 
-FC_REFLECT(steemit::app::network_broadcast_api::transaction_confirmation,
+FC_REFLECT(steemit::application::network_broadcast_api::transaction_confirmation,
         (id)(block_num)(trx_num)(expired))
-FC_REFLECT(steemit::app::steem_version_info, (blockchain_version)(steem_revision)(fc_revision))
+FC_REFLECT(steemit::application::steem_version_info, (blockchain_version)(steem_revision)(fc_revision))
 //FC_REFLECT_TYPENAME( fc::ecc::compact_signature );
 //FC_REFLECT_TYPENAME( fc::ecc::commitment_type );
 
-FC_API(steemit::app::network_broadcast_api,
+FC_API(steemit::application::network_broadcast_api,
         (broadcast_transaction)
                 (broadcast_transaction_with_callback)
                 (broadcast_transaction_synchronous)
                 (broadcast_block)
                 (set_max_block_age)
 )
-FC_API(steemit::app::network_node_api,
+FC_API(steemit::application::network_node_api,
         (get_info)
                 (add_node)
                 (get_connected_peers)
@@ -242,7 +242,7 @@ FC_API(steemit::app::network_node_api,
                 (get_advanced_node_parameters)
                 (set_advanced_node_parameters)
 )
-FC_API(steemit::app::login_api,
+FC_API(steemit::application::login_api,
         (login)
                 (get_api_by_name)
                 (get_version)

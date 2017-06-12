@@ -27,7 +27,7 @@
 
 #include <fc/time.hpp>
 
-#include <graphene/net/exceptions.hpp>
+#include <graphene/network/exceptions.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -44,12 +44,12 @@
 #include <boost/range/adaptor/reversed.hpp>
 
 namespace steemit {
-    namespace app {
-        using graphene::net::item_hash_t;
-        using graphene::net::item_id;
-        using graphene::net::message;
-        using graphene::net::block_message;
-        using graphene::net::trx_message;
+    namespace application {
+        using graphene::network::item_hash_t;
+        using graphene::network::item_id;
+        using graphene::network::message;
+        using graphene::network::block_message;
+        using graphene::network::trx_message;
 
         using protocol::block_header;
         using protocol::signed_block_header;
@@ -66,7 +66,7 @@ namespace steemit {
 
         namespace detail {
 
-            class application_impl : public graphene::net::node_delegate {
+            class application_impl : public graphene::network::node_delegate {
             public:
                 fc::optional<fc::temp_file> _lock_file;
                 bool _is_block_producer = false;
@@ -74,7 +74,7 @@ namespace steemit {
 
                 void reset_p2p_node(const fc::path &data_dir) {
                     try {
-                        _p2p_network = std::make_shared<graphene::net::node>("Graphene Reference Implementation");
+                        _p2p_network = std::make_shared<graphene::network::node>("Graphene Reference Implementation");
 
                         _p2p_network->load_configuration(data_dir / "p2p");
                         _p2p_network->set_node_delegate(this);
@@ -118,7 +118,7 @@ namespace steemit {
 
                         _p2p_network->connect_to_p2p_network();
                         idump((_chain_db->head_block_id()));
-                        _p2p_network->sync_from(graphene::net::item_id(graphene::net::core_message_type_enum::block_message_type,
+                        _p2p_network->sync_from(graphene::network::item_id(graphene::network::core_message_type_enum::block_message_type,
                                 _chain_db->head_block_id()),
                                 std::vector<uint32_t>());
                     } FC_CAPTURE_AND_RETHROW()
@@ -301,11 +301,7 @@ namespace steemit {
 
                             if (_options->count("read-forward-rpc")) {
                                 try {
-                                    auto ws_ptr = _self->_client.connect(_options->at("read-forward-rpc").as<string>());
-                                    auto apic = std::make_shared<fc::rpc::websocket_api_connection>(*ws_ptr);
-                                    auto login = apic->get_remote_api<login_api>(1);
-                                    FC_ASSERT(login->login("", ""));
-                                    _self->_remote_net_api = login->get_api_by_name("network_broadcast_api")->as<network_broadcast_api>();
+                                    _self->_remote_endpoint = _options->at("read-forward-rpc").as<string>();
                                 }
                                 catch (fc::exception &e) {
                                     wlog("Error connecting to remote RPC, network api forwarding disabled.  ${e}", ("e", e.to_detail_string()));
@@ -384,14 +380,14 @@ namespace steemit {
                 /**
                  * If delegate has the item, the network has no need to fetch it.
                  */
-                virtual bool has_item(const graphene::net::item_id &id) override {
+                virtual bool has_item(const graphene::network::item_id &id) override {
                     // If the node is shutting down we don't care about fetching items
                     if (!_running) {
                         return true;
                     }
 
                     try {
-                        if (id.item_type == graphene::net::block_message_type) {
+                        if (id.item_type == graphene::network::block_message_type) {
                             return _chain_db->is_known_block(id.item_hash);
                         } else {
                             return _chain_db->is_known_transaction(id.item_hash);
@@ -408,7 +404,7 @@ namespace steemit {
                  *
                  * @throws exception if error validating the item, otherwise the item is safe to broadcast on.
                  */
-                virtual bool handle_block(const graphene::net::block_message &blk_msg, bool sync_mode,
+                virtual bool handle_block(const graphene::network::block_message &blk_msg, bool sync_mode,
                         std::vector<fc::uint160_t> &contained_transaction_message_ids) override {
                     try {
                         if (_running) {
@@ -442,7 +438,7 @@ namespace steemit {
                             try {
                                 // TODO: in the case where this block is valid but on a fork that's too old for us to switch to,
                                 // you can help the network code out by throwing a block_older_than_undo_history exception.
-                                // when the net code sees that, it will stop trying to push blocks from that chain, but
+                                // when the network code sees that, it will stop trying to push blocks from that chain, but
                                 // leave that peer connected so that they can get sync blocks from us
                                 bool result = _chain_db->push_block(blk_msg.block, (_is_block_producer |
                                                                                     _force_validate)
@@ -458,13 +454,13 @@ namespace steemit {
 
                                 return result;
                             } catch (const steemit::chain::unlinkable_block_exception &e) {
-                                // translate to a graphene::net exception
+                                // translate to a graphene::network exception
                                 fc_elog(fc::logger::get("sync"),
                                         "Error when pushing block, current head block is ${head}:\n${e}",
                                         ("e", e.to_detail_string())
                                                 ("head", _chain_db->head_block_num()));
                                 elog("Error when pushing block:\n${e}", ("e", e.to_detail_string()));
-                                FC_THROW_EXCEPTION(graphene::net::unlinkable_block_exception, "Error when pushing block:\n${e}", ("e", e.to_detail_string()));
+                                FC_THROW_EXCEPTION(graphene::network::unlinkable_block_exception, "Error when pushing block:\n${e}", ("e", e.to_detail_string()));
                             } catch (const fc::exception &e) {
                                 fc_elog(fc::logger::get("sync"),
                                         "Error when pushing block, current head block is ${head}:\n${e}",
@@ -478,7 +474,7 @@ namespace steemit {
                     } FC_CAPTURE_AND_RETHROW((blk_msg)(sync_mode))
                 }
 
-                virtual void handle_transaction(const graphene::net::trx_message &transaction_message) override {
+                virtual void handle_transaction(const graphene::network::trx_message &transaction_message) override {
                     try {
                         if (_running) {
                             _chain_db->push_transaction(transaction_message.trx);
@@ -539,7 +535,7 @@ namespace steemit {
                                 }
                             }
                             if (!found_a_block_in_synopsis)
-                                FC_THROW_EXCEPTION(graphene::net::peer_is_on_an_unreachable_fork, "Unable to provide a list of blocks starting at any of the blocks in peer's synopsis");
+                                FC_THROW_EXCEPTION(graphene::network::peer_is_on_an_unreachable_fork, "Unable to provide a list of blocks starting at any of the blocks in peer's synopsis");
                         }
                         for (uint32_t num = block_header::num_from_id(last_known_block_id);
                              num <= _chain_db->head_block_num() &&
@@ -567,7 +563,7 @@ namespace steemit {
                 virtual message get_item(const item_id &id) override {
                     try {
                         // ilog("Request for item ${id}", ("id", id));
-                        if (id.item_type == graphene::net::block_message_type) {
+                        if (id.item_type == graphene::network::block_message_type) {
                             auto opt_block = _chain_db->fetch_block_by_id(id.item_hash);
                             if (!opt_block)
                                 elog("Couldn't find block ${id} -- corresponding ID in our chain is ${id2}",
@@ -713,7 +709,7 @@ namespace steemit {
                                             "(our chains diverge after block #${non_fork_high_block_num} but only undoable to block #${low_block_num})",
                                             ("low_block_num", low_block_num)
                                                     ("non_fork_high_block_num", non_fork_high_block_num));
-                                    FC_THROW_EXCEPTION(graphene::net::block_older_than_undo_history, "Peer is are on a fork I'm unable to switch to");
+                                    FC_THROW_EXCEPTION(graphene::network::block_older_than_undo_history, "Peer is are on a fork I'm unable to switch to");
                                 }
                             }
                         } else {
@@ -840,7 +836,7 @@ namespace steemit {
 
                 //std::shared_ptr<graphene::db::object_database>   _pending_trx_db;
                 std::shared_ptr<steemit::chain::database> _chain_db;
-                std::shared_ptr<graphene::net::node> _p2p_network;
+                std::shared_ptr<graphene::network::node> _p2p_network;
                 std::shared_ptr<fc::http::websocket_server> _websocket_server;
                 std::shared_ptr<fc::http::websocket_tls_server> _websocket_tls_server;
 
@@ -946,7 +942,7 @@ namespace steemit {
             return null_plugin;
         }
 
-        graphene::net::node_ptr application::p2p_node() {
+        graphene::network::node_ptr application::p2p_node() {
             return my->_p2p_network;
         }
 
@@ -981,6 +977,17 @@ namespace steemit {
 
         void application::get_max_block_age(int32_t &result) {
             my->get_max_block_age(result);
+        }
+
+        void application::connect_to_write_node() {
+            if (_remote_endpoint) {
+                _remote_net_api.reset();
+                auto ws_ptr = _client.connect(*_remote_endpoint);
+                auto apic = std::make_shared<fc::rpc::websocket_api_connection>(*ws_ptr);
+                auto login = apic->get_remote_api<login_api>(1);
+                FC_ASSERT(login->login("", ""));
+                _remote_net_api = login->get_api_by_name("network_broadcast_api")->as<network_broadcast_api>();
+            }
         }
 
         void application::shutdown_plugins() {
