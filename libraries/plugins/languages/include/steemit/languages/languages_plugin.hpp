@@ -106,9 +106,13 @@ namespace steemit {
             account_id_type author;
             comment_id_type parent;
             comment_id_type comment;
+
+            bool is_post() const {
+                return parent == comment_id_type();
+            }
         };
 
-        typedef oid<language_object> tag_id_type;
+        typedef oid<language_object> language_id_type;
 
         template<typename T, typename C = std::less<T>>
         class comparable_index {
@@ -123,7 +127,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<language_name_type>()(first.name, second.name) &&
                        std::less<time_point_sec>()(first.cashout, second.cashout) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         }; /// all posts regardless of depth
 
@@ -131,7 +135,7 @@ namespace steemit {
         public:
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::greater<int64_t>()(first.net_rshares, second.net_rshares) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         }; /// all comments regardless of depth
 
@@ -140,7 +144,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<time_point_sec>()(first.created, second.created) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };
 
@@ -149,7 +153,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<time_point_sec>()(first.active, second.active) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };
 
@@ -158,7 +162,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<share_type>()(first.promoted_balance, second.promoted_balance) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };
 
@@ -167,7 +171,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<int64_t>()(first.net_rshares, second.net_rshares) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         }; /// all top level posts by direct pending payout
 
@@ -176,7 +180,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<int32_t>()(first.net_votes, second.net_votes) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         }; /// all top level posts by direct votes
 
@@ -186,7 +190,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<fc::uint128_t>()(first.children_rshares2, second.children_rshares2) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         }; /// all top level posts by total cumulative payout (aka payout)
 
@@ -195,7 +199,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<double>()(first.trending, second.trending) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };
 
@@ -204,7 +208,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<int32_t>()(first.children, second.children) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         }; /// all top level posts with the most discussion (replies at all levels)
 
@@ -213,7 +217,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_id_type>()(first.parent, second.parent) &&
                        std::greater<double>()(first.hot, second.hot) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };
 
@@ -223,7 +227,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<account_id_type>()(first.author, second.author) &&
                        std::greater<time_point_sec>()(first.created, second.created) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };  /// all blog posts by author with tag
 
@@ -232,7 +236,7 @@ namespace steemit {
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<account_id_type>()(first.author, second.author) &&
                        std::less<comment_id_type>()(first.comment, second.comment) &&
-                       std::less<tag_id_type>()(first.id, second.id);
+                       std::less<language_id_type>()(first.id, second.id);
             }
         };
 
@@ -242,130 +246,130 @@ namespace steemit {
         typedef multi_index_container<
                 language_object,
                 indexed_by<
-                        ordered_unique<tag<by_id>, member<language_object, tag_id_type, &language_object::id>>,
+                        ordered_unique<tag<by_id>, member<language_object, language_id_type, &language_object::id>>,
                         ordered_non_unique<tag<by_comment>, member<language_object, comment_id_type, &language_object::comment>>,
                         ordered_unique<tag<by_author_comment>,
                                 composite_key<language_object,
                                         member<language_object, account_id_type, &language_object::author>,
                                         member<language_object, comment_id_type, &language_object::comment>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<account_id_type>, std::less<comment_id_type>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<account_id_type>, std::less<comment_id_type>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_created>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, time_point_sec, &language_object::created>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<time_point_sec>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<time_point_sec>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_active>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, time_point_sec, &language_object::active>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<time_point_sec>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<time_point_sec>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_promoted>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, share_type, &language_object::promoted_balance>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<share_type>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<share_type>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_net_rshares>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, int64_t, &language_object::net_rshares>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<int64_t>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<int64_t>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_net_votes>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, int32_t, &language_object::net_votes>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<int32_t>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<int32_t>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_children>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, int32_t, &language_object::children>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<int32_t>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<int32_t>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_hot>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, double, &language_object::hot>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<double>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<double>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_trending>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, double, &language_object::trending>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<double>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<double>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_parent_children_rshares2>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, fc::uint128_t, &language_object::children_rshares2>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_children_rshares2>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_id_type, &language_object::parent>,
-                                        member<language_object, fc::uint128_t, &language_object::children_rshares2>,
-                                        member<language_object, tag_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>,  std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_cashout>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, time_point_sec, &language_object::cashout>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<time_point_sec>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<time_point_sec>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_net_rshares>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, int64_t, &language_object::net_rshares>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::greater<int64_t>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::greater<int64_t>, std::less<language_id_type>>
                         >,
                         ordered_unique<tag<by_author_parent_created>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, account_id_type, &language_object::author>,
                                         member<language_object, time_point_sec, &language_object::created>,
-                                        member<language_object, tag_id_type, &language_object::id>
+                                        member<language_object, language_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<account_id_type>, std::greater<time_point_sec>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>, std::less<account_id_type>, std::greater<time_point_sec>, std::less<language_id_type>>
+                        >,
+                        ordered_unique<tag<by_reward_fund_net_rshares>,
+                                composite_key<language_object,
+                                        member<language_object, language_name_type, &language_object::name>,
+                                        const_mem_fun<language_object, bool, &language_object::is_post>,
+                                        member<language_object, int64_t, &language_object::net_rshares>,
+                                        member<language_object, language_id_type, &language_object::id>
+                                >,
+                                composite_key_compare<std::less<language_name_type>, std::less<bool>, std::greater<int64_t>, std::less<language_id_type>>
                         >
                 >,
                 allocator<language_object>
@@ -612,8 +616,6 @@ namespace steemit {
         private:
             //application::application* _app = nullptr;
         };
-
-
     }
 } //steemit::language
 
