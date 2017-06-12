@@ -1253,8 +1253,8 @@ namespace steemit {
                 comment_id_type parent,
                 const Index &tidx,
                 StartItr tidx_itr,
-                const std::function<bool(const comment_api_obj &)> &filter,
-                const std::function<bool(const comment_api_obj &)> &exit,
+                const std::function<bool(const comment_api_obj &c)> &filter,
+                const std::function<bool(const comment_api_obj &c)> &exit,
                 const std::function<bool(const Object &)> &tag_exit,
                 bool ignore_parent) const {
 //   idump((query));
@@ -1358,10 +1358,10 @@ namespace steemit {
                                 query.select_tags,
                                 query,
                                 parent,
-                                std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                                std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                                     return c.net_rshares <= 0;
                                 }),
-                                [&](const comment_api_obj &) -> bool {
+                                [&](const comment_api_obj &c) -> bool {
                                     return false;
                                 },
                                 [&](const tags::tag_object &) -> bool {
@@ -1379,10 +1379,10 @@ namespace steemit {
                                 query.select_language,
                                 query,
                                 parent,
-                                std::bind(languages::language_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                                std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                                     return c.net_rshares <= 0;
                                 }),
-                                [&](const comment_api_obj &) -> bool {
+                                [&](const comment_api_obj &c) -> bool {
                                     return false;
                                 },
                                 [&](const languages::language_object &) -> bool {
@@ -1410,10 +1410,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
-                            c.children_rshares2 <= 0;
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
+                            return c.children_rshares2 <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &t) {
@@ -1427,10 +1427,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
-                            c.children_rshares2 <= 0;
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
+                            return c.children_rshares2 <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &t) {
@@ -1455,10 +1455,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &) -> bool {
@@ -1474,10 +1474,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [](const comment_api_obj &) -> bool { return false; },
+                        [](const comment_api_obj &c) -> bool { return false; },
                         [](const languages::language_object &) -> bool { return false; },
                         second_payout,
                         parent,
@@ -1500,10 +1500,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &) -> bool {
@@ -1516,11 +1516,15 @@ namespace steemit {
                 std::multimap<languages::language_object, discussion, languages::by_parent_created> map_result_language = select<languages::language_object, languages::language_index, languages::by_parent_created, languages::by_comment>(query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [](const comment_api_obj &) -> bool { return false; },
-                        [](const languages::language_object &) -> bool { return false; },
+                        [&](const comment_api_obj &c) -> bool {
+                            return false;
+                        },
+                        [&](const languages::language_object &) -> bool {
+                            return false;
+                        },
                         parent,
                         fc::time_point_sec::maximum()
                 );
@@ -1540,11 +1544,15 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [](const comment_api_obj &) -> bool { return false; },
-                        [](const tags::tag_object &) -> bool { return false; },
+                        [&](const comment_api_obj &c) -> bool {
+                            return false;
+                        },
+                        [&](const tags::tag_object &) -> bool {
+                            return false;
+                        },
                         parent,
                         fc::time_point_sec::maximum()
                 );
@@ -1553,10 +1561,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter_language, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &) -> bool {
@@ -1581,10 +1589,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
-                            c.children_rshares2 <= 0;
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
+                            return c.children_rshares2 <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &) -> bool {
@@ -1597,10 +1605,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter_language, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
-                            c.children_rshares2 <= 0;
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
+                            return c.children_rshares2 <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &) -> bool {
@@ -1625,10 +1633,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &) -> bool {
@@ -1640,10 +1648,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter_language, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &) -> bool {
@@ -1667,10 +1675,10 @@ namespace steemit {
                 select<tags::tag_object, tags::tag_index, tags::by_parent_net_votes, tags::by_comment>(query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &) -> bool {
@@ -1682,10 +1690,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter_language, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &) -> bool {
@@ -1710,10 +1718,10 @@ namespace steemit {
                                 query.select_tags,
                                 query,
                                 parent,
-                                std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                                std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                                     return false;
                                 }),
-                                [&](const comment_api_obj &) -> bool {
+                                [&](const comment_api_obj &c) -> bool {
                                     return false;
                                 },
                                 [&](const tags::tag_object &) -> bool {
@@ -1726,10 +1734,10 @@ namespace steemit {
                 std::multimap<languages::language_object, discussion, languages::by_parent_children> map_result_language = select<languages::language_object, languages::language_index, languages::by_parent_children, languages::by_comment>(query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter_language, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return false;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &) -> bool {
@@ -1755,10 +1763,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const tags::tag_object &) -> bool {
@@ -1772,10 +1780,10 @@ namespace steemit {
                         query.select_tags,
                         query,
                         parent,
-                        std::bind(languages::language_plugin::filter_language, query, std::placeholders::_1, [&](const comment_api_obj &) -> bool {
+                        std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [&](const comment_api_obj &) -> bool {
+                        [&](const comment_api_obj &c) -> bool {
                             return false;
                         },
                         [&](const languages::language_object &) -> bool {
@@ -2653,16 +2661,14 @@ namespace steemit {
                 typename DiscussionIndex,
                 typename CommentIndex,
                 typename ...Args
-        >
-        std::multimap<Object, discussion, DiscussionIndex> database_api::select(
+        > std::multimap<Object, discussion, DiscussionIndex> database_api::select(
                 const std::set<std::string> &select_set,
                 const discussion_query &query,
                 comment_id_type parent,
                 const std::function<bool(const comment_api_obj &)> &filter,
                 const std::function<bool(const comment_api_obj &)> &exit,
                 const std::function<bool(const Object &)> &exit2,
-                Args... args
-        ) const {
+                Args... args) const {
             std::multimap<Object, discussion, DiscussionIndex> map_result;
             std::string helper;
 
