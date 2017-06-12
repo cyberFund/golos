@@ -1,6 +1,7 @@
 #include <steemit/application/impacted.hpp>
-#include <steemit/application/database_api.hpp>
-#include <steemit/application/steem_api_objects.hpp>
+
+#include <steemit/application/discussion_query.hpp>
+#include <steemit/application/comment_api_obj.h>
 
 #include <steemit/protocol/config.hpp>
 
@@ -18,6 +19,9 @@
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
+
+
+#include "include/steemit/languages/languages_plugin.hpp"
 
 namespace steemit {
     namespace languages {
