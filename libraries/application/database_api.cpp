@@ -1040,7 +1040,8 @@ namespace steemit {
                             d.net_rshares.value > 0 ? d.net_rshares.value
                                                     : 0, my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
                 } else {
-                    vshares = steemit::chain::utilities::calculate_vshares(d.net_rshares.value > 0 ? d.net_rshares.value : 0);
+                    vshares = steemit::chain::utilities::calculate_vshares(
+                            d.net_rshares.value > 0 ? d.net_rshares.value : 0);
                 }
 
                 u256 r2 = to256(vshares); //to256(abs_net_rshares);
@@ -1374,8 +1375,8 @@ namespace steemit {
 
                         std::multimap<tags::tag_object,
                                 discussion,
-                                tags::by_mode_parent_children_rshares2
-                        > map_result = select<tags::tag_object, tags::tag_index, tags::by_mode_parent_children_rshares2, tags::by_comment>(
+                                tags::by_parent_trending
+                        > map_result = select<tags::tag_object, tags::tag_index, tags::by_parent_trending, tags::by_comment>(
                                 query.select_tags,
                                 query,
                                 parent,
@@ -1388,15 +1389,14 @@ namespace steemit {
                                 [&](const tags::tag_object &) -> bool {
                                     return false;
                                 },
-                                first_payout,
                                 parent,
                                 fc::uint128_t::max_value()
                         );
 
                         std::multimap<languages::language_object,
                                 discussion,
-                                languages::by_mode_parent_children_rshares2
-                        > map_result_ = select<languages::language_object, languages::language_index, languages::by_mode_parent_children_rshares2, languages::by_comment>(
+                                languages::by_parent_trending
+                        > map_result_ = select<languages::language_object, languages::language_index, languages::by_parent_trending, languages::by_comment>(
                                 query.select_language,
                                 query,
                                 parent,
@@ -1409,7 +1409,6 @@ namespace steemit {
                                 [&](const languages::language_object &) -> bool {
                                     return false;
                                 },
-                                first_payout,
                                 parent,
                                 fc::uint128_t::max_value()
                         );
@@ -1472,7 +1471,7 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::multimap<tags::tag_object, discussion, tags::by_mode_parent_children_rshares2> map_result = select<tags::tag_object, tags::tag_index, tags::by_mode_parent_children_rshares2, tags::by_comment>(
+                std::multimap<tags::tag_object, discussion, tags::by_parent_promoted> map_result = select<tags::tag_object, tags::tag_index, tags::by_parent_promoted, tags::by_comment>(
                         query.select_tags,
                         query,
                         parent,
@@ -1485,22 +1484,24 @@ namespace steemit {
                         [&](const tags::tag_object &) -> bool {
                             return false;
                         },
-                        second_payout,
                         parent,
                         fc::uint128_t::max_value()
                 );
 
 
-                std::multimap<languages::language_object, discussion, languages::by_mode_parent_children_rshares2> map_result_language = select<languages::language_object, languages::language_index, languages::by_mode_parent_children_rshares2, languages::by_comment>(
+                std::multimap<languages::language_object, discussion, languages::by_parent_promoted> map_result_language = select<languages::language_object, languages::language_index, languages::by_parent_promoted, languages::by_comment>(
                         query.select_tags,
                         query,
                         parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
                             return c.net_rshares <= 0;
                         }),
-                        [](const comment_api_obj &c) -> bool { return false; },
-                        [](const languages::language_object &) -> bool { return false; },
-                        second_payout,
+                        [&](const comment_api_obj &c) -> bool {
+                            return false;
+                        },
+                        [&](const languages::language_object &) -> bool {
+                            return false;
+                        },
                         parent,
                         fc::uint128_t::max_value()
                 );
@@ -2489,7 +2490,7 @@ namespace steemit {
                         auto &didx = _state.discussion_idx[tag];
                         for (const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
-                                        didx.payout_comments.push_back( key );
+                            didx.payout_comments.push_back(key);
                             if (d.author.size()) {
                                 accounts.insert(d.author);
                             }
@@ -2718,7 +2719,8 @@ namespace steemit {
                 typename DiscussionIndex,
                 typename CommentIndex,
                 typename ...Args
-        > std::multimap<Object, discussion, DiscussionIndex> database_api::select(
+        >
+        std::multimap<Object, discussion, DiscussionIndex> database_api::select(
                 const std::set<std::string> &select_set,
                 const discussion_query &query,
                 comment_id_type parent,
