@@ -240,6 +240,16 @@ namespace steemit {
             }
         };
 
+        class by_reward_fund_net_rshares
+                : public comparable_index<language_object> {
+        public:
+            virtual bool operator()(const language_object &first, const language_object &second) const override {
+                return std::less<bool>()(first.is_post(), second.is_post()) &&
+                       std::greater<int64_t>()(first.net_rshares, second.net_rshares) &&
+                       std::less<language_id_type>()(first.id, second.id);
+            }
+        };
+
         struct by_comment;
         struct by_tag;
 
