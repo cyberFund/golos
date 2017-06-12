@@ -1,6 +1,6 @@
-#include <steemit/languages/languages_plugin.hpp>
-
 #include <steemit/application/impacted.hpp>
+#include <steemit/application/database_api.hpp>
+#include <steemit/application/steem_api_objects.hpp>
 
 #include <steemit/protocol/config.hpp>
 
@@ -53,7 +53,8 @@ namespace steemit {
             }
 
             struct operation_visitor {
-                operation_visitor(languages_plugin_impl &self) : languages_plugin(self), _db(self.database()) {
+                operation_visitor(languages_plugin_impl &self)
+                        : languages_plugin(self), _db(self.database()) {
 
                 };
                 typedef void result_type;
@@ -212,7 +213,8 @@ namespace steemit {
                         sign = -1;
                     }
 
-                    return sign * order + double(created.sec_since_epoch()) / double(T);
+                    return sign * order +
+                           double(created.sec_since_epoch()) / double(T);
                 }
 
                 inline double calculate_hot(const share_type &score, const time_point_sec &created) const {
@@ -225,19 +227,18 @@ namespace steemit {
 
                 /** finds tags that have been added or  updated */
                 void update_tags(const comment_object &c) const {
-                    try{
-
+                    try {
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
                         auto language_ = filter_tags(c);
                         const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
 
-                        auto itr=comment_idx.find(c.id);
+                        auto itr = comment_idx.find(c.id);
 
                         if (itr == comment_idx.end()) {
                             create_tag(language_, c, hot, trending);
                         } else {
-                            update_tag( *itr, c, hot, trending);
+                            update_tag(*itr, c, hot, trending);
                         }
 
                         if (c.parent_author.size()) {
@@ -297,7 +298,8 @@ namespace steemit {
                     const auto &voteidx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
                     auto itr = voteidx.lower_bound(boost::make_tuple(comment_id_type(c.id), account_id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
-                        update_indirect_vote(voter.id, itr->voter, (itr->vote_percent > 0) == (vote > 0));
+                        update_indirect_vote(voter.id, itr->voter,
+                                (itr->vote_percent > 0) == (vote > 0));
                         ++itr;
                     }
                 }
@@ -404,12 +406,28 @@ namespace steemit {
         }
 
         languages_plugin::~languages_plugin() {
+
+        }
+
+        bool languages_plugin::filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &condition) {
+            if (query.filter_language.size()) {
+                if (c.languages.empty()) {
+                    return true;
+                }
+            }
+
+            if (query.filter_language.count(c.languages)) {
+                return true;
+            }
+
+            return false || condition(c);
         }
 
         void languages_plugin::plugin_set_program_options(
                 boost::program_options::options_description &cli,
                 boost::program_options::options_description &cfg
         ) {
+
         }
 
         void languages_plugin::plugin_initialize(const boost::program_options::variables_map &options) {

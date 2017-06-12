@@ -10,6 +10,7 @@
 #include <steemit/chain/witness_objects.hpp>
 
 #include <steemit/tags/tags_plugin.hpp>
+#include <steemit/languages/languages_plugin.hpp>
 
 namespace steemit {
     namespace app {
@@ -182,6 +183,27 @@ namespace steemit {
             }
 
             tag_api_obj() {
+            }
+
+            string name;
+            fc::uint128_t total_children_rshares2;
+            asset total_payouts;
+            int32_t net_votes = 0;
+            uint32_t top_posts = 0;
+            uint32_t comments = 0;
+        };
+
+        struct language_api_obj {
+            language_api_obj(const languages::language_stats_object &o) :
+                    name(o.language),
+                    total_children_rshares2(o.total_children_rshares2),
+                    total_payouts(o.total_payout),
+                    net_votes(o.net_votes),
+                    top_posts(o.top_posts),
+                    comments(o.comments) {
+            }
+
+            language_api_obj() {
             }
 
             string name;
@@ -552,6 +574,15 @@ FC_REFLECT(steemit::app::feed_history_api_obj,
 )
 
 FC_REFLECT(steemit::app::tag_api_obj,
+        (name)
+                (total_children_rshares2)
+                (total_payouts)
+                (net_votes)
+                (top_posts)
+                (comments)
+)
+
+FC_REFLECT(steemit::app::language_api_obj,
         (name)
                 (total_children_rshares2)
                 (total_payouts)

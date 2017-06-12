@@ -1,6 +1,6 @@
-#include <steemit/tags/tags_plugin.hpp>
-
 #include <steemit/application/impacted.hpp>
+#include <steemit/application/database_api.hpp>
+#include <steemit/application/steem_api_objects.hpp>
 
 #include <steemit/protocol/config.hpp>
 
@@ -127,7 +127,7 @@ namespace steemit {
                         ++count;
                         if (count > tag_limit ||
                             lower_tags.size() > tag_limit) {
-                                break;
+                            break;
                         }
                         if (tag == "") {
                             continue;
@@ -313,8 +313,9 @@ namespace steemit {
                     if (voter.id == author.id) {
                         return;
                     } /// ignore votes for yourself
-                    if (c.parent_author.size())
-                        return; /// only count top level posts
+                    if (c.parent_author.size()) {
+                        return;
+                    } /// only count top level posts
 
                     const auto &stat = get_or_create_peer_stats(voter.id, author.id);
                     _db.modify(stat, [&](peer_stats_object &obj) {
@@ -441,12 +442,41 @@ namespace steemit {
         }
 
         tags_plugin::~tags_plugin() {
+
+        }
+
+        bool tags_plugin::filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &condition) {
+            if (query.select_authors.size()) {
+                if (query.select_authors.find(c.author) == query.select_authors.end()) {
+                    return true;
+                }
+            }
+
+            tags::comment_metadata meta;
+
+            if (c.json_metadata.size()) {
+                try {
+                    meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                } catch (const fc::exception &e) {
+                    // Do nothing on malformed json_metadata
+                }
+            }
+
+            for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
+                if (meta.tags.find(iterator) != meta.tags.end()) {
+                    return true;
+                }
+            }
+
+            return condition(c) ||
+                   query.filter_tags.find(c.category) !=
+                   query.filter_tags.end();
         }
 
         void tags_plugin::plugin_set_program_options(
                 boost::program_options::options_description &cli,
-                boost::program_options::options_description &cfg
-        ) {
+                boost::program_options::options_description &cfg) {
+
         }
 
         void tags_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
@@ -456,10 +486,9 @@ namespace steemit {
             app().register_api_factory<tag_api>("tag_api");
         }
 
-
         void tags_plugin::plugin_startup() {
-        }
 
+        }
     }
 } /// steemit::tags
 

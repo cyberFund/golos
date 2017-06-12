@@ -12,6 +12,12 @@
 #include <fc/api.hpp>
 
 namespace steemit {
+    namespace app {
+        class discussion_query;
+
+        struct comment_api_obj;
+    }
+
     namespace languages {
         using namespace steemit::chain;
         using namespace boost::multi_index;
@@ -593,6 +599,8 @@ namespace steemit {
             virtual void plugin_initialize(const boost::program_options::variables_map &options) override;
 
             virtual void plugin_startup() override;
+
+            static bool filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &confition);
 
             friend class detail::languages_plugin_impl;
 

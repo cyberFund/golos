@@ -8,8 +8,6 @@
 #include <steemit/chain/steem_object_types.hpp>
 #include <steemit/chain/history_object.hpp>
 
-#include <steemit/tags/tags_plugin.hpp>
-
 #include <steemit/follow/follow_plugin.hpp>
 
 #include <fc/api.hpp>
@@ -89,7 +87,6 @@ namespace steemit {
                     FC_ASSERT(select_language.find(iterator) ==
                               select_language.end());
                 }
-
             }
 
             uint32_t limit = 0; ///< the discussions return amount top limit
@@ -503,15 +500,13 @@ namespace steemit {
 
             void set_url(discussion &d) const;
 
-            template<
-                    typename Object,
+            template<typename Object,
                     typename DatabaseIndex,
                     typename DiscussionIndex,
                     typename CommentIndex,
                     typename Index,
                     typename StartItr
-            >
-            std::multimap<Object, discussion, DiscussionIndex> get_discussions(
+            > std::multimap<Object, discussion, DiscussionIndex> get_discussions(
                     const discussion_query &query,
                     const std::string &tag,
                     comment_id_type parent,
@@ -519,48 +514,37 @@ namespace steemit {
                     StartItr tidx_itr,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
-                    const std::function<bool(const Object &)> &tag_exit) const;
+                    const std::function<bool(const Object &)> &tag_exit,
+                    bool ignore_parent = false) const;
 
-
-            template<
-                    typename Object,
+            template<typename Object,
                     typename DatabaseIndex,
                     typename DiscussionIndex,
                     typename CommentIndex,
                     typename ...Args
-            >
-            std::multimap<Object, discussion, DiscussionIndex> select(
+            > std::multimap<Object, discussion, DiscussionIndex> select(
                     const std::set<std::string> &select_set,
                     const discussion_query &query,
                     comment_id_type parent,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
                     const std::function<bool(const Object &)> &exit2,
-                    Args... args
-            ) const;
+                    Args... args) const;
 
-            template<
-                    typename DatabaseIndex,
+            template<typename DatabaseIndex,
                     typename DiscussionIndex
-            >
-            std::vector<discussion> feed(
-                    const std::set<string> &select_set,
+            > std::vector<discussion> feed(const std::set<string> &select_set,
                     const discussion_query &query,
                     const std::string &start_author,
-                    const std::string &start_permlink
-            ) const;
+                    const std::string &start_permlink) const;
 
-
-            template<
-                    typename DatabaseIndex,
+            template<typename DatabaseIndex,
                     typename DiscussionIndex
-            >
-            std::vector<discussion> blog(
-                    const std::set<string> &select_set,
+            > std::vector<discussion> blog(const std::set<string> &select_set,
                     const discussion_query &query,
                     const std::string &start_author,
-                    const std::string &start_permlink
-            ) const ;
+                    const std::string &start_permlink) const;
+
 
             comment_id_type get_parent(const discussion_query &q) const;
 

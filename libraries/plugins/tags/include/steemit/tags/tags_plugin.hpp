@@ -1,6 +1,7 @@
 #pragma once
 
 #include <steemit/application/plugin.hpp>
+
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/comment_object.hpp>
 
@@ -10,6 +11,12 @@
 #include <fc/api.hpp>
 
 namespace steemit {
+    namespace app {
+        class discussion_query;
+
+        struct comment_api_obj;
+    }
+
     namespace tags {
         using namespace steemit::chain;
         using namespace boost::multi_index;
@@ -593,6 +600,8 @@ namespace steemit {
 
             virtual void plugin_startup() override;
 
+            static bool filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &condition);
+
             friend class detail::tags_plugin_impl;
 
             std::unique_ptr<detail::tags_plugin_impl> my;
@@ -619,8 +628,6 @@ namespace steemit {
         private:
             //app::application* _app = nullptr;
         };
-
-
     }
 } //steemit::tag
 
