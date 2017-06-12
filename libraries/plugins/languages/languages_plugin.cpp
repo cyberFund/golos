@@ -121,18 +121,17 @@ namespace steemit {
                     const auto &stats = get_stats(current.name);
                     remove_stats(current, stats);
 
-                    if (comment.mode != archived) {
+                    if (comment.cashout_time != fc::time_point_sec::maximum()) {
                         _db.modify(current, [&](language_object &obj) {
                             obj.active = comment.active;
-                            obj.cashout = comment.cashout_time;
+                            obj.cashout = _db.calculate_discussion_payout_time(comment);
                             obj.children = comment.children;
                             obj.net_rshares = comment.net_rshares.value;
                             obj.net_votes = comment.net_votes;
                             obj.children_rshares2 = comment.children_rshares2;
                             obj.hot = hot;
                             obj.trending = trending;
-                            obj.mode = comment.mode;
-                            if (obj.mode != first_payout) {
+                            if (obj.cashout == fc::time_point_sec()) {
                                 obj.promoted_balance = 0;
                             }
                         });
@@ -162,7 +161,6 @@ namespace steemit {
                         obj.net_rshares = comment.net_rshares.value;
                         obj.children_rshares2 = comment.children_rshares2;
                         obj.author = author;
-                        obj.mode = comment.mode;
                         obj.hot = hot;
                         obj.trending = trending;
                     });
@@ -326,7 +324,8 @@ namespace steemit {
                                 while (citr != comment_idx.end() &&
                                        citr->comment == c->id) {
                                     _db.modify(*citr, [&](language_object &t) {
-                                        if (t.mode == first_payout) {
+                                        if (t.cashout !=
+                                            fc::time_point_sec::maximum()) {
                                             t.promoted_balance += op.amount.amount;
                                         }
                                     });
@@ -409,7 +408,7 @@ namespace steemit {
 
         }
 
-        bool languages_plugin::filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &condition) {
+        bool languages_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
             if (query.filter_language.size()) {
                 if (c.languages.empty()) {
                     return true;
@@ -442,7 +441,7 @@ namespace steemit {
         void languages_plugin::plugin_startup() {
             database().with_read_lock(
                     [&]() {
-                        const auto &index = my->database().get_index<language_index>().indices().get<languages::by_comment>();
+                        const auto &index = my->database().get_index<language_index>().indices().get<by_comment>();
                         auto itr = index.begin();
                         for (; itr != index.end(); ++itr) {
                             my->self().cache_languages.emplace(itr->name);

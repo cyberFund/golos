@@ -12,7 +12,7 @@
 #include <fc/api.hpp>
 
 namespace steemit {
-    namespace app {
+    namespace application {
         class discussion_query;
 
         struct comment_api_obj;
@@ -22,7 +22,7 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
-        using steemit::app::application;
+        using steemit::application::application;
 
         using chainbase::object;
         using chainbase::oid;
@@ -102,7 +102,6 @@ namespace steemit {
              *  be reviewed.
              */
             fc::uint128_t children_rshares2;
-            comment_mode mode;
 
             account_id_type author;
             comment_id_type parent;
@@ -237,17 +236,6 @@ namespace steemit {
             }
         };
 
-        class by_mode_parent_children_rshares2
-                : public comparable_index<language_object> {
-        public:
-            virtual bool operator()(const language_object &first, const language_object &second) const override {
-                return std::less<comment_mode>()(first.mode, second.mode) &&
-                       std::less<comment_id_type>()(first.parent, second.parent) &&
-                       std::greater<fc::uint128_t>()(first.children_rshares2, second.children_rshares2) &&
-                       std::less<tag_id_type>()(first.id, second.id);
-            }
-        };
-
         struct by_comment;
         struct by_tag;
 
@@ -345,15 +333,14 @@ namespace steemit {
                                 >,
                                 composite_key_compare<std::less<language_name_type>, std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
                         >,
-                        ordered_unique<tag<by_mode_parent_children_rshares2>,
+                        ordered_unique<tag<by_parent_children_rshares2>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_mode, &language_object::mode>,
                                         member<language_object, comment_id_type, &language_object::parent>,
                                         member<language_object, fc::uint128_t, &language_object::children_rshares2>,
                                         member<language_object, tag_id_type, &language_object::id>
                                 >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_mode>, std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<language_name_type>,  std::less<comment_id_type>, std::greater<fc::uint128_t>, std::less<tag_id_type>>
                         >,
                         ordered_unique<tag<by_cashout>,
                                 composite_key<language_object,
@@ -582,7 +569,7 @@ namespace steemit {
  *  This plugin will scan all changes to posts and/or their meta data and
  *
  */
-        class languages_plugin : public steemit::app::plugin {
+        class languages_plugin : public steemit::application::plugin {
         public:
             languages_plugin(application *app);
 
@@ -600,7 +587,7 @@ namespace steemit {
 
             virtual void plugin_startup() override;
 
-            static bool filter(const app::discussion_query &query, const app::comment_api_obj &c, const std::function<bool(const app::comment_api_obj &)> &confition);
+            static bool filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &confition);
 
             friend class detail::languages_plugin_impl;
 
@@ -616,7 +603,7 @@ namespace steemit {
             };
 
 
-            language_api(const steemit::app::api_context &ctx) {
+            language_api(const steemit::application::api_context &ctx) {
             }//:_app(&ctx.app){}
 
             void on_api_startup() {
@@ -633,7 +620,7 @@ namespace steemit {
 FC_API(steemit::languages::language_api,);
 
 FC_REFLECT(steemit::languages::language_object,
-        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(mode)(author)(parent)(comment))
+        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_object, steemit::languages::language_index)
 
 FC_REFLECT(steemit::languages::language_stats_object,
