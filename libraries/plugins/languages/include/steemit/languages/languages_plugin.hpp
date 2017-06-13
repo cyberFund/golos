@@ -602,6 +602,8 @@ namespace steemit {
 
             static bool filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &confition);
 
+            const std::set<std::string> get_languages()const;
+
             friend class detail::languages_plugin_impl;
 
             std::unique_ptr<detail::languages_plugin_impl> my;
@@ -612,23 +614,22 @@ namespace steemit {
  */
         class language_api : public std::enable_shared_from_this<language_api> {
         public:
-            language_api() {
-            };
 
+            language_api();
 
-            language_api(const steemit::application::api_context &ctx) {
-            }//:_app(&ctx.app){}
+            language_api(const steemit::application::api_context &ctx);
 
-            void on_api_startup() {
-            }
+            void on_api_startup();
 
+            std::vector<std::string> get_languages() const;
         private:
-            //application::application* _app = nullptr;
+            struct impl;
+            std::unique_ptr<impl>pimpl;
         };
     }
 } //steemit::language
 
-FC_API(steemit::languages::language_api,);
+FC_API(steemit::languages::language_api,(get_languages));
 
 FC_REFLECT(steemit::languages::language_object,
         (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(author)(parent)(comment))

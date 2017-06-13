@@ -455,6 +455,36 @@ namespace steemit {
             ilog("startup languages plugin");
         }
 
+    const std::set<std::string> languages_plugin::get_languages() const {
+        return  my->self().cache_languages;
+    }
+
+    struct language_api::impl{
+        impl(steemit::application::application &app):app(app){}
+        ~impl()=default;
+        steemit::application::application &app;
+    };
+
+    language_api::language_api(const steemit::application::api_context &ctx):pimpl(new impl(ctx.app)) {
+    }
+
+    void language_api::on_api_startup() {
+
+    }
+
+    language_api::language_api() {
+
+    }
+
+    std::vector<std::string> language_api::get_languages() const {
+        std::vector<std::string> tmp;
+        for(const auto&i:pimpl->app.get_plugin<languages_plugin>(LANGUAGES_PLUGIN_NAME)->get_languages()){
+            tmp.push_back(i);
+        }
+        return tmp;
+    }
+
+
     }
 } /// steemit::tags
 
