@@ -42,7 +42,7 @@ namespace steemit {
    price                      sell_price;
 };*/
 
-typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
+    typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
     typedef chain::block_summary_object block_summary_api_obj;
     typedef chain::comment_vote_object comment_vote_api_obj;
     typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
@@ -58,27 +58,6 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
     typedef chain::vesting_delegation_object vesting_delegation_api_obj;
     typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
     typedef chain::reward_fund_object reward_fund_api_obj;
-
-        struct category_api_obj {
-            category_api_obj(const chain::category_object &c) :
-                    id(c.id),
-                    name(to_string(c.name)),
-                    abs_rshares(c.abs_rshares),
-                    total_payouts(c.total_payouts),
-                    discussions(c.discussions),
-                    last_update(c.last_update) {
-            }
-
-            category_api_obj() {
-            }
-
-            category_id_type id;
-            string name;
-            share_type abs_rshares;
-            asset total_payouts;
-            uint32_t discussions;
-            time_point_sec last_update;
-        };
 
         struct tag_api_obj {
             tag_api_obj(const tags::tag_stats_object &o) :
@@ -420,10 +399,6 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
 
     }
 } // steemit::application
-
-FC_REFLECT(steemit::application::category_api_obj,
-        (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update)
-)
 
 FC_REFLECT(steemit::application::account_api_obj,
         (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
