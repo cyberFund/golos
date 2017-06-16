@@ -1496,12 +1496,6 @@ namespace steemit {
                     new_rshares = utilities::calculate_vshares(new_rshares);
                     old_rshares = utilities::calculate_vshares(old_rshares);
 
-                    const auto &cat = this->_db.get_category(comment.category);
-                    this->_db.modify(cat, [&](category_object &c) {
-                        c.abs_rshares += abs_rshares;
-                        c.last_update = this->_db.head_block_time();
-                    });
-
                     uint64_t max_vote_weight = 0;
 
                     /** this verifies uniqueness of voter

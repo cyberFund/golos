@@ -160,10 +160,6 @@ namespace steemit {
 
             const comment_object *find_comment(const account_name_type &author, const string &permlink) const;
 
-            const category_object &get_category(const shared_string &name) const;
-
-            const category_object *find_category(const shared_string &name) const;
-
             const escrow_object &get_escrow(const account_name_type &name, uint32_t escrow_id) const;
 
             const escrow_object *find_escrow(const account_name_type &name, uint32_t escrow_id) const;

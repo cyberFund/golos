@@ -109,14 +109,6 @@ namespace steemit {
              */
             state get_state(std::string path) const;
 
-            std::vector<category_api_obj> get_trending_categories(std::string after, uint32_t limit) const;
-
-            std::vector<category_api_obj> get_best_categories(std::string after, uint32_t limit) const;
-
-            std::vector<category_api_obj> get_active_categories(std::string after, uint32_t limit) const;
-
-            std::vector<category_api_obj> get_recent_categories(std::string after, uint32_t limit) const;
-
             std::vector<account_name_type> get_active_witnesses() const;
 
             std::vector<account_name_type> get_miner_queue() const;
@@ -583,10 +575,6 @@ FC_API(steemit::application::database_api,
                 (get_block)
                 (get_ops_in_block)
                 (get_state)
-                (get_trending_categories)
-                (get_best_categories)
-                (get_active_categories)
-                (get_recent_categories)
 
                 // Globals
                 (get_config)

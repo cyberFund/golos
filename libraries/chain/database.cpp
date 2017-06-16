@@ -384,15 +384,6 @@ namespace steemit {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
-        const category_object &database::get_category(const shared_string &name) const {
-            try {
-                return get<category_object, by_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
-        }
-
-        const category_object *database::find_category(const shared_string &name) const {
-            return find<category_object, by_name>(name);
-        }
 
         const escrow_object &database::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
             try {
@@ -1609,7 +1600,6 @@ namespace steemit {
 
         share_type database::cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
             try {
-                const auto &cat = get_category(comment.category);
                 share_type claimed_reward = 0;
 
                 if (comment.net_rshares > 0) {
@@ -1680,10 +1670,6 @@ namespace steemit {
                         });
 #endif
 
-                        modify(cat, [&](category_object &c) {
-                            c.total_payouts += to_sbd(asset(claimed_reward, STEEM_SYMBOL));
-                        });
-
                     }
 
                     if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
@@ -1697,11 +1683,6 @@ namespace steemit {
                     fc::uint128_t old_rshares2 = utilities::calculate_vshares(comment.net_rshares.value);
                     adjust_rshares2(comment, old_rshares2, 0);
                 }
-
-                modify(cat, [&](category_object &c) {
-                    c.abs_rshares -= comment.abs_rshares;
-                    c.last_update = head_block_time();
-                });
 
                 modify(comment, [&](comment_object &c) {
                     /**
@@ -4234,17 +4215,6 @@ namespace steemit {
                     if (c.net_rshares.value > 0) {
                         adjust_rshares2(c, 0, utilities::calculate_vshares(c.net_rshares.value));
                     }
-                }
-
-                // Update category rshares
-                const auto &cat_idx = get_index<category_index>().indices().get<by_name>();
-                auto cat_itr = cat_idx.begin();
-                while (cat_itr != cat_idx.end()) {
-                    modify(*cat_itr, [&](category_object &c) {
-                        c.abs_rshares *= magnitude;
-                    });
-
-                    ++cat_itr;
                 }
 
             }

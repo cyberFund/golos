@@ -477,9 +477,7 @@ namespace steemit {
                 }
             }
 
-            return condition(c) ||
-                   query.filter_tags.find(c.category) !=
-                   query.filter_tags.end();
+            return condition(c);
         }
 
         void tags_plugin::plugin_set_program_options(

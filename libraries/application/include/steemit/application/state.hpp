@@ -190,7 +190,7 @@ FC_REFLECT_DERIVED(steemit::application::extended_account,
 FC_REFLECT(steemit::application::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time));
 FC_REFLECT(steemit::application::account_vote, (authorperm)(weight)(rshares)(percent)(time));
 
-+FC_REFLECT( steemit::app::discussion_index, (trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout))
+FC_REFLECT( steemit::application::discussion_index, (trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout))
 FC_REFLECT(steemit::application::tag_index, (trending))
 FC_REFLECT_DERIVED(steemit::application::discussion, (steemit::application::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))
 
