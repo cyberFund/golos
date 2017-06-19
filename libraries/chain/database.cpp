@@ -3004,8 +3004,6 @@ namespace steemit {
                     }
                 }
 
-
-
                 //Skip all manner of expiration and TaPoS checking if we're on block 1; It's impossible that the transaction is
                 //expired, and TaPoS makes no sense as no blocks exist.
                 if (BOOST_LIKELY(head_block_num() > 0)) {
