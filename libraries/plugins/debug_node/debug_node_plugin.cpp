@@ -16,12 +16,12 @@ namespace steemit {
     namespace plugin {
         namespace debug_node {
 
-            namespace detail {
-                class debug_node_plugin_impl {
+                struct debug_node_plugin::debug_node_plugin_impl {
                 public:
-                    debug_node_plugin_impl(debug_node_plugin *self);
+                    debug_node_plugin_impl(debug_node_plugin *self) : _self(self) {
+                    }
 
-                    virtual ~debug_node_plugin_impl();
+                    virtual ~debug_node_plugin_impl(){}
 
                     debug_node_plugin *_self;
 
@@ -29,23 +29,13 @@ namespace steemit {
                     std::vector<std::shared_ptr<fc::thread>> _thread_pool;
                 };
 
-                debug_node_plugin_impl::debug_node_plugin_impl(debug_node_plugin *self)
-                        : _self(self) {
-                }
-
-                debug_node_plugin_impl::~debug_node_plugin_impl() {
-                }
-            }
-
             private_key_storage::private_key_storage() {
             }
 
             private_key_storage::~private_key_storage() {
             }
 
-            debug_node_plugin::debug_node_plugin(application *app)
-                    : plugin(app) {
-                _my = std::make_shared<detail::debug_node_plugin_impl>(this);
+            debug_node_plugin::debug_node_plugin(application *app) : plugin(app) , _my(std::make_shared<debug_node_plugin_impl>(this)){
             }
 
             debug_node_plugin::~debug_node_plugin() {

@@ -15,10 +15,6 @@ namespace steemit {
     namespace plugin {
         namespace raw_block {
 
-            namespace detail {
-                class raw_block_api_impl;
-            }
-
             struct get_raw_block_args {
                 uint32_t block_num = 0;
             };
@@ -30,10 +26,10 @@ namespace steemit {
                 std::string raw_block;
             };
 
-            class raw_block_api {
+            class raw_block_api: public std::enable_shared_from_this<raw_block_api> {
             public:
                 raw_block_api(const steemit::application::api_context &ctx);
-
+                ~raw_block_api();
                 void on_api_startup();
 
                 get_raw_block_result get_raw_block(get_raw_block_args args);
@@ -41,7 +37,8 @@ namespace steemit {
                 void push_raw_block(std::string block_b64);
 
             private:
-                std::shared_ptr<detail::raw_block_api_impl> my;
+                struct raw_block_api_impl;
+                std::unique_ptr<raw_block_api_impl> my;
             };
 
         }

@@ -18,10 +18,6 @@ namespace steemit {
         using chain::share_type;
         using fc::time_point_sec;
 
-        namespace detail {
-            class market_history_api_impl;
-        }
-
         struct market_ticker {
             double latest = 0;
             double lowest_ask = 0;
@@ -53,10 +49,10 @@ namespace steemit {
             asset open_pays;
         };
 
-        class market_history_api {
+        class market_history_api : public std::enable_shared_from_this<market_history_api> {
         public:
             market_history_api(const steemit::application::api_context &ctx);
-
+            ~market_history_api();
             void on_api_startup();
 
             /**
@@ -106,7 +102,8 @@ namespace steemit {
             flat_set<uint32_t> get_market_history_buckets() const;
 
         private:
-            std::shared_ptr<detail::market_history_api_impl> my;
+            struct market_history_api_impl;
+            std::unique_ptr<market_history_api_impl> my;
         };
 
     }

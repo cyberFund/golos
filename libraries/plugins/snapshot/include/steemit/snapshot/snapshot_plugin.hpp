@@ -14,9 +14,6 @@
 namespace steemit {
     namespace plugin {
         namespace snapshot {
-            namespace detail {
-                class snapshot_plugin_impl;
-            }
 
             class snapshot_plugin : public steemit::application::plugin {
             public:
@@ -59,11 +56,11 @@ namespace steemit {
 
                 boost::bimap<std::string, std::string> loaded_snapshots;
 
-                friend class detail::snapshot_plugin_impl;
+                struct snapshot_plugin_impl;
 
                 steemit::application::application *application;
 
-                std::unique_ptr<detail::snapshot_plugin_impl> impl;
+                std::unique_ptr<snapshot_plugin_impl> pimpl;
             };
         }
     }

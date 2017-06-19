@@ -9,9 +9,7 @@ namespace steemit {
     namespace plugin {
         namespace raw_block {
 
-            namespace detail {
-
-                class raw_block_api_impl {
+                struct  raw_block_api::raw_block_api_impl {
                 public:
                     raw_block_api_impl(steemit::application::application &_app);
 
@@ -20,18 +18,16 @@ namespace steemit {
                     steemit::application::application &app;
                 };
 
-                raw_block_api_impl::raw_block_api_impl(steemit::application::application &_app)
+                raw_block_api::raw_block_api_impl::raw_block_api_impl(steemit::application::application &_app)
                         : app(_app) {
                 }
 
-                std::shared_ptr<steemit::plugin::raw_block::raw_block_plugin> raw_block_api_impl::get_plugin() {
+                std::shared_ptr<steemit::plugin::raw_block::raw_block_plugin> raw_block_api::raw_block_api_impl::get_plugin() {
                     return app.get_plugin<raw_block_plugin>("raw_block");
                 }
 
-            } // detail
 
-            raw_block_api::raw_block_api(const steemit::application::api_context &ctx) {
-                my = std::make_shared<detail::raw_block_api_impl>(ctx.app);
+            raw_block_api::raw_block_api(const steemit::application::api_context &ctx):my(new raw_block_api_impl(ctx.app)){
             }
 
             get_raw_block_result raw_block_api::get_raw_block(get_raw_block_args args) {
@@ -67,6 +63,8 @@ namespace steemit {
 
             void raw_block_api::on_api_startup() {
             }
+
+        raw_block_api::~raw_block_api()=default;
 
         }
     }

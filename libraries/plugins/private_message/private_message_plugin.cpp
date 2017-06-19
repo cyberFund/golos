@@ -34,9 +34,8 @@
 namespace steemit {
     namespace private_message {
 
-        namespace detail {
 
-            class private_message_plugin_impl {
+            struct  private_message_plugin::private_message_plugin_impl {
             public:
                 private_message_plugin_impl(private_message_plugin &_plugin);
 
@@ -51,7 +50,7 @@ namespace steemit {
                 flat_map<string, string> _tracked_accounts;
             };
 
-            private_message_plugin_impl::private_message_plugin_impl(private_message_plugin &_plugin)
+            private_message_plugin::private_message_plugin_impl::private_message_plugin_impl(private_message_plugin &_plugin)
                     : _self(_plugin) {
                 _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<steemit::private_message::private_message_plugin_operation>>(database());
 
@@ -61,11 +60,10 @@ namespace steemit {
                 return;
             }
 
-            private_message_plugin_impl::~private_message_plugin_impl() {
+            private_message_plugin::private_message_plugin_impl::~private_message_plugin_impl() {
                 return;
             }
 
-        } // end namespace detail
 
         void private_message_evaluator::do_apply(const private_message_operation &pm) {
             database &d = db();
@@ -101,7 +99,7 @@ namespace steemit {
 
         private_message_plugin::private_message_plugin(application::application *app)
                 : plugin(app),
-                  my(new detail::private_message_plugin_impl(*this)) {
+                  my(new private_message_plugin_impl(*this)) {
         }
 
         private_message_plugin::~private_message_plugin() {

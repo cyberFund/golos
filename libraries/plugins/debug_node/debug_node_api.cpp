@@ -16,7 +16,6 @@ namespace steemit {
     namespace plugin {
         namespace debug_node {
 
-            namespace detail {
 
                 class debug_private_key_storage : public private_key_storage {
                 public:
@@ -36,7 +35,7 @@ namespace steemit {
                     std::map<steemit::chain::public_key_type, fc::ecc::private_key> key_table;
                 };
 
-                class debug_node_api_impl {
+                struct debug_node_api::debug_node_api_impl {
                 public:
                     debug_node_api_impl(steemit::application::application &_app);
 
@@ -106,7 +105,7 @@ namespace steemit {
                     return;
                 }
 
-                debug_node_api_impl::debug_node_api_impl(steemit::application::application &_app)
+                debug_node_api::debug_node_api_impl::debug_node_api_impl(steemit::application::application &_app)
                         : app(_app) {
 #ifdef STEEMIT_INIT_PRIVATE_KEY
                     fc::ecc::private_key init_key = STEEMIT_INIT_PRIVATE_KEY;
@@ -114,12 +113,12 @@ namespace steemit {
 #endif
                 }
 
-                void debug_node_api_impl::debug_set_dev_key_prefix(std::string prefix) {
+                void debug_node_api::debug_node_api_impl::debug_set_dev_key_prefix(std::string prefix) {
                     key_storage.dev_key_prefix = prefix;
                     return;
                 }
 
-                void debug_node_api_impl::debug_get_dev_key(get_dev_key_result &result, const get_dev_key_args &args) {
+                void debug_node_api::debug_node_api_impl::debug_get_dev_key(get_dev_key_result &result, const get_dev_key_args &args) {
                     fc::ecc::private_key priv = fc::ecc::private_key::regenerate(fc::sha256::hash(
                             key_storage.dev_key_prefix + args.name));
                     result.private_key = graphene::utilities::key_to_wif(priv);
@@ -127,7 +126,7 @@ namespace steemit {
                     return;
                 }
 
-                void debug_node_api_impl::debug_mine(debug_mine_result &result, const debug_mine_args &args) {
+                void debug_node_api::debug_node_api_impl::debug_mine(debug_mine_result &result, const debug_mine_args &args) {
                     std::shared_ptr<chain::database> db = app.chain_database();
 
                     chain::pow2 work;
@@ -180,7 +179,7 @@ namespace steemit {
                     return;
                 }
 
-                uint32_t debug_node_api_impl::debug_push_blocks(const std::string &src_filename, uint32_t count, bool skip_validate_invariants) {
+                uint32_t debug_node_api::debug_node_api_impl::debug_push_blocks(const std::string &src_filename, uint32_t count, bool skip_validate_invariants) {
                     if (count == 0) {
                         return 0;
                     }
@@ -234,15 +233,15 @@ namespace steemit {
                     return 0;
                 }
 
-                uint32_t debug_node_api_impl::debug_generate_blocks(const std::string &debug_key, uint32_t count) {
+                uint32_t debug_node_api::debug_node_api_impl::debug_generate_blocks(const std::string &debug_key, uint32_t count) {
                     return get_plugin()->debug_generate_blocks(debug_key, count, steemit::chain::database::skip_nothing, 0, &key_storage);
                 }
 
-                uint32_t debug_node_api_impl::debug_generate_blocks_until(const std::string &debug_key, const fc::time_point_sec &head_block_time, bool generate_sparsely) {
+                uint32_t debug_node_api::debug_node_api_impl::debug_generate_blocks_until(const std::string &debug_key, const fc::time_point_sec &head_block_time, bool generate_sparsely) {
                     return get_plugin()->debug_generate_blocks_until(debug_key, head_block_time, generate_sparsely, steemit::chain::database::skip_nothing, &key_storage);
                 }
 
-                fc::optional<steemit::chain::signed_block> debug_node_api_impl::debug_pop_block() {
+                fc::optional<steemit::chain::signed_block> debug_node_api::debug_node_api_impl::debug_pop_block() {
                     std::shared_ptr<steemit::chain::database> db = app.chain_database();
                     return db->fetch_block_by_number(db->head_block_num());
                 }
@@ -252,15 +251,15 @@ namespace steemit {
    app.chain_database()->push_block( block );
 }*/
 
-                steemit::chain::witness_schedule_object debug_node_api_impl::debug_get_witness_schedule() {
+                steemit::chain::witness_schedule_object debug_node_api::debug_node_api_impl::debug_get_witness_schedule() {
                     return app.chain_database()->get(steemit::chain::witness_schedule_id_type());
                 }
 
-                steemit::chain::hardfork_property_object debug_node_api_impl::debug_get_hardfork_property_object() {
+                steemit::chain::hardfork_property_object debug_node_api::debug_node_api_impl::debug_get_hardfork_property_object() {
                     return app.chain_database()->get(steemit::chain::hardfork_property_id_type());
                 }
 
-                void debug_node_api_impl::debug_update_object(const fc::variant_object &update) {
+                void debug_node_api::debug_node_api_impl::debug_update_object(const fc::variant_object &update) {
                     //get_plugin()->debug_update( update );
                 }
 
@@ -271,23 +270,23 @@ namespace steemit {
    return fc::variant_object( std::move( result ) );
 }*/
 
-                void debug_node_api_impl::debug_set_edits(const fc::variant_object &edits) {
+                void debug_node_api::debug_node_api_impl::debug_set_edits(const fc::variant_object &edits) {
                     //get_plugin()->load_debug_updates( edits );
                 }
 
-                std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> debug_node_api_impl::get_plugin() {
+                std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> debug_node_api::debug_node_api_impl::get_plugin() {
                     return app.get_plugin<debug_node_plugin>("debug_node");
                 }
 
-                void debug_node_api_impl::debug_stream_json_objects(const std::string &filename) {
+                void debug_node_api::debug_node_api_impl::debug_stream_json_objects(const std::string &filename) {
                     //get_plugin()->set_json_object_stream( filename );
                 }
 
-                void debug_node_api_impl::debug_stream_json_objects_flush() {
+                void debug_node_api::debug_node_api_impl::debug_stream_json_objects_flush() {
                     //get_plugin()->flush_json_object_stream();
                 }
 
-                void debug_node_api_impl::debug_set_hardfork(uint32_t hardfork_id) {
+                void debug_node_api::debug_node_api_impl::debug_set_hardfork(uint32_t hardfork_id) {
                     using namespace steemit::chain;
 
                     if (hardfork_id > STEEMIT_NUM_HARDFORKS) {
@@ -299,19 +298,17 @@ namespace steemit {
                     });
                 }
 
-                bool debug_node_api_impl::debug_has_hardfork(uint32_t hardfork_id) {
+                bool debug_node_api::debug_node_api_impl::debug_has_hardfork(uint32_t hardfork_id) {
                     return app.chain_database()->get(steemit::chain::hardfork_property_id_type()).last_hardfork >=
                            hardfork_id;
                 }
 
-                void debug_node_api_impl::debug_get_json_schema(std::string &schema) {
+                void debug_node_api::debug_node_api_impl::debug_get_json_schema(std::string &schema) {
                     schema = app.chain_database()->get_json_schema();
                 }
 
-            } // detail
 
-            debug_node_api::debug_node_api(const steemit::application::api_context &ctx) {
-                my = std::make_shared<detail::debug_node_api_impl>(ctx.app);
+            debug_node_api::debug_node_api(const steemit::application::api_context &ctx) :my(new debug_node_api_impl(ctx.app)){
             }
 
             void debug_node_api::on_api_startup() {

@@ -8,21 +8,19 @@
 
 namespace steemit {
     namespace account_by_key {
-
-        namespace detail {
-            class account_by_key_api_impl;
-        }
-
-        class account_by_key_api {
+        class account_by_key_api: public std::enable_shared_from_this<account_by_key_api> {
         public:
             account_by_key_api(const application::api_context &ctx);
+
+            ~account_by_key_api();
 
             void on_api_startup();
 
             vector<vector<account_name_type>> get_key_references(vector<public_key_type> keys) const;
 
         private:
-            std::shared_ptr<detail::account_by_key_api_impl> my;
+            struct impl;
+            std::unique_ptr<impl> pimpl;
         };
 
     }

@@ -13,9 +13,7 @@
 namespace steemit {
     namespace plugin {
         namespace snapshot {
-            namespace detail {
-                class snapshot_plugin_impl {
-                public:
+                struct snapshot_plugin::snapshot_plugin_impl {
                     snapshot_plugin_impl(snapshot_plugin &plugin)
                             : self(plugin) {
 
@@ -86,27 +84,27 @@ namespace steemit {
                     }
                 };
 
-                void snapshot_plugin_impl::pre_operation(const chain::operation_notification &note) {
+                void snapshot_plugin::snapshot_plugin_impl::pre_operation(const chain::operation_notification &note) {
                     note.op.visit(pre_operation_visitor(self));
                 }
 
-                void snapshot_plugin_impl::post_operation(const chain::operation_notification &note) {
+                void snapshot_plugin::snapshot_plugin_impl::post_operation(const chain::operation_notification &note) {
                     note.op.visit(post_operation_visitor(self));
                 }
 
-                void snapshot_plugin_impl::update_key_lookup(const chain::account_authority_object &a) {
+                void snapshot_plugin::snapshot_plugin_impl::update_key_lookup(const chain::account_authority_object &a) {
                     try {
                         self.application->get_plugin<account_by_key::account_by_key_plugin>(ACCOUNT_BY_KEY_PLUGIN_NAME)->update_key_lookup(a);
                     } catch (fc::assert_exception) {
                         ilog("Account by key plugin not loaded");
                     }
                 }
-            }
+
 
             snapshot_plugin::snapshot_plugin(steemit::application::application *app)
                     : plugin(app),
                       application(app),
-                      impl(new detail::snapshot_plugin_impl(*this)) {
+                      pimpl(new snapshot_plugin_impl(*this)) {
             }
 
             snapshot_plugin::~snapshot_plugin() {
@@ -170,7 +168,7 @@ namespace steemit {
                                 }
                             });
 
-                            impl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
+                            pimpl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
                                 auth.account = account.name;
                                 auth.owner.weight_threshold = 1;
                                 auth.owner = account.keys.owner_key;

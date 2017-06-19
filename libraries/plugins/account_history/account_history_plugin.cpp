@@ -10,11 +10,9 @@
 namespace steemit {
     namespace account_history {
 
-        namespace detail {
-
             using namespace steemit::protocol;
 
-            class account_history_plugin_impl {
+            struct account_history_plugin::account_history_plugin_impl {
             public:
                 account_history_plugin_impl(account_history_plugin &_plugin)
                         : _self(_plugin) {
@@ -33,11 +31,12 @@ namespace steemit {
                 bool _filter_content = false;
             };
 
-            account_history_plugin_impl::~account_history_plugin_impl() {
-                return;
-            }
+    account_history_plugin::account_history_plugin_impl::~account_history_plugin_impl() {
+        return;
+    }
 
-            struct operation_visitor {
+
+    struct operation_visitor {
                 operation_visitor(database &db, const operation_notification &note, const operation_object *&n, string i)
                         : _db(db), _note(note), new_obj(n), item(i) {
                 };
@@ -172,7 +171,7 @@ namespace steemit {
                 }
             };
 
-            void account_history_plugin_impl::on_operation(const operation_notification &note) {
+            void account_history_plugin::account_history_plugin_impl::on_operation(const operation_notification &note) {
                 flat_set<account_name_type> impacted;
                 steemit::chain::database &db = database();
 
@@ -193,11 +192,10 @@ namespace steemit {
                 }
             }
 
-        } // end namespace detail
 
         account_history_plugin::account_history_plugin(application *app)
                 : plugin(app),
-                  my(new detail::account_history_plugin_impl(*this)) {
+                  my(new account_history_plugin_impl(*this)) {
             //ilog("Loading account history plugin" );
         }
 

@@ -132,10 +132,6 @@ namespace steemit {
 
         typedef account_activity_bucket_object::id_type account_activity_bucket_id_type;
 
-        namespace detail {
-            class account_statistics_plugin_impl;
-        }
-
         class account_statistics_plugin : public steemit::application::plugin {
         public:
             account_statistics_plugin(application *app);
@@ -161,9 +157,9 @@ namespace steemit {
             const flat_set<std::string> &get_tracked_accounts() const;
 
         private:
-            friend class detail::account_statistics_plugin_impl;
+            struct account_statistics_plugin_impl;
 
-            std::unique_ptr<detail::account_statistics_plugin_impl> _my;
+            std::unique_ptr<account_statistics_plugin_impl> _my;
         };
 
     }

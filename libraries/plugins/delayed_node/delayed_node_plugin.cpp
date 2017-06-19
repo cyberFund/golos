@@ -33,8 +33,7 @@ namespace steemit {
     namespace delayed_node {
         namespace bpo = boost::program_options;
 
-        namespace detail {
-            struct delayed_node_plugin_impl {
+            struct delayed_node_plugin::delayed_node_plugin_impl {
                 std::string remote_endpoint;
                 fc::http::websocket_client client;
                 std::shared_ptr<fc::rpc::websocket_api_connection> client_connection;
@@ -43,10 +42,10 @@ namespace steemit {
                 steemit::chain::block_id_type last_received_remote_head;
                 steemit::chain::block_id_type last_processed_remote_head;
             };
-        }
+
 
         delayed_node_plugin::delayed_node_plugin(application *app)
-                : plugin(app), my(new detail::delayed_node_plugin_impl) {
+                : plugin(app), my(new delayed_node_plugin_impl) {
         }
 
         delayed_node_plugin::~delayed_node_plugin() {

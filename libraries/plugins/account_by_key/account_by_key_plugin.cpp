@@ -7,31 +7,45 @@
 namespace steemit {
     namespace account_by_key {
 
-        namespace detail {
 
-            class account_by_key_plugin_impl {
-            public:
-                account_by_key_plugin_impl(account_by_key_plugin &_plugin)
-                        : self(_plugin) {
+            struct account_by_key_plugin::account_by_key_plugin_impl {
+                account_by_key_plugin_impl(account_by_key_plugin &_plugin) : self(_plugin) {
                 }
 
                 steemit::chain::database &database() {
                     return self.database();
                 }
 
-                void pre_operation(const operation_notification &op_obj);
+                void pre_operation(const operation_notification &note);
 
-                void post_operation(const operation_notification &op_obj);
+                void post_operation(const operation_notification &note);
 
                 void clear_cache();
 
                 void cache_auths(const account_authority_object &a);
 
+
                 flat_set<public_key_type> cached_keys;
                 account_by_key_plugin &self;
             };
 
-            struct pre_operation_visitor {
+    void account_by_key_plugin::account_by_key_plugin_impl::clear_cache() {
+        cached_keys.clear();
+    }
+
+    void account_by_key_plugin::account_by_key_plugin_impl::cache_auths(const account_authority_object &a) {
+        for (const auto &item : a.owner.key_auths) {
+            cached_keys.insert(item.first);
+        }
+        for (const auto &item : a.active.key_auths) {
+            cached_keys.insert(item.first);
+        }
+        for (const auto &item : a.posting.key_auths) {
+            cached_keys.insert(item.first);
+        }
+    }
+
+    struct pre_operation_visitor {
                 account_by_key_plugin &_plugin;
 
                 pre_operation_visitor(account_by_key_plugin &plugin)
@@ -153,35 +167,16 @@ namespace steemit {
                 }
             };
 
-            void account_by_key_plugin_impl::clear_cache() {
-                cached_keys.clear();
-            }
+    void account_by_key_plugin::account_by_key_plugin_impl::pre_operation(const operation_notification &note) {
+        note.op.visit(pre_operation_visitor(self));
+    }
 
-            void account_by_key_plugin_impl::cache_auths(const account_authority_object &a) {
-                for (const auto &item : a.owner.key_auths) {
-                    cached_keys.insert(item.first);
-                }
-                for (const auto &item : a.active.key_auths) {
-                    cached_keys.insert(item.first);
-                }
-                for (const auto &item : a.posting.key_auths) {
-                    cached_keys.insert(item.first);
-                }
-            }
-
-            void account_by_key_plugin_impl::pre_operation(const operation_notification &note) {
-                note.op.visit(pre_operation_visitor(self));
-            }
-
-            void account_by_key_plugin_impl::post_operation(const operation_notification &note) {
-                note.op.visit(post_operation_visitor(self));
-            }
-
-        } // detail
+    void account_by_key_plugin::account_by_key_plugin_impl::post_operation(const operation_notification &note) {
+        note.op.visit(post_operation_visitor(self));
+    }
 
         account_by_key_plugin::account_by_key_plugin(steemit::application::application *app)
-                : plugin(app),
-                  my(new detail::account_by_key_plugin_impl(*this)) {
+                : plugin(app), my(new account_by_key_plugin_impl(*this)) {
         }
 
         void account_by_key_plugin::plugin_set_program_options(

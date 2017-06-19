@@ -11,11 +11,9 @@
 namespace steemit {
     namespace blockchain_statistics {
 
-        namespace detail {
-
             using namespace steemit::protocol;
 
-            class blockchain_statistics_plugin_impl {
+            struct blockchain_statistics_plugin::blockchain_statistics_plugin_impl {
             public:
                 blockchain_statistics_plugin_impl(blockchain_statistics_plugin &plugin)
                         : _self(plugin) {
@@ -226,7 +224,7 @@ namespace steemit {
                 }
             };
 
-            void blockchain_statistics_plugin_impl::on_block(const signed_block &b) {
+            void blockchain_statistics_plugin::blockchain_statistics_plugin_impl::on_block(const signed_block &b) {
                 auto &db = _self.database();
 
                 if (b.block_num() == 1) {
@@ -304,7 +302,7 @@ namespace steemit {
                 }
             }
 
-            void blockchain_statistics_plugin_impl::pre_operation(const operation_notification &o) {
+            void blockchain_statistics_plugin::blockchain_statistics_plugin_impl::pre_operation(const operation_notification &o) {
                 auto &db = _self.database();
 
                 for (auto bucket_id : _current_buckets) {
@@ -355,7 +353,7 @@ namespace steemit {
                 }
             }
 
-            void blockchain_statistics_plugin_impl::post_operation(const operation_notification &o) {
+            void blockchain_statistics_plugin::blockchain_statistics_plugin_impl::post_operation(const operation_notification &o) {
                 try {
                     auto &db = _self.database();
 
@@ -372,11 +370,8 @@ namespace steemit {
                 } FC_CAPTURE_AND_RETHROW()
             }
 
-        } // detail
-
         blockchain_statistics_plugin::blockchain_statistics_plugin(application *app)
-                : plugin(app),
-                  _my(new detail::blockchain_statistics_plugin_impl(*this)) {
+                : plugin(app), _my(new blockchain_statistics_plugin_impl(*this)) {
         }
 
         blockchain_statistics_plugin::~blockchain_statistics_plugin() {

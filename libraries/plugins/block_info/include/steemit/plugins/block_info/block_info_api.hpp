@@ -15,19 +15,15 @@ namespace steemit {
     namespace plugin {
         namespace block_info {
 
-            namespace detail {
-                class block_info_api_impl;
-            }
-
             struct get_block_info_args {
                 uint32_t start_block_num = 0;
                 uint32_t count = 1000;
             };
 
-            class block_info_api {
+            class block_info_api: public std::enable_shared_from_this<block_info_api> {
             public:
                 block_info_api(const steemit::application::api_context &ctx);
-
+                ~block_info_api();
                 void on_api_startup();
 
                 std::vector<block_info> get_block_info(get_block_info_args args);
@@ -35,7 +31,8 @@ namespace steemit {
                 std::vector<block_with_info> get_blocks_with_info(get_block_info_args args);
 
             private:
-                std::shared_ptr<detail::block_info_api_impl> my;
+                struct block_info_api_impl;
+                std::unique_ptr<block_info_api_impl> my;
             };
 
         }

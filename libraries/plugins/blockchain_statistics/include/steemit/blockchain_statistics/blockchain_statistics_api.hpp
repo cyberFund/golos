@@ -13,10 +13,6 @@ namespace steemit {
 namespace steemit {
     namespace blockchain_statistics {
 
-        namespace detail {
-            class blockchain_statistics_api_impl;
-        }
-
         struct statistics {
             uint32_t blocks = 0;                                  ///< Blocks produced
             uint32_t bandwidth = 0;                               ///< Bandwidth in bytes
@@ -74,9 +70,11 @@ namespace steemit {
             statistics &operator+=(const bucket_object &b);
         };
 
-        class blockchain_statistics_api {
+        class blockchain_statistics_api: public std::enable_shared_from_this<blockchain_statistics_api> {
         public:
             blockchain_statistics_api(const steemit::application::api_context &ctx);
+
+            ~blockchain_statistics_api();
 
             void on_api_startup();
 
@@ -102,7 +100,8 @@ namespace steemit {
             statistics get_lifetime_stats() const;
 
         private:
-            std::shared_ptr<detail::blockchain_statistics_api_impl> my;
+            struct blockchain_statistics_api_impl;
+            std::unique_ptr<blockchain_statistics_api_impl> my;
         };
 
     }

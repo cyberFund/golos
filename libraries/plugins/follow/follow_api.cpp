@@ -5,8 +5,6 @@
 namespace steemit {
     namespace follow {
 
-        namespace detail {
-
             inline void set_what(vector<follow_type> &what, uint16_t bitmask) {
                 if (bitmask & 1 << blog) {
                     what.push_back(blog);
@@ -16,7 +14,7 @@ namespace steemit {
                 }
             }
 
-            class follow_api_impl {
+            struct follow_api::follow_api_impl {
             public:
                 follow_api_impl(steemit::application::application &_app)
                         : app(_app) {
@@ -41,7 +39,7 @@ namespace steemit {
                 steemit::application::application &app;
             };
 
-            vector<follow_api_obj> follow_api_impl::get_followers(string following, string start_follower, follow_type type, uint16_t limit) const {
+            vector<follow_api_obj> follow_api::follow_api_impl::get_followers(string following, string start_follower, follow_type type, uint16_t limit) const {
                 FC_ASSERT(limit <= 1000);
                 vector<follow_api_obj> result;
                 result.reserve(limit);
@@ -65,7 +63,7 @@ namespace steemit {
                 return result;
             }
 
-            vector<follow_api_obj> follow_api_impl::get_following(string follower, string start_following, follow_type type, uint16_t limit) const {
+            vector<follow_api_obj> follow_api::follow_api_impl::get_following(string follower, string start_following, follow_type type, uint16_t limit) const {
                 FC_ASSERT(limit <= 100);
                 vector<follow_api_obj> result;
                 const auto &idx = app.chain_database()->get_index<follow_index>().indices().get<by_follower_following>();
@@ -86,7 +84,7 @@ namespace steemit {
                 return result;
             }
 
-            follow_count_api_obj follow_api_impl::get_follow_count(string &account) const {
+            follow_count_api_obj follow_api::follow_api_impl::get_follow_count(string &account) const {
                 follow_count_api_obj result;
                 auto itr = app.chain_database()->find<follow_count_object, by_account>(account);
 
@@ -99,7 +97,7 @@ namespace steemit {
                 return result;
             }
 
-            vector<feed_entry> follow_api_impl::get_feed_entries(string account, uint32_t entry_id, uint16_t limit) const {
+            vector<feed_entry> follow_api::follow_api_impl::get_feed_entries(string account, uint32_t entry_id, uint16_t limit) const {
                 FC_ASSERT(limit <=
                           500, "Cannot retrieve more than 500 feed entries at a time.");
 
@@ -137,7 +135,7 @@ namespace steemit {
                 return results;
             }
 
-            vector<comment_feed_entry> follow_api_impl::get_feed(string account, uint32_t entry_id, uint16_t limit) const {
+            vector<comment_feed_entry> follow_api::follow_api_impl::get_feed(string account, uint32_t entry_id, uint16_t limit) const {
                 FC_ASSERT(limit <=
                           500, "Cannot retrieve more than 500 feed entries at a time.");
 
@@ -174,7 +172,7 @@ namespace steemit {
                 return results;
             }
 
-            vector<blog_entry> follow_api_impl::get_blog_entries(string account, uint32_t entry_id, uint16_t limit) const {
+            vector<blog_entry> follow_api::follow_api_impl::get_blog_entries(string account, uint32_t entry_id, uint16_t limit) const {
                 FC_ASSERT(limit <=
                           500, "Cannot retrieve more than 500 blog entries at a time.");
 
@@ -207,7 +205,7 @@ namespace steemit {
                 return results;
             }
 
-            vector<comment_blog_entry> follow_api_impl::get_blog(string account, uint32_t entry_id, uint16_t limit) const {
+            vector<comment_blog_entry> follow_api::follow_api_impl::get_blog(string account, uint32_t entry_id, uint16_t limit) const {
                 FC_ASSERT(limit <=
                           500, "Cannot retrieve more than 500 blog entries at a time.");
 
@@ -239,7 +237,7 @@ namespace steemit {
                 return results;
             }
 
-            vector<account_reputation> follow_api_impl::get_account_reputations(string lower_bound_name, uint32_t limit) const {
+            vector<account_reputation> follow_api::follow_api_impl::get_account_reputations(string lower_bound_name, uint32_t limit) const {
                 FC_ASSERT(limit <=
                           1000, "Cannot retrieve more than 1000 account reputations at a time.");
 
@@ -266,12 +264,9 @@ namespace steemit {
                 return results;
             }
 
-        } // detail
-
-        follow_api::follow_api(const steemit::application::api_context &ctx) {
-            my = std::make_shared<detail::follow_api_impl>(ctx.app);
+        follow_api::follow_api(const steemit::application::api_context &ctx):my(new follow_api_impl(ctx.app)){
         }
-
+        follow_api::~follow_api()=default;
         void follow_api::on_api_startup() {
         }
 

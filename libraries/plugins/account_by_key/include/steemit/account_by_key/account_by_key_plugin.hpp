@@ -10,11 +10,11 @@ namespace steemit {
 
 #define ACCOUNT_BY_KEY_PLUGIN_NAME "account_by_key"
 
-        namespace detail { class account_by_key_plugin_impl; }
-
         class account_by_key_plugin : public steemit::application::plugin {
         public:
             account_by_key_plugin(steemit::application::application *app);
+
+            ~account_by_key_plugin()=default;
 
             std::string plugin_name() const override {
                 return ACCOUNT_BY_KEY_PLUGIN_NAME;
@@ -30,9 +30,9 @@ namespace steemit {
 
             void update_key_lookup(const account_authority_object &a);
 
-            friend class detail::account_by_key_plugin_impl;
+            struct account_by_key_plugin_impl;
 
-            std::unique_ptr<detail::account_by_key_plugin_impl> my;
+            std::unique_ptr<account_by_key_plugin_impl> my;
         };
 
     }

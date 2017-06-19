@@ -22,11 +22,10 @@
 namespace steemit {
     namespace tags {
 
-        namespace detail {
 
             using namespace steemit::protocol;
 
-            class tags_plugin_impl {
+            struct tags_plugin::tags_plugin_impl {
             public:
                 tags_plugin_impl(tags_plugin &_plugin)
                         : _self(_plugin) {
@@ -43,7 +42,7 @@ namespace steemit {
                 tags_plugin &_self;
             };
 
-            tags_plugin_impl::~tags_plugin_impl() {
+            tags_plugin::tags_plugin_impl::~tags_plugin_impl() {
                 return;
             }
 
@@ -424,7 +423,7 @@ namespace steemit {
             };
 
 
-            void tags_plugin_impl::on_operation(const operation_notification &note) {
+            void tags_plugin::tags_plugin_impl::on_operation(const operation_notification &note) {
                 try {
                     /// plugins shouldn't ever throw
                     note.op.visit(operation_visitor(database()));
@@ -437,12 +436,11 @@ namespace steemit {
                 }
             }
 
-        } /// end detail namespace
 
         tags_plugin::tags_plugin(application *app)
                 :
 
-                plugin(app), my(new detail::tags_plugin_impl(*this)) {
+                plugin(app), my(new tags_plugin_impl(*this)) {
             chain::database &db = database();
             add_plugin_index<tag_index>(db);
             add_plugin_index<tag_stats_index>(db);

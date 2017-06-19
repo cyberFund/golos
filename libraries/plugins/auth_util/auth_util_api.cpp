@@ -15,9 +15,8 @@ namespace steemit {
 
             using boost::container::flat_set;
 
-            namespace detail {
 
-                class auth_util_api_impl {
+                struct auth_util_api::auth_util_api_impl {
                 public:
                     auth_util_api_impl(steemit::application::application &_app);
 
@@ -28,15 +27,15 @@ namespace steemit {
                     steemit::application::application &app;
                 };
 
-                auth_util_api_impl::auth_util_api_impl(steemit::application::application &_app)
+                auth_util_api::auth_util_api_impl::auth_util_api_impl(steemit::application::application &_app)
                         : app(_app) {
                 }
 
-                std::shared_ptr<steemit::plugin::auth_util::auth_util_plugin> auth_util_api_impl::get_plugin() {
+                std::shared_ptr<steemit::plugin::auth_util::auth_util_plugin> auth_util_api::auth_util_api_impl::get_plugin() {
                     return app.get_plugin<auth_util_plugin>("auth_util");
                 }
 
-                void auth_util_api_impl::check_authority_signature(const check_authority_signature_params &args, check_authority_signature_result &result) {
+                void auth_util_api::auth_util_api_impl::check_authority_signature(const check_authority_signature_params &args, check_authority_signature_result &result) {
                     std::shared_ptr<chain::database> db = app.chain_database();
                     const chain::account_authority_object &acct = db->get<chain::account_authority_object, chain::by_account>(args.account_name);
                     protocol::authority auth;
@@ -67,10 +66,7 @@ namespace steemit {
                     return;
                 }
 
-            } // detail
-
-            auth_util_api::auth_util_api(const steemit::application::api_context &ctx) {
-                my = std::make_shared<detail::auth_util_api_impl>(ctx.app);
+            auth_util_api::auth_util_api(const steemit::application::api_context &ctx):my(new auth_util_api_impl(ctx.app)) {
             }
 
             void auth_util_api::on_api_startup() {
@@ -81,6 +77,8 @@ namespace steemit {
                 my->check_authority_signature(args, result);
                 return result;
             }
+
+        auth_util_api::~auth_util_api()=default;
 
         }
     }

@@ -28,12 +28,10 @@
 
 namespace steemit {
     namespace delayed_node {
-        namespace detail { struct delayed_node_plugin_impl; }
 
         using application::application;
 
         class delayed_node_plugin : public steemit::application::plugin {
-            std::unique_ptr<detail::delayed_node_plugin_impl> my;
         public:
             delayed_node_plugin(application *app);
 
@@ -58,6 +56,10 @@ namespace steemit {
             void connect();
 
             void sync_with_trusted_node();
+
+        private:
+            struct delayed_node_plugin_impl;
+            std::unique_ptr<delayed_node_plugin_impl> my;
         };
 
     }

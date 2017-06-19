@@ -6,9 +6,8 @@
 namespace steemit {
     namespace account_statistics {
 
-        namespace detail {
 
-            class account_statistics_plugin_impl {
+            struct account_statistics_plugin::account_statistics_plugin_impl {
             public:
                 account_statistics_plugin_impl(account_statistics_plugin &plugin)
                         : _self(plugin) {
@@ -45,15 +44,13 @@ namespace steemit {
                 }
             };
 
-            void account_statistics_plugin_impl::on_operation(const operation_notification &o) {
+            void account_statistics_plugin::account_statistics_plugin_impl::on_operation(const operation_notification &o) {
 
             }
 
-        } // detail
-
         account_statistics_plugin::account_statistics_plugin(application *app)
                 : plugin(app),
-                  _my(new detail::account_statistics_plugin_impl(*this)) {
+                  _my(new account_statistics_plugin_impl(*this)) {
         }
 
         account_statistics_plugin::~account_statistics_plugin() {

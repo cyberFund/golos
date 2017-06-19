@@ -52,11 +52,6 @@ namespace steemit {
             bucket_object_type = 1 ///< used in market_history_plugin
         };
 
-
-        namespace detail {
-            class account_history_plugin_impl;
-        }
-
 /**
  *  This plugin is designed to track a range of operations by account so that one node
  *  doesn't need to hold the full operation history in memory.
@@ -80,9 +75,9 @@ namespace steemit {
 
             flat_map<string, string> tracked_accounts() const; /// map start_range to end_range
 
-            friend class detail::account_history_plugin_impl;
+            struct account_history_plugin_impl;
 
-            std::unique_ptr<detail::account_history_plugin_impl> my;
+            std::unique_ptr<account_history_plugin_impl> my;
         };
 
     }

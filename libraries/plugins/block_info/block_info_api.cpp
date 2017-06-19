@@ -9,9 +9,8 @@ namespace steemit {
     namespace plugin {
         namespace block_info {
 
-            namespace detail {
 
-                class block_info_api_impl {
+                struct  block_info_api::block_info_api_impl {
                 public:
                     block_info_api_impl(steemit::application::application &_app);
 
@@ -24,15 +23,15 @@ namespace steemit {
                     steemit::application::application &app;
                 };
 
-                block_info_api_impl::block_info_api_impl(steemit::application::application &_app)
+                block_info_api::block_info_api_impl::block_info_api_impl(steemit::application::application &_app)
                         : app(_app) {
                 }
 
-                std::shared_ptr<steemit::plugin::block_info::block_info_plugin> block_info_api_impl::get_plugin() {
+                std::shared_ptr<steemit::plugin::block_info::block_info_plugin> block_info_api::block_info_api_impl::get_plugin() {
                     return app.get_plugin<block_info_plugin>("block_info");
                 }
 
-                void block_info_api_impl::get_block_info(const get_block_info_args &args, std::vector<block_info> &result) {
+                void block_info_api::block_info_api_impl::get_block_info(const get_block_info_args &args, std::vector<block_info> &result) {
                     const std::vector<block_info> &_block_info = get_plugin()->_block_info;
 
                     FC_ASSERT(args.start_block_num > 0);
@@ -46,7 +45,7 @@ namespace steemit {
                     return;
                 }
 
-                void block_info_api_impl::get_blocks_with_info(const get_block_info_args &args, std::vector<block_with_info> &result) {
+                void block_info_api::block_info_api_impl::get_blocks_with_info(const get_block_info_args &args, std::vector<block_with_info> &result) {
                     const std::vector<block_info> &_block_info = get_plugin()->_block_info;
                     const chain::database &db = get_plugin()->database();
 
@@ -71,10 +70,9 @@ namespace steemit {
                     return;
                 }
 
-            } // detail
 
-            block_info_api::block_info_api(const steemit::application::api_context &ctx) {
-                my = std::make_shared<detail::block_info_api_impl>(ctx.app);
+
+            block_info_api::block_info_api(const steemit::application::api_context &ctx):my (new block_info_api_impl(ctx.app)){
             }
 
             std::vector<block_info> block_info_api::get_block_info(get_block_info_args args) {
@@ -91,6 +89,8 @@ namespace steemit {
 
             void block_info_api::on_api_startup() {
             }
+
+        block_info_api::~block_info_api() =default;
 
         }
     }

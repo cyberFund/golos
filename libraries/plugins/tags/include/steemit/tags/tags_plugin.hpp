@@ -49,7 +49,6 @@ namespace steemit {
             author_tag_stats_object_type = (TAG_SPACE_ID << 8) + 3
         };
 
-        namespace detail { class tags_plugin_impl; }
 
 
 /**
@@ -614,9 +613,9 @@ namespace steemit {
 
             virtual void plugin_startup() override;
 
-            friend class detail::tags_plugin_impl;
+            struct tags_plugin_impl;
 
-            std::unique_ptr<detail::tags_plugin_impl> my;
+            std::unique_ptr<tags_plugin_impl> my;
         };
 
 /**

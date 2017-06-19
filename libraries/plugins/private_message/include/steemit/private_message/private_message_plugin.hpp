@@ -183,9 +183,9 @@ namespace steemit {
 
             flat_map<string, string> tracked_accounts() const; /// map start_range to end_range
 
-            friend class detail::private_message_plugin_impl;
+            struct private_message_plugin_impl;
 
-            std::unique_ptr<detail::private_message_plugin_impl> my;
+            std::unique_ptr<private_message_plugin_impl> my;
         };
 
         class private_message_api

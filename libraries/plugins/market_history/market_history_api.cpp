@@ -5,9 +5,7 @@
 namespace steemit {
     namespace market_history {
 
-        namespace detail {
-
-            class market_history_api_impl {
+            struct market_history_api::market_history_api_impl {
             public:
                 market_history_api_impl(steemit::application::application &_app)
                         : app(_app) {
@@ -30,7 +28,7 @@ namespace steemit {
                 steemit::application::application &app;
             };
 
-            market_ticker market_history_api_impl::get_ticker() const {
+            market_ticker  market_history_api::market_history_api_impl::get_ticker() const {
                 market_ticker result;
 
                 auto db = app.chain_database();
@@ -65,7 +63,7 @@ namespace steemit {
                 return result;
             }
 
-            market_volume market_history_api_impl::get_volume() const {
+            market_volume market_history_api::market_history_api_impl::get_volume() const {
                 auto db = app.chain_database();
                 const auto &bucket_idx = db->get_index<bucket_index>().indices().get<by_bucket>();
                 auto itr = bucket_idx.lower_bound(boost::make_tuple(0,
@@ -88,7 +86,7 @@ namespace steemit {
                 return result;
             }
 
-            order_book market_history_api_impl::get_order_book(uint32_t limit) const {
+            order_book market_history_api::market_history_api_impl::get_order_book(uint32_t limit) const {
                 FC_ASSERT(limit <= 500);
 
                 const auto &order_idx = app.chain_database()->get_index<steemit::chain::limit_order_index>().indices().get<steemit::chain::by_price>();
@@ -127,7 +125,7 @@ namespace steemit {
                 return result;
             }
 
-            std::vector<market_trade> market_history_api_impl::get_trade_history(time_point_sec start, time_point_sec end, uint32_t limit) const {
+            std::vector<market_trade> market_history_api::market_history_api_impl::get_trade_history(time_point_sec start, time_point_sec end, uint32_t limit) const {
                 FC_ASSERT(limit <= 1000);
                 const auto &bucket_idx = app.chain_database()->get_index<order_history_index>().indices().get<by_time>();
                 auto itr = bucket_idx.lower_bound(start);
@@ -147,7 +145,7 @@ namespace steemit {
                 return result;
             }
 
-            vector<market_trade> market_history_api_impl::get_recent_trades(uint32_t limit = 1000) const {
+            vector<market_trade> market_history_api::market_history_api_impl::get_recent_trades(uint32_t limit = 1000) const {
                 FC_ASSERT(limit <= 1000);
                 const auto &order_idx = app.chain_database()->get_index<order_history_index>().indices().get<by_time>();
                 auto itr = order_idx.rbegin();
@@ -166,7 +164,7 @@ namespace steemit {
                 return result;
             }
 
-            std::vector<bucket_object> market_history_api_impl::get_market_history(uint32_t bucket_seconds, time_point_sec start, time_point_sec end) const {
+            std::vector<bucket_object> market_history_api::market_history_api_impl::get_market_history(uint32_t bucket_seconds, time_point_sec start, time_point_sec end) const {
                 const auto &bucket_idx = app.chain_database()->get_index<bucket_index>().indices().get<by_bucket>();
                 auto itr = bucket_idx.lower_bound(boost::make_tuple(bucket_seconds, start));
 
@@ -182,15 +180,12 @@ namespace steemit {
                 return result;
             }
 
-            flat_set<uint32_t> market_history_api_impl::get_market_history_buckets() const {
+            flat_set<uint32_t> market_history_api::market_history_api_impl::get_market_history_buckets() const {
                 auto buckets = app.get_plugin<market_history_plugin>(MARKET_HISTORY_PLUGIN_NAME)->get_tracked_buckets();
                 return buckets;
             }
 
-        } // detail
-
-        market_history_api::market_history_api(const steemit::application::api_context &ctx) {
-            my = std::make_shared<detail::market_history_api_impl>(ctx.app);
+        market_history_api::market_history_api(const steemit::application::api_context &ctx):my(new market_history_api_impl(ctx.app)){
         }
 
         void market_history_api::on_api_startup() {
@@ -237,6 +232,9 @@ namespace steemit {
                 return my->get_market_history_buckets();
             });
         }
+
+
+    market_history_api::~market_history_api()=default;
 
     }
 } // steemit::market_history

@@ -18,10 +18,6 @@ namespace steemit {
     namespace plugin {
         namespace auth_util {
 
-            namespace detail {
-                class auth_util_api_impl;
-            }
-
             struct check_authority_signature_params {
                 std::string account_name;
                 std::string level;
@@ -33,16 +29,17 @@ namespace steemit {
                 std::vector<protocol::public_key_type> keys;
             };
 
-            class auth_util_api {
+            class auth_util_api:public std::enable_shared_from_this<auth_util_api> {
             public:
                 auth_util_api(const steemit::application::api_context &ctx);
-
+                ~auth_util_api();
                 void on_api_startup();
 
                 check_authority_signature_result check_authority_signature(check_authority_signature_params args);
 
             private:
-                std::shared_ptr<detail::auth_util_api_impl> my;
+                struct auth_util_api_impl;
+                std::unique_ptr<auth_util_api_impl> my;
             };
 
         }

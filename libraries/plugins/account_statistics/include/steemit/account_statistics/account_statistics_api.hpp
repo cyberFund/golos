@@ -13,18 +13,15 @@ namespace steemit {
 namespace steemit {
     namespace account_statistics {
 
-        namespace detail {
-            class account_statistics_api_impl;
-        }
-
-        class account_statistics_api {
+        class account_statistics_api:public std::enable_shared_from_this<account_statistics_api> {
         public:
             account_statistics_api(const steemit::application::api_context &ctx);
-
+            ~account_statistics_api();
             void on_api_startup();
 
         private:
-            std::shared_ptr<detail::account_statistics_api_impl> _my;
+            struct account_statistics_api_impl;
+            std::unique_ptr<account_statistics_api_impl> _my;
         };
 
     }

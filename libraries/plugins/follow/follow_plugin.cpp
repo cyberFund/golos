@@ -24,11 +24,9 @@
 namespace steemit {
     namespace follow {
 
-        namespace detail {
-
             using namespace steemit::protocol;
 
-            class follow_plugin_impl {
+            struct follow_plugin:: follow_plugin_impl {
             public:
                 follow_plugin_impl(follow_plugin &_plugin) : _self(_plugin) {
                 }
@@ -47,7 +45,7 @@ namespace steemit {
                 std::shared_ptr<generic_custom_operation_interpreter<steemit::follow::follow_plugin_operation>> _custom_operation_interpreter;
             };
 
-            void follow_plugin_impl::plugin_initialize() {
+            void follow_plugin::follow_plugin_impl::plugin_initialize() {
                 // Each plugin needs its own evaluator registry.
                 _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<steemit::follow::follow_plugin_operation>>(database());
 
@@ -317,7 +315,7 @@ namespace steemit {
                 }
             };
 
-            void follow_plugin_impl::pre_operation(const operation_notification &note) {
+            void follow_plugin::follow_plugin_impl::pre_operation(const operation_notification &note) {
                 try {
                     note.op.visit(pre_operation_visitor(_self));
                 }
@@ -328,7 +326,7 @@ namespace steemit {
                 }
             }
 
-            void follow_plugin_impl::post_operation(const operation_notification &note) {
+            void follow_plugin::follow_plugin_impl::post_operation(const operation_notification &note) {
                 try {
                     note.op.visit(post_operation_visitor(_self));
                 }
@@ -339,10 +337,9 @@ namespace steemit {
                 }
             }
 
-        } // end namespace detail
 
         follow_plugin::follow_plugin(application *app)
-                : plugin(app), my(new detail::follow_plugin_impl(*this)) {
+                : plugin(app), my(new follow_plugin_impl(*this)) {
         }
 
         void follow_plugin::plugin_set_program_options(

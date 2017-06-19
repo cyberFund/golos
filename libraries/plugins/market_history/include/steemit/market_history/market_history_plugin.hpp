@@ -36,10 +36,6 @@ namespace steemit {
             order_history_object_type = (MARKET_HISTORY_SPACE_ID << 8) + 1
         };
 
-        namespace detail {
-            class market_history_plugin_impl;
-        }
-
         class market_history_plugin : public steemit::application::plugin {
         public:
             market_history_plugin(application *app);
@@ -63,9 +59,9 @@ namespace steemit {
             uint32_t get_max_history_per_bucket() const;
 
         private:
-            friend class detail::market_history_plugin_impl;
+            struct market_history_plugin_impl;
 
-            std::unique_ptr<detail::market_history_plugin_impl> _my;
+            std::unique_ptr<market_history_plugin_impl> _my;
         };
 
         struct bucket_object

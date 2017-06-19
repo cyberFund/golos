@@ -6,11 +6,9 @@
 namespace steemit {
     namespace market_history {
 
-        namespace detail {
-
             using steemit::protocol::fill_order_operation;
 
-            class market_history_plugin_impl {
+            struct market_history_plugin::market_history_plugin_impl {
             public:
                 market_history_plugin_impl(market_history_plugin &plugin)
                         : _self(plugin) {
@@ -35,7 +33,7 @@ namespace steemit {
                 int32_t _maximum_history_per_bucket_size = 1000;
             };
 
-            void market_history_plugin_impl::update_market_histories(const operation_notification &o) {
+            void market_history_plugin::market_history_plugin_impl::update_market_histories(const operation_notification &o) {
                 if (o.op.which() ==
                     operation::tag<fill_order_operation>::value) {
                     fill_order_operation op = o.op.get<fill_order_operation>();
@@ -149,11 +147,9 @@ namespace steemit {
                 }
             }
 
-        } // detail
-
         market_history_plugin::market_history_plugin(application *app)
                 : plugin(app),
-                  _my(new detail::market_history_plugin_impl(*this)) {
+                  _my(new market_history_plugin_impl(*this)) {
         }
 
         market_history_plugin::~market_history_plugin() {

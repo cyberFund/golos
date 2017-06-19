@@ -13,8 +13,6 @@ namespace steemit {
 
 #define FOLLOW_PLUGIN_NAME "follow"
 
-        namespace detail { class follow_plugin_impl; }
-
         class follow_plugin : public steemit::application::plugin {
         public:
             follow_plugin(application *app);
@@ -31,9 +29,9 @@ namespace steemit {
 
             virtual void plugin_startup() override;
 
-            friend class detail::follow_plugin_impl;
+            struct follow_plugin_impl;
 
-            std::unique_ptr<detail::follow_plugin_impl> my;
+            std::unique_ptr<follow_plugin_impl> my;
             uint32_t max_feed_size = 500;
         };
 

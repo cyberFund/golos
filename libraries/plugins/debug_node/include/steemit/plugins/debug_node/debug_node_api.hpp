@@ -22,10 +22,6 @@ namespace steemit {
     namespace plugin {
         namespace debug_node {
 
-            namespace detail {
-                class debug_node_api_impl;
-            }
-
             struct get_dev_key_args {
                 std::string name;
             };
@@ -134,7 +130,8 @@ namespace steemit {
 
                 std::string debug_get_json_schema();
 
-                std::shared_ptr<detail::debug_node_api_impl> my;
+                struct debug_node_api_impl;
+                std::shared_ptr<debug_node_api_impl> my;
             };
 
         }

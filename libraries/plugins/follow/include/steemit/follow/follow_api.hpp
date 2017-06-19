@@ -65,14 +65,10 @@ namespace steemit {
             uint32_t following_count = 0;
         };
 
-        namespace detail {
-            class follow_api_impl;
-        }
-
-        class follow_api {
+        class follow_api: public std::enable_shared_from_this<follow_api> {
         public:
             follow_api(const steemit::application::api_context &ctx);
-
+            ~follow_api();
             void on_api_startup();
 
             std::vector<follow_api_obj> get_followers(std::string to, std::string start, follow_type type, uint16_t limit) const;
@@ -102,7 +98,8 @@ namespace steemit {
             std::vector<pair<account_name_type, uint32_t>> get_blog_authors(const account_name_type &blog_account) const;
 
         private:
-            std::shared_ptr<detail::follow_api_impl> my;
+            struct follow_api_impl;
+            std::unique_ptr<follow_api_impl> my;
         };
 
     }
