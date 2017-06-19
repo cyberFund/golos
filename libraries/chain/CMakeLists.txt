@@ -35,7 +35,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp
-        include/steemit/chain/snapshot_state.hpp
         include/steemit/chain/steem_evaluator.hpp
         include/steemit/chain/steem_object_types.hpp
         include/steemit/chain/steem_objects.hpp
