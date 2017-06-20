@@ -872,7 +872,7 @@ namespace steemit {
              *  @param json the json metadata of the comment
              *  @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction post_comment(string author, string permlink, string parent_author, string parent_permlink, string languages, string title, string body, string json, bool broadcast);
+            annotated_signed_transaction post_comment(string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast);
 
             /**
              * Extend the comment payout window by passing the required SBD to spend
