@@ -363,8 +363,9 @@ namespace steemit {
                         const auto &tobj = *itr;
                         const auto *obj = _db.find<comment_object>(itr->comment);
                         ++itr;
-                        if (!obj) {
+                        if (obj == nullptr) {
                             _db.remove(tobj);
+                        } else {
                             languages_plugin.self().cache_languages.erase(to_string(obj->languages));
                         }
                     }
