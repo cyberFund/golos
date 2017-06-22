@@ -27,7 +27,7 @@
 #include <fc/crypto/aes.hpp>
 #include <fc/crypto/elliptic.hpp>
 
-namespace graphene {
+namespace steemit {
     namespace network {
 
 /**

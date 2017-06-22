@@ -234,7 +234,7 @@ namespace steemit {
                 (*_app._remote_net_api)->broadcast_block(b);
             } else {
                 _app.chain_database()->push_block(b);
-                _app.p2p_node()->broadcast(graphene::network::block_message(b));
+                _app.p2p_node()->broadcast(network::block_message(b));
             }
         }
 
@@ -273,11 +273,11 @@ namespace steemit {
             _app.p2p_node()->add_node(ep);
         }
 
-        std::vector<graphene::network::peer_status> network_node_api::get_connected_peers() const {
+        std::vector<network::peer_status> network_node_api::get_connected_peers() const {
             return _app.p2p_node()->get_connected_peers();
         }
 
-        std::vector<graphene::network::potential_peer_record> network_node_api::get_potential_peers() const {
+        std::vector<network::potential_peer_record> network_node_api::get_potential_peers() const {
             return _app.p2p_node()->get_potential_peers();
         }
 

@@ -33,7 +33,7 @@
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
 
-namespace graphene {
+namespace steemit {
     namespace network {
 
         enum potential_peer_last_connection_disposition {
@@ -134,7 +134,7 @@ namespace graphene {
         };
 
     }
-} // end namespace graphene::network
+} // end namespace steemit::network
 
-FC_REFLECT_ENUM(graphene::network::potential_peer_last_connection_disposition, (never_attempted_to_connect)(last_connection_failed)(last_connection_rejected)(last_connection_handshaking_failed)(last_connection_succeeded))
-FC_REFLECT(graphene::network::potential_peer_record, (endpoint)(last_seen_time)(last_connection_disposition)(last_connection_attempt_time)(number_of_successful_connection_attempts)(number_of_failed_connection_attempts)(last_error))
+FC_REFLECT_ENUM(steemit::network::potential_peer_last_connection_disposition, (never_attempted_to_connect)(last_connection_failed)(last_connection_rejected)(last_connection_handshaking_failed)(last_connection_succeeded))
+FC_REFLECT(steemit::network::potential_peer_record, (endpoint)(last_seen_time)(last_connection_disposition)(last_connection_attempt_time)(number_of_successful_connection_attempts)(number_of_failed_connection_attempts)(last_error))

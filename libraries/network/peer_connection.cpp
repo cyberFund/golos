@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <graphene/network/peer_connection.hpp>
+#include <steemit/network/peer_connection.hpp>
 
 #include <fc/thread/thread.hpp>
 
@@ -36,7 +36,7 @@
 # define VERIFY_CORRECT_THREAD() do {} while (0)
 #endif
 
-namespace graphene {
+namespace steemit {
     namespace network {
         message peer_connection::real_queued_message::get_message(peer_connection_delegate *) {
             if (message_send_time_field_offset != (size_t)-1) {
@@ -480,4 +480,4 @@ namespace graphene {
         }
 
     }
-} // end namespace graphene::network
+} // end namespace steemit::network
