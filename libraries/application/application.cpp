@@ -72,6 +72,10 @@ namespace steemit {
                 bool _is_block_producer = false;
                 bool _force_validate = false;
 
+                uint8_t get_current_block_interval_in_seconds() const override {
+                    return STEEMIT_BLOCK_INTERVAL;
+                }
+
                 void reset_p2p_node(const fc::path &data_dir) {
                     try {
                         _p2p_network = std::make_shared<network::node>("Graphene Reference Implementation");

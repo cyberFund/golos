@@ -301,7 +301,8 @@ namespace steemit {
                                    (get_block_time) \
                                    (get_head_block_id) \
                                    (estimate_last_known_fork_from_git_revision_timestamp) \
-                                   (error_encountered)
+                                   (error_encountered) \
+                                   (get_current_block_interval_in_seconds)
 
 
 #define DECLARE_ACCUMULATOR(r, data, method_name) \
@@ -419,6 +420,8 @@ namespace steemit {
                 uint32_t estimate_last_known_fork_from_git_revision_timestamp(uint32_t unix_timestamp) const override;
 
                 void error_encountered(const std::string &message, const fc::oexception &error) override;
+
+                uint8_t get_current_block_interval_in_seconds() const override;
             };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1405,6 +1408,8 @@ namespace steemit {
                 std::list<peer_connection_ptr> peers_to_disconnect_forcibly;
                 std::list<peer_connection_ptr> peers_to_send_keep_alive;
                 std::list<peer_connection_ptr> peers_to_terminate;
+
+                _recent_block_interval_in_seconds = _delegate->get_current_block_interval_in_seconds();
 
                 // Disconnect peers that haven't sent us any data recently
                 // These numbers are just guesses and we need to think through how this works better.
@@ -2759,7 +2764,7 @@ namespace steemit {
                             originating_peer->last_block_time_delegate_has_seen +
                             // timestamp of the block immediately before the first unfetched block
                             originating_peer->number_of_unfetched_item_ids *
-                            STEEMIT_BLOCK_INTERVAL;
+                            _delegate->get_current_block_interval_in_seconds();
                     if (minimum_time_of_last_offered_block >
                         _delegate->get_blockchain_now() +
                         GRAPHENE_NET_FUTURE_SYNC_BLOCKS_GRACE_PERIOD_SEC) {
@@ -5467,6 +5472,10 @@ namespace steemit {
 
             void statistics_gathering_node_delegate_wrapper::error_encountered(const std::string &message, const fc::oexception &error) {
                 INVOKE_AND_COLLECT_STATISTICS(error_encountered, message, error);
+            }
+
+            uint8_t statistics_gathering_node_delegate_wrapper::get_current_block_interval_in_seconds() const {
+                INVOKE_AND_COLLECT_STATISTICS(get_current_block_interval_in_seconds);
             }
 
 #undef INVOKE_AND_COLLECT_STATISTICS

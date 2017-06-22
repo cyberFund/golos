@@ -164,6 +164,7 @@ namespace steemit {
 
             virtual void error_encountered(const std::string &message, const fc::oexception &error) = 0;
 
+            virtual uint8_t get_current_block_interval_in_seconds() const = 0;
         };
 
         /**
