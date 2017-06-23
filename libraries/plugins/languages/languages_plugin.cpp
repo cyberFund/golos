@@ -189,13 +189,15 @@ namespace steemit {
                     languages_plugin.self().cache_languages.emplace(language);
                 }
 
-                string filter_tags(const comment_object &c) const {
-                    string language;
-                    if (c.languages != "") {
-                        language = fc::to_lower(to_string(c.languages));
+                comment_metadata filter_tags(const comment_object &c) const {
+                    comment_metadata meta;
+                    if (c.json_metadata.size()) {
+                        try {
+                            meta=fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        } FC_CAPTURE_LOG_AND_RETHROW((c))
                     }
 
-                    return language;
+                    return meta;
                 }
 
                 /**
@@ -232,13 +234,13 @@ namespace steemit {
                     try {
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        auto language_ = filter_tags(c);
+                        auto meta = filter_tags(c);
                         const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
 
                         auto itr = comment_idx.find(c.id);
 
                         if (itr == comment_idx.end()) {
-                            create_tag(language_, c, hot, trending);
+                            create_tag(meta.language, c, hot, trending);
                         } else {
                             update_tag(*itr, c, hot, trending);
                         }
@@ -361,8 +363,9 @@ namespace steemit {
                         const auto &tobj = *itr;
                         const auto *obj = _db.find<comment_object>(itr->comment);
                         ++itr;
-                        if (!obj) {
+                        if (obj == nullptr) {
                             _db.remove(tobj);
+                        } else {
                             languages_plugin.self().cache_languages.erase(to_string(obj->languages));
                         }
                     }

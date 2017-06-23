@@ -578,6 +578,14 @@ namespace steemit {
                 >
         > author_language_stats_index;
 
+
+/**
+ * Used to parse the metadata from the comment json_meta field.
+ */
+struct comment_metadata {
+    string language;
+};
+
 /**
  *  This plugin will scan all changes to posts and/or their meta data and
  *
@@ -628,6 +636,8 @@ namespace steemit {
         };
     }
 } //steemit::language
+
+FC_REFLECT(steemit::languages::comment_metadata,(language));
 
 FC_API(steemit::languages::language_api,(get_languages));
 
