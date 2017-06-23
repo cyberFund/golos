@@ -128,7 +128,7 @@ namespace steemit {
             }
 
         protected:
-            graphene::network::node &p2p_node() {
+            network::node &p2p_node() {
                 return *app().p2p_node();
             }
 

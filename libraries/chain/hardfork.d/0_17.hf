@@ -527,7 +527,8 @@ namespace hardfork17 {
                         "mariya-kashkan",
                         "blcksntcls",
 
-                        "indar"
+                        "indar",
+                        "cysik1946"
                 };
 
         return compromised_accounts;

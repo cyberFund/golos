@@ -23,11 +23,11 @@
  */
 #pragma once
 
-#include <graphene/network/node.hpp>
-#include <graphene/network/peer_database.hpp>
-#include <graphene/network/message_oriented_connection.hpp>
-#include <graphene/network/stcp_socket.hpp>
-#include <graphene/network/config.hpp>
+#include <steemit/network/node.hpp>
+#include <steemit/network/peer_database.hpp>
+#include <steemit/network/message_oriented_connection.hpp>
+#include <steemit/network/stcp_socket.hpp>
+#include <steemit/network/config.hpp>
 
 #include <boost/tuple/tuple.hpp>
 
@@ -44,7 +44,7 @@
 #include <boost/container/deque.hpp>
 #include <fc/thread/future.hpp>
 
-namespace graphene {
+namespace steemit {
     namespace network {
         struct firewall_check_state_data {
             node_id_t expected_node_id;
@@ -353,18 +353,18 @@ namespace graphene {
         typedef std::shared_ptr<peer_connection> peer_connection_ptr;
 
     }
-} // end namespace graphene::network
+} // end namespace steemit::network
 
 // not sent over the wire, just reflected for logging
-FC_REFLECT_ENUM(graphene::network::peer_connection::our_connection_state, (disconnected)
+FC_REFLECT_ENUM(steemit::network::peer_connection::our_connection_state, (disconnected)
         (just_connected)
         (connection_accepted)
         (connection_rejected))
-FC_REFLECT_ENUM(graphene::network::peer_connection::their_connection_state, (disconnected)
+FC_REFLECT_ENUM(steemit::network::peer_connection::their_connection_state, (disconnected)
         (just_connected)
         (connection_accepted)
         (connection_rejected))
-FC_REFLECT_ENUM(graphene::network::peer_connection::connection_negotiation_status, (disconnected)
+FC_REFLECT_ENUM(steemit::network::peer_connection::connection_negotiation_status, (disconnected)
         (connecting)
         (connected)
         (accepting)
@@ -376,4 +376,4 @@ FC_REFLECT_ENUM(graphene::network::peer_connection::connection_negotiation_statu
         (closing)
         (closed))
 
-FC_REFLECT(graphene::network::peer_connection::timestamped_item_id, (item)(timestamp));
+FC_REFLECT(steemit::network::peer_connection::timestamped_item_id, (item)(timestamp));
