@@ -23,15 +23,15 @@
  */
 #pragma once
 
-#include <graphene/network/core_messages.hpp>
-#include <graphene/network/message.hpp>
-#include <graphene/network/peer_database.hpp>
+#include <steemit/network/core_messages.hpp>
+#include <steemit/network/message.hpp>
+#include <steemit/network/peer_database.hpp>
 
 #include <steemit/protocol/types.hpp>
 
 #include <list>
 
-namespace graphene {
+namespace steemit {
     namespace network {
 
         using fc::variant_object;
@@ -76,7 +76,7 @@ namespace graphene {
              *  @throws exception if error validating the item, otherwise the item is
              *          safe to broadcast on.
              */
-            virtual bool handle_block(const graphene::network::block_message &blk_msg, bool sync_mode,
+            virtual bool handle_block(const network::block_message &blk_msg, bool sync_mode,
                     std::vector<fc::uint160_t> &contained_transaction_message_ids) = 0;
 
             /**
@@ -85,7 +85,7 @@ namespace graphene {
              *  @throws exception if error validating the item, otherwise the item is
              *          safe to broadcast on.
              */
-            virtual void handle_transaction(const graphene::network::trx_message &trx_msg) = 0;
+            virtual void handle_transaction(const network::trx_message &trx_msg) = 0;
 
             /**
              *  @brief Called when a new message comes in from the network other than a
@@ -164,6 +164,7 @@ namespace graphene {
 
             virtual void error_encountered(const std::string &message, const fc::oexception &error) = 0;
 
+            virtual uint8_t get_current_block_interval_in_seconds() const = 0;
         };
 
         /**
@@ -350,5 +351,5 @@ namespace graphene {
     }
 } // graphene::network
 
-FC_REFLECT(graphene::network::message_propagation_data, (received_time)(validated_time)(originating_peer));
-FC_REFLECT(graphene::network::peer_status, (version)(host)(info));
+FC_REFLECT(steemit::network::message_propagation_data, (received_time)(validated_time)(originating_peer));
+FC_REFLECT(steemit::network::peer_status, (version)(host)(info));

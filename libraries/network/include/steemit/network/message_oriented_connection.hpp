@@ -24,9 +24,9 @@
 #pragma once
 
 #include <fc/network/tcp_socket.hpp>
-#include <graphene/network/message.hpp>
+#include <steemit/network/message.hpp>
 
-namespace graphene {
+namespace steemit {
     namespace network {
 
         namespace detail { class message_oriented_connection_impl; }

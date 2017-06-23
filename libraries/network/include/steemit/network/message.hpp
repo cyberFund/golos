@@ -30,7 +30,7 @@
 #include <fc/crypto/ripemd160.hpp>
 #include <fc/reflect/variant.hpp>
 
-namespace graphene {
+namespace steemit {
     namespace network {
 
         /**
@@ -109,5 +109,5 @@ namespace graphene {
     }
 } // graphene::network
 
-FC_REFLECT(graphene::network::message_header, (size)(msg_type))
-FC_REFLECT_DERIVED(graphene::network::message, (graphene::network::message_header), (data))
+FC_REFLECT(steemit::network::message_header, (size)(msg_type))
+FC_REFLECT_DERIVED(steemit::network::message, (steemit::network::message_header), (data))

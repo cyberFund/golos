@@ -26,9 +26,9 @@
 #include <fc/thread/scoped_lock.hpp>
 #include <fc/io/enum_type.hpp>
 
-#include <graphene/network/message_oriented_connection.hpp>
-#include <graphene/network/stcp_socket.hpp>
-#include <graphene/network/config.hpp>
+#include <steemit/network/message_oriented_connection.hpp>
+#include <steemit/network/stcp_socket.hpp>
+#include <steemit/network/config.hpp>
 
 #ifdef DEFAULT_LOGGER
 # undef DEFAULT_LOGGER
@@ -41,7 +41,7 @@
 # define VERIFY_CORRECT_THREAD() do {} while (0)
 #endif
 
-namespace graphene {
+namespace steemit {
     namespace network {
         namespace detail {
             class message_oriented_connection_impl {
@@ -337,7 +337,7 @@ namespace graphene {
                 return _sock.get_shared_secret();
             }
 
-        } // end namespace graphene::network::detail
+        } // end namespace network::detail
 
 
         message_oriented_connection::message_oriented_connection(message_oriented_connection_delegate *delegate)

@@ -336,7 +336,7 @@ block_production_condition::block_production_condition_enum witness_plugin::mayb
                     _production_skip_flags
             );
             capture("n", block.block_num())("t", block.timestamp)("c", now)("w", scheduled_witness);
-            fc::async([this, block]() { p2p_node().broadcast(graphene::network::block_message(block)); });
+            fc::async([this, block]() { p2p_node().broadcast(network::block_message(block)); });
 
             return block_production_condition::produced;
         }
@@ -490,7 +490,7 @@ void witness_plugin::start_mining(
                             try {
                                 database().push_transaction(trx);
                                 ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                p2p_node().broadcast(graphene::network::trx_message(trx));
+                                p2p_node().broadcast(network::trx_message(trx));
                             }
                             catch (const fc::exception &e) {
                                 // wdump((e.to_detail_string()));
@@ -538,7 +538,7 @@ void witness_plugin::start_mining(
                             try {
                                 database().push_transaction(trx);
                                 ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                p2p_node().broadcast(graphene::network::trx_message(trx));
+                                p2p_node().broadcast(network::trx_message(trx));
                             }
                             catch (const fc::exception &e) {
                                 // wdump((e.to_detail_string()));
