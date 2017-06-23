@@ -25,7 +25,6 @@ namespace steemit {
         };
 
         struct discussion_index {
-            string category;    /// category by which everything is filtered
             vector<string> trending;    /// trending posts over the last 24 hours
             vector<string> payout;      /// pending posts by payout
             vector<string> payout_comments; /// pending comments by payout
@@ -40,12 +39,6 @@ namespace steemit {
             vector<string> best;        /// total lifetime payout
             vector<string> hot;         /// total lifetime payout
             vector<string> promoted;    /// pending lifetime payout
-        };
-
-        struct category_index {
-            vector<string> active;   /// recent activity
-            vector<string> recent;   /// recently created
-            vector<string> best;     /// total lifetime payout
         };
 
         struct tag_index {
@@ -117,7 +110,6 @@ namespace steemit {
             optional<vector<string>> blog; /// blog posts for this user
             optional<vector<string>> feed; /// feed posts for this user
             optional<vector<string>> recent_replies; /// blog posts for this user
-            map<string, vector<string>> blog_category; /// blog posts for this user
             optional<vector<string>> recommended; /// posts recommened for this user
         };
 
@@ -160,20 +152,13 @@ namespace steemit {
 
             dynamic_global_property_api_obj props;
 
-            /**
-             *  Tracks the top categories by name, any category in this index
-             *  will have its full status stored in the categories map.
-             */
-            category_index category_idx;
-
             tag_index tag_idx;
 
             /**
-             * "" is the global discussion index, otherwise the indicies are ranked by category
+             * "" is the global discussion index
              */
             map<string, discussion_index> discussion_idx;
 
-            map<string, category_api_obj> categories;
             map<string, tag_api_obj> tags;
 
             /**
@@ -199,18 +184,17 @@ namespace steemit {
 FC_REFLECT_DERIVED(steemit::application::extended_account,
         (steemit::application::account_api_obj),
         (vesting_balance)(reputation)
-                (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(blog_category)(recommended))
+                (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(recommended))
 
 
 FC_REFLECT(steemit::application::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time));
 FC_REFLECT(steemit::application::account_vote, (authorperm)(weight)(rshares)(percent)(time));
 
-FC_REFLECT(steemit::application::discussion_index, (category)(trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout))
-FC_REFLECT(steemit::application::category_index, (active)(recent)(best))
+FC_REFLECT( steemit::application::discussion_index, (trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout))
 FC_REFLECT(steemit::application::tag_index, (trending))
 FC_REFLECT_DERIVED(steemit::application::discussion, (steemit::application::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))
 
-FC_REFLECT(steemit::application::state, (current_route)(props)(category_idx)(tag_idx)(categories)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data))
+FC_REFLECT(steemit::application::state, (current_route)(props)(tag_idx)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data))
 
 FC_REFLECT_DERIVED(steemit::application::extended_limit_order, (steemit::application::limit_order_api_obj), (real_price)(rewarded))
 FC_REFLECT(steemit::application::order_history_item, (time)(type)(sbd_quantity)(steem_quantity)(real_price));

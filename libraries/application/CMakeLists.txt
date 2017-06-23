@@ -7,10 +7,12 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/application/application.hpp
         include/steemit/application/applied_operation.hpp
         include/steemit/application/database_api.hpp
+        include/steemit/application/discussion_query.hpp
         include/steemit/application/impacted.hpp
         include/steemit/application/plugin.hpp
         include/steemit/application/state.hpp
         include/steemit/application/steem_api_objects.hpp
+        include/steemit/application/api_objects/comment_api_obj.hpp
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -33,10 +35,11 @@ else()
             )
 endif()
 
-add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
+add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET} )
 set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
 
-target_link_libraries(golos_${CURRENT_TARGET} golos::chain golos::protocol golos::snapshot golos_tags golos_follow golos_mf_plugins fc golos::network graphene_utilities)
+target_link_libraries(golos_${CURRENT_TARGET} golos::chain golos::protocol golos::snapshot golos::tags golos::languages golos_follow golos_mf_plugins fc golos::network graphene_utilities)
+
 target_include_directories(golos_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 

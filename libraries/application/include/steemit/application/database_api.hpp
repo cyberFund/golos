@@ -8,8 +8,6 @@
 #include <steemit/chain/steem_object_types.hpp>
 #include <steemit/chain/history_object.hpp>
 
-#include <steemit/tags/tags_plugin.hpp>
-
 #include <steemit/follow/follow_plugin.hpp>
 
 #include <fc/api.hpp>
@@ -18,6 +16,8 @@
 #include <fc/network/ip.hpp>
 
 #include <boost/container/flat_set.hpp>
+
+#include "steemit/application/discussion_query.hpp"
 
 #include <functional>
 #include <map>
@@ -70,33 +70,6 @@ namespace steemit {
 
         class database_api_impl;
 
-/**
- * @class discussion_query
- * @brief The discussion_query structure implements the RPC API param set.
- *  Defines the arguments to a query as a struct so it can be easily extended
- */
-
-        class discussion_query {
-        public:
-            void validate() const {
-                FC_ASSERT(limit <= 100);
-
-                for (const std::set<std::string>::value_type &iterator : filter_tags) {
-                    FC_ASSERT(select_tags.find(iterator) ==
-                              select_tags.end());
-                }
-            }
-
-            uint32_t limit = 0; ///< the discussions return amount top limit
-            std::set<std::string> select_authors; ///< list of authors to select
-            std::set<std::string> select_tags; ///< list of tags to include, posts without these tags are filtered
-            std::set<std::string> filter_tags; ///< list of tags to exclude, posts with these tags are filtered;
-            uint32_t truncate_body = 0; ///< the amount of bytes of the post body to return, 0 for all
-            optional<std::string> start_author; ///< the author of discussion to start searching from
-            optional<std::string> start_permlink; ///< the permlink of discussion to start searching from
-            optional<std::string> parent_author; ///< the author of parent discussion
-            optional<std::string> parent_permlink; ///< the permlink of parent discussion
-        };
 
 /**
  * @brief The database_api class implements the RPC API for the chain database.
@@ -135,14 +108,6 @@ namespace steemit {
              *  with a single query.
              */
             state get_state(std::string path) const;
-
-            std::vector<category_api_obj> get_trending_categories(std::string after, uint32_t limit) const;
-
-            std::vector<category_api_obj> get_best_categories(std::string after, uint32_t limit) const;
-
-            std::vector<category_api_obj> get_active_categories(std::string after, uint32_t limit) const;
-
-            std::vector<category_api_obj> get_recent_categories(std::string after, uint32_t limit) const;
 
             std::vector<account_name_type> get_active_witnesses() const;
 
@@ -506,34 +471,59 @@ namespace steemit {
             ////////////////////////////
             void on_api_startup();
 
+            discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
+
         private:
             void set_pending_payout(discussion &d) const;
 
             void set_url(discussion &d) const;
 
-            discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
-
-            static bool filter_default(const comment_api_obj &c) {
-                return false;
-            }
-
-            static bool exit_default(const comment_api_obj &c) {
-                return false;
-            }
-
-            static bool tag_exit_default(const tags::tag_object &c) {
-                return false;
-            }
-
-            template<typename Compare, typename Index, typename StartItr>
-            std::multimap<tags::tag_object, discussion, Compare> get_discussions(const discussion_query &query,
+            template<typename Object,
+                    typename DatabaseIndex,
+                    typename DiscussionIndex,
+                    typename CommentIndex,
+                    typename Index,
+                    typename StartItr
+            > std::multimap<Object, discussion, DiscussionIndex> get_discussions(
+                    const discussion_query &query,
                     const std::string &tag,
                     comment_id_type parent,
-                    const Index &tidx, StartItr tidx_itr,
-                    const std::function<bool(const comment_api_obj &)> &filter = &database_api::filter_default,
-                    const std::function<bool(const comment_api_obj &)> &exit = &database_api::exit_default,
-                    const std::function<bool(const tags::tag_object &)> &tag_exit = &database_api::tag_exit_default,
+                    const Index &tidx,
+                    StartItr tidx_itr,
+                    const std::function<bool(const comment_api_obj &)> &filter,
+                    const std::function<bool(const comment_api_obj &)> &exit,
+                    const std::function<bool(const Object &)> &tag_exit,
                     bool ignore_parent = false) const;
+
+            template<typename Object,
+                    typename DatabaseIndex,
+                    typename DiscussionIndex,
+                    typename CommentIndex,
+                    typename ...Args
+            > std::multimap<Object, discussion, DiscussionIndex> select(
+                    const std::set<std::string> &select_set,
+                    const discussion_query &query,
+                    comment_id_type parent,
+                    const std::function<bool(const comment_api_obj &)> &filter,
+                    const std::function<bool(const comment_api_obj &)> &exit,
+                    const std::function<bool(const Object &)> &exit2,
+                    Args... args) const;
+
+            template<typename DatabaseIndex,
+                    typename DiscussionIndex
+            > std::vector<discussion> feed(const std::set<string> &select_set,
+                    const discussion_query &query,
+                    const std::string &start_author,
+                    const std::string &start_permlink) const;
+
+            template<typename DatabaseIndex,
+                    typename DiscussionIndex
+            > std::vector<discussion> blog(const std::set<string> &select_set,
+                    const discussion_query &query,
+                    const std::string &start_author,
+                    const std::string &start_permlink) const;
+
+
 
             comment_id_type get_parent(const discussion_query &q) const;
 
@@ -550,7 +540,8 @@ FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
-FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit));
+FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language)(filter_language));
+
 
 FC_REFLECT_ENUM(steemit::application::withdraw_route_type, (incoming)(outgoing)(all));
 
@@ -584,10 +575,6 @@ FC_API(steemit::application::database_api,
                 (get_block)
                 (get_ops_in_block)
                 (get_state)
-                (get_trending_categories)
-                (get_best_categories)
-                (get_active_categories)
-                (get_recent_categories)
 
                 // Globals
                 (get_config)

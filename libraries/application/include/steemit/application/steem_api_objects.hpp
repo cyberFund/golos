@@ -1,5 +1,7 @@
 #pragma once
 
+#include <steemit/application/api_objects/comment_api_obj.hpp>
+
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/comment_object.hpp>
@@ -10,6 +12,7 @@
 #include <steemit/chain/witness_objects.hpp>
 
 #include <steemit/tags/tags_plugin.hpp>
+#include <steemit/languages/languages_plugin.hpp>
 
 namespace steemit {
     namespace application {
@@ -39,136 +42,22 @@ namespace steemit {
    price                      sell_price;
 };*/
 
-        typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
-        typedef chain::block_summary_object block_summary_api_obj;
-        typedef chain::comment_vote_object comment_vote_api_obj;
-        typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
-        typedef chain::convert_request_object convert_request_api_obj;
-        typedef chain::escrow_object escrow_api_obj;
-        typedef chain::liquidity_reward_balance_object liquidity_reward_balance_api_obj;
-        typedef chain::limit_order_object limit_order_api_obj;
-        typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
-        typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
-        typedef chain::witness_vote_object witness_vote_api_obj;
-        typedef chain::witness_schedule_object witness_schedule_api_obj;
-        typedef chain::account_bandwidth_object account_bandwidth_api_obj;
-        typedef chain::vesting_delegation_object vesting_delegation_api_obj;
-        typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
-        typedef chain::reward_fund_object reward_fund_api_obj;
-
-        struct comment_api_obj {
-            comment_api_obj(const chain::comment_object &o) :
-                    id(o.id),
-                    category(to_string(o.category)),
-                    parent_author(o.parent_author),
-                    parent_permlink(to_string(o.parent_permlink)),
-                    author(o.author),
-                    permlink(to_string(o.permlink)),
-                    title(to_string(o.title)),
-                    body(to_string(o.body)),
-                    json_metadata(to_string(o.json_metadata)),
-                    last_update(o.last_update),
-                    created(o.created),
-                    active(o.active),
-                    last_payout(o.last_payout),
-                    depth(o.depth),
-                    children(o.children),
-                    children_rshares2(o.children_rshares2),
-                    net_rshares(o.net_rshares),
-                    abs_rshares(o.abs_rshares),
-                    vote_rshares(o.vote_rshares),
-                    children_abs_rshares(o.children_abs_rshares),
-                    cashout_time(o.cashout_time),
-                    max_cashout_time(o.max_cashout_time),
-                    total_vote_weight(o.total_vote_weight),
-                    reward_weight(o.reward_weight),
-                    total_payout_value(o.total_payout_value),
-                    curator_payout_value(o.curator_payout_value),
-                    author_rewards(o.author_rewards),
-                    net_votes(o.net_votes),
-                    root_comment(o.root_comment),
-                    max_accepted_payout(o.max_accepted_payout),
-                    percent_steem_dollars(o.percent_steem_dollars),
-                    allow_replies(o.allow_replies),
-                    allow_votes(o.allow_votes),
-                    allow_curation_rewards(o.allow_curation_rewards) {
-                for (auto &route : o.beneficiaries) {
-                    beneficiaries.push_back(route);
-                }
-            }
-
-            comment_api_obj() {
-            }
-
-            comment_id_type id;
-            string category;
-            account_name_type parent_author;
-            string parent_permlink;
-            account_name_type author;
-            string permlink;
-
-            string title;
-            string body;
-            string json_metadata;
-            time_point_sec last_update;
-            time_point_sec created;
-            time_point_sec active;
-            time_point_sec last_payout;
-
-            uint8_t depth;
-            uint32_t children;
-
-            uint128_t children_rshares2;
-
-            share_type net_rshares;
-            share_type abs_rshares;
-            share_type vote_rshares;
-
-            share_type children_abs_rshares;
-            time_point_sec cashout_time;
-            time_point_sec max_cashout_time;
-            uint64_t total_vote_weight;
-
-            uint16_t reward_weight;
-
-            asset total_payout_value;
-            asset curator_payout_value;
-
-            share_type author_rewards;
-
-            int32_t net_votes;
-
-            comment_id_type root_comment;
-
-            asset max_accepted_payout;
-            uint16_t percent_steem_dollars;
-            bool allow_replies;
-            bool allow_votes;
-            bool allow_curation_rewards;
-
-            vector<beneficiary_route_type> beneficiaries;
-        };
-
-        struct category_api_obj {
-            category_api_obj(const chain::category_object &c) :
-                    id(c.id),
-                    name(to_string(c.name)),
-                    abs_rshares(c.abs_rshares),
-                    total_payouts(c.total_payouts),
-                    discussions(c.discussions),
-                    last_update(c.last_update) {
-            }
-
-            category_api_obj() {
-            }
-
-            category_id_type id;
-            string name;
-            share_type abs_rshares;
-            asset total_payouts;
-            uint32_t discussions;
-            time_point_sec last_update;
-        };
+    typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
+    typedef chain::block_summary_object block_summary_api_obj;
+    typedef chain::comment_vote_object comment_vote_api_obj;
+    typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
+    typedef chain::convert_request_object convert_request_api_obj;
+    typedef chain::escrow_object escrow_api_obj;
+    typedef chain::liquidity_reward_balance_object liquidity_reward_balance_api_obj;
+    typedef chain::limit_order_object limit_order_api_obj;
+    typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
+    typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
+    typedef chain::witness_vote_object witness_vote_api_obj;
+    typedef chain::witness_schedule_object witness_schedule_api_obj;
+    typedef chain::account_bandwidth_object account_bandwidth_api_obj;
+    typedef chain::vesting_delegation_object vesting_delegation_api_obj;
+    typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
+    typedef chain::reward_fund_object reward_fund_api_obj;
 
         struct tag_api_obj {
             tag_api_obj(const tags::tag_stats_object &o) :
@@ -181,6 +70,27 @@ namespace steemit {
             }
 
             tag_api_obj() {
+            }
+
+            string name;
+            fc::uint128_t total_children_rshares2;
+            asset total_payouts;
+            int32_t net_votes = 0;
+            uint32_t top_posts = 0;
+            uint32_t comments = 0;
+        };
+
+        struct language_api_obj {
+            language_api_obj(const languages::language_stats_object &o) :
+                    name(o.language),
+                    total_children_rshares2(o.total_children_rshares2),
+                    total_payouts(o.total_payout),
+                    net_votes(o.net_votes),
+                    top_posts(o.top_posts),
+                    comments(o.comments) {
+            }
+
+            language_api_obj() {
             }
 
             string name;
@@ -490,22 +400,6 @@ namespace steemit {
     }
 } // steemit::application
 
-FC_REFLECT(steemit::application::comment_api_obj,
-        (id)(author)(permlink)
-                (category)(parent_author)(parent_permlink)
-                (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
-                (depth)(children)(children_rshares2)
-                (net_rshares)(abs_rshares)(vote_rshares)
-                (children_abs_rshares)(cashout_time)(max_cashout_time)
-                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
-                (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
-                (beneficiaries)
-)
-
-FC_REFLECT(steemit::application::category_api_obj,
-        (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update)
-)
-
 FC_REFLECT(steemit::application::account_api_obj,
         (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
                 (created)(mined)
@@ -563,6 +457,17 @@ FC_REFLECT(steemit::application::tag_api_obj,
                 (top_posts)
                 (comments)
 )
+
+
+FC_REFLECT(steemit::application::language_api_obj,
+        (name)
+                (total_children_rshares2)
+                (total_payouts)
+                (net_votes)
+                (top_posts)
+                (comments)
+)
+
 
 FC_REFLECT(steemit::application::witness_api_obj,
         (id)

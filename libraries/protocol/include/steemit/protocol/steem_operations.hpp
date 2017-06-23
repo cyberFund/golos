@@ -78,7 +78,6 @@ namespace steemit {
 
             account_name_type author;
             string permlink;
-
             string title;
             string body;
             string json_metadata;
