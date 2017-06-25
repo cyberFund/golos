@@ -88,9 +88,9 @@
 #define STEEMIT_INFLATION_RATE_START_PERCENT    (1500) // Fixes block 0 to 15%
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (66.67*STEEMIT_1_PERCENT) //66% of inflation,
+#define STEEMIT_INFLATION_CONTENT_REWARD_PERCENT          (66.67*STEEMIT_1_PERCENT) //66% of inflation,
 //7.125% inflation
-#define STEEMIT_VESTING_FUND_PERCENT            (26.67*STEEMIT_1_PERCENT) //26% of inflation,
+#define STEEMIT_INFLATION_VESTING_FUND_PERCENT            (26.67*STEEMIT_1_PERCENT) //26% of inflation,
 //1.425% inflation
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
@@ -273,6 +273,12 @@
 #define STEEMIT_MAX_RUNNER_WITNESSES            1
 #define STEEMIT_MAX_WITNESSES                   (STEEMIT_MAX_VOTED_WITNESSES+STEEMIT_MAX_MINER_WITNESSES+STEEMIT_MAX_RUNNER_WITNESSES) /// 21 is more than enough
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
+#define STEEMIT_MIN_COMMITTEE 11
+#define STEEMIT_MAX_COMMITTEE 11
+
+#define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
+#define STEEMIT_COMMITTEE_PROPOSAL_REVIEW_PERIOD_SEC (60*60*24*7*2) // Two weeks
+
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEMIT_MAX_MEMO_SIZE                   2048
 #define STEEMIT_MAX_PROXY_RECURSION_DEPTH       4
@@ -308,9 +314,9 @@
 #define STEEMIT_INFLATION_RATE_START_PERCENT    (1515) // Fixes block 3860400 to 15%
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (66.67*STEEMIT_1_PERCENT) //66% of inflation,
+#define STEEMIT_INFLATION_CONTENT_REWARD_PERCENT          (66.67*STEEMIT_1_PERCENT) //66% of inflation,
 //7.125% inflation
-#define STEEMIT_VESTING_FUND_PERCENT            (26.67*STEEMIT_1_PERCENT) //26% of inflation,
+#define STEEMIT_INFLATION_VESTING_FUND_PERCENT            (26.67*STEEMIT_1_PERCENT) //26% of inflation,
 //1.425% inflation
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%

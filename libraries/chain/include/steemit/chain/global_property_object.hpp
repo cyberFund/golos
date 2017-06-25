@@ -5,6 +5,8 @@
 #include <steemit/chain/steem_object_types.hpp>
 
 #include <steemit/protocol/asset.hpp>
+#include <steemit/protocol/chain_properties.hpp>
+#include <steemit/protocol/vote.hpp>
 
 namespace steemit {
     namespace chain {
@@ -13,16 +15,75 @@ namespace steemit {
         using steemit::protocol::price;
 
         /**
+         * @class global_property_object
+         * @brief Maintains global state information (committee_member list, current fees)
+         * @ingroup object
+         * @ingroup implementation
+         *
+         * This is an implementation detail. The values here are set by committee_members to tune the blockchain parameters.
+         */
+        template<protocol::version_type VersionNumber>
+        class global_property_object
+                : public object<global_property_object_type, global_property_object<VersionNumber>, VersionNumber>,
+                  public protocol::static_version<VersionNumber> {
+        };
+
+        template<>
+        class global_property_object<1>
+                : public object<global_property_object_type, global_property_object<1>, 1> {
+        public:
+            template<typename Constructor, typename Allocator>
+            global_property_object(Constructor &&c, allocator<Allocator> a) {
+                c(*this);
+            }
+
+            global_property_object() {
+
+            }
+
+            protocol::vote_id_type get_next_vote_id(protocol::vote_id_type::vote_type type) {
+                return protocol::vote_id_type(type, next_available_vote_id++);
+            }
+
+            id_type id;
+
+            protocol::chain_properties<2> parameters;
+            optional<protocol::chain_properties<2>> pending_parameters;
+
+            uint32_t next_available_vote_id = 0;
+            std::vector<committee_member_id_type> active_committee_members; // updated once per maintenance interval
+            flat_set<witness_id_type> active_witnesses; // updated once per maintenance interval
+            // n.b. witness scheduling is done by witness_schedule object
+        };
+
+        typedef multi_index_container<
+                global_property_object<1>,
+                indexed_by<
+                        ordered_unique<tag<by_id>,
+                                member<global_property_object<1>, global_property_object<1>::id_type, &global_property_object<1>::id>>
+                >,
+                allocator<global_property_object<1>>
+        > global_property_index;
+
+        /**
          * @class dynamic_global_property_object
          * @brief Maintains global state information
          * @ingroup object
          * @ingroup implementation
          *
-         * This is an implementation detail. The values here are calculated during normal chain operations and reflect the
-         * current values of global blockchain properties.
+         * This is an implementation detail. The values here are calculated during normal chain operations and reflect the current values of global blockchain properties.
          */
+
+        template<protocol::version_type VersionNumber>
         class dynamic_global_property_object
-                : public object<dynamic_global_property_object_type, dynamic_global_property_object> {
+                : public object<dynamic_global_property_object_type, dynamic_global_property_object<VersionNumber>, VersionNumber>,
+                  public protocol::static_version<VersionNumber> {
+        };
+
+        template<>
+        class dynamic_global_property_object<1>
+                : public object<dynamic_global_property_object_type, dynamic_global_property_object<1>, 1>,
+                  public protocol::static_version<1> {
         public:
             template<typename Constructor, typename Allocator>
             dynamic_global_property_object(Constructor &&c, allocator<Allocator> a) {
@@ -30,6 +91,7 @@ namespace steemit {
             }
 
             dynamic_global_property_object() {
+
             }
 
             id_type id;
@@ -140,19 +202,18 @@ namespace steemit {
         };
 
         typedef multi_index_container<
-                dynamic_global_property_object,
+                dynamic_global_property_object<1>,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<dynamic_global_property_object, dynamic_global_property_object::id_type, &dynamic_global_property_object::id>>
+                                member<dynamic_global_property_object<1>, dynamic_global_property_object<1>::id_type, &dynamic_global_property_object<1>::id>>
                 >,
-                allocator<dynamic_global_property_object>
-        >
-                dynamic_global_property_index;
+                allocator<dynamic_global_property_object<1>>
+        > dynamic_global_property_index;
 
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::dynamic_global_property_object,
+FC_REFLECT(steemit::chain::dynamic_global_property_object<1>,
         (id)
                 (head_block_number)
                 (head_block_id)
@@ -181,4 +242,14 @@ FC_REFLECT(steemit::chain::dynamic_global_property_object,
                 (current_reserve_ratio)
                 (vote_regeneration_per_day)
 )
-CHAINBASE_SET_INDEX_TYPE(steemit::chain::dynamic_global_property_object, steemit::chain::dynamic_global_property_index)
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::dynamic_global_property_object<1>,
+        steemit::chain::dynamic_global_property_index)
+
+FC_REFLECT(steemit::chain::global_property_object<1>,
+        (parameters)
+                (pending_parameters)
+                (next_available_vote_id)
+                (active_committee_members)
+                (active_witnesses)
+)
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::global_property_object<1>, steemit::chain::global_property_index)

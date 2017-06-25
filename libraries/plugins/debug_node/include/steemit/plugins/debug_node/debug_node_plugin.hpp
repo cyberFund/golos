@@ -10,7 +10,9 @@
 
 namespace steemit {
     namespace protocol {
-        struct chain_properties;
+        template<>
+        struct chain_properties<1>;
+
         struct pow2;
         struct signed_block;
     }

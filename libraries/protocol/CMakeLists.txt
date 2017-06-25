@@ -6,7 +6,9 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/protocol/base.hpp
         include/steemit/protocol/block.hpp
         include/steemit/protocol/block_header.hpp
+        include/steemit/protocol/chain_properties.hpp
         include/steemit/protocol/config.hpp
+        include/steemit/protocol/committee_member_operations.hpp
         include/steemit/protocol/exceptions.hpp
         include/steemit/protocol/get_config.hpp
         include/steemit/protocol/operation_util.hpp
@@ -19,12 +21,15 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/protocol/transaction.hpp
         include/steemit/protocol/types.hpp
         include/steemit/protocol/version.hpp
+        include/steemit/protocol/vote.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES
         asset.cpp
         authority.cpp
         block.cpp
+        chain_properties.cpp
+        committee_member_operations.cpp
         get_config.cpp
         operation_util_impl.cpp
         operations.cpp
@@ -33,6 +38,7 @@ list(APPEND CURRENT_TARGET_SOURCES
         transaction.cpp
         types.cpp
         version.cpp
+        vote.cpp
         )
 
 if(BUILD_SHARED_LIBRARIES)
@@ -62,4 +68,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/protocol")
+install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")

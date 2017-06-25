@@ -18,6 +18,8 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/block_log.hpp
         include/steemit/chain/block_summary_object.hpp
         include/steemit/chain/comment_object.hpp
+        include/steemit/chain/committee_member_object.hpp
+        include/steemit/chain/committee_member_evaluator.hpp
         include/steemit/chain/compound.hpp
         include/steemit/chain/custom_operation_interpreter.hpp
         include/steemit/chain/database.hpp
@@ -50,6 +52,7 @@ list(APPEND CURRENT_TARGET_HEADERS
 
 list(APPEND CURRENT_TARGET_SOURCES
         block_log.cpp
+        committee_member_evaluator.cpp
         database.cpp
         fork_database.cpp
         shared_authority.cpp
@@ -99,4 +102,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/chain")
+install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")

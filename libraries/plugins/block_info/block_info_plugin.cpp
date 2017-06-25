@@ -42,7 +42,7 @@ namespace steemit {
                 }
 
                 block_info &info = _block_info[block_num];
-                const chain::dynamic_global_property_object &dgpo = db.get_dynamic_global_properties();
+                const chain::dynamic_global_property_object<1> &dgpo = db.get_dynamic_global_properties();
 
                 info.block_id = b.id();
                 info.block_size = fc::raw::pack_size(b);

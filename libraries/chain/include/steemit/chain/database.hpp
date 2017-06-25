@@ -150,6 +150,10 @@ namespace steemit {
 
             const account_object *find_account(const account_name_type &name) const;
 
+            const committee_member_object &get_committee_member(const account_name_type &name) const;
+
+            const committee_member_object *find_committee_member(const account_name_type &name) const;
+
             const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
 
             const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
@@ -174,7 +178,9 @@ namespace steemit {
 
             const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
 
-            const dynamic_global_property_object &get_dynamic_global_properties() const;
+            const dynamic_global_property_object<1> &get_dynamic_global_properties() const;
+
+            const global_property_object<1> &get_global_properties() const;
 
             const node_property_object &get_node_properties() const;
 

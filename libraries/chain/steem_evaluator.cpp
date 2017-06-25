@@ -1369,7 +1369,7 @@ namespace steemit {
                 int64_t used_power =
                         (current_power * abs_weight) / STEEMIT_100_PERCENT;
 
-                const dynamic_global_property_object &dgpo = this->_db.get_dynamic_global_properties();
+                const dynamic_global_property_object<1> &dgpo = this->_db.get_dynamic_global_properties();
 
                 // used_power = (current_power * abs_weight / STEEMIT_100_PERCENT) * (reserve / max_vote_denom)
                 // The second multiplication is rounded up as of HF 259
@@ -1878,7 +1878,7 @@ namespace steemit {
             FC_ASSERT(
                     o.work.work < target, "Work lacks sufficient difficulty.");
 
-            db.modify(dgp, [&](dynamic_global_property_object &p) {
+            db.modify(dgp, [&](dynamic_global_property_object<1> &p) {
                 p.total_pow++; // make sure this doesn't break anything...
                 p.num_pow_witnesses++;
             });
@@ -1953,7 +1953,7 @@ namespace steemit {
                       STEEMIT_MIN_BLOCK_SIZE_LIMIT *
                       2, "Voted maximum block size is too small.");
 
-            db.modify(dgp, [&](dynamic_global_property_object &p) {
+            db.modify(dgp, [&](dynamic_global_property_object<1> &p) {
                 p.total_pow++;
                 p.num_pow_witnesses++;
             });

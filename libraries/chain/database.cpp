@@ -2,6 +2,7 @@
 
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/compound.hpp>
+#include <steemit/chain/committee_member_object.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
@@ -94,7 +95,7 @@ namespace steemit {
                 initialize_evaluators();
 
                 if (chainbase_flags & chainbase::database::read_write) {
-                    if (!find<dynamic_global_property_object>()) {
+                    if (!find<dynamic_global_property_object<1>>() || !find<global_property_object<1>>()) {
                         with_write_lock([&]() {
                             init_genesis(initial_supply);
                         });
@@ -338,6 +339,16 @@ namespace steemit {
             return find<account_object, by_name>(name);
         }
 
+        const committee_member_object &database::get_committee_member(const account_name_type &name) const {
+            try {
+                return get<committee_member_object, by_account>(name);
+            } FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const committee_member_object *database::find_committee_member(const account_name_type &name) const {
+            return find<committee_member_object, by_account>(name);
+        }
+
         const comment_object &database::get_comment(const account_name_type &author, const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
@@ -406,9 +417,15 @@ namespace steemit {
             return find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
         }
 
-        const dynamic_global_property_object &database::get_dynamic_global_properties() const {
+        const dynamic_global_property_object<1> &database::get_dynamic_global_properties() const {
             try {
-                return get<dynamic_global_property_object>();
+                return get<dynamic_global_property_object<1>>();
+            } FC_CAPTURE_AND_RETHROW()
+        }
+
+        const global_property_object<1> &database::get_global_properties() const {
+            try {
+                return get<global_property_object<1>>();
             } FC_CAPTURE_AND_RETHROW()
         }
 
@@ -578,7 +595,7 @@ namespace steemit {
         }
 
         uint32_t database::witness_participation_rate() const {
-            const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+            const dynamic_global_property_object<1> &dpo = get_dynamic_global_properties();
             return uint64_t(STEEMIT_100_PERCENT) *
                    dpo.recent_slots_filled.popcount() / 128;
         }
@@ -983,7 +1000,7 @@ namespace steemit {
         }
 
         account_name_type database::get_scheduled_witness(uint32_t slot_num) const {
-            const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+            const dynamic_global_property_object<1> &dpo = get_dynamic_global_properties();
             const witness_schedule_object &wso = get_witness_schedule_object();
             uint64_t current_aslot = dpo.current_aslot + slot_num;
             return wso.current_shuffled_witnesses[current_aslot %
@@ -996,7 +1013,7 @@ namespace steemit {
             }
 
             auto interval = STEEMIT_BLOCK_INTERVAL;
-            const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+            const dynamic_global_property_object<1> &dpo = get_dynamic_global_properties();
 
             if (head_block_num() == 0) {
                 // n.b. first block is at genesis_time plus one block interval
@@ -1089,7 +1106,7 @@ namespace steemit {
                     to.vesting_shares += new_vesting;
                 });
 
-                modify(cprops, [&](dynamic_global_property_object &props) {
+                modify(cprops, [&](dynamic_global_property_object<1> &props) {
                     props.total_vesting_fund_steem += steem;
                     props.total_vesting_shares += new_vesting;
                 });
@@ -1113,7 +1130,7 @@ namespace steemit {
         }
 
         uint32_t database::get_pow_summary_target() const {
-            const dynamic_global_property_object &dgp = get_dynamic_global_properties();
+            const dynamic_global_property_object<1> &dgp = get_dynamic_global_properties();
             if (dgp.num_pow_witnesses >= 1004) {
                 return 0;
             }
@@ -1164,7 +1181,7 @@ namespace steemit {
                 _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
             });
 
-            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
+            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &_dgpo) {
                 _dgpo.maximum_block_size = median_maximum_block_size;
                 _dgpo.sbd_interest_rate = median_sbd_interest_rate;
             });
@@ -1311,7 +1328,7 @@ namespace steemit {
                 auto converted_steem = null_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
-                modify(gpo, [&](dynamic_global_property_object &g) {
+                modify(gpo, [&](dynamic_global_property_object<1> &g) {
                     g.total_vesting_shares -= null_account.vesting_shares;
                     g.total_vesting_fund_steem -= converted_steem;
                 });
@@ -1359,7 +1376,7 @@ namespace steemit {
             update_children_rshares2(*this, c, old_rshares2, new_rshares2);
 
             const auto &dgpo = get_dynamic_global_properties();
-            modify(dgpo, [&](dynamic_global_property_object &p) {
+            modify(dgpo, [&](dynamic_global_property_object<1> &p) {
                 p.total_reward_shares2 -= old_rshares2;
                 p.total_reward_shares2 += new_rshares2;
             });
@@ -1459,7 +1476,7 @@ namespace steemit {
                                 a.balance += converted_steem;
                             });
 
-                            modify(cprops, [&](dynamic_global_property_object &o) {
+                            modify(cprops, [&](dynamic_global_property_object<1> &o) {
                                 o.total_vesting_fund_steem -= converted_steem;
                                 o.total_vesting_shares.amount -= to_deposit;
                             });
@@ -1491,7 +1508,7 @@ namespace steemit {
                     }
                 });
 
-                modify(cprops, [&](dynamic_global_property_object &o) {
+                modify(cprops, [&](dynamic_global_property_object<1> &o) {
                     o.total_vesting_fund_steem -= converted_steem;
                     o.total_vesting_shares.amount -= to_convert;
                 });
@@ -1650,7 +1667,7 @@ namespace steemit {
                         adjust_rshares2(comment, utilities::calculate_vshares(comment.net_rshares.value), 0);
                     }
 
-                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &p) {
+                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &p) {
                         p.total_reward_fund_steem.amount -= reward;
                     });
 
@@ -1817,7 +1834,7 @@ namespace steemit {
                         auto reward = cashout_comment_helper(ctx, comment);
 
                         if (reward > 0) {
-                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &p) {
+                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &p) {
                                 p.total_reward_fund_steem.amount -= reward;
                             });
                         }
@@ -1869,13 +1886,13 @@ namespace steemit {
                         (int64_t(STEEMIT_100_PERCENT) *
                          int64_t(STEEMIT_BLOCKS_PER_YEAR));
                 auto content_reward =
-                        (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) /
+                        (new_steem * STEEMIT_INFLATION_CONTENT_REWARD_PERCENT) /
                         STEEMIT_100_PERCENT;
                 if (has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                     content_reward = pay_reward_funds(content_reward);
                 } /// 75% to content creator
                 auto vesting_reward =
-                        (new_steem * STEEMIT_VESTING_FUND_PERCENT) /
+                        (new_steem * STEEMIT_INFLATION_VESTING_FUND_PERCENT) /
                         STEEMIT_100_PERCENT; /// 15% to vesting fund
                 auto witness_reward = new_steem - content_reward -
                                       vesting_reward; /// Remaining 10% to witness pay
@@ -1896,7 +1913,7 @@ namespace steemit {
 
                 new_steem = content_reward + vesting_reward + witness_reward;
 
-                modify(props, [&](dynamic_global_property_object &p) {
+                modify(props, [&](dynamic_global_property_object<1> &p) {
                     p.total_vesting_fund_steem += asset(vesting_reward, STEEM_SYMBOL);
                     if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                         p.total_reward_fund_steem += asset(content_reward, STEEM_SYMBOL);
@@ -1922,7 +1939,7 @@ namespace steemit {
                     vesting_reward.amount.value *= 9;
                 }
 
-                modify(props, [&](dynamic_global_property_object &p) {
+                modify(props, [&](dynamic_global_property_object<1> &p) {
                     p.total_vesting_fund_steem += vesting_reward;
                     p.total_reward_fund_steem += content_reward;
                     p.current_supply +=
@@ -2184,7 +2201,7 @@ namespace steemit {
             }
 
             const auto &props = get_dynamic_global_properties();
-            modify(props, [&](dynamic_global_property_object &p) {
+            modify(props, [&](dynamic_global_property_object<1> &p) {
                 p.current_supply += net_steem;
                 p.current_sbd_supply -= net_sbd;
                 p.virtual_supply += net_steem;
@@ -2535,7 +2552,7 @@ namespace steemit {
                     });
                 }
 
-                create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
+                create<dynamic_global_property_object<1>>([&](dynamic_global_property_object<1> &p) {
                     p.current_witness = STEEMIT_INIT_MINER_NAME;
                     p.time = STEEMIT_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128::max_value();
@@ -2720,7 +2737,7 @@ namespace steemit {
 
                 /// modify current witness so transaction evaluators can know who included the transaction,
                 /// this is mostly for POW operations which must pay the current_witness
-                modify(gprops, [&](dynamic_global_property_object &dgp) {
+                modify(gprops, [&](dynamic_global_property_object<1> &dgp) {
                     dgp.current_witness = next_block.witness;
                 });
 
@@ -3058,7 +3075,7 @@ namespace steemit {
         void database::update_global_dynamic_data(const signed_block &b) {
             try {
                 auto block_size = fc::raw::pack_size(b);
-                const dynamic_global_property_object &_dgp =
+                const dynamic_global_property_object<1> &_dgp =
                         get_dynamic_global_properties();
 
                 uint32_t missed_blocks = 0;
@@ -3086,7 +3103,7 @@ namespace steemit {
                 }
 
                 // dynamic global properties updating
-                modify(_dgp, [&](dynamic_global_property_object &dgp) {
+                modify(_dgp, [&](dynamic_global_property_object<1> &dgp) {
                     // This is constant time assuming 100% participation. It is O(B) otherwise (B = Num blocks between update)
                     for (uint32_t i = 0; i < missed_blocks + 1; i++) {
                         dgp.participation_count -= dgp.recent_slots_filled.hi &
@@ -3161,7 +3178,7 @@ namespace steemit {
 
         void database::update_virtual_supply() {
             try {
-                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
+                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &dgp) {
                     dgp.virtual_supply = dgp.current_supply
                                          +
                                          (get_feed_history().current_median_history.is_null()
@@ -3197,7 +3214,7 @@ namespace steemit {
 
         void database::update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
             try {
-                const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+                const dynamic_global_property_object<1> &dpo = get_dynamic_global_properties();
                 uint64_t new_block_aslot = dpo.current_aslot +
                                            get_slot_at_time(new_block.timestamp);
 
@@ -3210,14 +3227,14 @@ namespace steemit {
 
         void database::update_last_irreversible_block() {
             try {
-                const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+                const dynamic_global_property_object<1> &dpo = get_dynamic_global_properties();
 
                 /**
     * Prior to voting taking over, we must be more conservative...
     *
     */
                 if (head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
-                    modify(dpo, [&](dynamic_global_property_object &_dpo) {
+                    modify(dpo, [&](dynamic_global_property_object<1> &_dpo) {
                         if (head_block_num() > STEEMIT_MAX_WITNESSES) {
                             _dpo.last_irreversible_block_num =
                                     head_block_num() - STEEMIT_MAX_WITNESSES;
@@ -3254,7 +3271,7 @@ namespace steemit {
 
                     if (new_last_irreversible_block_num >
                         dpo.last_irreversible_block_num) {
-                        modify(dpo, [&](dynamic_global_property_object &_dpo) {
+                        modify(dpo, [&](dynamic_global_property_object<1> &_dpo) {
                             _dpo.last_irreversible_block_num = new_last_irreversible_block_num;
                         });
                     }
@@ -3274,7 +3291,8 @@ namespace steemit {
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
                             signed_block *block_ptr;
-                            auto blocks = _fork_db.fetch_block_by_number(log_head_num + 1);
+                            auto blocks = _fork_db.fetch_block_by_number(
+                                    log_head_num + 1);
 
                             if (blocks.size() == 1) {
                                 block_ptr = &(blocks[0]->data);
@@ -3536,7 +3554,7 @@ namespace steemit {
 
                                 push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &props) {
                                     props.current_sbd_supply += interest_paid;
                                     props.virtual_supply += interest_paid *
                                                             get_feed_history().current_median_history;
@@ -3582,7 +3600,7 @@ namespace steemit {
 
                                 push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &props) {
                                     props.current_sbd_supply += interest_paid;
                                     props.virtual_supply += interest_paid *
                                                             get_feed_history().current_median_history;
@@ -3605,7 +3623,7 @@ namespace steemit {
                 adjust_vesting = false;
             }
 
-            modify(props, [&](dynamic_global_property_object &props) {
+            modify(props, [&](dynamic_global_property_object<1> &props) {
                 switch (delta.symbol) {
                     case STEEM_SYMBOL: {
                         asset new_vesting((adjust_vesting && delta.amount > 0) ?
@@ -3962,7 +3980,7 @@ namespace steemit {
                         rfo.reward_balance = reward_steem;
                     });
 
-                    modify(gpo, [&](dynamic_global_property_object &g) {
+                    modify(gpo, [&](dynamic_global_property_object<1> &g) {
                         g.total_reward_fund_steem = asset(0, STEEM_SYMBOL);
                         g.total_reward_shares2 = 0;
 
@@ -4181,7 +4199,7 @@ namespace steemit {
 
         void database::perform_vesting_share_split(uint32_t magnitude) {
             try {
-                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &d) {
+                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &d) {
                     d.total_vesting_shares.amount *= magnitude;
                     d.total_reward_shares2 = 0;
                 });

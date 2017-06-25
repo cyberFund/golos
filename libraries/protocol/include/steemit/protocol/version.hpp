@@ -1,17 +1,29 @@
 #pragma once
 
+
 #include <fc/string.hpp>
 #include <fc/time.hpp>
 
 namespace steemit {
     namespace protocol {
 
+        typedef uint32_t version_type;
+
+        template<version_type VersionNumber>
+        class static_version {
+        public:
+            typedef version_type version_number_type;
+
+            static const version_number_type version = VersionNumber;
+        };
+
 /*
  * This class represents the basic versioning scheme of the Golos blockchain.
  * All versions are a triple consisting of a major version, hardfork version, and release version.
  * It allows easy comparison between versions. A version is a read only object.
  */
-        struct version {
+        class version {
+        public:
             version() {
             }
 
@@ -46,10 +58,11 @@ namespace steemit {
 
             operator fc::string() const;
 
-            uint32_t v_num = 0;
+            version_type v_num = 0;
         };
 
-        struct hardfork_version : version {
+        class hardfork_version : public version {
+        public:
             hardfork_version() : version() {
             }
 
@@ -120,7 +133,8 @@ namespace steemit {
             }
         };
 
-        struct hardfork_version_vote {
+        class hardfork_version_vote {
+        public:
             hardfork_version_vote() {
             }
 

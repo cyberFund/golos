@@ -77,7 +77,7 @@ namespace steemit {
             uint32_t synced_blocks = 0;
             uint32_t pass_count = 0;
             while (true) {
-                steemit::chain::dynamic_global_property_object remote_dpo = my->database_api->get_dynamic_global_properties();
+                steemit::chain::dynamic_global_property_object<1> remote_dpo = my->database_api->get_dynamic_global_properties();
                 if (remote_dpo.last_irreversible_block_num <=
                     db.head_block_num()) {
                     if (remote_dpo.last_irreversible_block_num <

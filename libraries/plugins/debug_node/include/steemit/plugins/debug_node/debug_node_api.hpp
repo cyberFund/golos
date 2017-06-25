@@ -37,7 +37,7 @@ namespace steemit {
 
             struct debug_mine_args {
                 std::string worker_account;
-                fc::optional<chain::chain_properties> props;
+                fc::optional<chain::chain_properties<1>> props;
             };
 
             struct debug_mine_result {

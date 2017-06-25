@@ -184,11 +184,15 @@ namespace steemit {
             fc::variant_object get_config() const;
 
             /**
+             * @brief Retrieve the current @ref global_property_object
+             */
+
+//            global_property_api_obj get_global_properties() const;
+
+            /**
              * @brief Retrieve the current @ref dynamic_global_property_object
              */
             dynamic_global_property_api_obj get_dynamic_global_properties() const;
-
-            chain_properties get_chain_properties() const;
 
             price get_current_median_history_price() const;
 
@@ -592,7 +596,6 @@ FC_API(steemit::application::database_api,
                 // Globals
                 (get_config)
                 (get_dynamic_global_properties)
-                (get_chain_properties)
                 (get_feed_history)
                 (get_current_median_history_price)
                 (get_witness_schedule)

@@ -63,7 +63,7 @@ namespace steemit {
                 _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
             });
 
-            db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
+            db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &_dgpo) {
                 _dgpo.maximum_block_size = median_maximum_block_size;
                 _dgpo.sbd_interest_rate = median_sbd_interest_rate;
             });
@@ -119,7 +119,7 @@ namespace steemit {
                 db.modify(*itr, [&](witness_object &wit) {
                     wit.pow_worker = 0;
                 });
-                db.modify(gprops, [&](dynamic_global_property_object &obj) {
+                db.modify(gprops, [&](dynamic_global_property_object<1> &obj) {
                     obj.num_pow_witnesses--;
                 });
             }
@@ -386,7 +386,7 @@ namespace steemit {
                         db.modify(*itr, [&](witness_object &wit) {
                             wit.pow_worker = 0;
                         });
-                        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &obj) {
+                        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object<1> &obj) {
                             obj.num_pow_witnesses--;
                         });
                     }

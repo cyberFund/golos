@@ -129,7 +129,7 @@ namespace steemit {
 
                 fc::time_point_sec now = fc::time_point::now();
                 std::shared_ptr<database> db = _app.chain_database();
-                const dynamic_global_property_object &dgpo = db->get_dynamic_global_properties();
+                const dynamic_global_property_object<1> &dgpo = db->get_dynamic_global_properties();
 
                 return (dgpo.time < now - fc::seconds(max_block_age));
             });

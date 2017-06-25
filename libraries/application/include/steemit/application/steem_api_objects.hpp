@@ -42,7 +42,8 @@ namespace steemit {
         typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
         typedef chain::block_summary_object block_summary_api_obj;
         typedef chain::comment_vote_object comment_vote_api_obj;
-        typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
+        typedef chain::dynamic_global_property_object<1> dynamic_global_property_api_obj;
+        typedef chain::global_property_object<2> global_property_api_obj;
         typedef chain::convert_request_object convert_request_api_obj;
         typedef chain::escrow_object escrow_api_obj;
         typedef chain::liquidity_reward_balance_object liquidity_reward_balance_api_obj;
@@ -474,7 +475,7 @@ namespace steemit {
             uint64_t last_confirmed_block_num;
             uint64_t pow_worker;
             public_key_type signing_key;
-            chain_properties props;
+            chain_properties<1> props;
             price sbd_exchange_rate;
             time_point_sec last_sbd_exchange_update;
             share_type votes;

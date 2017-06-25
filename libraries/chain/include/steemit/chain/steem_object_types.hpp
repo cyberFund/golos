@@ -9,6 +9,7 @@
 
 #include <steemit/protocol/types.hpp>
 #include <steemit/protocol/authority.hpp>
+#include <steemit/protocol/version.hpp>
 
 
 namespace steemit {
@@ -73,9 +74,12 @@ namespace steemit {
             block_stats_object_type,
             vesting_delegation_object_type,
             vesting_delegation_expiration_object_type,
-            reward_fund_object_type
+            reward_fund_object_type,
+            committee_member_object_type,
+            global_property_object_type
         };
 
+        template<protocol::version_type VersionNumber>
         class dynamic_global_property_object;
 
         class account_object;
@@ -136,7 +140,14 @@ namespace steemit {
 
         class reward_fund_object;
 
-        typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
+        class committee_member_object;
+
+        template<protocol::version_type VersionNumber>
+        class global_property_object;
+
+        template<protocol::version_type VersionNumber>
+        using dynamic_global_property_id_type = oid<dynamic_global_property_object<VersionNumber>>;
+
         typedef oid<account_object> account_id_type;
         typedef oid<account_authority_object> account_authority_id_type;
         typedef oid<account_bandwidth_object> account_bandwidth_id_type;
@@ -166,6 +177,10 @@ namespace steemit {
         typedef oid<vesting_delegation_object> vesting_delegation_id_type;
         typedef oid<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
         typedef oid<reward_fund_object> reward_fund_id_type;
+        typedef oid<committee_member_object> committee_member_id_type;
+
+        template<protocol::version_type VersionNumber>
+        using global_property_id_type = oid<global_property_object<VersionNumber>>;
 
         enum bandwidth_type {
             post,    ///< Rate limiting posting reward eligibility over time
@@ -275,6 +290,8 @@ FC_REFLECT_ENUM(steemit::chain::object_type,
                 (vesting_delegation_object_type)
                 (vesting_delegation_expiration_object_type)
                 (reward_fund_object_type)
+                (committee_member_object_type)
+                (global_property_object_type)
 )
 
 FC_REFLECT_TYPENAME(steemit::chain::shared_string)

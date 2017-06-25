@@ -114,7 +114,7 @@ namespace steemit {
             std::map<public_key_type, fc::ecc::private_key> _private_keys;
             std::set<string> _witnesses;
             std::map<string, public_key_type> _miners;
-            protocol::chain_properties _miner_prop_vote;
+            protocol::chain_properties<1> _miner_prop_vote;
             fc::future<void> _block_production_task;
         };
 

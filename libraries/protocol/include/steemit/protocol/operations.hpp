@@ -1,6 +1,7 @@
 #pragma once
 
 #include <steemit/protocol/operation_util.hpp>
+#include <steemit/protocol/committee_member_operations.hpp>
 #include <steemit/protocol/steem_operations.hpp>
 #include <steemit/protocol/steem_virtual_operations.hpp>
 
@@ -63,6 +64,10 @@ namespace steemit {
                 delegate_vesting_shares_operation,
                 account_create_with_delegation_operation,
                 comment_payout_extension_operation,
+
+                committee_member_create_operation,
+                committee_member_update_operation,
+                committee_member_update_global_parameters_operation,
 
                 /// virtual operations below this point
                 fill_convert_request_operation,

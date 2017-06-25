@@ -7,6 +7,7 @@
 #include <steemit/chain/utilities/reward.hpp>
 
 #include <steemit/protocol/get_config.hpp>
+#include <steemit/protocol/chain_properties.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -296,15 +297,15 @@ namespace steemit {
             return steemit::protocol::get_config();
         }
 
+//        global_property_api_obj database_api::get_global_properties() const {
+//            return my->_db.with_read_lock([&]() {
+//                return my->get_global_properties();
+//            });
+//        }
+
         dynamic_global_property_api_obj database_api::get_dynamic_global_properties() const {
             return my->_db.with_read_lock([&]() {
                 return my->get_dynamic_global_properties();
-            });
-        }
-
-        chain_properties database_api::get_chain_properties() const {
-            return my->_db.with_read_lock([&]() {
-                return my->_db.get_witness_schedule_object().median_props;
             });
         }
 
@@ -321,7 +322,7 @@ namespace steemit {
         }
 
         dynamic_global_property_api_obj database_api_impl::get_dynamic_global_properties() const {
-            return _db.get(dynamic_global_property_id_type());
+            return _db.get(dynamic_global_property_id_type<1>());
         }
 
         witness_schedule_api_obj database_api::get_witness_schedule() const {
