@@ -1,4 +1,5 @@
 file(GLOB HEADERS "include/steemit/manifest/*.hpp")
+file(GLOB HEADERS "include/steemit/comment_meta_data/*.hpp")
 
 ################# external plugins ###################
 
