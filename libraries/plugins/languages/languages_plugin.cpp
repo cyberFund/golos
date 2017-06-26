@@ -193,7 +193,7 @@ namespace steemit {
                     comment_metadata meta;
                     if (c.json_metadata.size()) {
                         try {
-                            meta=fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
                         } FC_CAPTURE_LOG_AND_RETHROW((c))
                     }
 
@@ -458,36 +458,38 @@ namespace steemit {
             ilog("startup languages plugin");
         }
 
-    const std::set<std::string> languages_plugin::get_languages() const {
-        return  my->self().cache_languages;
-    }
-
-    struct language_api::impl{
-        impl(steemit::application::application &app):app(app){}
-        ~impl()=default;
-        steemit::application::application &app;
-    };
-
-    language_api::language_api(const steemit::application::api_context &ctx):pimpl(new impl(ctx.app)) {
-    }
-
-    void language_api::on_api_startup() {
-
-    }
-
-    language_api::language_api() {
-
-    }
-
-    std::vector<std::string> language_api::get_languages() const {
-        std::vector<std::string> tmp;
-        for(const auto&i:pimpl->app.get_plugin<languages_plugin>(LANGUAGES_PLUGIN_NAME)->get_languages()){
-            tmp.push_back(i);
+        const std::set<std::string> languages_plugin::get_languages() const {
+            return my->self().cache_languages;
         }
-        return tmp;
-    }
 
+        struct language_api::impl {
+            impl(steemit::application::application &app) : app(app) {
+            }
 
+            ~impl() = default;
+
+            steemit::application::application &app;
+        };
+
+        language_api::language_api(const steemit::application::api_context &ctx)
+                : pimpl(new impl(ctx.app)) {
+        }
+
+        void language_api::on_api_startup() {
+
+        }
+
+        language_api::language_api() {
+
+        }
+
+        std::vector<std::string> language_api::get_languages() const {
+            std::vector<std::string> tmp;
+            for (const auto &i:pimpl->app.get_plugin<languages_plugin>(LANGUAGES_PLUGIN_NAME)->get_languages()) {
+                tmp.push_back(i);
+            }
+            return tmp;
+        }
     }
 } /// steemit::tags
 

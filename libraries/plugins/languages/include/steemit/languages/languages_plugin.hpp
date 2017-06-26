@@ -10,7 +10,7 @@
 #include <fc/thread/future.hpp>
 #include <fc/api.hpp>
 
-#include <steemit/comment_meta_data/comment_meta_data.hpp>
+#include <steemit/comment_metadata/comment_metadata.hpp>
 
 namespace steemit {
     namespace application {
@@ -56,29 +56,29 @@ namespace steemit {
             author_language_stats_object_type = (LANGUAGES_SPACE_ID << 8) + 3
         };
 
-        using language_object=comment_meta_data::comment_meta_data_object<language_object_type>;
+        using language_object = comment_meta_data::comment_meta_data_object<language_object_type>;
 
         using language_index = comment_meta_data::comment_meta_data_index<language_object_type>;
 
-        using language_stats_object=comment_meta_data::comment_meta_data_stats_object<language_stats_object_type>;
+        using language_stats_object = comment_meta_data::comment_meta_data_stats_object<language_stats_object_type>;
 
-        using language_stats_index=comment_meta_data::comment_meta_data_stats_index <language_stats_object_type>;
+        using language_stats_index = comment_meta_data::comment_meta_data_stats_index<language_stats_object_type>;
 
         using peer_stats_object = comment_meta_data::peer_stats_object<peer_stats_object_type>;
 
-        using peer_stats_index=comment_meta_data::peer_stats_index<peer_stats_object_type>;
+        using peer_stats_index = comment_meta_data::peer_stats_index<peer_stats_object_type>;
 
-        using author_language_stats_object=comment_meta_data::author_comment_meta_data_stats_object<author_language_stats_object_type>;
+        using author_language_stats_object = comment_meta_data::author_comment_meta_data_stats_object<author_language_stats_object_type>;
 
-        using author_language_stats_index=comment_meta_data::author_language_stats_index<author_language_stats_object_type>;
+        using author_language_stats_index = comment_meta_data::author_language_stats_index<author_language_stats_object_type>;
 
 
 /**
  * Used to parse the metadata from the comment json_meta field.
  */
-struct comment_metadata {
-    string language;
-};
+        struct comment_metadata {
+            string language;
+        };
 
 /**
  *  This plugin will scan all changes to posts and/or their meta data and
@@ -104,7 +104,7 @@ struct comment_metadata {
 
             static bool filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &confition);
 
-            const std::set<std::string> get_languages()const;
+            const std::set<std::string> get_languages() const;
 
             struct languages_plugin_impl;
 
@@ -124,16 +124,17 @@ struct comment_metadata {
             void on_api_startup();
 
             std::vector<std::string> get_languages() const;
+
         private:
             struct impl;
-            std::unique_ptr<impl>pimpl;
+            std::unique_ptr<impl> pimpl;
         };
     }
 } //steemit::language
 
-FC_REFLECT(steemit::languages::comment_metadata,(language));
+FC_REFLECT(steemit::languages::comment_metadata, (language));
 
-FC_API(steemit::languages::language_api,(get_languages));
+FC_API(steemit::languages::language_api, (get_languages));
 
 FC_REFLECT(steemit::languages::language_object, (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_object, steemit::languages::language_index)
