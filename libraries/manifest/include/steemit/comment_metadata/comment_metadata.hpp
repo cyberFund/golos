@@ -18,7 +18,7 @@ namespace steemit {
         struct comment_api_obj;
     }
 
-    namespace comment_meta_data {
+    namespace comment_metadata {
         using namespace steemit::chain;
         using namespace boost::multi_index;
 
@@ -334,7 +334,7 @@ namespace steemit {
                                         member<comment_meta_data_object<TypeNumber>, name_type, &comment_meta_data_object<TypeNumber>::name>,
                                         member<comment_meta_data_object<TypeNumber>, comment_id_type, &comment_meta_data_object<TypeNumber>::parent>,
                                         member<comment_meta_data_object<TypeNumber>, int32_t, &comment_meta_data_object<TypeNumber>::net_votes>,
-                                        member<comment_meta_data_object<TypeNumber>, typename comment_meta_data_object<TypeNumber>::id_type, &comment_meta_data_object<TypeNumber>::id_type>
+                                        member<comment_meta_data_object<TypeNumber>, typename comment_meta_data_object<TypeNumber>::id_type, &comment_meta_data_object<TypeNumber>::id>
                                 >,
                                 composite_key_compare<std::less<name_type>, std::less<comment_id_type>, std::greater<int32_t>, std::less<typename comment_meta_data_object<TypeNumber>::id_type>>
                         >,
@@ -417,12 +417,12 @@ namespace steemit {
  *  all posts under a particular tag
  */
         template<uint16_t TypeNumber>
-        class comment_meta_data_stats_object
-                : public object<TypeNumber, comment_meta_data_stats_object<TypeNumber>> {
+        class comment_metadata_stats_object
+                : public object<TypeNumber, comment_metadata_stats_object<TypeNumber>> {
         public:
             template<typename Constructor, typename Allocator>
-            comment_meta_data_stats_object(Constructor &&c, allocator<Allocator>)
-                    :comment_meta_data_stats_object() {
+            comment_metadata_stats_object(Constructor &&c, allocator<Allocator>)
+                    :comment_metadata_stats_object() {
                 c(*this);
                 total_payout = asset(0, SBD_SYMBOL);
                 net_votes = 0;
@@ -430,14 +430,14 @@ namespace steemit {
                 comments = 0;
             }
 
-            comment_meta_data_stats_object() {
+            comment_metadata_stats_object() {
                 total_payout = asset(0, SBD_SYMBOL);
                 net_votes = 0;
                 top_posts = 0;
                 comments = 0;
             }
 
-            typename comment_meta_data_stats_object<TypeNumber>::id_type id;
+            typename comment_metadata_stats_object<TypeNumber>::id_type id;
 
             name_type name;
             fc::uint128_t total_children_rshares2;
@@ -454,19 +454,19 @@ namespace steemit {
 
         template<uint16_t TypeNumber>
         using comment_meta_data_stats_index = multi_index_container<
-                comment_meta_data_stats_object<TypeNumber>,
+                comment_metadata_stats_object<TypeNumber>,
                 indexed_by<
-                        ordered_unique<tag<by_id>, member<comment_meta_data_stats_object<TypeNumber>, typename comment_meta_data_stats_object<TypeNumber>::type_id, &comment_meta_data_stats_object<TypeNumber>::id>>,
-                        ordered_unique<tag<by_tag>, member<comment_meta_data_stats_object<TypeNumber>, name_type, &comment_meta_data_stats_object<TypeNumber>::name>>,
+                        ordered_unique<tag<by_id>, member<comment_metadata_stats_object<TypeNumber>, typename comment_metadata_stats_object<TypeNumber>::id_type, &comment_metadata_stats_object<TypeNumber>::id>>,
+                        ordered_unique<tag<by_tag>, member<comment_metadata_stats_object<TypeNumber>, name_type, &comment_metadata_stats_object<TypeNumber>::name>>,
                         ordered_non_unique<tag<by_trending>,
-                                composite_key<comment_meta_data_stats_object<TypeNumber>,
-                                        member<comment_meta_data_stats_object<TypeNumber>, fc::uint128_t, &comment_meta_data_stats_object<TypeNumber>::total_children_rshares2>,
-                                        member<comment_meta_data_stats_object<TypeNumber>, name_type, &comment_meta_data_stats_object<TypeNumber>::name>
+                                composite_key<comment_metadata_stats_object<TypeNumber>,
+                                        member<comment_metadata_stats_object<TypeNumber>, fc::uint128_t, &comment_metadata_stats_object<TypeNumber>::total_children_rshares2>,
+                                        member<comment_metadata_stats_object<TypeNumber>, name_type, &comment_metadata_stats_object<TypeNumber>::name>
                                 >,
                                 composite_key_compare<std::greater<uint128_t>, std::less<name_type>>
                         >
                 >,
-                allocator<comment_meta_data_stats_object<TypeNumber>>
+                allocator<comment_metadata_stats_object<TypeNumber>>
         >;
 
 
@@ -566,23 +566,23 @@ namespace steemit {
 
 
         template<uint16_t TypeNumber>
-        class author_comment_meta_data_stats_object
-                : public object<TypeNumber, author_comment_meta_data_stats_object<TypeNumber>> {
+        class author_comment_metadata_stats_object
+                : public object<TypeNumber, author_comment_metadata_stats_object<TypeNumber>> {
         public:
             template<typename Constructor, typename Allocator>
-            author_comment_meta_data_stats_object(Constructor &&c, allocator<Allocator>)
-                    :author_comment_meta_data_stats_object() {
+            author_comment_metadata_stats_object(Constructor &&c, allocator<Allocator>)
+                    :author_comment_metadata_stats_object() {
                 c(*this);
                 total_rewards = asset(0, SBD_SYMBOL);
                 total_posts = 0;
             }
 
-            author_comment_meta_data_stats_object() {
+            author_comment_metadata_stats_object() {
                 total_rewards = asset(0, SBD_SYMBOL);
                 total_posts = 0;
             }
 
-            author_comment_meta_data_stats_object<TypeNumber>::id_type id;
+            typename author_comment_metadata_stats_object<TypeNumber>::id_type id;
             account_id_type author;
             name_type name;
             asset total_rewards;
@@ -598,40 +598,40 @@ namespace steemit {
 
         template<uint16_t TypeNumber>
         using author_language_stats_index = chainbase::shared_multi_index_container<
-                author_comment_meta_data_stats_object<TypeNumber>,
+                author_comment_metadata_stats_object<TypeNumber>,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<author_comment_meta_data_stats_object<TypeNumber>, typename author_comment_meta_data_stats_object<TypeNumber>::id_type, &author_comment_meta_data_stats_object<TypeNumber>::id>
+                                member<author_comment_metadata_stats_object<TypeNumber>, typename author_comment_metadata_stats_object<TypeNumber>::id_type, &author_comment_metadata_stats_object<TypeNumber>::id>
                         >,
                         ordered_unique<tag<by_author_posts_tag>,
-                                composite_key<author_comment_meta_data_stats_object<TypeNumber>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, account_id_type, &author_comment_meta_data_stats_object<TypeNumber>::author>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, uint32_t, &author_comment_meta_data_stats_object<TypeNumber>::total_posts>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, name_type, &author_comment_meta_data_stats_object<TypeNumber>::name>
+                                composite_key<author_comment_metadata_stats_object<TypeNumber>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, account_id_type, &author_comment_metadata_stats_object<TypeNumber>::author>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, uint32_t, &author_comment_metadata_stats_object<TypeNumber>::total_posts>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, name_type, &author_comment_metadata_stats_object<TypeNumber>::name>
                                 >,
                                 composite_key_compare<less<account_id_type>, greater<uint32_t>, less<name_type>>
                         >,
                         ordered_unique<tag<by_author_tag_posts>,
-                                composite_key<author_comment_meta_data_stats_object<TypeNumber>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, account_id_type, &author_comment_meta_data_stats_object<TypeNumber>::author>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, name_type, &author_comment_meta_data_stats_object<TypeNumber>::name>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, uint32_t, &author_comment_meta_data_stats_object<TypeNumber>::total_posts>
+                                composite_key<author_comment_metadata_stats_object<TypeNumber>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, account_id_type, &author_comment_metadata_stats_object<TypeNumber>::author>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, name_type, &author_comment_metadata_stats_object<TypeNumber>::name>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, uint32_t, &author_comment_metadata_stats_object<TypeNumber>::total_posts>
                                 >,
                                 composite_key_compare<less<account_id_type>, less<name_type>, greater<uint32_t>>
                         >,
                         ordered_unique<tag<by_author_tag_rewards>,
-                                composite_key<author_comment_meta_data_stats_object<TypeNumber>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, account_id_type, &author_comment_meta_data_stats_object<TypeNumber>::author>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, name_type, &author_comment_meta_data_stats_object<TypeNumber>::name>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, asset, &author_comment_meta_data_stats_object<TypeNumber>::total_rewards>
+                                composite_key<author_comment_metadata_stats_object<TypeNumber>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, account_id_type, &author_comment_metadata_stats_object<TypeNumber>::author>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, name_type, &author_comment_metadata_stats_object<TypeNumber>::name>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, asset, &author_comment_metadata_stats_object<TypeNumber>::total_rewards>
                                 >,
                                 composite_key_compare<less<account_id_type>, less<name_type>, greater<asset>>
                         >,
                         ordered_unique<tag<by_tag_rewards_author>,
-                                composite_key<author_comment_meta_data_stats_object<TypeNumber>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, name_type, &author_comment_meta_data_stats_object<TypeNumber>::name>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, asset, &author_comment_meta_data_stats_object<TypeNumber>::total_rewards>,
-                                        member<author_comment_meta_data_stats_object<TypeNumber>, account_id_type, &author_comment_meta_data_stats_object<TypeNumber>::author>
+                                composite_key<author_comment_metadata_stats_object<TypeNumber>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, name_type, &author_comment_metadata_stats_object<TypeNumber>::name>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, asset, &author_comment_metadata_stats_object<TypeNumber>::total_rewards>,
+                                        member<author_comment_metadata_stats_object<TypeNumber>, account_id_type, &author_comment_metadata_stats_object<TypeNumber>::author>
                                 >,
                                 composite_key_compare<less<name_type>, greater<asset>, less<account_id_type>>
                         >

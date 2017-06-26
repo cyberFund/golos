@@ -26,11 +26,9 @@
 namespace steemit {
     namespace languages {
 
-        namespace detail {
-
             using namespace steemit::protocol;
 
-            class languages_plugin_impl final {
+            struct languages_plugin::languages_plugin_impl final {
             public:
                 languages_plugin_impl(languages_plugin &_plugin)
                         : _self(_plugin) {
@@ -52,18 +50,18 @@ namespace steemit {
                 set<string> cache_languages;
             };
 
-            languages_plugin_impl::~languages_plugin_impl() {
+            languages_plugin::languages_plugin_impl::~languages_plugin_impl() {
                 return;
             }
 
             struct operation_visitor {
-                operation_visitor(languages_plugin_impl &self)
+                operation_visitor(languages_plugin::languages_plugin_impl &self)
                         : languages_plugin(self), _db(self.database()) {
 
                 };
                 typedef void result_type;
 
-                languages_plugin_impl &languages_plugin;
+                languages_plugin::languages_plugin_impl &languages_plugin;
                 steemit::chain::database &_db;
 
                 void remove_stats(const language_object &tag, const language_stats_object &stats) const {
@@ -97,7 +95,7 @@ namespace steemit {
                     const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.name));
                     if (itr != idx.end() && itr->author == tag.author &&
-                        itr->language == tag.name) {
+                        itr->name == tag.name) {
                         _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts--;
                         });
@@ -112,7 +110,7 @@ namespace steemit {
                     }
 
                     return _db.create<language_stats_object>([&](language_stats_object &stats) {
-                        stats.language = tag;
+                        stats.name = tag;
                     });
                 }
 
@@ -174,14 +172,14 @@ namespace steemit {
                     const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(author, language));
                     if (itr != idx.end() && itr->author == author &&
-                        itr->language == language) {
+                        itr->name == language) {
                         _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts++;
                         });
                     } else {
                         _db.create<author_language_stats_object>([&](author_language_stats_object &stats) {
                             stats.author = author;
-                            stats.language = language;
+                            stats.name = language;
                             stats.total_posts = 1;
                         });
                     }
@@ -189,11 +187,11 @@ namespace steemit {
                     languages_plugin.self().cache_languages.emplace(language);
                 }
 
-                comment_metadata filter_tags(const comment_object &c) const {
-                    comment_metadata meta;
+                comment_metadata_t filter_tags(const comment_object &c) const {
+                    comment_metadata_t meta;
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata_t>();
                         } FC_CAPTURE_LOG_AND_RETHROW((c))
                     }
 
@@ -387,7 +385,7 @@ namespace steemit {
             };
 
 
-            void languages_plugin_impl::on_operation(const operation_notification &note) {
+            void languages_plugin::languages_plugin_impl::on_operation(const operation_notification &note) {
                 try {
                     /// plugins shouldn't ever throw
                     note.op.visit(operation_visitor(self()));
@@ -400,10 +398,8 @@ namespace steemit {
                 }
             }
 
-        } /// end detail namespace
-
         languages_plugin::languages_plugin(application *app)
-                : plugin(app), my(new detail::languages_plugin_impl(*this)) {
+                : plugin(app), my(new languages_plugin_impl(*this)) {
             chain::database &db = database();
             add_plugin_index<language_index>(db);
             add_plugin_index<language_stats_index>(db);

@@ -56,27 +56,41 @@ namespace steemit {
             author_language_stats_object_type = (LANGUAGES_SPACE_ID << 8) + 3
         };
 
-        using language_object = comment_meta_data::comment_meta_data_object<language_object_type>;
+        using language_object = comment_metadata::comment_meta_data_object<language_object_type>;
 
-        using language_index = comment_meta_data::comment_meta_data_index<language_object_type>;
+        using language_index = comment_metadata::comment_meta_data_index<language_object_type>;
 
-        using language_stats_object = comment_meta_data::comment_meta_data_stats_object<language_stats_object_type>;
+        using language_stats_object = comment_metadata::comment_metadata_stats_object<language_stats_object_type>;
 
-        using language_stats_index = comment_meta_data::comment_meta_data_stats_index<language_stats_object_type>;
+        using language_stats_index = comment_metadata::comment_meta_data_stats_index<language_stats_object_type>;
 
-        using peer_stats_object = comment_meta_data::peer_stats_object<peer_stats_object_type>;
+        using peer_stats_object = comment_metadata::peer_stats_object<peer_stats_object_type>;
 
-        using peer_stats_index = comment_meta_data::peer_stats_index<peer_stats_object_type>;
+        using peer_stats_index = comment_metadata::peer_stats_index<peer_stats_object_type>;
 
-        using author_language_stats_object = comment_meta_data::author_comment_meta_data_stats_object<author_language_stats_object_type>;
+        using author_language_stats_object = comment_metadata::author_comment_metadata_stats_object<author_language_stats_object_type>;
 
-        using author_language_stats_index = comment_meta_data::author_language_stats_index<author_language_stats_object_type>;
+        using author_language_stats_index = comment_metadata::author_language_stats_index<author_language_stats_object_type>;
 
-
+        using comment_metadata::by_tag;
+        using comment_metadata::by_author_tag_posts;
+        using comment_metadata::by_comment;
+        using comment_metadata::by_voter_peer;
+        using by_author_comment = comment_metadata::by_author_comment<language_object_type>;
+        using by_parent_trending = comment_metadata::by_parent_trending<language_object_type>;
+        using by_parent_promoted = comment_metadata::by_parent_promoted<language_object_type>;
+        using by_reward_fund_net_rshares = comment_metadata::by_reward_fund_net_rshares<language_object_type>;
+        using by_parent_created = comment_metadata::by_parent_created<language_object_type>;
+        using by_parent_active = comment_metadata::by_parent_active<language_object_type>;
+        using by_cashout = comment_metadata::by_cashout<language_object_type>;
+        using by_net_rshares = comment_metadata::by_net_rshares<language_object_type>;
+        using by_parent_net_votes = comment_metadata::by_parent_net_votes<language_object_type>;
+        using by_parent_children = comment_metadata::by_parent_children<language_object_type>;
+        using by_parent_hot = comment_metadata::by_parent_hot<language_object_type>;
 /**
  * Used to parse the metadata from the comment json_meta field.
  */
-        struct comment_metadata {
+        struct comment_metadata_t {
             string language;
         };
 
@@ -132,7 +146,7 @@ namespace steemit {
     }
 } //steemit::language
 
-FC_REFLECT(steemit::languages::comment_metadata, (language));
+FC_REFLECT(steemit::languages::comment_metadata_t, (language));
 
 FC_API(steemit::languages::language_api, (get_languages));
 

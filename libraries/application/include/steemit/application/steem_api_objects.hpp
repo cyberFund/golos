@@ -82,7 +82,7 @@ namespace steemit {
 
         struct language_api_obj {
             language_api_obj(const languages::language_stats_object &o) :
-                    name(o.language),
+                    name(o.name),
                     total_children_rshares2(o.total_children_rshares2),
                     total_payouts(o.total_payout),
                     net_votes(o.net_votes),
