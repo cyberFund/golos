@@ -10,6 +10,8 @@
 #include <fc/thread/future.hpp>
 #include <fc/api.hpp>
 
+#include <steemit/plugin/comment_meta_data.hpp>
+
 namespace steemit {
     namespace application {
         class discussion_query;
