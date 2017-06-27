@@ -88,7 +88,7 @@ namespace steemit {
                     const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.name));
                     if (itr != idx.end() && itr->author == tag.author &&
-                        itr->tag == tag.name) {
+                        itr->name == tag.name) {
                         _db.modify(*itr, [&](author_tag_stats_object &stats) {
                             stats.total_posts--;
                         });
@@ -103,16 +103,16 @@ namespace steemit {
                     }
 
                     return _db.create<tag_stats_object>([&](tag_stats_object &stats) {
-                        stats.tag = tag;
+                        stats.name = tag;
                     });
                 }
 
-                comment_metadata filter_tags(const comment_object &c) const {
-                    comment_metadata meta;
+                comment_metadata_t filter_tags(const comment_object &c) const {
+                    comment_metadata_t meta;
 
                     if (c.json_metadata.size()) {
                         try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata_t>();
                         }
                         catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
@@ -202,14 +202,14 @@ namespace steemit {
                     const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(author, tag));
                     if (itr != idx.end() && itr->author == author &&
-                        itr->tag == tag) {
+                        itr->name == tag) {
                         _db.modify(*itr, [&](author_tag_stats_object &stats) {
                             stats.total_posts++;
                         });
                     } else {
                         _db.create<author_tag_stats_object>([&](author_tag_stats_object &stats) {
                             stats.author = author;
-                            stats.tag = tag;
+                            stats.name = tag;
                             stats.total_posts = 1;
                         });
                     }
@@ -461,11 +461,11 @@ namespace steemit {
                 }
             }
 
-            tags::comment_metadata meta;
+            tags::comment_metadata_t meta;
 
             if (c.json_metadata.size()) {
                 try {
-                    meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
+                    meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata_t>();
                 } catch (const fc::exception &e) {
                     // Do nothing on malformed json_metadata
                 }

@@ -1205,10 +1205,10 @@ namespace steemit {
                 std::vector<pair<std::string, uint32_t>> result;
                 while (itr != tidx.end() && itr->author == acnt->id &&
                        result.size() < 1000) {
-                    if (!fc::is_utf8(itr->tag)) {
-                        result.push_back(std::make_pair(fc::prune_invalid_utf8(itr->tag), itr->total_posts));
+                    if (!fc::is_utf8(itr->name)) {
+                        result.push_back(std::make_pair(fc::prune_invalid_utf8(itr->name), itr->total_posts));
                     } else {
-                        result.push_back(std::make_pair(itr->tag, itr->total_posts));
+                        result.push_back(std::make_pair(itr->name, itr->total_posts));
                     }
                     ++itr;
                 }

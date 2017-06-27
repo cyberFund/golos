@@ -61,7 +61,7 @@ namespace steemit {
 
         struct tag_api_obj {
             tag_api_obj(const tags::tag_stats_object &o) :
-                    name(o.tag),
+                    name(o.name),
                     total_children_rshares2(o.total_children_rshares2),
                     total_payouts(o.total_payout),
                     net_votes(o.net_votes),
