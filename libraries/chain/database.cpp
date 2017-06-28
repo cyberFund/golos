@@ -2058,7 +2058,7 @@ namespace steemit {
         }
 
         asset database::get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const {
-            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() > STEEMIT_CASHOUT_WINDOW_SECONDS / 7.0, "Extension time should be equal or greater than a day");
+            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() > STEEMIT_CASHOUT_WINDOW_SECONDS / 7, "Extension time should be equal or greater than a day");
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() <
                       STEEMIT_CASHOUT_WINDOW_SECONDS, "Extension time should be less or equal than a week");
 
