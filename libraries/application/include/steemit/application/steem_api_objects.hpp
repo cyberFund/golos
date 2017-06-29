@@ -23,18 +23,18 @@ namespace steemit {
       created( o.created ),
       expiration( o.expiration ),
       seller( o.seller ),
-      orderid( o.orderid ),
+      order_id( o.order_id ),
       for_sale( o.for_sale ),
       sell_price( o.sell_price )
    {}
 
    limit_order(){}
 
-   chain::limit_order_id_type id;
+   chain::order_id_type id;
    time_point_sec             created;
    time_point_sec             expiration;
    account_name_type          seller;
-   uint32_t                   orderid;
+   uint32_t                   order_id;
    share_type                 for_sale;
    price                      sell_price;
 };*/

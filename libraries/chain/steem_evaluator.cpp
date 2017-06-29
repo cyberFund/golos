@@ -2032,7 +2032,7 @@ namespace steemit {
 
             this->_db.create<convert_request_object>([&](convert_request_object &obj) {
                 obj.owner = o.owner;
-                obj.requestid = o.requestid;
+                obj.requestid = o.request_id;
                 obj.amount = o.amount;
                 obj.conversion_date =
                         this->_db.head_block_time() + steem_conversion_delay;
@@ -2055,7 +2055,7 @@ namespace steemit {
             const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
                 obj.created = this->_db.head_block_time();
                 obj.seller = o.owner;
-                obj.orderid = o.orderid;
+                obj.orderid = o.order_id;
                 obj.for_sale = o.amount_to_sell.amount;
                 obj.sell_price = o.get_price();
                 obj.expiration = o.expiration;
@@ -2083,7 +2083,7 @@ namespace steemit {
             const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
                 obj.created = this->_db.head_block_time();
                 obj.seller = o.owner;
-                obj.orderid = o.orderid;
+                obj.orderid = o.order_id;
                 obj.for_sale = o.amount_to_sell.amount;
                 obj.sell_price = o.exchange_rate;
                 obj.expiration = o.expiration;
@@ -2098,7 +2098,7 @@ namespace steemit {
 
         void limit_order_cancel_evaluator::do_apply(const limit_order_cancel_operation &o) {
 
-            this->_db.cancel_order(this->_db.get_limit_order(o.owner, o.orderid));
+            this->_db.cancel_order(this->_db.get_limit_order(o.owner, o.order_id));
         }
 
         void report_over_production_evaluator::do_apply(const report_over_production_operation &o) {

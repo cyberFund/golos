@@ -18,6 +18,104 @@ namespace steemit {
 
         using steemit::protocol::authority;
 
+        /**
+    * @class account_statistics_object
+    * @ingroup object
+    * @ingroup implementation
+    *
+    * This object contains regularly updated statistical data about an account. It is provided for the purpose of
+    * separating the account data that changes frequently from the account data that is mostly static, which will
+    * minimize the amount of data that must be backed up as part of the undo history everytime a transfer is made.
+    */
+        class account_statistics_object
+                : public object<account_statistics_object_type, account_statistics_object> {
+        public:
+            account_statistics_object() = delete;
+
+            template<typename Constructor, typename Allocator>
+            account_statistics_object(Constructor &&c, allocator<Allocator> a) {
+                c(*this);
+            };
+
+            id_type id;
+
+            account_name_type owner;
+
+            /**
+             * Keep the most recent operation as a root pointer to a linked list of the transaction history.
+             */
+            account_transaction_history_id_type most_recent_op;
+            /** Total operations related to this account. */
+            uint32_t total_ops = 0;
+            /** Total operations related to this account that has been removed from the database. */
+            uint32_t removed_ops = 0;
+
+            /**
+             * When calculating votes it is necessary to know how much is stored in orders (and thus unavailable for
+             * transfers). Rather than maintaining an index of [asset,owner,order_id] we will simply maintain the running
+             * total here and update it every time an order is created or modified.
+             */
+            share_type total_core_in_orders;
+
+            /**
+             * Tracks the total fees paid by this account for the purpose of calculating bulk discounts.
+             */
+            share_type lifetime_fees_paid;
+
+            /**
+             * Tracks the fees paid by this account which have not been disseminated to the various parties that receive
+             * them yet (registrar, referrer, lifetime referrer, network, etc). This is used as an optimization to avoid
+             * doing massive amounts of uint128 arithmetic on each and every operation.
+             *
+             * These fees will be paid out as vesting cash-back, and this counter will reset during the maintenance
+             * interval.
+             */
+            share_type pending_fees;
+            /**
+             * Same as @ref pending_fees, except these fees will be paid out as pre-vested cash-back (immediately
+             * available for withdrawal) rather than requiring the normal vesting period.
+             */
+            share_type pending_vested_fees;
+
+            /// @brief Split up and pay out @ref pending_fees and @ref pending_vested_fees
+            void process_fees(const account_object &a, database &d) const;
+
+            /**
+             * Core fees are paid into the account_statistics_object by this method
+             */
+            void pay_fee(share_type core_fee, share_type cashback_vesting_threshold);
+        };
+
+        /**
+         * @brief Tracks the balance of a single account/asset pair
+         * @ingroup object
+         *
+         * This object is indexed on owner and asset_type so that black swan
+         * events in asset_type can be processed quickly.
+         */
+        class account_balance_object
+                : public object<account_balance_object_type, account_balance_object> {
+        public:
+            account_balance_object() = delete;
+
+            template<typename Constructor, typename Allocator>
+            account_balance_object(Constructor &&c, allocator<Allocator> a) {
+                    c(*this);
+            };
+
+            id_type id;
+
+            account_name_type owner;
+            asset_symbol_type asset_type;
+            share_type balance;
+
+            asset get_balance() const {
+                return asset(balance, asset_type);
+            }
+
+            void adjust_balance(const asset &delta);
+        };
+
         class account_object
                 : public object<account_object_type, account_object> {
         public:
@@ -252,6 +350,38 @@ namespace steemit {
             time_point_sec effective_on;
         };
 
+        struct by_account_asset;
+        struct by_asset_balance;
+        /**
+         * @ingroup object_index
+         */
+        typedef multi_index_container<
+                account_balance_object,
+                indexed_by<
+                        ordered_unique<tag<by_id>, member<account_balance_object, account_balance_object::id_type, &account_balance_object::id>>,
+                        ordered_unique<tag<by_account_asset>,
+                                composite_key<
+                                        account_balance_object,
+                                        member<account_balance_object, account_name_type, &account_balance_object::owner>,
+                                        member<account_balance_object, asset_symbol_type, &account_balance_object::asset_type>
+                                >
+                        >,
+                        ordered_unique<tag<by_asset_balance>,
+                                composite_key<
+                                        account_balance_object,
+                                        member<account_balance_object, asset_symbol_type, &account_balance_object::asset_type>,
+                                        member<account_balance_object, share_type, &account_balance_object::balance>,
+                                        member<account_balance_object, account_id_type, &account_balance_object::owner>
+                                >,
+                                composite_key_compare<
+                                        std::less<asset_symbol_type>,
+                                        std::greater<share_type>,
+                                        std::less<account_id_type>
+                                >
+                        >
+                >
+        > account_balance_object_multi_index_type;
+
         struct by_name;
         struct by_proxy;
         struct by_last_post;
@@ -329,8 +459,7 @@ namespace steemit {
                         >
                 >,
                 allocator<account_object>
-        >
-                account_index;
+        > account_index;
 
         struct by_account;
         struct by_last_valid;
@@ -351,8 +480,7 @@ namespace steemit {
                         >
                 >,
                 allocator<owner_authority_history_object>
-        >
-                owner_authority_history_index;
+        > owner_authority_history_index;
 
         struct by_last_owner_update;
 
@@ -378,8 +506,7 @@ namespace steemit {
                         >
                 >,
                 allocator<account_authority_object>
-        >
-                account_authority_index;
+        > account_authority_index;
 
 
         struct by_account_bandwidth_type;
@@ -397,8 +524,7 @@ namespace steemit {
                         >
                 >,
                 allocator<account_bandwidth_object>
-        >
-                account_bandwidth_index;
+        > account_bandwidth_index;
 
         struct by_delegation;
 
@@ -470,8 +596,7 @@ namespace steemit {
                         >
                 >,
                 allocator<account_recovery_request_object>
-        >
-                account_recovery_request_index;
+        > account_recovery_request_index;
 
         struct by_effective_date;
 
@@ -498,8 +623,7 @@ namespace steemit {
                         >
                 >,
                 allocator<change_recovery_account_request_object>
-        >
-                change_recovery_account_request_index;
+        > change_recovery_account_request_index;
     }
 }
 

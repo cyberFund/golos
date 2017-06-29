@@ -414,7 +414,7 @@ namespace steemit {
             /*const auto& idx = _db.get_index<account_index>();
    const auto& aidx = dynamic_cast<const primary_index<account_index>&>(idx);
    const auto& refs = aidx.get_secondary_index<steemit::chain::account_member_index>();
-   auto itr = refs.account_to_account_memberships.find(account_id);
+   auto itr = refs.account_to_account_memberships.find(account_name);
    std::vector<account_id_type> result;
 
    if( itr != refs.account_to_account_memberships.end() )

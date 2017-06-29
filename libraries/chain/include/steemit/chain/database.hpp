@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- */
 #pragma once
 
 #include <steemit/chain/global_property_object.hpp>
@@ -8,6 +5,7 @@
 #include <steemit/chain/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
+#include <steemit/chain/asset_object.hpp>
 
 #include <steemit/protocol/protocol.hpp>
 
@@ -16,6 +14,7 @@
 #include <fc/log/logger.hpp>
 
 #include <map>
+#include "market_object.hpp"
 
 namespace steemit {
     namespace chain {
@@ -115,7 +114,18 @@ namespace steemit {
 
             void close(bool rewind = true);
 
-            //////////////////// db_block.cpp ////////////////////
+            /**
+             * @brief Retrieve a particular account's balance in a given asset
+             * @param owner Account whose balance should be retrieved
+             * @param asset_id ID of the asset to get balance in
+             * @return owner's balance in asset
+             */
+            asset get_balance(account_name_type owner, asset_symbol_type asset_id) const;
+
+            /// This is an overloaded method.
+            asset get_balance(const account_object &owner, const asset_object &asset_obj) const;
+
+            bool is_authorized_asset(const account_object &acct, const asset_object &asset_obj);
 
             /**
              *  @return true if the block is in our fork DB or saved to disk as
@@ -129,7 +139,7 @@ namespace steemit {
 
             uint32_t get_pow_summary_target() const;
 
-                     block_id_type              get_block_id_for_num( uint32_t block_num )const;
+            block_id_type get_block_id_for_num(uint32_t block_num) const;
 
             block_id_type find_block_id_for_num(uint32_t block_num) const;
 
@@ -143,6 +153,9 @@ namespace steemit {
 
             chain_id_type get_chain_id() const;
 
+            const asset_object &get_asset(const asset_symbol_type &name) const;
+
+            const asset_object *find_asset(const asset_symbol_type &name) const;
 
             const witness_object &get_witness(const account_name_type &name) const;
 
@@ -168,9 +181,9 @@ namespace steemit {
 
             const escrow_object *find_escrow(const account_name_type &name, uint32_t escrow_id) const;
 
-            const limit_order_object &get_limit_order(const account_name_type &owner, uint32_t id) const;
+            const limit_order_object &get_limit_order(const account_name_type &owner, order_id_type id) const;
 
-            const limit_order_object *find_limit_order(const account_name_type &owner, uint32_t id) const;
+            const limit_order_object *find_limit_order(const account_name_type &owner, order_id_type id) const;
 
             const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
 
@@ -476,6 +489,12 @@ namespace steemit {
 
             bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
 
+            bool fill_order(const call_order_object &order, const asset &pays, const asset &receives);
+
+            bool fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives);
+
+            bool check_call_orders(const asset_object &mia, bool enable_black_swan = true);
+
             void cancel_order(const limit_order_object &obj);
 
             int match(const limit_order_object &bid, const limit_order_object &ask, const price &trade_price);
@@ -521,6 +540,8 @@ namespace steemit {
 
         private:
             optional<chainbase::database::session> _pending_tx_session;
+
+            bool _is_authorized_asset(const account_object &acct, const asset_object &asset_obj);
 
             void apply_block(const signed_block &next_block, uint32_t skip = skip_nothing);
 

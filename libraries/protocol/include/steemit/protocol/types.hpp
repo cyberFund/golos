@@ -1,6 +1,7 @@
 #pragma once
 
 #include <steemit/protocol/config.hpp>
+
 #include <fc/fixed_string.hpp>
 
 #include <fc/container/flat_fwd.hpp>
@@ -67,11 +68,29 @@ namespace steemit {
     };
 
     namespace protocol {
+        enum asset_issuer_permission_flags {
+            charge_market_fee = 0x01, /**< an issuer-specified percentage of all market trades in this asset is paid to the issuer */
+            white_list = 0x02, /**< accounts must be whitelisted in order to hold this asset */
+            override_authority = 0x04, /**< issuer may transfer asset back to himself */
+            transfer_restricted = 0x08, /**< require the issuer to be one party to every transfer */
+            disable_force_settle = 0x10, /**< disable force settling */
+            global_settle = 0x20, /**< allow the bitasset issuer to force a global settling -- this may be set in permissions, but not flags */
+            disable_confidential = 0x40, /**< allow the asset to be used with confidential transactions */
+            witness_fed_asset = 0x80, /**< allow the asset to be fed by witnesses */
+            committee_fed_asset = 0x100 /**< allow the asset to be fed by the committee */
+        };
+        const static uint32_t asset_issuer_permission_mask =
+                charge_market_fee | white_list | override_authority |
+                transfer_restricted | disable_force_settle | global_settle |
+                disable_confidential
+                | witness_fed_asset | committee_fed_asset;
+        const static uint32_t uia_asset_issuer_permission_mask =
+                charge_market_fee | white_list | override_authority |
+                transfer_restricted | disable_confidential;
 
         typedef fc::ecc::private_key private_key_type;
         typedef fc::sha256 chain_id_type;
         typedef fc::fixed_string<> account_name_type;
-        //   typedef std::string                            account_name_type;
 
         struct string_less {
             bool operator()(const std::string &a, const std::string &b) const {
@@ -106,7 +125,7 @@ namespace steemit {
         typedef fc::ecc::compact_signature signature_type;
         typedef safe<int64_t> share_type;
         typedef uint16_t weight_type;
-
+        typedef uint32_t order_id_type;
 
         struct public_key_type {
             struct binary_key {

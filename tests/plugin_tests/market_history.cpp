@@ -297,7 +297,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             BOOST_REQUIRE(order->op.current_orderid == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("1.500 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.750 TBD"));
             order++;
 
@@ -306,7 +306,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             BOOST_REQUIRE(order->op.current_orderid == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.500 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.250 TBD"));
             order++;
 
@@ -315,7 +315,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             BOOST_REQUIRE(order->op.current_orderid == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.250 TBD"));
             BOOST_REQUIRE(order->op.open_owner == "sam");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.500 TESTS"));
             order++;
 
@@ -324,7 +324,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             BOOST_REQUIRE(order->op.current_orderid == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.450 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.250 TBD"));
             order++;
 

@@ -6,6 +6,16 @@
 namespace steemit {
     namespace protocol {
 
+        typedef uint32_t version_type;
+
+        template<version_type VersionNumber>
+        class static_version {
+        public:
+            typedef version_type version_number_type;
+
+            static const version_number_type version = VersionNumber;
+        };
+
 /*
  * This class represents the basic versioning scheme of the Golos blockchain.
  * All versions are a triple consisting of a major version, hardfork version, and release version.

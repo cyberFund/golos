@@ -176,7 +176,8 @@ namespace steemit {
             try {
                 FC_ASSERT(base.symbol_name() != quote.symbol_name());
                 return price{base, quote};
-            } FC_CAPTURE_AND_RETHROW((base)(quote))
+            }
+            FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
         price price::max(asset_symbol_type base, asset_symbol_type quote) {
@@ -197,9 +198,77 @@ namespace steemit {
                 FC_ASSERT(base.amount > share_type(0));
                 FC_ASSERT(quote.amount > share_type(0));
                 FC_ASSERT(base.symbol_name() != quote.symbol_name());
-            } FC_CAPTURE_AND_RETHROW((base)(quote))
+            }
+            FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
+        price price::call_price(const asset &debt, const asset &collateral, uint16_t collateral_ratio) {
+            try {
+                //wdump((debt)(collateral)(collateral_ratio));
+                boost::rational<int128_t> swan(debt.amount.value, collateral.amount.value);
+                boost::rational<int128_t> ratio(collateral_ratio, GRAPHENE_COLLATERAL_RATIO_DENOM);
+                auto cp = swan * ratio;
 
+                while (cp.numerator() > STEEMIT_MAX_SHARE_SUPPLY ||
+                       cp.denominator() > STEEMIT_MAX_SHARE_SUPPLY) {
+                    cp = boost::rational<int128_t>(
+                            (cp.numerator() >> 1) + 1,
+                            (cp.denominator() >> 1) + 1);
+                }
+
+                return ~(
+                        asset(cp.numerator().convert_to<int64_t>(), debt.symbol) /
+                        asset(cp.denominator().convert_to<int64_t>(), collateral.symbol));
+            } FC_CAPTURE_AND_RETHROW((debt)(collateral)(collateral_ratio))
+        }
+
+        void price_feed::validate() const {
+            try {
+                if (!settlement_price.is_null()) {
+                    settlement_price.validate();
+                }
+                FC_ASSERT(maximum_short_squeeze_ratio >=
+                          GRAPHENE_MIN_COLLATERAL_RATIO);
+                FC_ASSERT(maximum_short_squeeze_ratio <=
+                          GRAPHENE_MAX_COLLATERAL_RATIO);
+                FC_ASSERT(maintenance_collateral_ratio >=
+                          GRAPHENE_MIN_COLLATERAL_RATIO);
+                FC_ASSERT(maintenance_collateral_ratio <=
+                          GRAPHENE_MAX_COLLATERAL_RATIO);
+                max_short_squeeze_price(); // make sure that it doesn't overflow
+
+                //FC_ASSERT( maintenance_collateral_ratio >= maximum_short_squeeze_ratio );
+            } FC_CAPTURE_AND_RETHROW((*this))
+        }
+
+        bool price_feed::is_for(asset_symbol_type asset_id) const {
+            try {
+                if (!settlement_price.is_null()) {
+                    return (settlement_price.base.symbol == asset_id);
+                }
+                if (!core_exchange_rate.is_null()) {
+                    return (core_exchange_rate.base.symbol == asset_id);
+                }
+                // (null, null) is valid for any feed
+                return true;
+            }
+            FC_CAPTURE_AND_RETHROW((*this))
+        }
+
+        price price_feed::max_short_squeeze_price() const {
+            boost::rational<int128_t> sp(settlement_price.base.amount.value, settlement_price.quote.amount.value); //debt.amount.value,collateral.amount.value);
+            boost::rational<int128_t> ratio(GRAPHENE_COLLATERAL_RATIO_DENOM, maximum_short_squeeze_ratio);
+            auto cp = sp * ratio;
+
+            while (cp.numerator() > STEEMIT_MAX_SHARE_SUPPLY ||
+                   cp.denominator() > STEEMIT_MAX_SHARE_SUPPLY) {
+                cp = boost::rational<int128_t>(
+                        (cp.numerator() >> 1) + (cp.numerator() & 1),
+                        (cp.denominator() >> 1) + (cp.denominator() & 1));
+            }
+
+            return (asset(cp.numerator().convert_to<int64_t>(), settlement_price.base.symbol) /
+                    asset(cp.denominator().convert_to<int64_t>(), settlement_price.quote.symbol));
+        }
     }
 } // steemit::protocol

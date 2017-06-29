@@ -9,6 +9,7 @@
 #include <steemit/chain/evaluator_registry.hpp>
 #include <steemit/chain/history_object.hpp>
 #include <steemit/chain/index.hpp>
+#include <steemit/chain/market_object.hpp>
 #include <steemit/chain/steem_evaluator.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/transaction_object.hpp>
@@ -50,9 +51,12 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
+)
+FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
+)
+FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
+)
 
 namespace steemit {
     namespace chain {
@@ -216,6 +220,30 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
+        asset database::get_balance(account_name_type owner, asset_symbol_type asset_id) const {
+            auto &index = get_index_type<account_balance_index>().indices().get<by_account_asset>();
+            auto itr = index.find(boost::make_tuple(owner, asset_id));
+            if (itr == index.end()) {
+                return asset(0, asset_id);
+            }
+            return itr->get_balance();
+        }
+
+        asset database::get_balance(const account_object &owner, const asset_object &asset_obj) const {
+            return get_balance(owner.name, asset_obj.symbol);
+        }
+
+        bool database::is_authorized_asset(const account_object &acct, const asset_object &asset_obj) {
+            bool fast_check = !(asset_obj.options.flags & white_list);
+            fast_check &= !(acct.allowed_assets.valid());
+
+            if (fast_check) {
+                return true;
+            }
+
+            return this->_is_authorized_asset(acct, asset_obj);
+        }
+
         bool database::is_known_block(const block_id_type &id) const {
             try {
                 return fetch_block_by_id(id).valid();
@@ -344,6 +372,16 @@ namespace steemit {
             return STEEMIT_CHAIN_ID;
         }
 
+        const asset_object &database::get_asset(const asset_symbol_type &name) const {
+            try {
+                return get<asset_object, by_symbol>(name);
+            } FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const asset_object *database::find_asset(const asset_symbol_type &name) const {
+            return find<asset_object, by_symbol>(name);
+        }
+
         const witness_object &database::get_witness(const account_name_type &name) const {
             try {
                 return get<witness_object, by_name>(name);
@@ -404,22 +442,22 @@ namespace steemit {
             return find<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
         }
 
-        const limit_order_object &database::get_limit_order(const account_name_type &name, uint32_t orderid) const {
+        const limit_order_object &database::get_limit_order(const account_name_type &name, order_id_type order_id) const {
             try {
                 if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
-                    orderid = orderid & 0x0000FFFF;
+                    order_id = order_id & 0x0000FFFF;
                 }
 
-                return get<limit_order_object, by_account>(boost::make_tuple(name, orderid));
-            } FC_CAPTURE_AND_RETHROW((name)(orderid))
+                return get<limit_order_object, by_account>(boost::make_tuple(name, order_id));
+            } FC_CAPTURE_AND_RETHROW((name)(order_id))
         }
 
-        const limit_order_object *database::find_limit_order(const account_name_type &name, uint32_t orderid) const {
+        const limit_order_object *database::find_limit_order(const account_name_type &name, order_id_type order_id) const {
             if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
-                orderid = orderid & 0x0000FFFF;
+                order_id = order_id & 0x0000FFFF;
             }
 
-            return find<limit_order_object, by_account>(boost::make_tuple(name, orderid));
+            return find<limit_order_object, by_account>(boost::make_tuple(name, order_id));
         }
 
         const savings_withdraw_object &database::get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
@@ -2613,7 +2651,7 @@ namespace steemit {
 
         void database::notify_changed_objects() {
             try {
-                /*vector< graphene::chainbase::generic_id > ids;
+                /*vector< steemit::chainbase::generic_id > ids;
       get_changed_ids( ids );
       STEEMIT_TRY_NOTIFY( changed_objects, ids )*/
                 /*
@@ -3445,7 +3483,6 @@ namespace steemit {
             }
         }
 
-
         bool database::fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
             try {
                 FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
@@ -3463,11 +3500,11 @@ namespace steemit {
                         b.for_sale -= pays.amount;
                     });
                     /**
-          *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
-          *  have hit the limit where the seller is asking for nothing in return.  When this
-          *  happens we must refund any balance back to the seller, it is too small to be
-          *  sold at the sale price.
-          */
+                     *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
+                     *  have hit the limit where the seller is asking for nothing in return.  When this
+                     *  happens we must refund any balance back to the seller, it is too small to be
+                     *  sold at the sale price.
+                     */
                     if (order.amount_to_receive().amount == 0) {
                         cancel_order(order);
                         return true;
@@ -3478,11 +3515,246 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
+        bool database::fill_order(const call_order_object &order, const asset &pays, const asset &receives) {
+            try {
+                //idump((pays)(receives)(order));
+                FC_ASSERT(order.get_debt().asset_id == receives.asset_id);
+                FC_ASSERT(order.get_collateral().asset_id == pays.asset_id);
+                FC_ASSERT(order.get_collateral() >= pays);
+
+                optional<asset> collateral_freed;
+                modify(order, [&](call_order_object &o) {
+                    o.debt -= receives.amount;
+                    o.collateral -= pays.amount;
+                    if (o.debt == 0) {
+                        collateral_freed = o.get_collateral();
+                        o.collateral = 0;
+                    }
+                });
+                const asset_object &mia = receives.asset_id(*this);
+                assert(mia.is_market_issued());
+
+                const asset_dynamic_data_object &mia_ddo = mia.dynamic_asset_data_id(*this);
+
+                modify(mia_ddo, [&](asset_dynamic_data_object &ao) {
+                    //idump((receives));
+                    ao.current_supply -= receives.amount;
+                });
+
+                const account_object &borrower = order.borrower(*this);
+                if (collateral_freed || pays.asset_id == asset_id_type()) {
+                    const account_statistics_object &borrower_statistics = borrower.statistics(*this);
+                    if (collateral_freed) {
+                        adjust_balance(borrower.get_id(), *collateral_freed);
+                    }
+
+                    modify(borrower_statistics, [&](account_statistics_object &b) {
+                        if (collateral_freed && collateral_freed->amount > 0) {
+                            b.total_core_in_orders -= collateral_freed->amount;
+                        }
+                        if (pays.asset_id == asset_id_type()) {
+                            b.total_core_in_orders -= pays.amount;
+                        }
+
+                        assert(b.total_core_in_orders >= 0);
+                    });
+                }
+
+                assert(pays.asset_id != receives.asset_id);
+                push_applied_operation(fill_order_operation{order.id,
+                                                            order.borrower,
+                                                            pays, receives,
+                                                            asset(0, pays.asset_id)
+                });
+
+                if (collateral_freed) {
+                    remove(order);
+                }
+
+                return collateral_freed.valid();
+            } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
+        }
+
+        bool database::fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives) {
+            try {
+                bool filled = false;
+
+                auto issuer_fees = pay_market_fees(get(receives.asset_id), receives);
+
+                if (pays < settle.balance) {
+                    modify(settle, [&pays](force_settlement_object &s) {
+                        s.balance -= pays;
+                    });
+                    filled = false;
+                } else {
+                    filled = true;
+                }
+                adjust_balance(settle.owner, receives - issuer_fees);
+
+                assert(pays.asset_id != receives.asset_id);
+                push_applied_operation(fill_order_operation{settle.id,
+                                                            settle.owner, pays,
+                                                            receives,
+                                                            issuer_fees
+                });
+
+                if (filled) {
+                    remove(settle);
+                }
+
+                return filled;
+            } FC_CAPTURE_AND_RETHROW((settle)(pays)(receives))
+        }
+
+/**
+ *  Starting with the least collateralized orders, fill them if their
+ *  call price is above the max(lowest bid,call_limit).
+ *
+ *  This method will return true if it filled a short or limit
+ *
+ *  @param mia - the market issued asset that should be called.
+ *  @param enable_black_swan - when adjusting collateral, triggering a black swan is invalid and will throw
+ *                             if enable_black_swan is not set to true.
+ *
+ *  @return true if a margin call was executed.
+ */
+        bool database::check_call_orders(const asset_object &mia, bool enable_black_swan) {
+            try {
+                if (!mia.is_market_issued()) {
+                    return false;
+                }
+
+                if (check_for_blackswan(mia, enable_black_swan)) {
+                    return false;
+                }
+
+                const asset_bitasset_data_object &bitasset = mia.bitasset_data(*this);
+                if (bitasset.is_prediction_market) {
+                    return false;
+                }
+                if (bitasset.current_feed.settlement_price.is_null()) {
+                    return false;
+                }
+
+                const call_order_index &call_index = get_index_type<call_order_index>();
+                const auto &call_price_index = call_index.indices().get<by_price>();
+
+                const limit_order_index &limit_index = get_index_type<limit_order_index>();
+                const auto &limit_price_index = limit_index.indices().get<by_price>();
+
+                // looking for limit orders selling the most USD for the least CORE
+                auto max_price = price::max(mia.id, bitasset.options.short_backing_asset);
+                // stop when limit orders are selling too little USD for too much CORE
+                auto min_price = bitasset.current_feed.max_short_squeeze_price();
+
+                assert(max_price.base.asset_id == min_price.base.asset_id);
+                // NOTE limit_price_index is sorted from greatest to least
+                auto limit_itr = limit_price_index.lower_bound(max_price);
+                auto limit_end = limit_price_index.upper_bound(min_price);
+
+                if (limit_itr == limit_end) {
+                    return false;
+                }
+
+                auto call_min = price::min(bitasset.options.short_backing_asset, mia.id);
+                auto call_max = price::max(bitasset.options.short_backing_asset, mia.id);
+                auto call_itr = call_price_index.lower_bound(call_min);
+                auto call_end = call_price_index.upper_bound(call_max);
+
+                bool filled_limit = false;
+                bool margin_called = false;
+
+                while (!check_for_blackswan(mia, enable_black_swan) &&
+                       call_itr != call_end) {
+                    bool filled_call = false;
+                    price match_price;
+                    asset usd_for_sale;
+                    if (limit_itr != limit_end) {
+                        assert(limit_itr != limit_price_index.end());
+                        match_price = limit_itr->sell_price;
+                        usd_for_sale = limit_itr->amount_for_sale();
+                    } else {
+                        return margin_called;
+                    }
+
+                    match_price.validate();
+
+                    // would be margin called, but there is no matching order #436
+                    bool feed_protected = (
+                            bitasset.current_feed.settlement_price >
+                            ~call_itr->call_price);
+                    if (feed_protected &&
+                        (head_block_time() > HARDFORK_436_TIME)) {
+                        return margin_called;
+                    }
+
+                    // would be margin called, but there is no matching order
+                    if (match_price > ~call_itr->call_price) {
+                        return margin_called;
+                    }
+
+                    if (feed_protected) {
+                        ilog("Feed protected margin call executing (HARDFORK_436_TIME not here yet)");
+                        idump((*call_itr));
+                        idump((*limit_itr));
+                    }
+
+                    //  idump((*call_itr));
+                    //  idump((*limit_itr));
+
+                    //  ilog( "match_price <= ~call_itr->call_price  performing a margin call" );
+
+                    margin_called = true;
+
+                    auto usd_to_buy = call_itr->get_debt();
+
+                    if (usd_to_buy * match_price > call_itr->get_collateral()) {
+                        elog("black swan detected");
+                        edump((enable_black_swan));
+                        FC_ASSERT(enable_black_swan);
+                        globally_settle_asset(mia, bitasset.current_feed.settlement_price);
+                        return true;
+                    }
+
+                    asset call_pays, call_receives, order_pays, order_receives;
+                    if (usd_to_buy >= usd_for_sale) {  // fill order
+                        call_receives = usd_for_sale;
+                        order_receives = usd_for_sale * match_price;
+                        call_pays = order_receives;
+                        order_pays = usd_for_sale;
+
+                        filled_limit = true;
+                        filled_call = (usd_to_buy == usd_for_sale);
+                    } else { // fill call
+                        call_receives = usd_to_buy;
+                        order_receives = usd_to_buy * match_price;
+                        call_pays = order_receives;
+                        order_pays = usd_to_buy;
+
+                        filled_call = true;
+                    }
+
+                    FC_ASSERT(filled_call || filled_limit);
+
+                    auto old_call_itr = call_itr;
+                    if (filled_call) {
+                        ++call_itr;
+                    }
+                    fill_order(*old_call_itr, call_pays, call_receives);
+
+                    auto old_limit_itr = filled_limit ? limit_itr++ : limit_itr;
+                    fill_order(*old_limit_itr, order_pays, order_receives, true);
+
+                } // whlie call_itr != call_end
+
+                return margin_called;
+            } FC_CAPTURE_AND_RETHROW()
+        }
+
         void database::cancel_order(const limit_order_object &order) {
             adjust_balance(get_account(order.seller), order.amount_for_sale());
             remove(order);
         }
-
 
         void database::clear_expired_transactions() {
             //Look for expired transactions in the deduplication list, and remove them.
@@ -4339,6 +4611,38 @@ namespace steemit {
                     });
                 }
             }
+        }
+
+        bool database::_is_authorized_asset(const account_object &acct, const asset_object &asset_obj) {
+            if (acct.allowed_assets.valid()) {
+                if (acct.allowed_assets->find(asset_obj.id) ==
+                    acct.allowed_assets->end()) {
+                    return false;
+                }
+                // must still pass other checks even if it is in allowed_assets
+            }
+
+            for (const auto id : acct.blacklisting_accounts) {
+                if (asset_obj.options.blacklist_authorities.find(id) !=
+                    asset_obj.options.blacklist_authorities.end()) {
+                    return false;
+                }
+            }
+
+            if (d.head_block_time() > HARDFORK_415_TIME) {
+                if (asset_obj.options.whitelist_authorities.size() == 0) {
+                    return true;
+                }
+            }
+
+            for (const auto id : acct.whitelisting_accounts) {
+                if (asset_obj.options.whitelist_authorities.find(id) !=
+                    asset_obj.options.whitelist_authorities.end()) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 } //steemit::chain
