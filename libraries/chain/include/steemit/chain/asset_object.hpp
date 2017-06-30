@@ -144,7 +144,7 @@ namespace steemit {
             }
 
             /// Ticker symbol for this asset, i.e. "USD"
-            string symbol;
+            string symbol_name;
             /// Maximum number of digits after the decimal point (must be <= 12)
             uint8_t precision = 0;
             /// ID of the account which issued this asset.

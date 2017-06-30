@@ -26,11 +26,13 @@ namespace steemit {
                 _receive_asset = d.find_asset(op.min_to_receive.symbol);
 
                 if (_sell_asset->options.whitelist_markets.size()) {
-                    FC_ASSERT(_sell_asset->options.whitelist_markets.find(_receive_asset->id) !=
+                    FC_ASSERT(
+                            _sell_asset->options.whitelist_markets.find(_receive_asset->id) !=
                             _sell_asset->options.whitelist_markets.end());
                 }
                 if (_sell_asset->options.blacklist_markets.size()) {
-                    FC_ASSERT(_sell_asset->options.blacklist_markets.find(_receive_asset->id) ==
+                    FC_ASSERT(
+                            _sell_asset->options.blacklist_markets.find(_receive_asset->id) ==
                             _sell_asset->options.blacklist_markets.end());
                 }
 
@@ -73,7 +75,7 @@ namespace steemit {
             try {
                 database &d = db();
 
-                _order = &o.order(d);
+                _order = d.find_limit_order(o.order);
                 FC_ASSERT(_order->seller == o.fee_paying_account);
             }
             FC_CAPTURE_AND_RETHROW((o))
@@ -89,18 +91,17 @@ namespace steemit {
 
                 // Possible optimization: order can be called by canceling a limit order iff the canceled order was at the top of the book.
                 // Do I need to check calls in both assets?
-                d.check_call_orders(base_asset(d));
-                d.check_call_orders(quote_asset(d));
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+                d.check_call_orders(d.get_asset(base_asset));
+                d.check_call_orders(d.get_asset(quote_asset));
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void call_order_update_evaluator::do_apply(const call_order_update_operation &o) {
             try {
                 database &d = db();
 
-                _paying_account = &o.funding_account(d);
-                _debt_asset = &o.delta_debt.asset_id(d);
+                _paying_account = d.find_account(o.funding_account);
+                _debt_asset = d.find_asset(o.delta_debt.symbol);
                 FC_ASSERT(_debt_asset->is_market_issued(), "Unable to cover ${sym} as it is not a collateralized asset.",
                         ("sym", _debt_asset->symbol));
 
@@ -110,7 +111,7 @@ namespace steemit {
                 /// all existing margin positions should have been closed va database::globally_settle_asset
                 FC_ASSERT(!_bitasset_data->has_settlement());
 
-                FC_ASSERT(o.delta_collateral.asset_id ==
+                FC_ASSERT(o.delta_collateral.symbol ==
                           _bitasset_data->options.short_backing_asset);
 
                 if (_bitasset_data->is_prediction_market) {
@@ -128,10 +129,10 @@ namespace steemit {
 
                 if (o.delta_collateral.amount > 0) {
                     FC_ASSERT(
-                            d.get_balance(*_paying_account, _bitasset_data->options.short_backing_asset(d)) >=
+                            d.get_balance(*_paying_account, d.get_asset(_bitasset_data->options.short_backing_asset)) >=
                             o.delta_collateral,
                             "Cannot increase collateral by ${c} when payer only has ${b}", ("c", o.delta_collateral.amount)
-                            ("b", d.get_balance(*_paying_account, o.delta_collateral.asset_id(d)).amount));
+                            ("b", d.get_balance(*_paying_account, d.get_asset(o.delta_collateral.symbol)).amount));
                 }
             }
             FC_CAPTURE_AND_RETHROW((o))
@@ -140,7 +141,7 @@ namespace steemit {
                 database &d = db();
 
                 if (o.delta_debt.amount != 0) {
-                    d.adjust_balance(o.funding_account, o.delta_debt);
+                    d.adjust_balance(d.get_account(o.funding_account), o.delta_debt);
 
                     // Deduct the debt paid from the total supply of the debt asset.
                     d.modify(_debt_asset->dynamic_asset_data_id(d), [&](asset_dynamic_data_object &dynamic_asset) {
@@ -150,7 +151,7 @@ namespace steemit {
                 }
 
                 if (o.delta_collateral.amount != 0) {
-                    d.adjust_balance(o.funding_account, -o.delta_collateral);
+                    d.adjust_balance(d.get_account(o.funding_account), -o.delta_collateral);
 
                     // Adjust the total core in orders accodingly
                     if (o.delta_collateral.symbol == STEEM_SYMBOL) {
@@ -161,7 +162,7 @@ namespace steemit {
                 }
 
 
-                auto &call_idx = d.get<call_order_index>().indices().get<by_account>();
+                auto &call_idx = d.get_index<call_order_index>().indices().get<by_account>();
                 auto itr = call_idx.find(boost::make_tuple(o.funding_account, o.delta_debt.symbol));
                 const call_order_object *call_obj = nullptr;
 

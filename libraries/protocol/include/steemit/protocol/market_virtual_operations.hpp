@@ -18,7 +18,7 @@ namespace steemit {
             fill_order_operation() {
             }
 
-            fill_order_operation(const string &c_o, uint32_t c_id, const asset &c_p, const string &o_o, uint32_t o_id, const asset &o_p)
+            fill_order_operation(const string &c_o, order_id_type c_id, const asset &c_p, const string &o_o, uint32_t o_id, const asset &o_p)
                     : current_owner(c_o), current_order_id(c_id),
                       current_pays(c_p), open_owner(o_o), open_order_id(o_id),
                       open_pays(o_p) {
@@ -48,7 +48,8 @@ namespace steemit {
             }
 
             asset_fill_order_operation(order_id_type o, account_name_type a, asset p, asset r, asset f)
-                    : order_id(o), account_name(a), pays(p), receives(r), fee(f) {
+                    : order_id(o), account_name(a), pays(p), receives(r),
+                      fee(f) {
 
             }
 
@@ -58,7 +59,7 @@ namespace steemit {
             asset receives;
             asset fee; // paid by receiving account
 
-            pair<asset_symbol_type, asset_symbol_type> get_market() const {
+            pair <asset_symbol_type, asset_symbol_type> get_market() const {
                 return pays.symbol < receives.symbol ?
                        std::make_pair(pays.symbol, receives.symbol) :
                        std::make_pair(receives.symbol, pays.symbol);

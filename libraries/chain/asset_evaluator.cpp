@@ -22,43 +22,41 @@ namespace steemit {
 
                 // Check that all authorities do exist
                 for (auto id : op.common_options.whitelist_authorities) {
-                    d.get_object(id);
+                    d.get_account(id);
                 }
                 for (auto id : op.common_options.blacklist_authorities) {
-                    d.get_object(id);
+                    d.get_account(id);
                 }
 
-                auto &asset_indx = d.get_index_type<asset_index>().indices().get<by_symbol>();
-                auto asset_symbol_itr = asset_indx.find(op.symbol);
+                auto &asset_indx = d.get_index<asset_index>().indices().get<by_symbol>();
+                auto asset_symbol_itr = asset_indx.find(op.symbol_name);
                 FC_ASSERT(asset_symbol_itr == asset_indx.end());
 
 
-                auto dotpos = op.symbol.rfind('.');
+                auto dotpos = op.symbol_name.rfind('.');
                 if (dotpos != std::string::npos) {
-                    auto prefix = op.symbol.substr(0, dotpos);
+                    auto prefix = op.symbol_name.substr(0, dotpos);
                     auto asset_symbol_itr = asset_indx.find(prefix);
                     FC_ASSERT(asset_symbol_itr !=
                               asset_indx.end(), "Asset ${s} may only be created by issuer of ${p}, but ${p} has not been registered",
-                            ("s", op.symbol)("p", prefix));
+                            ("s", op.symbol_name)("p", prefix));
                     FC_ASSERT(asset_symbol_itr->issuer ==
                               op.issuer, "Asset ${s} may only be created by issuer of ${p}, ${i}",
-                            ("s", op.symbol)("p", prefix)("i", op.issuer(d).name));
+                            ("s", op.symbol_name)("p", prefix)("i", d.get_account(op.issuer).name));
                 }
 
-                core_fee_paid -= core_fee_paid.value / 2;
-
                 if (op.bitasset_opts) {
-                    const asset_object &backing = op.bitasset_opts->short_backing_asset(d);
+                    const asset_object &backing = d.get_asset(op.bitasset_opts->short_backing_asset);
                     if (backing.is_market_issued()) {
                         const asset_bitasset_data_object &backing_bitasset_data = backing.bitasset_data(d);
-                        const asset_object &backing_backing = backing_bitasset_data.options.short_backing_asset(d);
+                        const asset_object &backing_backing = d.get_asset(backing_bitasset_data.options.short_backing_asset);
                         FC_ASSERT(!backing_backing.is_market_issued(),
                                 "May not create a bitasset backed by a bitasset backed by a bitasset.");
-                        FC_ASSERT(op.issuer != GRAPHENE_COMMITTEE_ACCOUNT ||
+                        FC_ASSERT(op.issuer != STEEMIT_COMMITTEE_ACCOUNT ||
                                   backing_backing.symbol == STEEM_SYMBOL,
                                 "May not create a blockchain-controlled market asset which is not backed by CORE.");
                     } else
-                        FC_ASSERT(op.issuer != GRAPHENE_COMMITTEE_ACCOUNT ||
+                        FC_ASSERT(op.issuer != STEEMIT_COMMITTEE_ACCOUNT ||
                                   backing.symbol == STEEM_SYMBOL,
                                 "May not create a blockchain-controlled market asset which is not backed by CORE.");
                     FC_ASSERT(op.bitasset_opts->feed_lifetime_sec >
@@ -69,7 +67,7 @@ namespace steemit {
                 if (op.is_prediction_market) {
                     FC_ASSERT(op.bitasset_opts);
                     FC_ASSERT(op.precision ==
-                              op.bitasset_opts->short_backing_asset(d).precision);
+                              d.get_asset(op.bitasset_opts->short_backing_asset).precision);
                 }
 
             } FC_CAPTURE_AND_RETHROW((op))
@@ -89,7 +87,7 @@ namespace steemit {
                     }).id;
                 }
 
-                auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
+                auto next_asset_id = db().get_index<asset_index>().get_next_id();
 
                 const asset_object &new_asset =
                         db().create<asset_object>([&](asset_object &a) {
@@ -116,11 +114,11 @@ namespace steemit {
             try {
                 const database &d = db();
 
-                const asset_object &a = o.asset_to_issue.asset_id(d);
+                const asset_object &a = d.get_asset(o.asset_to_issue.symbol);
                 FC_ASSERT(o.issuer == a.issuer);
                 FC_ASSERT(!a.is_market_issued(), "Cannot manually issue a market-issued asset.");
 
-                to_account = &o.issue_to_account(d);
+                to_account = d.find_account(o.issue_to_account);
                 FC_ASSERT(d.is_authorized_asset(*to_account, a));
 
                 asset_dyn_data = &a.dynamic_asset_data_id(d);
@@ -129,7 +127,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
 
             try {
-                db().adjust_balance(o.issue_to_account, o.asset_to_issue);
+                db().adjust_balance(db().get_account(o.issue_to_account), o.asset_to_issue);
 
                 db().modify(*asset_dyn_data, [&](asset_dynamic_data_object &data) {
                     data.current_supply += o.asset_to_issue.amount;
@@ -141,7 +139,7 @@ namespace steemit {
             try {
                 const database &d = db();
 
-                const asset_object &a = o.amount_to_reserve.asset_id(d);
+                const asset_object &a = d.get_asset(o.amount_to_reserve.symbol);
                 STEEMIT_ASSERT(
                         !a.is_market_issued(),
                         asset_reserve_invalid_on_mia,
@@ -159,7 +157,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
 
             try {
-                db().adjust_balance(o.payer, -o.amount_to_reserve);
+                db().adjust_balance(db().get_account(o.payer), -o.amount_to_reserve);
 
                 db().modify(*asset_dyn_data, [&](asset_dynamic_data_object &data) {
                     data.current_supply -= o.amount_to_reserve.amount;
@@ -171,13 +169,13 @@ namespace steemit {
             try {
                 database &d = db();
 
-                const asset_object &a = o.asset_id(d);
+                const asset_object &a = d.get_asset(o.symbol);
 
                 asset_dyn_data = &a.dynamic_asset_data_id(d);
             } FC_CAPTURE_AND_RETHROW((o))
 
             try {
-                db().adjust_balance(o.from_account, -o.amount);
+                db().adjust_balance(db().get_account(o.from_account), -o.amount);
 
                 db().modify(*asset_dyn_data, [&](asset_dynamic_data_object &data) {
                     data.fee_pool += o.amount;
@@ -189,13 +187,13 @@ namespace steemit {
             try {
                 database &d = db();
 
-                const asset_object &a = o.asset_to_update(d);
+                const asset_object &a = d.get_asset(o.asset_to_update);
                 auto a_copy = a;
                 a_copy.options = o.new_options;
                 a_copy.validate();
 
                 if (o.new_issuer) {
-                    FC_ASSERT(d.find_object(*o.new_issuer));
+                    FC_ASSERT(d.find_account(*o.new_issuer));
                     if (a.is_market_issued() &&
                         *o.new_issuer == GRAPHENE_COMMITTEE_ACCOUNT) {
                         const asset_object &backing = a.bitasset_data(d).options.short_backing_asset(d);
@@ -231,12 +229,12 @@ namespace steemit {
                 FC_ASSERT(o.new_options.whitelist_authorities.size() <=
                           chain_parameters.maximum_asset_whitelist_authorities);
                 for (auto id : o.new_options.whitelist_authorities) {
-                    d.get_object(id);
+                    d.get_account(id);
                 }
                 FC_ASSERT(o.new_options.blacklist_authorities.size() <=
                           chain_parameters.maximum_asset_whitelist_authorities);
                 for (auto id : o.new_options.blacklist_authorities) {
-                    d.get_object(id);
+                    d.get_account(id);
                 }
             } FC_CAPTURE_AND_RETHROW((o))
 
@@ -246,7 +244,7 @@ namespace steemit {
                 // If we are now disabling force settlements, cancel all open force settlement orders
                 if (o.new_options.flags & disable_force_settle &&
                     asset_to_update->can_force_settle()) {
-                    const auto &idx = d.get_index_type<force_settlement_index>().indices().get<by_expiration>();
+                    const auto &idx = d.get_index<force_settlement_index>().indices().get<by_expiration>();
                     // Funky iteration code because we're removing objects as we go. We have to re-initialize itr every loop instead
                     // of simply incrementing it.
                     for (auto itr = idx.lower_bound(o.asset_to_update);
@@ -270,7 +268,7 @@ namespace steemit {
             try {
                 database &d = db();
 
-                const asset_object &a = o.asset_to_update(d);
+                const asset_object &a = d.get_asset(o.asset_to_update);
 
                 FC_ASSERT(a.is_market_issued(), "Cannot update BitAsset-specific settings on a non-BitAsset.");
 
@@ -279,12 +277,12 @@ namespace steemit {
                 if (o.new_options.short_backing_asset !=
                     b.options.short_backing_asset) {
                     FC_ASSERT(a.dynamic_asset_data_id(d).current_supply == 0);
-                    FC_ASSERT(d.find_object(o.new_options.short_backing_asset));
+                    FC_ASSERT(d.find_asset(o.new_options.short_backing_asset));
 
                     if (a.issuer == GRAPHENE_COMMITTEE_ACCOUNT) {
-                        const asset_object &backing = a.bitasset_data(d).options.short_backing_asset(d);
+                        const asset_object &backing = d.get_asset(a.bitasset_data(d).options.short_backing_asset);
                         if (backing.is_market_issued()) {
-                            const asset_object &backing_backing = backing.bitasset_data(d).options.short_backing_asset(d);
+                            const asset_object &backing_backing = d.get_asset(backing.bitasset_data(d).options.short_backing_asset);
                             FC_ASSERT(
                                     backing_backing.symbol == STEEM_SYMBOL,
                                     "May not create a blockchain-controlled market asset which is not backed by CORE.");
@@ -326,10 +324,10 @@ namespace steemit {
                 FC_ASSERT(o.new_feed_producers.size() <=
                           d.get_global_properties().parameters.maximum_asset_feed_publishers);
                 for (auto id : o.new_feed_producers) {
-                    d.get_object(id);
+                    d.get_account(id);
                 }
 
-                const asset_object &a = o.asset_to_update(d);
+                const asset_object &a = d.get_asset(o.asset_to_update);
 
                 FC_ASSERT(a.is_market_issued(), "Cannot update feed producers on a non-BitAsset.");
                 FC_ASSERT(!(a.options.flags &
@@ -364,7 +362,7 @@ namespace steemit {
                     }
                     a.update_median_feeds(db().head_block_time());
                 });
-                db().check_call_orders(o.asset_to_update(db()));
+                db().check_call_orders(db().get_asset(o.asset_to_update));
 
             } FC_CAPTURE_AND_RETHROW((o))
         }
@@ -372,12 +370,12 @@ namespace steemit {
         void asset_global_settle_evaluator::do_apply(const asset_global_settle_evaluator::operation_type &op) {
             try {
                 const database &d = db();
-                asset_to_settle = &op.asset_to_settle(d);
+                asset_to_settle = d.find_asset(op.asset_to_settle);
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 FC_ASSERT(asset_to_settle->can_global_settle());
                 FC_ASSERT(asset_to_settle->issuer == op.issuer);
                 FC_ASSERT(asset_to_settle->dynamic_data(d).current_supply > 0);
-                const auto &idx = d.get_index_type<call_order_index>().indices().get<by_collateral>();
+                const auto &idx = d.get_index<call_order_index>().indices().get<by_collateral>();
                 assert(!idx.empty());
                 auto itr = idx.lower_bound(boost::make_tuple(price::min(asset_to_settle->bitasset_data(d).options.short_backing_asset,
                         op.asset_to_settle)));
@@ -393,14 +391,14 @@ namespace steemit {
 
             try {
                 database &d = db();
-                d.globally_settle_asset(op.asset_to_settle(db()), op.settle_price);
+                d.globally_settle_asset(db().get_asset(op.asset_to_settle), op.settle_price);
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
         void asset_settle_evaluator::do_apply(const asset_settle_evaluator::operation_type &op) {
             try {
                 const database &d = db();
-                asset_to_settle = &op.amount.asset_id(d);
+                asset_to_settle = d.find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 const auto &bitasset = asset_to_settle->bitasset_data(d);
                 FC_ASSERT(asset_to_settle->can_force_settle() ||
@@ -449,26 +447,26 @@ namespace steemit {
             try {
                 database &d = db();
 
-                const asset_object &base = o.asset_id(d);
+                const asset_object &base = d.get_asset(o.asset_id);
                 //Verify that this feed is for a market-issued asset and that asset is backed by the base
                 FC_ASSERT(base.is_market_issued());
 
                 const asset_bitasset_data_object &bitasset = base.bitasset_data(d);
                 FC_ASSERT(!bitasset.has_settlement(), "No further feeds may be published after a settlement event");
 
-                FC_ASSERT(o.feed.settlement_price.quote.asset_id ==
+                FC_ASSERT(o.feed.settlement_price.quote.symbol ==
                           bitasset.options.short_backing_asset);
                 if (!o.feed.core_exchange_rate.is_null()) {
-                    FC_ASSERT(o.feed.core_exchange_rate.quote.asset_id ==
-                              asset_id_type());
+                    FC_ASSERT(o.feed.core_exchange_rate.quote.symbol ==
+                              STEEM_SYMBOL);
                 }
 
 
                 //Verify that the publisher is authoritative to publish a feed
                 if (base.options.flags & witness_fed_asset) {
-                    FC_ASSERT(d.get(GRAPHENE_WITNESS_ACCOUNT).active.account_auths.count(o.publisher));
+                    FC_ASSERT(d.get_account(GRAPHENE_WITNESS_ACCOUNT).active.account_auths.count(o.publisher));
                 } else if (base.options.flags & committee_fed_asset) {
-                    FC_ASSERT(d.get(GRAPHENE_COMMITTEE_ACCOUNT).active.account_auths.count(o.publisher));
+                    FC_ASSERT(d.get_account(GRAPHENE_COMMITTEE_ACCOUNT).active.account_auths.count(o.publisher));
                 } else {
                     FC_ASSERT(bitasset.feeds.count(o.publisher));
                 }
@@ -479,7 +477,7 @@ namespace steemit {
 
                 database &d = db();
 
-                const asset_object &base = o.asset_id(d);
+                const asset_object &base = d.get_asset(o.asset_id);
                 const asset_bitasset_data_object &bad = base.bitasset_data(d);
 
                 auto old_feed = bad.current_feed;
@@ -498,14 +496,14 @@ namespace steemit {
 
         void asset_claim_fees_evaluator::do_apply(const asset_claim_fees_operation &o) {
             try {
-                FC_ASSERT(o.amount_to_claim.asset_id(db()).issuer ==
+                FC_ASSERT(db().get_asset(o.amount_to_claim.symbol).issuer ==
                           o.issuer, "Asset fees may only be claimed by the issuer");
             } FC_CAPTURE_AND_RETHROW((o))
 
             try {
                 database &d = db();
 
-                const asset_object &a = o.amount_to_claim.asset_id(d);
+                const asset_object &a = d.get_asset(o.amount_to_claim.symbol);
                 const asset_dynamic_data_object &addo = a.dynamic_asset_data_id(d);
                 FC_ASSERT(o.amount_to_claim.amount <=
                           addo.accumulated_fees, "Attempt to claim more fees than have accumulated", ("addo", addo));

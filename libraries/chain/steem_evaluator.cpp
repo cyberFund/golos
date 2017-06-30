@@ -1528,22 +1528,22 @@ namespace steemit {
                     uint64_t max_vote_weight = 0;
 
                     /** this verifies uniqueness of voter
-       *
-       *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
-       *
-       *  W(R) = B * R / ( R + 2S )
-       *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
-       *
-       *  The equation for an individual vote is:
-       *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
-       *
-       *  c.total_vote_weight =
-       *    W(R_1) - W(R_0) +
-       *    W(R_2) - W(R_1) + ...
-       *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
-       *
-       *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit integer.
-       *
+                     *
+                     *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
+                     *
+                     *  W(R) = B * R / ( R + 2S )
+                     *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
+                     *
+                     *  The equation for an individual vote is:
+                     *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
+                     *
+                     *  c.total_vote_weight =
+                     *    W(R_1) - W(R_0) +
+                     *    W(R_2) - W(R_1) + ...
+                     *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
+                     *
+                     *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit i              nteger.
+                     *
       **/
                     this->_db.create<comment_vote_object>([&](comment_vote_object &cv) {
                         cv.voter = voter.id;
@@ -2055,7 +2055,7 @@ namespace steemit {
             const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
                 obj.created = this->_db.head_block_time();
                 obj.seller = o.owner;
-                obj.orderid = o.order_id;
+                obj.order_id = o.order_id;
                 obj.for_sale = o.amount_to_sell.amount;
                 obj.sell_price = o.get_price();
                 obj.expiration = o.expiration;
@@ -2083,7 +2083,7 @@ namespace steemit {
             const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
                 obj.created = this->_db.head_block_time();
                 obj.seller = o.owner;
-                obj.orderid = o.order_id;
+                obj.order_id = o.order_id;
                 obj.for_sale = o.amount_to_sell.amount;
                 obj.sell_price = o.exchange_rate;
                 obj.expiration = o.expiration;

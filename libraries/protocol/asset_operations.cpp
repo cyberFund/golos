@@ -63,7 +63,7 @@ namespace steemit {
         share_type asset_create_operation::calculate_fee(const asset_create_operation::fee_parameters_type &param) const {
             auto core_fee_required = param.long_symbol;
 
-            switch (symbol.size()) {
+            switch (symbol_name.size()) {
                 case 3:
                     core_fee_required = param.symbol3;
                     break;
@@ -82,7 +82,7 @@ namespace steemit {
 
         void asset_create_operation::validate() const {
             FC_ASSERT(fee.amount >= 0);
-            FC_ASSERT(is_valid_symbol(symbol));
+            FC_ASSERT(is_valid_symbol(symbol_name));
             common_options.validate();
             if (common_options.issuer_permissions &
                 (disable_force_settle | global_settle)) {

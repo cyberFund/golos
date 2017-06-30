@@ -8,6 +8,8 @@ namespace steemit {
 
         typedef uint64_t asset_symbol_type;
 
+        extern const int64_t scaled_precision_lut[];
+
         struct asset {
             asset(share_type a = 0, asset_symbol_type id = STEEM_SYMBOL)
                     : amount(a), symbol(id) {
@@ -85,6 +87,10 @@ namespace steemit {
                 return asset(a.amount + b.amount, a.symbol);
             }
 
+            static share_type scaled_precision(uint8_t precision) {
+                FC_ASSERT(precision < 19);
+                return scaled_precision_lut[precision];
+            }
         };
 
         struct price {

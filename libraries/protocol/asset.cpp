@@ -270,5 +270,25 @@ namespace steemit {
             return (asset(cp.numerator().convert_to<int64_t>(), settlement_price.base.symbol) /
                     asset(cp.denominator().convert_to<int64_t>(), settlement_price.quote.symbol));
         }
+
+        // compile-time table of powers of 10 using template metaprogramming
+
+        template<int N>
+        struct p10 {
+            static const int64_t v = 10 * p10<N - 1>::v;
+        };
+
+        template<>
+        struct p10<0> {
+            static const int64_t v = 1;
+        };
+
+        const int64_t scaled_precision_lut[19] = {
+                p10<0>::v, p10<1>::v, p10<2>::v, p10<3>::v,
+                p10<4>::v, p10<5>::v, p10<6>::v, p10<7>::v,
+                p10<8>::v, p10<9>::v, p10<10>::v, p10<11>::v,
+                p10<12>::v, p10<13>::v, p10<14>::v, p10<15>::v,
+                p10<16>::v, p10<17>::v, p10<18>::v
+        };
     }
 } // steemit::protocol

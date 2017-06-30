@@ -37,17 +37,17 @@ namespace steemit {
 
             /// A set of accounts which maintain whitelists to consult for this asset. If whitelist_authorities
             /// is non-empty, then only accounts in whitelist_authorities are allowed to hold, use, or transfer the asset.
-            flat_set<account_name_type> whitelist_authorities;
+            flat_set <account_name_type> whitelist_authorities;
             /// A set of accounts which maintain blacklists to consult for this asset. If flags & white_list is set,
             /// an account may only send, receive, trade, etc. in this asset if none of these accounts appears in
             /// its account_object::blacklisting_accounts field. If the account is blacklisted, it may not transact in
             /// this asset even if it is also whitelisted.
-            flat_set<account_name_type> blacklist_authorities;
+            flat_set <account_name_type> blacklist_authorities;
 
             /** defines the assets that this asset may be traded against in the market */
-            flat_set<asset_symbol_type> whitelist_markets;
+            flat_set <asset_symbol_type> whitelist_markets;
             /** defines the assets that this asset may not be traded against in the market, must not overlap whitelist */
-            flat_set<asset_symbol_type> blacklist_markets;
+            flat_set <asset_symbol_type> blacklist_markets;
 
             /**
              * data that describes the meaning/purpose of this asset, fee will be charged proportional to
@@ -107,7 +107,7 @@ namespace steemit {
             /// This account must sign and pay the fee for this operation. Later, this account may update the asset
             account_name_type issuer;
             /// The ticker symbol of this asset
-            string symbol;
+            string symbol_name;
             /// Number of digits to the right of decimal point, must be less than or equal to 12
             uint8_t precision = 0;
 
@@ -119,7 +119,7 @@ namespace steemit {
             asset_options common_options;
             /// Options only available for BitAssets. MUST be non-null if and only if the @ref market_issued flag is set in
             /// common_options.flags
-            optional<bitasset_options> bitasset_opts;
+            optional <bitasset_options> bitasset_opts;
             /// For BitAssets, set this to true if the asset implements a @ref prediction_market; false otherwise
             bool is_prediction_market = false;
             extensions_type extensions;
@@ -204,6 +204,10 @@ namespace steemit {
          */
 
         struct asset_settle_cancel_operation : public base_operation {
+            struct fee_parameters_type {
+
+            };
+
             asset fee;
             force_settlement_id_type settlement;
             /// Account requesting the force settlement. This account pays the fee
@@ -259,6 +263,11 @@ namespace steemit {
          * @post @ref asset_to_update will have options matching those of new_options
          */
         struct asset_update_operation : public base_operation {
+            struct fee_parameters_type {
+                uint64_t fee = 500;
+                uint32_t price_per_kbyte = 10;
+            };
+
             asset_update_operation() {
 
             }
@@ -268,7 +277,7 @@ namespace steemit {
             asset_symbol_type asset_to_update;
 
             /// If the asset is to be given a new issuer, specify his ID here.
-            optional<account_name_type> new_issuer;
+            optional <account_name_type> new_issuer;
             asset_options new_options;
             extensions_type extensions;
 
@@ -338,7 +347,7 @@ namespace steemit {
             account_name_type issuer;
             asset_symbol_type asset_to_update;
 
-            flat_set<account_name_type> new_feed_producers;
+            flat_set <account_name_type> new_feed_producers;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -398,7 +407,7 @@ namespace steemit {
 
 
             /** user provided data encrypted to the memo key of the "to" account */
-            optional<std::string> memo;
+            optional <std::string> memo;
             extensions_type extensions;
 
             account_name_type fee_payer() const {

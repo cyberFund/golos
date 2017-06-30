@@ -31,7 +31,7 @@ namespace steemit {
             time_point_sec created;
             time_point_sec expiration;
             account_name_type seller;
-            uint32_t orderid = 0;
+            order_id_type order_id = 0;
             share_type for_sale; ///< asset id is sell_price.base.symbol
             price sell_price;
 
@@ -156,7 +156,7 @@ namespace steemit {
         composite_key<limit_order_object,
                 member <
                 limit_order_object, account_name_type, &limit_order_object::seller>,
-        member<limit_order_object, uint32_t, &limit_order_object::orderid>
+        member<limit_order_object, uint32_t, &limit_order_object::order_id>
         >
         >
         >,

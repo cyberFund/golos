@@ -17,7 +17,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -53,7 +53,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
 
@@ -61,7 +61,7 @@ namespace steemit {
                 return amount_to_sell / min_to_receive;
             }
 
-            pair <asset_symbol_type, asset_symbol_type> get_market() const {
+            pair<asset_symbol_type, asset_symbol_type> get_market() const {
                 return amount_to_sell.symbol < min_to_receive.symbol ?
                        std::make_pair(amount_to_sell.symbol, min_to_receive.symbol)
                                                                      :
@@ -84,7 +84,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
 
@@ -92,7 +92,7 @@ namespace steemit {
                 return exchange_rate;
             }
 
-            pair <asset_symbol_type, asset_symbol_type> get_market() const {
+            pair<asset_symbol_type, asset_symbol_type> get_market() const {
                 return exchange_rate.base.symbol < exchange_rate.quote.symbol ?
                        std::make_pair(exchange_rate.base.symbol, exchange_rate.quote.symbol)
                                                                               :
@@ -114,7 +114,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
         };

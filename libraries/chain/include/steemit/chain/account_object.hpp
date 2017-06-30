@@ -100,7 +100,7 @@ namespace steemit {
 
             template<typename Constructor, typename Allocator>
             account_balance_object(Constructor &&c, allocator<Allocator> a) {
-                    c(*this);
+                c(*this);
             };
 
             id_type id;
@@ -202,6 +202,13 @@ namespace steemit {
             uint16_t witnesses_voted_for = 0;
 
             time_point_sec last_post;
+
+            /**
+             * This is a set of assets which the account is allowed to have.
+             * This is utilized to restrict buyback accounts to the assets that trade in their markets.
+             * In the future we may expand this to allow accounts to e.g. voluntarily restrict incoming transfers.
+             */
+            optional<flat_set<asset_symbol_type>> allowed_assets;
 
             /// This function should be used only when the account votes for a witness directly
             share_type witness_vote_weight() const {
