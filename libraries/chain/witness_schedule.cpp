@@ -7,7 +7,7 @@
 
 namespace steemit {
     namespace chain {
-        void reset_virtual_schedule_time(database &db) {
+        void reset_virtual_schedule_time(database_basic &db) {
             const witness_schedule_object &wso = db.get_witness_schedule_object();
             db.modify(wso, [&](witness_schedule_object &o) {
                 o.current_virtual_time = fc::uint128(); // reset it 0
@@ -24,7 +24,7 @@ namespace steemit {
             }
         }
 
-        void update_median_witness_props(database &db) {
+        void update_median_witness_props(database_basic &db) {
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
             /// fetch all witness objects
@@ -69,7 +69,7 @@ namespace steemit {
             });
         }
 
-        void update_witness_schedule4(database &db) {
+        void update_witness_schedule4(database_basic &db) {
             const witness_schedule_object &wso = db.get_witness_schedule_object();
             vector<account_name_type> active_witnesses;
             active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
@@ -302,7 +302,7 @@ namespace steemit {
  *
  *  See @ref witness_object::virtual_last_update
  */
-        void update_witness_schedule(database &db) {
+        void update_witness_schedule(database_basic &db) {
             if ((db.head_block_num() % STEEMIT_MAX_WITNESSES) ==
                 0) //wso.next_shuffle_block_num )
             {

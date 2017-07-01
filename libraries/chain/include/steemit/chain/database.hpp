@@ -41,11 +41,11 @@ namespace steemit {
          *   @class database
          *   @brief tracks the blockchain state in an extensible manner
          */
-        class database : public chainbase::database {
+        class database_basic : public chainbase::database {
         public:
-            database();
+            database_basic();
 
-            ~database();
+            virtual ~database_basic();
 
             bool is_producing() const {
                 return _is_producing;
@@ -576,7 +576,7 @@ namespace steemit {
 
             // this function needs access to _plugin_index_signal
             template<typename MultiIndexType>
-            friend void add_plugin_index(database &db);
+            friend void add_plugin_index(database_basic &db);
 
             fc::signal<void()> _plugin_index_signal;
 
@@ -598,6 +598,59 @@ namespace steemit {
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
         };
+
+
+    struct account_read_police {
+        explicit account_read_police(database_basic &ref,int f) : references(ref) {
+            std::cout << "account_read_police" << std::endl;
+        }
+
+        account_read_police() = default;
+
+        account_read_police(const account_read_police &) = default;
+
+        account_read_police &operator=(const account_read_police &) = default;
+
+        account_read_police(account_read_police &&) = default;
+
+        account_read_police &operator=(account_read_police &&) = default;
+
+        virtual ~account_read_police() = default;
+
+        database_basic &references;
+
+    };
+
+
+    struct account_write_police {
+        explicit account_write_police(database_basic &ref, int f) : references(ref) {
+            std::cout << "account_write_police" << std::endl;
+        }
+
+        account_write_police() = default;
+
+        account_write_police(const account_write_police &) = default;
+
+        account_write_police &operator=(const account_write_police &) = default;
+
+        account_write_police(account_write_police &&) = default;
+
+        account_write_police &operator=(account_write_police &&) = default;
+
+        virtual ~account_write_police() = default;
+
+        database_basic &references;
+
+    };
+
+    template<typename... Policies>
+    struct database_police final : public database_basic, public Policies ... {
+        database_police() :database_basic(), Policies(*this,1)... {}
+
+        ~database_police() = default;
+    };
+
+    using database = database_police<account_read_police, account_write_police>;
 
     }
 }

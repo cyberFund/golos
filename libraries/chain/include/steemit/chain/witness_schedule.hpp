@@ -3,10 +3,10 @@
 namespace steemit {
     namespace chain {
 
-        class database;
+        class database_basic;
 
-        void update_witness_schedule(database &db);
+        void update_witness_schedule(database_basic &db);
 
-        void reset_virtual_schedule_time(database &db);
+        void reset_virtual_schedule_time(database_basic &db);
     }
 }

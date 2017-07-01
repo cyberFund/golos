@@ -67,25 +67,25 @@ namespace steemit {
 
         class database_impl {
         public:
-            database_impl(database &self);
+            database_impl(database_basic &self);
 
-            database &_self;
+            database_basic &_self;
             evaluator_registry<operation> _evaluator_registry;
         };
 
-        database_impl::database_impl(database &self)
+        database_impl::database_impl(database_basic &self)
                 : _self(self), _evaluator_registry(self) {
         }
 
-        database::database()
+        database_basic::database_basic()
                 : _my(new database_impl(*this)) {
         }
 
-        database::~database() {
+        database_basic::~database_basic() {
             clear_pending();
         }
 
-        void database::open(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t initial_supply, uint64_t shared_file_size, uint32_t chainbase_flags) {
+        void database_basic::open(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t initial_supply, uint64_t shared_file_size, uint32_t chainbase_flags) {
             try {
                 init_schema();
                 chainbase::database::open(shared_mem_dir, chainbase_flags, shared_file_size);
@@ -130,7 +130,7 @@ namespace steemit {
             FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
         }
 
-        void database::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size) {
+        void database_basic::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size) {
             try {
                 ilog("Reindexing Blockchain");
                 wipe(data_dir, shared_mem_dir, false);
@@ -190,7 +190,7 @@ namespace steemit {
 
         }
 
-        void database::wipe(const fc::path &data_dir, const fc::path &shared_mem_dir, bool include_blocks) {
+        void database_basic::wipe(const fc::path &data_dir, const fc::path &shared_mem_dir, bool include_blocks) {
             close();
             chainbase::database::wipe(shared_mem_dir);
             if (include_blocks) {
@@ -199,7 +199,7 @@ namespace steemit {
             }
         }
 
-        void database::close(bool rewind) {
+        void database_basic::close(bool rewind) {
             try {
                 // Since pop_block() will move tx's in the popped blocks into pending,
                 // we have to clear_pending() after we're done popping to get a clean
@@ -216,7 +216,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        bool database::is_known_block(const block_id_type &id) const {
+        bool database_basic::is_known_block(const block_id_type &id) const {
             try {
                 return fetch_block_by_id(id).valid();
             } FC_CAPTURE_AND_RETHROW()
@@ -227,14 +227,14 @@ namespace steemit {
  * method is called with a VERY old transaction we will return false, they should
  * query things by blocks if they are that old.
  */
-        bool database::is_known_transaction(const transaction_id_type &id) const {
+        bool database_basic::is_known_transaction(const transaction_id_type &id) const {
             try {
                 const auto &trx_idx = get_index<transaction_index>().indices().get<by_trx_id>();
                 return trx_idx.find(id) != trx_idx.end();
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        block_id_type database::find_block_id_for_num(uint32_t block_num) const {
+        block_id_type database_basic::find_block_id_for_num(uint32_t block_num) const {
             try {
                 if (block_num == 0) {
                     return block_id_type();
@@ -269,13 +269,13 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((block_num))
         }
 
-        block_id_type database::get_block_id_for_num(uint32_t block_num) const {
+        block_id_type database_basic::get_block_id_for_num(uint32_t block_num) const {
             block_id_type bid = find_block_id_for_num(block_num);
             FC_ASSERT(bid != block_id_type());
             return bid;
         }
 
-        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional<signed_block> database_basic::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -293,7 +293,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional<signed_block> database_basic::fetch_block_by_number(uint32_t block_num) const {
             try {
                 optional<signed_block> b;
 
@@ -308,7 +308,7 @@ namespace steemit {
             } FC_LOG_AND_RETHROW()
         }
 
-        const signed_transaction database::get_recent_transaction(const transaction_id_type &trx_id) const {
+        const signed_transaction database_basic::get_recent_transaction(const transaction_id_type &trx_id) const {
             try {
                 auto &index = get_index<transaction_index>().indices().get<by_trx_id>();
                 auto itr = index.find(trx_id);
@@ -319,7 +319,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        std::vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        std::vector<block_id_type> database_basic::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
                 pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() ==
@@ -340,62 +340,62 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        chain_id_type database::get_chain_id() const {
+        chain_id_type database_basic::get_chain_id() const {
             return STEEMIT_CHAIN_ID;
         }
 
-        const witness_object &database::get_witness(const account_name_type &name) const {
+        const witness_object &database_basic::get_witness(const account_name_type &name) const {
             try {
                 return get<witness_object, by_name>(name);
             } FC_CAPTURE_AND_RETHROW((name))
         }
 
-        const witness_object *database::find_witness(const account_name_type &name) const {
+        const witness_object *database_basic::find_witness(const account_name_type &name) const {
             return find<witness_object, by_name>(name);
         }
 
-        const account_object &database::get_account(const account_name_type &name) const {
+        const account_object &database_basic::get_account(const account_name_type &name) const {
             try {
                 return get<account_object, by_name>(name);
             } FC_CAPTURE_AND_RETHROW((name))
         }
 
-        const account_object *database::find_account(const account_name_type &name) const {
+        const account_object *database_basic::find_account(const account_name_type &name) const {
             return find<account_object, by_name>(name);
         }
 
-        const comment_object &database::get_comment(const account_name_type &author, const shared_string &permlink) const {
+        const comment_object &database_basic::get_comment(const account_name_type &author, const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *database::find_comment(const account_name_type &author, const shared_string &permlink) const {
+        const comment_object *database_basic::find_comment(const account_name_type &author, const shared_string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
-        const comment_object &database::get_comment(const account_name_type &author, const string &permlink) const {
+        const comment_object &database_basic::get_comment(const account_name_type &author, const string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *database::find_comment(const account_name_type &author, const string &permlink) const {
+        const comment_object *database_basic::find_comment(const account_name_type &author, const string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
 
-        const escrow_object &database::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
+        const escrow_object &database_basic::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
             try {
                 return get<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
             } FC_CAPTURE_AND_RETHROW((name)(escrow_id))
         }
 
-        const escrow_object *database::find_escrow(const account_name_type &name, uint32_t escrow_id) const {
+        const escrow_object *database_basic::find_escrow(const account_name_type &name, uint32_t escrow_id) const {
             return find<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
         }
 
-        const limit_order_object &database::get_limit_order(const account_name_type &name, uint32_t orderid) const {
+        const limit_order_object &database_basic::get_limit_order(const account_name_type &name, uint32_t orderid) const {
             try {
                 if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                     orderid = orderid & 0x0000FFFF;
@@ -405,7 +405,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((name)(orderid))
         }
 
-        const limit_order_object *database::find_limit_order(const account_name_type &name, uint32_t orderid) const {
+        const limit_order_object *database_basic::find_limit_order(const account_name_type &name, uint32_t orderid) const {
             if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                 orderid = orderid & 0x0000FFFF;
             }
@@ -413,45 +413,45 @@ namespace steemit {
             return find<limit_order_object, by_account>(boost::make_tuple(name, orderid));
         }
 
-        const savings_withdraw_object &database::get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
+        const savings_withdraw_object &database_basic::get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
             try {
                 return get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
             } FC_CAPTURE_AND_RETHROW((owner)(request_id))
         }
 
-        const savings_withdraw_object *database::find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
+        const savings_withdraw_object *database_basic::find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
             return find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
         }
 
-        const dynamic_global_property_object &database::get_dynamic_global_properties() const {
+        const dynamic_global_property_object &database_basic::get_dynamic_global_properties() const {
             try {
                 return get<dynamic_global_property_object>();
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        const node_property_object &database::get_node_properties() const {
+        const node_property_object &database_basic::get_node_properties() const {
             return _node_property_object;
         }
 
-        const feed_history_object &database::get_feed_history() const {
+        const feed_history_object &database_basic::get_feed_history() const {
             try {
                 return get<feed_history_object>();
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        const witness_schedule_object &database::get_witness_schedule_object() const {
+        const witness_schedule_object &database_basic::get_witness_schedule_object() const {
             try {
                 return get<witness_schedule_object>();
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        const hardfork_property_object &database::get_hardfork_property_object() const {
+        const hardfork_property_object &database_basic::get_hardfork_property_object() const {
             try {
                 return get<hardfork_property_object>();
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        const time_point_sec database::calculate_discussion_payout_time(const comment_object &comment) const {
+        const time_point_sec database_basic::calculate_discussion_payout_time(const comment_object &comment) const {
             if (has_hardfork(STEEMIT_HARDFORK_0_17__91) ||
                 comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
                 return comment.cashout_time;
@@ -460,14 +460,14 @@ namespace steemit {
             }
         }
 
-        const reward_fund_object &database::get_reward_fund(const comment_object &c) const {
+        const reward_fund_object &database_basic::get_reward_fund(const comment_object &c) const {
             return get<reward_fund_object, by_name>(
                     c.parent_author == STEEMIT_ROOT_POST_PARENT
                     ? STEEMIT_POST_REWARD_FUND_NAME
                     : STEEMIT_COMMENT_REWARD_FUND_NAME);
         }
 
-        void database::pay_fee(const account_object &account, asset fee) {
+        void database_basic::pay_fee(const account_object &account, asset fee) {
             FC_ASSERT(fee.amount >=
                       0); /// NOTE if this fails then validate() on some operation is probably wrong
             if (fee.amount == 0) {
@@ -479,7 +479,7 @@ namespace steemit {
             adjust_supply(-fee);
         }
 
-        void database::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+        void database_basic::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
             try {
                 const auto &props = get_dynamic_global_properties();
                 if (props.total_vesting_shares.amount > 0) {
@@ -535,7 +535,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+        bool database_basic::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
             const auto &props = get_dynamic_global_properties();
             bool has_bandwidth = true;
 
@@ -594,30 +594,30 @@ namespace steemit {
             return has_bandwidth;
         }
 
-        uint32_t database::witness_participation_rate() const {
+        uint32_t database_basic::witness_participation_rate() const {
             const dynamic_global_property_object &dpo = get_dynamic_global_properties();
             return uint64_t(STEEMIT_100_PERCENT) *
                    dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
+        void database_basic::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
         }
 
-        bool database::before_last_checkpoint() const {
+        bool database_basic::before_last_checkpoint() const {
             return (_checkpoints.size() > 0) &&
                    (_checkpoints.rbegin()->first >= head_block_num());
         }
 
 /**
  * Push block "may fail" in which case every partial change is unwound.  After
- * push block is successful the block is appended to the chain database on disk.
+ * push block is successful the block is appended to the chain database_basic on disk.
  *
  * @return true if we switched forks as a result of this push.
  */
-        bool database::push_block(const signed_block &new_block, uint32_t skip) {
+        bool database_basic::push_block(const signed_block &new_block, uint32_t skip) {
             //fc::time_point begin_time = fc::time_point::now();
 
             bool result;
@@ -639,7 +639,7 @@ namespace steemit {
             return result;
         }
 
-        void database::_maybe_warn_multiple_production(uint32_t height) const {
+        void database_basic::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
                 vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
@@ -652,7 +652,7 @@ namespace steemit {
             return;
         }
 
-        bool database::_push_block(const signed_block &new_block) {
+        bool database_basic::_push_block(const signed_block &new_block) {
             try {
                 uint32_t skip = get_node_properties().skip_flags;
                 //uint32_t skip_undo_db = skip & skip_undo_block;
@@ -744,7 +744,7 @@ namespace steemit {
  * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pending
  * queues.
  */
-        void database::push_transaction(const signed_transaction &trx, uint32_t skip) {
+        void database_basic::push_transaction(const signed_transaction &trx, uint32_t skip) {
             try {
                 try {
                     FC_ASSERT(fc::raw::pack_size(trx) <=
@@ -767,7 +767,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((trx))
         }
 
-        void database::_push_transaction(const signed_transaction &trx) {
+        void database_basic::_push_transaction(const signed_transaction &trx) {
             // If this is the first transaction pushed after applying a block, start a new undo session.
             // This allows us to quickly rewind to the clean state of the head block, in case a new block arrives.
             if (!_pending_tx_session.valid()) {
@@ -791,7 +791,7 @@ namespace steemit {
             notify_on_pending_transaction(trx);
         }
 
-        signed_block database::generate_block(
+        signed_block database_basic::generate_block(
                 fc::time_point_sec when,
                 const account_name_type &witness_owner,
                 const fc::ecc::private_key &block_signing_private_key,
@@ -808,7 +808,7 @@ namespace steemit {
         }
 
 
-        signed_block database::_generate_block(
+        signed_block database_basic::_generate_block(
                 fc::time_point_sec when,
                 const account_name_type &witness_owner,
                 const fc::ecc::private_key &block_signing_private_key
@@ -840,7 +840,7 @@ namespace steemit {
                 // This rebuild is necessary because pending transactions' validity
                 // and semantics may have changed since they were received, because
                 // time-based semantics are evaluated based on the current block
-                // time.  These changes can only be reflected in the database when
+                // time.  These changes can only be reflected in the database_basic when
                 // the value of the "when" variable is known, which means we need to
                 // re-apply pending transactions in this method.
                 //
@@ -944,10 +944,10 @@ namespace steemit {
         }
 
 /**
- * Removes the most recent block from the database and
+ * Removes the most recent block from the database_basic and
  * undoes any changes it made.
  */
-        void database::pop_block() {
+        void database_basic::pop_block() {
             try {
                 _pending_tx_session.reset();
                 auto head_id = head_block_id();
@@ -965,7 +965,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::clear_pending() {
+        void database_basic::clear_pending() {
             try {
                 assert((_pending_tx.size() == 0) ||
                        _pending_tx_session.valid());
@@ -975,7 +975,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::notify_pre_apply_operation(operation_notification &note) {
+        void database_basic::notify_pre_apply_operation(operation_notification &note) {
             note.trx_id = _current_trx_id;
             note.block = _current_block_num;
             note.trx_in_block = _current_trx_in_block;
@@ -984,11 +984,11 @@ namespace steemit {
             STEEMIT_TRY_NOTIFY(pre_apply_operation, note)
         }
 
-        void database::notify_post_apply_operation(const operation_notification &note) {
+        void database_basic::notify_post_apply_operation(const operation_notification &note) {
             STEEMIT_TRY_NOTIFY(post_apply_operation, note)
         }
 
-        inline const void database::push_virtual_operation(const operation &op, bool force) {
+        inline const void database_basic::push_virtual_operation(const operation &op, bool force) {
             if (!force) {
 #if defined( STEEMIT_BUILD_LOW_MEMORY ) && !defined( STEEMIT_BUILD_TESTNET )
                 return;
@@ -1001,19 +1001,19 @@ namespace steemit {
             notify_post_apply_operation(note);
         }
 
-        void database::notify_applied_block(const signed_block &block) {
+        void database_basic::notify_applied_block(const signed_block &block) {
             STEEMIT_TRY_NOTIFY(applied_block, block)
         }
 
-        void database::notify_on_pending_transaction(const signed_transaction &tx) {
+        void database_basic::notify_on_pending_transaction(const signed_transaction &tx) {
             STEEMIT_TRY_NOTIFY(on_pending_transaction, tx)
         }
 
-        void database::notify_on_applied_transaction(const signed_transaction &tx) {
+        void database_basic::notify_on_applied_transaction(const signed_transaction &tx) {
             STEEMIT_TRY_NOTIFY(on_applied_transaction, tx)
         }
 
-        account_name_type database::get_scheduled_witness(uint32_t slot_num) const {
+        account_name_type database_basic::get_scheduled_witness(uint32_t slot_num) const {
             const dynamic_global_property_object &dpo = get_dynamic_global_properties();
             const witness_schedule_object &wso = get_witness_schedule_object();
             uint64_t current_aslot = dpo.current_aslot + slot_num;
@@ -1021,7 +1021,7 @@ namespace steemit {
                                                   wso.num_scheduled_witnesses];
         }
 
-        fc::time_point_sec database::get_slot_time(uint32_t slot_num) const {
+        fc::time_point_sec database_basic::get_slot_time(uint32_t slot_num) const {
             if (slot_num == 0) {
                 return fc::time_point_sec();
             }
@@ -1046,7 +1046,7 @@ namespace steemit {
             return head_slot_time + (slot_num * interval);
         }
 
-        uint32_t database::get_slot_at_time(fc::time_point_sec when) const {
+        uint32_t database_basic::get_slot_at_time(fc::time_point_sec when) const {
             fc::time_point_sec first_slot_time = get_slot_time(1);
             if (when < first_slot_time) {
                 return 0;
@@ -1059,7 +1059,7 @@ namespace steemit {
  *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
  *  by STEEM and increasing the sbd supply by the specified amount.
  */
-        std::pair<asset, asset> database::create_sbd(const account_object &to_account, asset steem) {
+        std::pair<asset, asset> database_basic::create_sbd(const account_object &to_account, asset steem) {
             std::pair<asset, asset> assets(asset(0, SBD_SYMBOL), asset(0, STEEM_SYMBOL));
 
             try {
@@ -1097,7 +1097,7 @@ namespace steemit {
  * @param to_account - the account to receive the new vesting shares
  * @param STEEM - STEEM to be converted to vesting shares
  */
-        asset database::create_vesting(const account_object &to_account, asset steem) {
+        asset database_basic::create_vesting(const account_object &to_account, asset steem) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
 
@@ -1132,7 +1132,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
         }
 
-        fc::sha256 database::get_pow_target() const {
+        fc::sha256 database_basic::get_pow_target() const {
             const auto &dgp = get_dynamic_global_properties();
             fc::sha256 target;
             target._hash[0] = -1;
@@ -1143,7 +1143,7 @@ namespace steemit {
             return target;
         }
 
-        uint32_t database::get_pow_summary_target() const {
+        uint32_t database_basic::get_pow_summary_target() const {
             const dynamic_global_property_object &dgp = get_dynamic_global_properties();
             if (dgp.num_pow_witnesses >= 1004) {
                 return 0;
@@ -1156,7 +1156,7 @@ namespace steemit {
             }
         }
 
-        void database::update_median_witness_props() {
+        void database_basic::update_median_witness_props() {
             const witness_schedule_object &wso = get_witness_schedule_object();
 
             /// fetch all witness objects
@@ -1201,7 +1201,7 @@ namespace steemit {
             });
         }
 
-        void database::adjust_proxied_witness_votes(const account_object &a,
+        void database_basic::adjust_proxied_witness_votes(const account_object &a,
                 const std::array<share_type,
                         STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
                 int depth) {
@@ -1231,7 +1231,7 @@ namespace steemit {
             }
         }
 
-        void database::adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth) {
+        void database_basic::adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth) {
             if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
                 /// nested proxies are not supported, vote will not propagate
                 if (depth >= STEEMIT_MAX_PROXY_RECURSION_DEPTH) {
@@ -1250,7 +1250,7 @@ namespace steemit {
             }
         }
 
-        void database::adjust_witness_votes(const account_object &a, share_type delta) {
+        void database_basic::adjust_witness_votes(const account_object &a, share_type delta) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
             auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
             while (itr != vidx.end() && itr->account == a.id) {
@@ -1259,7 +1259,7 @@ namespace steemit {
             }
         }
 
-        void database::adjust_witness_vote(const witness_object &witness, share_type delta) {
+        void database_basic::adjust_witness_vote(const witness_object &witness, share_type delta) {
             const witness_schedule_object &wso = get_witness_schedule_object();
             modify(witness, [&](witness_object &w) {
                 auto delta_pos = w.votes.value * (wso.current_virtual_time -
@@ -1292,7 +1292,7 @@ namespace steemit {
             });
         }
 
-        void database::clear_witness_votes(const account_object &a) {
+        void database_basic::clear_witness_votes(const account_object &a) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
             auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
             while (itr != vidx.end() && itr->account == a.id) {
@@ -1308,7 +1308,7 @@ namespace steemit {
             }
         }
 
-        void database::clear_null_account_balance() {
+        void database_basic::clear_null_account_balance() {
             if (!has_hardfork(STEEMIT_HARDFORK_0_14__327)) {
                 return;
             }
@@ -1363,7 +1363,7 @@ namespace steemit {
             }
         }
 
-        void update_children_rshares2(database &db, const comment_object &c, const fc::uint128_t &old_rshares2, const fc::uint128_t &new_rshares2) {
+        void update_children_rshares2(database_basic &db, const comment_object &c, const fc::uint128_t &old_rshares2, const fc::uint128_t &new_rshares2) {
             // Iteratively updates the children_rshares2 of this comment and all of its ancestors
 
             const comment_object *current_comment = &c;
@@ -1386,7 +1386,7 @@ namespace steemit {
         * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
         */
 
-        void database::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+        void database_basic::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
             update_children_rshares2(*this, c, old_rshares2, new_rshares2);
 
             const auto &dgpo = get_dynamic_global_properties();
@@ -1396,7 +1396,7 @@ namespace steemit {
             });
         }
 
-        void database::update_owner_authority(const account_object &account, const authority &owner_authority) {
+        void database_basic::update_owner_authority(const account_object &account, const authority &owner_authority) {
             if (head_block_num() >=
                 STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
                 create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
@@ -1412,7 +1412,7 @@ namespace steemit {
             });
         }
 
-        void database::process_vesting_withdrawals() {
+        void database_basic::process_vesting_withdrawals() {
             const auto &widx = get_index<account_index>().indices().get<by_next_vesting_withdrawal>();
             const auto &didx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
             auto current = widx.begin();
@@ -1535,7 +1535,7 @@ namespace steemit {
             }
         }
 
-        void database::adjust_total_payout(const comment_object &cur, const asset &sbd_created, const asset &curator_sbd_value, const asset &beneficiary_value) {
+        void database_basic::adjust_total_payout(const comment_object &cur, const asset &sbd_created, const asset &curator_sbd_value, const asset &beneficiary_value) {
             modify(cur, [&](comment_object &c) {
                 if (c.total_payout_value.symbol == sbd_created.symbol) {
                     c.total_payout_value += sbd_created;
@@ -1552,7 +1552,7 @@ namespace steemit {
  *
  *  @returns unclaimed rewards.
  */
-        share_type database::pay_curators(const comment_object &c, share_type &max_rewards) {
+        share_type database_basic::pay_curators(const comment_object &c, share_type &max_rewards) {
             try {
                 uint128_t total_weight(c.total_vote_weight);
                 //edump( (total_weight)(max_rewards) );
@@ -1598,7 +1598,7 @@ namespace steemit {
             ctx.max_sbd = comment.max_accepted_payout;
         }
 
-        share_type database::cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
+        share_type database_basic::cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
             try {
                 share_type claimed_reward = 0;
 
@@ -1737,7 +1737,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((comment))
         }
 
-        void database::process_comment_cashout() {
+        void database_basic::process_comment_cashout() {
             /// don't allow any content to get paid out until the website is ready to launch
             /// and people have had a week to start posting.  The first cashout will be the biggest because it
             /// will represent 2+ months of rewards.
@@ -1867,7 +1867,7 @@ namespace steemit {
  *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
  *  This method does not pay out witnesses.
  */
-        void database::process_funds() {
+        void database_basic::process_funds() {
             const auto &props = get_dynamic_global_properties();
             const auto &wso = get_witness_schedule_object();
 
@@ -1954,7 +1954,7 @@ namespace steemit {
             }
         }
 
-        void database::process_savings_withdraws() {
+        void database_basic::process_savings_withdraws() {
             const auto &idx = get_index<savings_withdraw_index>().indices().get<by_complete_from_rid>();
             auto itr = idx.begin();
             while (itr != idx.end()) {
@@ -1974,7 +1974,7 @@ namespace steemit {
             }
         }
 
-        asset database::get_liquidity_reward() const {
+        asset database_basic::get_liquidity_reward() const {
             if (has_hardfork(STEEMIT_HARDFORK_0_12__178)) {
                 return asset(0, STEEM_SYMBOL);
             }
@@ -1986,7 +1986,7 @@ namespace steemit {
             return std::max(percent, STEEMIT_MIN_LIQUIDITY_REWARD);
         }
 
-        asset database::get_content_reward() const {
+        asset database_basic::get_content_reward() const {
             const auto &props = get_dynamic_global_properties();
             auto reward = asset(255, STEEM_SYMBOL);
             static_assert(STEEMIT_BLOCK_INTERVAL ==
@@ -1999,7 +1999,7 @@ namespace steemit {
             return reward;
         }
 
-        asset database::get_curation_reward() const {
+        asset database_basic::get_curation_reward() const {
             const auto &props = get_dynamic_global_properties();
             auto reward = asset(85, STEEM_SYMBOL);
             static_assert(STEEMIT_BLOCK_INTERVAL ==
@@ -2012,7 +2012,7 @@ namespace steemit {
             return reward;
         }
 
-        asset database::get_producer_reward() {
+        asset database_basic::get_producer_reward() {
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL ==
                           3, "this code assumes a 3-second time interval");
@@ -2055,7 +2055,7 @@ namespace steemit {
             }
         }
 
-        asset database::get_pow_reward() const {
+        asset database_basic::get_pow_reward() const {
             const auto &props = get_dynamic_global_properties();
 
 #ifndef STEEMIT_BUILD_TESTNET
@@ -2079,7 +2079,7 @@ namespace steemit {
             }
         }
 
-        asset database::get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const {
+        asset database_basic::get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const {
             FC_ASSERT(
                     (input_time - fc::time_point::now()).to_seconds() /
                     (3600 * 24) >
@@ -2093,7 +2093,7 @@ namespace steemit {
                            24), SBD_SYMBOL));
         }
 
-        time_point_sec database::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
+        time_point_sec database_basic::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
             FC_ASSERT(input_cost.symbol ==
                       SBD_SYMBOL, "Extension payment should be in SBD");
             FC_ASSERT(
@@ -2105,7 +2105,7 @@ namespace steemit {
                                 STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
         }
 
-        void database::pay_liquidity_reward() {
+        void database_basic::pay_liquidity_reward() {
 #ifdef STEEMIT_BUILD_TESTNET
             if (!liquidity_rewards_enabled) {
                 return;
@@ -2136,7 +2136,7 @@ namespace steemit {
             }
         }
 
-        uint16_t database::get_curation_rewards_percent(const comment_object &c) const {
+        uint16_t database_basic::get_curation_rewards_percent(const comment_object &c) const {
             if (has_hardfork(STEEMIT_HARDFORK_0_17__86) &&
                 c.parent_author != STEEMIT_ROOT_POST_PARENT) {
                 return 0;
@@ -2147,7 +2147,7 @@ namespace steemit {
             }
         }
 
-        share_type database::pay_reward_funds(share_type reward) {
+        share_type database_basic::pay_reward_funds(share_type reward) {
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
             share_type used_rewards = 0;
 
@@ -2174,7 +2174,7 @@ namespace steemit {
  *  the head block time and then converts them to/from steem/sbd at the
  *  current median price feed history price times the premium
  */
-        void database::process_conversions() {
+        void database_basic::process_conversions() {
             auto now = head_block_time();
             const auto &request_by_date = get_index<convert_request_index>().indices().get<by_conversion_date>();
             auto itr = request_by_date.begin();
@@ -2214,15 +2214,15 @@ namespace steemit {
             });
         }
 
-        asset database::to_sbd(const asset &steem) const {
+        asset database_basic::to_sbd(const asset &steem) const {
             return utilities::to_sbd(get_feed_history().current_median_history, steem);
         }
 
-        asset database::to_steem(const asset &sbd) const {
+        asset database_basic::to_steem(const asset &sbd) const {
             return utilities::to_steem(get_feed_history().current_median_history, sbd);
         }
 
-        void database::account_recovery_processing() {
+        void database_basic::account_recovery_processing() {
             // Clear expired recovery requests
             const auto &rec_req_idx = get_index<account_recovery_request_index>().indices().get<by_expiration>();
             auto rec_req = rec_req_idx.begin();
@@ -2259,7 +2259,7 @@ namespace steemit {
             }
         }
 
-        void database::expire_escrow_ratification() {
+        void database_basic::expire_escrow_ratification() {
             const auto &escrow_idx = get_index<escrow_index>().indices().get<by_ratification_deadline>();
             auto escrow_itr = escrow_idx.lower_bound(false);
 
@@ -2278,7 +2278,7 @@ namespace steemit {
             }
         }
 
-        void database::process_decline_voting_rights() {
+        void database_basic::process_decline_voting_rights() {
             const auto &request_idx = get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
             auto itr = request_idx.begin();
 
@@ -2307,27 +2307,27 @@ namespace steemit {
             }
         }
 
-        time_point_sec database::head_block_time() const {
+        time_point_sec database_basic::head_block_time() const {
             return get_dynamic_global_properties().time;
         }
 
-        uint32_t database::head_block_num() const {
+        uint32_t database_basic::head_block_num() const {
             return get_dynamic_global_properties().head_block_number;
         }
 
-        block_id_type database::head_block_id() const {
+        block_id_type database_basic::head_block_id() const {
             return get_dynamic_global_properties().head_block_id;
         }
 
-        node_property_object &database::node_properties() {
+        node_property_object &database_basic::node_properties() {
             return _node_property_object;
         }
 
-        uint32_t database::last_non_undoable_block_num() const {
+        uint32_t database_basic::last_non_undoable_block_num() const {
             return get_dynamic_global_properties().last_irreversible_block_num;
         }
 
-        void database::initialize_evaluators() {
+        void database_basic::initialize_evaluators() {
             _my->_evaluator_registry.register_evaluator<vote_evaluator>();
             _my->_evaluator_registry.register_evaluator<comment_evaluator>();
             _my->_evaluator_registry.register_evaluator<comment_options_evaluator>();
@@ -2371,13 +2371,13 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
         }
 
-        void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
+        void database_basic::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
             bool inserted = _custom_operation_interpreters.emplace(id, registry).second;
             // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
             FC_ASSERT(inserted);
         }
 
-        std::shared_ptr<custom_operation_interpreter> database::get_custom_json_evaluator(const std::string &id) {
+        std::shared_ptr<custom_operation_interpreter> database_basic::get_custom_json_evaluator(const std::string &id) {
             auto it = _custom_operation_interpreters.find(id);
             if (it != _custom_operation_interpreters.end()) {
                 return it->second;
@@ -2385,7 +2385,7 @@ namespace steemit {
             return std::shared_ptr<custom_operation_interpreter>();
         }
 
-        void database::initialize_indexes() {
+        void database_basic::initialize_indexes() {
             add_core_index<dynamic_global_property_index>(*this);
             add_core_index<account_index>(*this);
             add_core_index<account_authority_index>(*this);
@@ -2418,11 +2418,11 @@ namespace steemit {
             _plugin_index_signal();
         }
 
-        const std::string &database::get_json_schema() const {
+        const std::string &database_basic::get_json_schema() const {
             return _json_schema;
         }
 
-        void database::init_schema() {
+        void database_basic::init_schema() {
             /*done_adding_indexes();
 
    db_schema ds;
@@ -2482,10 +2482,10 @@ namespace steemit {
    return;*/
         }
 
-        void database::init_genesis(uint64_t init_supply) {
+        void database_basic::init_genesis(uint64_t init_supply) {
             try {
                 struct auth_inhibitor {
-                    auth_inhibitor(database &db)
+                    auth_inhibitor(database_basic &db)
                             : db(db),
                               old_flags(db.node_properties().skip_flags) {
                         db.node_properties().skip_flags |= skip_authority_check;
@@ -2496,7 +2496,7 @@ namespace steemit {
                     }
 
                 private:
-                    database &db;
+                    database_basic &db;
                     uint32_t old_flags;
                 } inhibitor(*this);
 
@@ -2583,15 +2583,15 @@ namespace steemit {
         }
 
 
-        void database::validate_transaction(const signed_transaction &trx) {
-            database::with_write_lock([&]() {
+        void database_basic::validate_transaction(const signed_transaction &trx) {
+            database_basic::with_write_lock([&]() {
                 auto session = start_undo_session(true);
                 _apply_transaction(trx);
                 session.undo();
             });
         }
 
-        void database::notify_changed_objects() {
+        void database_basic::notify_changed_objects() {
             try {
                 /*vector< graphene::chainbase::generic_id > ids;
       get_changed_ids( ids );
@@ -2618,14 +2618,14 @@ namespace steemit {
 
         }
 
-        void database::set_flush_interval(uint32_t flush_blocks) {
+        void database_basic::set_flush_interval(uint32_t flush_blocks) {
             _flush_blocks = flush_blocks;
             _next_flush_block = 0;
         }
 
 //////////////////// private methods ////////////////////
 
-        void database::apply_block(const signed_block &next_block, uint32_t skip) {
+        void database_basic::apply_block(const signed_block &next_block, uint32_t skip) {
             try {
                 //fc::time_point begin_time = fc::time_point::now();
 
@@ -2685,7 +2685,7 @@ namespace steemit {
 
                     if (_next_flush_block == block_num) {
                         _next_flush_block = 0;
-//                        ilog("Flushing database shared memory at block ${b}", ("b", block_num));
+//                        ilog("Flushing database_basic shared memory at block ${b}", ("b", block_num));
                         chainbase::database::flush();
                     }
                 }
@@ -2701,7 +2701,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((next_block))
         }
 
-        void database::_apply_block(const signed_block &next_block) {
+        void database_basic::_apply_block(const signed_block &next_block) {
             try {
                 uint32_t next_block_num = next_block.block_num();
                 //block_id_type next_block_id = next_block.id();
@@ -2806,7 +2806,7 @@ namespace steemit {
             FC_CAPTURE_LOG_AND_RETHROW((next_block.block_num()))
         }
 
-        void database::process_header_extensions(const signed_block &next_block) {
+        void database_basic::process_header_extensions(const signed_block &next_block) {
             auto itr = next_block.extensions.begin();
 
             while (itr != next_block.extensions.end()) {
@@ -2853,7 +2853,7 @@ namespace steemit {
         }
 
 
-        void database::update_median_feed() {
+        void database_basic::update_median_feed() {
             try {
                 if ((head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0) {
                     return;
@@ -2917,12 +2917,12 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::apply_transaction(const signed_transaction &trx, uint32_t skip) {
+        void database_basic::apply_transaction(const signed_transaction &trx, uint32_t skip) {
             detail::with_skip_flags(*this, skip, [&]() { _apply_transaction(trx); });
             notify_on_applied_transaction(trx);
         }
 
-        void database::_apply_transaction(const signed_transaction &trx) {
+        void database_basic::_apply_transaction(const signed_transaction &trx) {
             try {
                 _current_trx_id = trx.id();
                 uint32_t skip = get_node_properties().skip_flags;
@@ -3009,7 +3009,7 @@ namespace steemit {
                               trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
                 }
 
-                //Insert transaction into unique transactions database.
+                //Insert transaction into unique transactions database_basic.
                 if (!(skip & skip_transaction_dupe_check)) {
                     create<transaction_object>([&](transaction_object &transaction) {
                         transaction.trx_id = trx_id;
@@ -3031,14 +3031,14 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((trx))
         }
 
-        void database::apply_operation(const operation &op) {
+        void database_basic::apply_operation(const operation &op) {
             operation_notification note(op);
             notify_pre_apply_operation(note);
             _my->_evaluator_registry.get_evaluator(op).apply(op);
             notify_post_apply_operation(note);
         }
 
-        const witness_object &database::validate_block_header(uint32_t skip, const signed_block &next_block) const {
+        const witness_object &database_basic::validate_block_header(uint32_t skip, const signed_block &next_block) const {
             try {
                 FC_ASSERT(head_block_id() ==
                           next_block.previous, "", ("head_block_id", head_block_id())("next.prev", next_block.previous));
@@ -3064,7 +3064,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::create_block_summary(const signed_block &next_block) {
+        void database_basic::create_block_summary(const signed_block &next_block) {
             try {
                 block_summary_id_type sid(next_block.block_num() & 0xffff);
                 modify(get<block_summary_object>(sid), [&](block_summary_object &p) {
@@ -3073,7 +3073,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::update_global_dynamic_data(const signed_block &b) {
+        void database_basic::update_global_dynamic_data(const signed_block &b) {
             try {
                 auto block_size = fc::raw::pack_size(b);
                 const dynamic_global_property_object &_dgp =
@@ -3177,7 +3177,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::update_virtual_supply() {
+        void database_basic::update_virtual_supply() {
             try {
                 modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
                     dgp.virtual_supply = dgp.current_supply
@@ -3213,7 +3213,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
+        void database_basic::update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
             try {
                 const dynamic_global_property_object &dpo = get_dynamic_global_properties();
                 uint64_t new_block_aslot = dpo.current_aslot +
@@ -3226,7 +3226,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::update_last_irreversible_block() {
+        void database_basic::update_last_irreversible_block() {
             try {
                 const dynamic_global_property_object &dpo = get_dynamic_global_properties();
 
@@ -3293,7 +3293,7 @@ namespace steemit {
                         while (log_head_num < dpo.last_irreversible_block_num) {
                             std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
-                            FC_ASSERT(block, "Current fork in the fork database does not contain the last_irreversible_block");
+                            FC_ASSERT(block, "Current fork in the fork database_basic does not contain the last_irreversible_block");
                             _block_log.append(block->data);
                             log_head_num++;
                         }
@@ -3308,7 +3308,7 @@ namespace steemit {
         }
 
 
-        bool database::apply_order(const limit_order_object &new_order_object) {
+        bool database_basic::apply_order(const limit_order_object &new_order_object) {
             auto order_id = new_order_object.id;
 
             const auto &limit_price_idx = get_index<limit_order_index>().indices().get<by_price>();
@@ -3330,7 +3330,7 @@ namespace steemit {
             return find<limit_order_object>(order_id) == nullptr;
         }
 
-        int database::match(const limit_order_object &new_order, const limit_order_object &old_order, const price &match_price) {
+        int database_basic::match(const limit_order_object &new_order, const limit_order_object &old_order, const price &match_price) {
             assert(new_order.sell_price.quote.symbol ==
                    old_order.sell_price.base.symbol);
             assert(new_order.sell_price.base.symbol ==
@@ -3389,7 +3389,7 @@ namespace steemit {
         }
 
 
-        void database::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sdb) {
+        void database_basic::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sdb) {
             const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
             auto itr = ridx.find(owner.id);
             if (itr != ridx.end()) {
@@ -3426,7 +3426,7 @@ namespace steemit {
         }
 
 
-        bool database::fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
+        bool database_basic::fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
             try {
                 FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
                 FC_ASSERT(pays.symbol != receives.symbol);
@@ -3458,13 +3458,13 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
-        void database::cancel_order(const limit_order_object &order) {
+        void database_basic::cancel_order(const limit_order_object &order) {
             adjust_balance(get_account(order.seller), order.amount_for_sale());
             remove(order);
         }
 
 
-        void database::clear_expired_transactions() {
+        void database_basic::clear_expired_transactions() {
             //Look for expired transactions in the deduplication list, and remove them.
             //Transactions must have expired by at least two forking windows in order to be removed.
             auto &transaction_idx = get_index<transaction_index>();
@@ -3475,7 +3475,7 @@ namespace steemit {
             }
         }
 
-        void database::clear_expired_delegations() {
+        void database_basic::clear_expired_delegations() {
             auto now = head_block_time();
             const auto &delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
             auto itr = delegations_by_exp.begin();
@@ -3491,7 +3491,7 @@ namespace steemit {
             }
         }
 
-        void database::clear_expired_orders() {
+        void database_basic::clear_expired_orders() {
             auto now = head_block_time();
             const auto &orders_by_exp = get_index<limit_order_index>().indices().get<by_expiration>();
             auto itr = orders_by_exp.begin();
@@ -3501,7 +3501,7 @@ namespace steemit {
             }
         }
 
-        void database::adjust_balance(const account_object &a, const asset &delta) {
+        void database_basic::adjust_balance(const account_object &a, const asset &delta) {
             modify(a, [&](account_object &acnt) {
                 switch (delta.symbol) {
                     case STEEM_SYMBOL:
@@ -3546,7 +3546,7 @@ namespace steemit {
         }
 
 
-        void database::adjust_savings_balance(const account_object &a, const asset &delta) {
+        void database_basic::adjust_savings_balance(const account_object &a, const asset &delta) {
             modify(a, [&](account_object &acnt) {
                 switch (delta.symbol) {
                     case STEEM_SYMBOL:
@@ -3592,7 +3592,7 @@ namespace steemit {
         }
 
 
-        void database::adjust_supply(const asset &delta, bool adjust_vesting) {
+        void database_basic::adjust_supply(const asset &delta, bool adjust_vesting) {
 
             const auto &props = get_dynamic_global_properties();
             if (props.head_block_number < STEEMIT_BLOCKS_PER_DAY * 7) {
@@ -3624,7 +3624,7 @@ namespace steemit {
         }
 
 
-        asset database::get_balance(const account_object &a, asset_symbol_type symbol) const {
+        asset database_basic::get_balance(const account_object &a, asset_symbol_type symbol) const {
             switch (symbol) {
                 case STEEM_SYMBOL:
                     return a.balance;
@@ -3635,7 +3635,7 @@ namespace steemit {
             }
         }
 
-        asset database::get_savings_balance(const account_object &a, asset_symbol_type symbol) const {
+        asset database_basic::get_savings_balance(const account_object &a, asset_symbol_type symbol) const {
             switch (symbol) {
                 case STEEM_SYMBOL:
                     return a.savings_balance;
@@ -3646,7 +3646,7 @@ namespace steemit {
             }
         }
 
-        void database::init_hardforks() {
+        void database_basic::init_hardforks() {
             _hardfork_times[0] = fc::time_point_sec(STEEMIT_GENESIS_TIME);
             _hardfork_versions[0] = hardfork_version(0, 0);
             FC_ASSERT(STEEMIT_HARDFORK_0_1 ==
@@ -3727,7 +3727,7 @@ namespace steemit {
                       _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
         }
 
-        void database::reset_virtual_schedule_time() {
+        void database_basic::reset_virtual_schedule_time() {
             const witness_schedule_object &wso = get_witness_schedule_object();
             modify(wso, [&](witness_schedule_object &o) {
                 o.current_virtual_time = fc::uint128(); // reset it 0
@@ -3744,7 +3744,7 @@ namespace steemit {
             }
         }
 
-        void database::process_hardforks() {
+        void database_basic::process_hardforks() {
             try {
                 // If there are upcoming hardforks and the next one is later, do nothing
                 const auto &hardforks = get_hardfork_property_object();
@@ -3773,12 +3773,12 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        bool database::has_hardfork(uint32_t hardfork) const {
+        bool database_basic::has_hardfork(uint32_t hardfork) const {
             return get_hardfork_property_object().processed_hardforks.size() >
                    hardfork;
         }
 
-        void database::set_hardfork(uint32_t hardfork, bool apply_now) {
+        void database_basic::set_hardfork(uint32_t hardfork, bool apply_now) {
             auto const &hardforks = get_hardfork_property_object();
 
             for (uint32_t i = hardforks.last_hardfork + 1;
@@ -3798,7 +3798,7 @@ namespace steemit {
             }
         }
 
-        void database::apply_hardfork(uint32_t hardfork) {
+        void database_basic::apply_hardfork(uint32_t hardfork) {
             if (_log_hardforks) {
                 elog("HARDFORK ${hf} at block ${b}", ("hf", hardfork)("b", head_block_num()));
             }
@@ -4030,7 +4030,7 @@ namespace steemit {
             push_virtual_operation(hardfork_operation(hardfork), true);
         }
 
-        void database::retally_liquidity_weight() {
+        void database_basic::retally_liquidity_weight() {
             const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
             for (const auto &i : ridx) {
                 modify(i, [](liquidity_reward_balance_object &o) {
@@ -4042,7 +4042,7 @@ namespace steemit {
 /**
  * Verifies all supply invariantes check out
  */
-        void database::validate_invariants() const {
+        void database_basic::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
                 asset total_supply = asset(0, STEEM_SYMBOL);
@@ -4173,7 +4173,7 @@ namespace steemit {
             FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
         }
 
-        void database::perform_vesting_share_split(uint32_t magnitude) {
+        void database_basic::perform_vesting_share_split(uint32_t magnitude) {
             try {
                 modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &d) {
                     d.total_vesting_shares.amount *= magnitude;
@@ -4219,7 +4219,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::retally_comment_children() {
+        void database_basic::retally_comment_children() {
             const auto &cidx = get_index<comment_index>().indices();
 
             // Clear children counts
@@ -4254,7 +4254,7 @@ namespace steemit {
             }
         }
 
-        void database::retally_witness_votes() {
+        void database_basic::retally_witness_votes() {
             const auto &witness_idx = get_index<witness_index>().indices();
 
             // Clear all witness votes
@@ -4286,7 +4286,7 @@ namespace steemit {
             }
         }
 
-        void database::retally_witness_vote_counts(bool force) {
+        void database_basic::retally_witness_vote_counts(bool force) {
             const auto &account_idx = get_index<account_index>().indices();
 
             // Check all existing votes by account

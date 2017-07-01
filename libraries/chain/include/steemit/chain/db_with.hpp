@@ -44,7 +44,7 @@ namespace steemit {
  * that it restores popped transactions as well as pending transactions.
  */
             struct pending_transactions_restorer {
-                pending_transactions_restorer(database &db, std::vector<signed_transaction> &&pending_transactions)
+                pending_transactions_restorer(database_basic &db, std::vector<signed_transaction> &&pending_transactions)
                         : _db(db),
                           _pending_transactions(std::move(pending_transactions)) {
                     _db.clear_pending();
@@ -79,7 +79,7 @@ namespace steemit {
                     }
                 }
 
-                database &_db;
+                database_basic &_db;
                 std::vector<signed_transaction> _pending_transactions;
             };
 
@@ -90,7 +90,7 @@ namespace steemit {
  */
             template<typename Lambda>
             void with_skip_flags(
-                    database &db,
+                    database_basic &db,
                     uint32_t skip_flags,
                     Lambda callback) {
                 node_property_object &npo = db.node_properties();
@@ -108,7 +108,7 @@ namespace steemit {
  */
             template<typename Lambda>
             void without_pending_transactions(
-                    database &db,
+                    database_basic &db,
                     std::vector<signed_transaction> &&pending_transactions,
                     Lambda callback) {
                 pending_transactions_restorer restorer(db, std::move(pending_transactions));
