@@ -1,4 +1,4 @@
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 #include <fc/io/json.hpp>
 
 namespace steemit {
@@ -395,44 +395,6 @@ namespace steemit {
                           is_asset_type(exchange_rate.quote, STEEM_SYMBOL)),
                     "Price feed must be a STEEM/SBD price");
             exchange_rate.validate();
-        }
-
-        void limit_order_create_operation::validate() const {
-            validate_account_name(owner);
-            FC_ASSERT((is_asset_type(amount_to_sell, STEEM_SYMBOL) &&
-                       is_asset_type(min_to_receive, SBD_SYMBOL))
-                      || (is_asset_type(amount_to_sell, SBD_SYMBOL) &&
-                          is_asset_type(min_to_receive, STEEM_SYMBOL)),
-                    "Limit order must be for the STEEM:SBD market");
-            (amount_to_sell / min_to_receive).validate();
-        }
-
-        void limit_order_create2_operation::validate() const {
-            validate_account_name(owner);
-            FC_ASSERT(amount_to_sell.symbol ==
-                      exchange_rate.base.symbol, "Sell asset must be the base of the price");
-            exchange_rate.validate();
-
-            FC_ASSERT((is_asset_type(amount_to_sell, STEEM_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, SBD_SYMBOL)) ||
-                      (is_asset_type(amount_to_sell, SBD_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, STEEM_SYMBOL)),
-                    "Limit order must be for the STEEM:SBD market");
-
-            FC_ASSERT((amount_to_sell * exchange_rate).amount >
-                      0, "Amount to sell cannot round to 0 when traded");
-        }
-
-        void limit_order_cancel_operation::validate() const {
-            validate_account_name(owner);
-        }
-
-        void convert_operation::validate() const {
-            validate_account_name(owner);
-            /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
-            /// market fluxuations through converting large quantities without moving the price.
-            FC_ASSERT(is_asset_type(amount, SBD_SYMBOL), "Can only convert SBD to STEEM");
-            FC_ASSERT(amount.amount > 0, "Must convert some SBD");
         }
 
         void report_over_production_operation::validate() const {

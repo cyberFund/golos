@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <steemit/protocol/operation_utilities.hpp>
+#include <steemit/protocol/operations/operation_utilities.hpp>
 
 #include <fc/static_variant.hpp>
 

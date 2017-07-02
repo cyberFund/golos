@@ -1,10 +1,10 @@
 #pragma once
 
-#include <steemit/protocol/operation_utilities.hpp>
-#include <steemit/protocol/asset_operations.hpp>
-#include <steemit/protocol/market_operations.hpp>
-#include <steemit/protocol/steem_operations.hpp>
-#include <steemit/protocol/steem_virtual_operations.hpp>
+#include <steemit/protocol/operations/operation_utilities.hpp>
+#include <steemit/protocol/operations/asset_operations.hpp>
+#include <steemit/protocol/operations/market_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_virtual_operations.hpp>
 
 namespace steemit {
     namespace protocol {

@@ -48,7 +48,7 @@ namespace steemit {
                 if (op.bitasset_opts) {
                     const asset_object &backing = d.get_asset(op.bitasset_opts->short_backing_asset);
                     if (backing.is_market_issued()) {
-                        const asset_bitasset_data_object &backing_bitasset_data = backing.bitasset_data(d);
+                        const asset_bitasset_data_object &backing_bitasset_data = d.get_asset_bitasset_data(backing.symbol);
                         const asset_object &backing_backing = d.get_asset(backing_bitasset_data.options.short_backing_asset);
                         FC_ASSERT(!backing_backing.is_market_issued(),
                                 "May not create a bitasset backed by a bitasset backed by a bitasset.");
@@ -79,12 +79,11 @@ namespace steemit {
                             a.fee_pool = core_fee_paid; //op.calculate_fee(db().current_fee_schedule()).value / 2;
                         });
 
-                asset_bitasset_data_id_type bit_asset_id;
                 if (op.bitasset_opts.valid()) {
-                    bit_asset_id = db().create<asset_bitasset_data_object>([&](asset_bitasset_data_object &a) {
+                    db().create<asset_bitasset_data_object>([&](asset_bitasset_data_object &a) {
                         a.options = *op.bitasset_opts;
                         a.is_prediction_market = op.is_prediction_market;
-                    }).id;
+                    });
                 }
 
                 auto next_asset_id = db().get_index<asset_index>().get_next_id();
@@ -92,7 +91,8 @@ namespace steemit {
                 const asset_object &new_asset =
                         db().create<asset_object>([&](asset_object &a) {
                             a.issuer = op.issuer;
-                            a.symbol = op.symbol;
+                            a.symbol = asset::from_string(op.symbol_name).symbol;
+                            a.symbol_name = op.symbol_name;
                             a.precision = op.precision;
                             a.options = op.common_options;
                             if (a.options.core_exchange_rate.base.asset_id.instance.value ==
@@ -101,9 +101,8 @@ namespace steemit {
                             } else {
                                 a.options.core_exchange_rate.base.asset_id = next_asset_id;
                             }
-                            a.dynamic_asset_data_id = dyn_asset.id;
                             if (op.bitasset_opts.valid()) {
-                                a.bitasset_data_id = bit_asset_id;
+                                a.marked_issued = true;
                             }
                         });
                 assert(new_asset.id == next_asset_id);
@@ -121,7 +120,7 @@ namespace steemit {
                 to_account = d.find_account(o.issue_to_account);
                 FC_ASSERT(d.is_authorized_asset(*to_account, a));
 
-                asset_dyn_data = &a.dynamic_asset_data_id(d);
+                asset_dyn_data = d.find_asset_dynamic_data(a.symbol);
                 FC_ASSERT((asset_dyn_data->current_supply +
                            o.asset_to_issue.amount) <= a.options.max_supply);
             } FC_CAPTURE_AND_RETHROW((o))
@@ -147,10 +146,10 @@ namespace steemit {
                         ("sym", a.symbol)
                 );
 
-                from_account = &o.payer(d);
+                from_account = d.find_account(o.payer);
                 FC_ASSERT(d.is_authorized_asset(*from_account, a));
 
-                asset_dyn_data = &a.dynamic_asset_data_id(d);
+                asset_dyn_data = d.find_asset_dynamic_data(a.symbol);
                 FC_ASSERT((asset_dyn_data->current_supply -
                            o.amount_to_reserve.amount) >= 0);
 
@@ -171,7 +170,7 @@ namespace steemit {
 
                 const asset_object &a = d.get_asset(o.symbol);
 
-                asset_dyn_data = &a.dynamic_asset_data_id(d);
+                asset_dyn_data = d.find_asset_dynamic_data(o.symbol);
             } FC_CAPTURE_AND_RETHROW((o))
 
             try {
@@ -195,10 +194,10 @@ namespace steemit {
                 if (o.new_issuer) {
                     FC_ASSERT(d.find_account(*o.new_issuer));
                     if (a.is_market_issued() &&
-                        *o.new_issuer == GRAPHENE_COMMITTEE_ACCOUNT) {
-                        const asset_object &backing = a.bitasset_data(d).options.short_backing_asset(d);
+                        *o.new_issuer == STEEMIT_COMMITTEE_ACCOUNT) {
+                        const asset_object &backing = d.get_asset(d.get_asset_bitasset_data(a.symbol).options.short_backing_asset);
                         if (backing.is_market_issued()) {
-                            const asset_object &backing_backing = backing.bitasset_data(d).options.short_backing_asset(d);
+                            const asset_object &backing_backing = d.get_asset(d.get_asset_bitasset_data(backing.symbol).options.short_backing_asset);
                             FC_ASSERT(
                                     backing_backing.symbol == STEEM_SYMBOL,
                                     "May not create a blockchain-controlled market asset which is not backed by CORE.");
@@ -208,7 +207,7 @@ namespace steemit {
                     }
                 }
 
-                if ((a.dynamic_asset_data_id(d).current_supply != 0)) {
+                if ((d.get_asset_dynamic_data(a.symbol).current_supply != 0)) {
                     // new issuer_permissions must be subset of old issuer permissions
                     FC_ASSERT(!(o.new_options.issuer_permissions &
                                 ~a.options.issuer_permissions),
@@ -272,17 +271,19 @@ namespace steemit {
 
                 FC_ASSERT(a.is_market_issued(), "Cannot update BitAsset-specific settings on a non-BitAsset.");
 
-                const asset_bitasset_data_object &b = a.bitasset_data(d);
+                const asset_bitasset_data_object &b = d.get_asset_bitasset_data(a.symbol);
                 FC_ASSERT(!b.has_settlement(), "Cannot update a bitasset after a settlement has executed");
                 if (o.new_options.short_backing_asset !=
                     b.options.short_backing_asset) {
-                    FC_ASSERT(a.dynamic_asset_data_id(d).current_supply == 0);
+                    FC_ASSERT(
+                            d.get_asset_dynamic_data(a.symbol).current_supply ==
+                            0);
                     FC_ASSERT(d.find_asset(o.new_options.short_backing_asset));
 
-                    if (a.issuer == GRAPHENE_COMMITTEE_ACCOUNT) {
-                        const asset_object &backing = d.get_asset(a.bitasset_data(d).options.short_backing_asset);
+                    if (a.issuer == STEEMIT_COMMITTEE_ACCOUNT) {
+                        const asset_object &backing = d.get_asset(d.get_asset_bitasset_data(a.symbol).options.short_backing_asset);
                         if (backing.is_market_issued()) {
-                            const asset_object &backing_backing = d.get_asset(backing.bitasset_data(d).options.short_backing_asset);
+                            const asset_object &backing_backing = d.get_asset(d.get_asset_bitasset_data(backing.symbol).options.short_backing_asset);
                             FC_ASSERT(
                                     backing_backing.symbol == STEEM_SYMBOL,
                                     "May not create a blockchain-controlled market asset which is not backed by CORE.");
@@ -335,7 +336,7 @@ namespace steemit {
                 FC_ASSERT(!(a.options.flags &
                             witness_fed_asset), "Cannot set feed producers on a witness-fed asset.");
 
-                const asset_bitasset_data_object &b = a.bitasset_data(d);
+                const asset_bitasset_data_object &b = d.get_asset_bitasset_data(a.symbol);
                 bitasset_to_update = &b;
                 FC_ASSERT(a.issuer == o.issuer);
             } FC_CAPTURE_AND_RETHROW((o))
@@ -374,10 +375,12 @@ namespace steemit {
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 FC_ASSERT(asset_to_settle->can_global_settle());
                 FC_ASSERT(asset_to_settle->issuer == op.issuer);
-                FC_ASSERT(asset_to_settle->dynamic_data(d).current_supply > 0);
+                FC_ASSERT(
+                        d.get_asset_dynamic_data(asset_to_settle->symbol).current_supply >
+                        0);
                 const auto &idx = d.get_index<call_order_index>().indices().get<by_collateral>();
                 assert(!idx.empty());
-                auto itr = idx.lower_bound(boost::make_tuple(price::min(asset_to_settle->bitasset_data(d).options.short_backing_asset,
+                auto itr = idx.lower_bound(boost::make_tuple(price::min(d.get_asset_bitasset_data(asset_to_settle->symbol).options.short_backing_asset,
                         op.asset_to_settle)));
                 assert(itr != idx.end() &&
                        itr->debt_type() == op.asset_to_settle);
@@ -400,7 +403,7 @@ namespace steemit {
                 const database &d = db();
                 asset_to_settle = d.find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());
-                const auto &bitasset = asset_to_settle->bitasset_data(d);
+                const auto &bitasset = d.get_asset_bitasset_data(asset_to_settle->symbol);
                 FC_ASSERT(asset_to_settle->can_force_settle() ||
                           bitasset.has_settlement());
                 if (bitasset.is_prediction_market)
@@ -415,7 +418,7 @@ namespace steemit {
                 database &d = db();
                 d.adjust_balance(d.get_account(op.account), -op.amount);
 
-                const auto &bitasset = asset_to_settle->bitasset_data(d);
+                const auto &bitasset = d.get_asset_bitasset_data(asset_to_settle->symbol);
                 if (bitasset.has_settlement()) {
                     auto settled_amount = op.amount * bitasset.settlement_price;
                     FC_ASSERT(
@@ -427,7 +430,50 @@ namespace steemit {
 
                     d.adjust_balance(d.get_account(op.account), settled_amount);
 
-                    const auto &mia_dyn = asset_to_settle->dynamic_asset_data_id(d);
+                    const auto &mia_dyn = d.get_asset_dynamic_data(asset_to_settle->symbol);
+
+                    d.modify(mia_dyn, [&](asset_dynamic_data_object &obj) {
+                        obj.current_supply -= op.amount.amount;
+                    });
+                } else {
+
+                }
+            } FC_CAPTURE_AND_RETHROW((op))
+        }
+
+        void asset_force_settle_evaluator::do_apply(const asset_force_settle_evaluator::operation_type &op) {
+            try {
+                const database &d = db();
+                asset_to_settle = d.find_asset(op.amount.symbol);
+                FC_ASSERT(asset_to_settle->is_market_issued());
+                const auto &bitasset = d.get_asset_bitasset_data(asset_to_settle->symbol);
+                FC_ASSERT(asset_to_settle->can_force_settle() ||
+                          bitasset.has_settlement());
+                if (bitasset.is_prediction_market)
+                    FC_ASSERT(bitasset.has_settlement(), "global settlement must occur before force settling a prediction market");
+                else if (bitasset.current_feed.settlement_price.is_null())
+                    FC_THROW_EXCEPTION(insufficient_feeds, "Cannot force settle with no price feed.");
+                FC_ASSERT(d.get_balance(d.get(op.account), *asset_to_settle) >=
+                          op.amount);
+            } FC_CAPTURE_AND_RETHROW((op))
+
+            try {
+                database &d = db();
+                d.adjust_balance(d.get_account(op.account), -op.amount);
+
+                const auto &bitasset = d.get_asset_bitasset_data(asset_to_settle->symbol);
+                if (bitasset.has_settlement()) {
+                    auto settled_amount = op.amount * bitasset.settlement_price;
+                    FC_ASSERT(
+                            settled_amount.amount <= bitasset.settlement_fund);
+
+                    d.modify(bitasset, [&](asset_bitasset_data_object &obj) {
+                        obj.settlement_fund -= settled_amount.amount;
+                    });
+
+                    d.adjust_balance(d.get_account(op.account), settled_amount);
+
+                    const auto &mia_dyn = d.get_asset_dynamic_data(asset_to_settle->symbol);
 
                     d.modify(mia_dyn, [&](asset_dynamic_data_object &obj) {
                         obj.current_supply -= op.amount.amount;
@@ -435,9 +481,10 @@ namespace steemit {
                 } else {
                     d.create<force_settlement_object>([&](force_settlement_object &s) {
                         s.owner = op.account;
+                        s.settlement_id = op.settlement_id;
                         s.balance = op.amount;
                         s.settlement_date = d.head_block_time() +
-                                            asset_to_settle->bitasset_data(d).options.force_settlement_delay_sec;
+                                            d.get_asset_bitasset_data(asset_to_settle->symbol).options.force_settlement_delay_sec;
                     });
                 }
             } FC_CAPTURE_AND_RETHROW((op))
@@ -451,7 +498,7 @@ namespace steemit {
                 //Verify that this feed is for a market-issued asset and that asset is backed by the base
                 FC_ASSERT(base.is_market_issued());
 
-                const asset_bitasset_data_object &bitasset = base.bitasset_data(d);
+                const asset_bitasset_data_object &bitasset = d.get_asset_bitasset_data(base.symbol);
                 FC_ASSERT(!bitasset.has_settlement(), "No further feeds may be published after a settlement event");
 
                 FC_ASSERT(o.feed.settlement_price.quote.symbol ==
@@ -464,9 +511,9 @@ namespace steemit {
 
                 //Verify that the publisher is authoritative to publish a feed
                 if (base.options.flags & witness_fed_asset) {
-                    FC_ASSERT(d.get_account(GRAPHENE_WITNESS_ACCOUNT).active.account_auths.count(o.publisher));
+                    FC_ASSERT(d.get_account(STEEMIT_WITNESS_ACCOUNT).active.account_auths.count(o.publisher));
                 } else if (base.options.flags & committee_fed_asset) {
-                    FC_ASSERT(d.get_account(GRAPHENE_COMMITTEE_ACCOUNT).active.account_auths.count(o.publisher));
+                    FC_ASSERT(d.get_account(STEEMIT_COMMITTEE_ACCOUNT).active.account_auths.count(o.publisher));
                 } else {
                     FC_ASSERT(bitasset.feeds.count(o.publisher));
                 }
@@ -478,7 +525,7 @@ namespace steemit {
                 database &d = db();
 
                 const asset_object &base = d.get_asset(o.asset_id);
-                const asset_bitasset_data_object &bad = base.bitasset_data(d);
+                const asset_bitasset_data_object &bad = d.get_asset_bitasset_data(base.symbol);
 
                 auto old_feed = bad.current_feed;
                 // Store medians for this asset
@@ -504,7 +551,7 @@ namespace steemit {
                 database &d = db();
 
                 const asset_object &a = d.get_asset(o.amount_to_claim.symbol);
-                const asset_dynamic_data_object &addo = a.dynamic_asset_data_id(d);
+                const asset_dynamic_data_object &addo = d.get_asset_dynamic_data(a.symbol);
                 FC_ASSERT(o.amount_to_claim.amount <=
                           addo.accumulated_fees, "Attempt to claim more fees than have accumulated", ("addo", addo));
 

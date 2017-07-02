@@ -13,7 +13,7 @@ endif(MSVC)
 
 set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp" PROPERTIES GENERATED TRUE)
 
-list(APPEND CURRENT_TARGET_HEADERS
+list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/chain/account_object.hpp
         include/steemit/chain/asset_object.hpp
         include/steemit/chain/asset_evaluator.hpp
@@ -51,7 +51,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/utilities/uint256.hpp
         )
 
-list(APPEND CURRENT_TARGET_SOURCES
+list(APPEND ${CURRENT_TARGET}_SOURCES
         asset_evaluator.cpp
         asset_object.cpp
         block_log.cpp
@@ -68,16 +68,16 @@ list(APPEND CURRENT_TARGET_SOURCES
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_${CURRENT_TARGET} SHARED
-            ${CURRENT_TARGET_HEADERS}
-            ${CURRENT_TARGET_SOURCES}
+            ${${CURRENT_TARGET}_HEADERS}
+            ${${CURRENT_TARGET}_SOURCES}
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp"
             )
 else()
     add_library(golos_${CURRENT_TARGET} STATIC
-            ${CURRENT_TARGET_HEADERS}
-            ${CURRENT_TARGET_SOURCES}
+            ${${CURRENT_TARGET}_HEADERS}
+            ${${CURRENT_TARGET}_SOURCES}
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp"
@@ -105,4 +105,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/chain")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")

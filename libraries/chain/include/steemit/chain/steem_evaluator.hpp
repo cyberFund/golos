@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
 #include <steemit/chain/evaluator.hpp>
 
@@ -59,7 +59,7 @@ namespace steemit {
 
         STEEMIT_DEFINE_EVALUATOR(report_over_production)
 
-        STEEMIT_DEFINE_EVALUATOR(limit_order_create2)
+        STEEMIT_DEFINE_EVALUATOR(limit_order_custom_rate_create)
 
         STEEMIT_DEFINE_EVALUATOR(escrow_transfer)
 

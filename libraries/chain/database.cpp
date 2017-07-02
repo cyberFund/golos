@@ -1,4 +1,4 @@
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/compound.hpp>
@@ -389,6 +389,28 @@ namespace steemit {
             return find<asset_object, by_symbol>(name);
         }
 
+        const asset_dynamic_data_object &database::get_asset_dynamic_data(const asset_symbol_type &name) const {
+            try {
+                return get<asset_dynamic_data_object, by_symbol>(name);
+            }
+            FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const asset_bitasset_data_object *database::find_asset_bitasset_data(const asset_symbol_type &name) const {
+            return find<asset_bitasset_data_object, by_symbol>(name);
+        }
+
+        const asset_bitasset_data_object &database::get_asset_bitasset_data(const asset_symbol_type &name) const {
+            try {
+                return get<asset_bitasset_data_object, by_symbol>(name);
+            }
+            FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const asset_dynamic_data_object *database::find_asset_dynamic_data(const asset_symbol_type &name) const {
+            return find<asset_dynamic_data_object, by_symbol>(name);
+        }
+
         const witness_object &database::get_witness(const account_name_type &name) const {
             try {
                 return get<witness_object, by_name>(name);
@@ -455,7 +477,7 @@ namespace steemit {
             return find<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
         }
 
-        const limit_order_object &database::get_limit_order(const account_name_type &name, order_id_type order_id) const {
+        const limit_order_object &database::get_limit_order(const account_name_type &name, integral_id_type order_id) const {
             try {
                 if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                     order_id = order_id & 0x0000FFFF;
@@ -466,7 +488,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((name)(order_id))
         }
 
-        const limit_order_object *database::find_limit_order(const account_name_type &name, order_id_type order_id) const {
+        const limit_order_object *database::find_limit_order(const account_name_type &name, integral_id_type order_id) const {
             if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                 order_id = order_id & 0x0000FFFF;
             }

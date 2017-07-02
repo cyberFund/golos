@@ -3,13 +3,11 @@
 #include <fc/fixed_string.hpp>
 
 #include <steemit/protocol/authority.hpp>
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
 #include <steemit/chain/steem_object_types.hpp>
 #include <steemit/chain/witness_objects.hpp>
 #include <steemit/chain/shared_authority.hpp>
-
-#include <boost/multi_index/composite_key.hpp>
 
 #include <numeric>
 
@@ -19,14 +17,14 @@ namespace steemit {
         using steemit::protocol::authority;
 
         /**
-    * @class account_statistics_object
-    * @ingroup object
-    * @ingroup implementation
-    *
-    * This object contains regularly updated statistical data about an account. It is provided for the purpose of
-    * separating the account data that changes frequently from the account data that is mostly static, which will
-    * minimize the amount of data that must be backed up as part of the undo history everytime a transfer is made.
-    */
+         * @class account_statistics_object
+         * @ingroup object
+         * @ingroup implementation
+         *
+         * This object contains regularly updated statistical data about an account. It is provided for the purpose of
+         * separating the account data that changes frequently from the account data that is mostly static, which will
+         * minimize the amount of data that must be backed up as part of the undo history everytime a transfer is made.
+         */
         class account_statistics_object
                 : public object<account_statistics_object_type, account_statistics_object> {
         public:
@@ -357,6 +355,59 @@ namespace steemit {
             time_point_sec effective_on;
         };
 
+        /**
+    *  @brief This secondary index will allow a reverse lookup of all accounts that a particular key or account
+    *  is an potential signing authority.
+    */
+        class account_member_index : public chainbase::secondary_index {
+        public:
+            virtual void object_inserted(const object &obj) override;
+
+            virtual void object_removed(const object &obj) override;
+
+            virtual void about_to_modify(const object &before) override;
+
+            virtual void object_modified(const object &after) override;
+
+
+            /** given an account or key, map it to the set of accounts that reference it in an active or owner authority */
+            map<account_name_type, set<account_name_type>> account_to_account_memberships;
+            map<public_key_type, set<account_name_type>> account_to_key_memberships;
+            /** some accounts use address authorities in the genesis block */
+            map<address, set<account_name_type>> account_to_address_memberships;
+
+
+        protected:
+            set<account_name_type> get_account_members(const account_object &a) const;
+
+            set<public_key_type> get_key_members(const account_object &a) const;
+
+            set<address> get_address_members(const account_object &a) const;
+
+            set<account_name_type> before_account_members;
+            set<public_key_type> before_key_members;
+            set<address> before_address_members;
+        };
+
+
+        /**
+         *  @brief This secondary index will allow a reverse lookup of all accounts that have been referred by
+         *  a particular account.
+         */
+        class account_referrer_index : public chainbase::secondary_index {
+        public:
+            virtual void object_inserted(const object &obj) override;
+
+            virtual void object_removed(const object &obj) override;
+
+            virtual void about_to_modify(const object &before) override;
+
+            virtual void object_modified(const object &after) override;
+
+            /** maps the referrer to the set of accounts that they have referred */
+            map<account_name_type, set<account_name_type>> referred_by;
+        };
+
         struct by_account_asset;
         struct by_asset_balance;
         /**
@@ -378,12 +429,12 @@ namespace steemit {
                                         account_balance_object,
                                         member<account_balance_object, asset_symbol_type, &account_balance_object::asset_type>,
                                         member<account_balance_object, share_type, &account_balance_object::balance>,
-                                        member<account_balance_object, account_id_type, &account_balance_object::owner>
+                                        member<account_balance_object, account_name_type, &account_balance_object::owner>
                                 >,
                                 composite_key_compare<
                                         std::less<asset_symbol_type>,
                                         std::greater<share_type>,
-                                        std::less<account_id_type>
+                                        std::less<account_name_type>
                                 >
                         >
                 >
@@ -406,63 +457,63 @@ namespace steemit {
                 account_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<account_object, account_id_type, &account_object::id>>,
+                                member<account_object, account_name_type, &account_object::id>>,
                         ordered_unique<tag<by_name>,
                                 member<account_object, account_name_type, &account_object::name>,
                                 protocol::string_less>,
                         ordered_unique<tag<by_proxy>,
                                 composite_key<account_object,
                                         member<account_object, account_name_type, &account_object::proxy>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 > /// composite key by proxy
                         >,
                         ordered_unique<tag<by_next_vesting_withdrawal>,
                                 composite_key<account_object,
                                         member<account_object, time_point_sec, &account_object::next_vesting_withdrawal>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 > /// composite key by_next_vesting_withdrawal
                         >,
                         ordered_unique<tag<by_last_post>,
                                 composite_key<account_object,
                                         member<account_object, time_point_sec, &account_object::last_post>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<time_point_sec>, std::less<account_id_type>>
+                                composite_key_compare<std::greater<time_point_sec>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_steem_balance>,
                                 composite_key<account_object,
                                         member<account_object, asset, &account_object::balance>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<asset>, std::less<account_id_type>>
+                                composite_key_compare<std::greater<asset>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_smp_balance>,
                                 composite_key<account_object,
                                         member<account_object, asset, &account_object::vesting_shares>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<asset>, std::less<account_id_type>>
+                                composite_key_compare<std::greater<asset>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_smd_balance>,
                                 composite_key<account_object,
                                         member<account_object, asset, &account_object::sbd_balance>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<asset>, std::less<account_id_type>>
+                                composite_key_compare<std::greater<asset>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_post_count>,
                                 composite_key<account_object,
                                         member<account_object, uint32_t, &account_object::post_count>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<uint32_t>, std::less<account_id_type>>
+                                composite_key_compare<std::greater<uint32_t>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_vote_count>,
                                 composite_key<account_object,
                                         member<account_object, uint32_t, &account_object::lifetime_vote_count>,
-                                        member<account_object, account_id_type, &account_object::id>
+                                        member<account_object, account_name_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<uint32_t>, std::less<account_id_type>>
+                                composite_key_compare<std::greater<uint32_t>, std::less<account_name_type>>
                         >
                 >,
                 allocator<account_object>

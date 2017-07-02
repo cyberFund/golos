@@ -200,33 +200,42 @@ namespace steemit {
         };
 
         /**
-         * Virtual op generated when force settlement is cancelled.
+         * @brief Forces a market-issued asset schedulament for automatic settlement
+         * @ingroup operations
+         *
+         * Holders of market-issued assests may request a forced settlement for some amount of their asset. This means that
+         * the specified sum will be locked by the chain and held for the settlement period, after which time the chain will
+         * choose a margin posision holder and buy the settled asset using the margin's collateral. The price of this sale
+         * will be based on the feed price for the market-issued asset being settled. The exact settlement price will be the
+         * feed price at the time of settlement with an offset in favor of the margin position, where the offset is a
+         * blockchain parameter set in the global_property_object.
+         *
+         * The fee is paid by @ref account, and @ref account must authorize this operation
          */
-
-        struct asset_settle_cancel_operation : public base_operation {
+        struct asset_force_settle_operation : public base_operation {
             struct fee_parameters_type {
-
+                /** this fee should be high to encourage small settlement requests to
+                 * be performed on the market rather than via forced settlement.
+                 *
+                 * Note that in the event of a black swan or prediction market close out
+                 * everyone will have to pay this fee.
+                 */
+                uint64_t fee = 100;
             };
 
             asset fee;
-            force_settlement_id_type settlement;
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
             asset amount;
+            integral_id_type settlement_id;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
                 return account;
             }
 
-            void validate() const {
-                FC_ASSERT(amount.amount > 0, "Must settle at least 1 unit");
-            }
-
-            share_type calculate_fee(const fee_parameters_type &params) const {
-                return 0;
-            }
+            void validate() const;
         };
 
         /**
@@ -234,9 +243,13 @@ namespace steemit {
          */
         struct asset_fund_fee_pool_operation : public base_operation {
         public:
+            struct fee_parameters_type {
+                uint64_t fee = 0;
+            };
+
             asset fee; ///< core asset
             account_name_type from_account;
-            asset_symbol_type asset_id;
+            asset_symbol_type symbol;
             share_type amount; ///< core asset
             extensions_type extensions;
 
@@ -497,7 +510,7 @@ FC_REFLECT(steemit::protocol::bitasset_options,
 FC_REFLECT(steemit::protocol::asset_create_operation::fee_parameters_type, (symbol3)(symbol4)(long_symbol)(price_per_kbyte))
 FC_REFLECT(steemit::protocol::asset_global_settle_operation::fee_parameters_type, (fee))
 FC_REFLECT(steemit::protocol::asset_settle_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_settle_cancel_operation::fee_parameters_type,)
+FC_REFLECT(steemit::protocol::asset_force_settle_operation::fee_parameters_type, (fee))
 FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation::fee_parameters_type, (fee))
 FC_REFLECT(steemit::protocol::asset_update_operation::fee_parameters_type, (fee)(price_per_kbyte))
 FC_REFLECT(steemit::protocol::asset_update_bitasset_operation::fee_parameters_type, (fee))
@@ -510,7 +523,7 @@ FC_REFLECT(steemit::protocol::asset_reserve_operation::fee_parameters_type, (fee
 FC_REFLECT(steemit::protocol::asset_create_operation,
         (fee)
                 (issuer)
-                (symbol)
+                (symbol_name)
                 (precision)
                 (common_options)
                 (bitasset_opts)
@@ -538,11 +551,11 @@ FC_REFLECT(steemit::protocol::asset_update_feed_producers_operation,
 FC_REFLECT(steemit::protocol::asset_publish_feed_operation,
         (fee)(publisher)(asset_id)(feed)(extensions))
 FC_REFLECT(steemit::protocol::asset_settle_operation, (fee)(account)(amount)(extensions))
-FC_REFLECT(steemit::protocol::asset_settle_cancel_operation, (fee)(settlement)(account)(amount)(extensions))
+FC_REFLECT(steemit::protocol::asset_force_settle_operation, (fee)(account)(amount)(settlement_id)(extensions))
 FC_REFLECT(steemit::protocol::asset_global_settle_operation, (fee)(issuer)(asset_to_settle)(settle_price)(extensions))
 FC_REFLECT(steemit::protocol::asset_issue_operation,
         (fee)(issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
 FC_REFLECT(steemit::protocol::asset_reserve_operation,
         (fee)(payer)(amount_to_reserve)(extensions))
 
-FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (fee)(from_account)(asset_id)(amount)(extensions));
+FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (fee)(from_account)(symbol)(amount)(extensions));

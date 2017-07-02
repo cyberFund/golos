@@ -2,7 +2,8 @@ set(CURRENT_TARGET protocol)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/protocol/asset.hpp
-        include/steemit/protocol/asset_operations.hpp
+        include/steemit/protocol/operations/asset_operations.hpp
+        include/steemit/protocol/operations/asset_virtual_operations.hpp
         include/steemit/protocol/authority.hpp
         include/steemit/protocol/base.hpp
         include/steemit/protocol/block.hpp
@@ -10,15 +11,15 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/protocol/config.hpp
         include/steemit/protocol/exceptions.hpp
         include/steemit/protocol/get_config.hpp
-        include/steemit/protocol/market_operations.hpp
-        include/steemit/protocol/market_virtual_operations.hpp
-        include/steemit/protocol/operation_utilities.hpp
-        include/steemit/protocol/operation_utilities_impl.hpp
+        include/steemit/protocol/operations/market_operations.hpp
+        include/steemit/protocol/operations/market_virtual_operations.hpp
+        include/steemit/protocol/operations/operation_utilities.hpp
+        include/steemit/protocol/operations/operation_utilities_impl.hpp
         include/steemit/protocol/operations.hpp
         include/steemit/protocol/protocol.hpp
         include/steemit/protocol/sign_state.hpp
-        include/steemit/protocol/steem_operations.hpp
-        include/steemit/protocol/steem_virtual_operations.hpp
+        include/steemit/protocol/operations/steem_operations.hpp
+        include/steemit/protocol/operations/steem_virtual_operations.hpp
         include/steemit/protocol/transaction.hpp
         include/steemit/protocol/types.hpp
         include/steemit/protocol/version.hpp
@@ -26,15 +27,16 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
         asset.cpp
-        asset_operations.cpp
+        operations/asset_operations.cpp
         authority.cpp
+        base.cpp
         block.cpp
         get_config.cpp
-        market_operations.cpp
-        operation_utilities_impl.cpp
-        operations.cpp
+        operations/market_operations.cpp
+        operations/operation_utilities_impl.cpp
+        operations/operations.cpp
         sign_state.cpp
-        steem_operations.cpp
+        operations/steem_operations.cpp
         transaction.cpp
         types.cpp
         version.cpp

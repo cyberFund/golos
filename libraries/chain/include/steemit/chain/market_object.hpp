@@ -31,7 +31,7 @@ namespace steemit {
             time_point_sec created;
             time_point_sec expiration;
             account_name_type seller;
-            order_id_type order_id = 0;
+            integral_id_type order_id = 0;
             share_type for_sale; ///< asset id is sell_price.base.symbol
             price sell_price;
 
@@ -127,6 +127,7 @@ namespace steemit {
             id_type id;
 
             account_name_type owner;
+            integral_id_type settlement_id;
             asset balance;
             time_point_sec settlement_date;
 
@@ -150,7 +151,7 @@ namespace steemit {
                 limit_order_object, price, &limit_order_object::sell_price>,
         member<limit_order_object, limit_order_object::id_type, &limit_order_object::id>
         >,
-        composite_key_compare <std::greater<price>, std::less<order_id_type>>
+        composite_key_compare <std::greater<price>, std::less<integral_id_type>>
         >,
         ordered_unique <tag<by_account>,
         composite_key<limit_order_object,
@@ -208,7 +209,7 @@ namespace steemit {
         composite_key<force_settlement_object,
                 member <
                 force_settlement_object, account_name_type, &force_settlement_object::owner>,
-        member<force_settlement_object, force_settlement_object::id_type, &force_settlement_object::id>
+        member<force_settlement_object, integral_id_type, &force_settlement_object::settlement_id>
         >
         >,
         ordered_unique <tag<by_expiration>,
@@ -216,7 +217,7 @@ namespace steemit {
                 const_mem_fun <
                 force_settlement_object, asset_symbol_type, &force_settlement_object::settlement_asset_symbol>,
         member<force_settlement_object, time_point_sec, &force_settlement_object::settlement_date>,
-        member<force_settlement_object, force_settlement_object::id_type, &force_settlement_object::id>
+        member<force_settlement_object, integral_id_type, &force_settlement_object::settlement_id>
         >
         >
         >
@@ -232,5 +233,5 @@ CHAINBASE_SET_INDEX_TYPE(steemit::chain::limit_order_object, steemit::chain::lim
 FC_REFLECT(steemit::chain::call_order_object, (borrower)(collateral)(debt)(call_price))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::call_order_object, steemit::chain::call_order_index)
 
-FC_REFLECT(steemit::chain::force_settlement_object, (owner)(balance)(settlement_date))
+FC_REFLECT(steemit::chain::force_settlement_object, (owner)(balance)(settlement_date)(settlement_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::force_settlement_object, steemit::chain::force_settlement_index)

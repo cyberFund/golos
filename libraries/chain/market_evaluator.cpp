@@ -8,7 +8,7 @@
 #include <steemit/chain/hardfork.hpp>
 
 #include <steemit/protocol/exceptions.hpp>
-#include <steemit/protocol/market_operations.hpp>
+#include <steemit/protocol/operations/market_operations.hpp>
 
 #include <fc/uint128.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -63,7 +63,7 @@ namespace steemit {
                     obj.expiration = op.expiration;
                     obj.deferred_fee = _deferred_fee;
                 });
-                order_id_type order_id = new_order_object.id; // save this because we may remove the object by filling it
+                integral_id_type order_id = new_order_object.id; // save this because we may remove the object by filling it
                 bool filled = db().apply_order(new_order_object);
 
                 FC_ASSERT(!op.fill_or_kill || filled);

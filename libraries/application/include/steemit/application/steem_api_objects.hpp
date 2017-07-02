@@ -30,7 +30,7 @@ namespace steemit {
 
    limit_order(){}
 
-   chain::order_id_type id;
+   chain::integral_id_type id;
    time_point_sec             created;
    time_point_sec             expiration;
    account_name_type          seller;

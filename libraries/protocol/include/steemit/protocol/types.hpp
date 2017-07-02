@@ -65,7 +65,19 @@ namespace steemit {
     using fc::ecc::range_proof_info;
     using fc::ecc::commitment_type;
     struct void_t {
+
     };
+
+    namespace type_traits {
+        template<bool>
+        struct static_range;
+
+        template<bool...>
+        struct bool_pack;
+
+        template<bool... v>
+        using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
+    }
 
     namespace protocol {
         enum asset_issuer_permission_flags {
@@ -125,7 +137,7 @@ namespace steemit {
         typedef fc::ecc::compact_signature signature_type;
         typedef safe<int64_t> share_type;
         typedef uint16_t weight_type;
-        typedef uint32_t order_id_type;
+        typedef uint32_t integral_id_type;
 
         struct public_key_type {
             struct binary_key {

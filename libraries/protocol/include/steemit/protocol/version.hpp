@@ -6,16 +6,6 @@
 namespace steemit {
     namespace protocol {
 
-        typedef uint32_t version_type;
-
-        template<version_type VersionNumber>
-        class static_version {
-        public:
-            typedef version_type version_number_type;
-
-            static const version_number_type version = VersionNumber;
-        };
-
 /*
  * This class represents the basic versioning scheme of the Golos blockchain.
  * All versions are a triple consisting of a major version, hardfork version, and release version.
@@ -142,6 +132,26 @@ namespace steemit {
             fc::time_point_sec hf_time;
         };
 
+        template<typename Enable>
+        struct static_version_impl {
+
+        };
+
+        template<uint8_t m, uint8_t h, uint16_t r, typename ... StaticRanges>
+        struct static_version
+                : public static_version_impl<typename std::enable_if<
+                        steemit::type_traits::all_true<
+                                std::is_same<
+                                        steemit::type_traits::static_range<true>,
+                                        StaticRanges
+                                >::value...
+                        >::value
+                >::type> {
+            static const version version_instance;
+        };
+
+        template<uint8_t m, uint8_t h, uint16_t r, typename ... StaticRanges>
+        const version static_version<m, h, r, StaticRanges...>::version_instance = version(m, h, r);
     }
 } // steemit::protocol
 

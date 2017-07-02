@@ -206,7 +206,7 @@ namespace steemit {
             try {
                 //wdump((debt)(collateral)(collateral_ratio));
                 boost::rational<int128_t> swan(debt.amount.value, collateral.amount.value);
-                boost::rational<int128_t> ratio(collateral_ratio, GRAPHENE_COLLATERAL_RATIO_DENOM);
+                boost::rational<int128_t> ratio(collateral_ratio, STEEMIT_COLLATERAL_RATIO_DENOM);
                 auto cp = swan * ratio;
 
                 while (cp.numerator() > STEEMIT_MAX_SHARE_SUPPLY ||
@@ -228,11 +228,11 @@ namespace steemit {
                     settlement_price.validate();
                 }
                 FC_ASSERT(maximum_short_squeeze_ratio >=
-                          GRAPHENE_MIN_COLLATERAL_RATIO);
+                          STEEMIT_MIN_COLLATERAL_RATIO);
                 FC_ASSERT(maximum_short_squeeze_ratio <=
                           GRAPHENE_MAX_COLLATERAL_RATIO);
                 FC_ASSERT(maintenance_collateral_ratio >=
-                          GRAPHENE_MIN_COLLATERAL_RATIO);
+                          STEEMIT_MIN_COLLATERAL_RATIO);
                 FC_ASSERT(maintenance_collateral_ratio <=
                           GRAPHENE_MAX_COLLATERAL_RATIO);
                 max_short_squeeze_price(); // make sure that it doesn't overflow
@@ -257,7 +257,7 @@ namespace steemit {
 
         price price_feed::max_short_squeeze_price() const {
             boost::rational<int128_t> sp(settlement_price.base.amount.value, settlement_price.quote.amount.value); //debt.amount.value,collateral.amount.value);
-            boost::rational<int128_t> ratio(GRAPHENE_COLLATERAL_RATIO_DENOM, maximum_short_squeeze_ratio);
+            boost::rational<int128_t> ratio(STEEMIT_COLLATERAL_RATIO_DENOM, maximum_short_squeeze_ratio);
             auto cp = sp * ratio;
 
             while (cp.numerator() > STEEMIT_MAX_SHARE_SUPPLY ||

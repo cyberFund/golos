@@ -2,7 +2,7 @@
 
 #include <steemit/chain/steem_object_types.hpp>
 
-#include <steemit/protocol/asset_operations.hpp>
+#include <steemit/protocol/operations/asset_operations.hpp>
 #include <steemit/protocol/asset.hpp>
 
 /**
@@ -46,6 +46,8 @@ namespace steemit {
 
             id_type id;
 
+            asset_symbol_type symbol;
+
             /// The number of shares currently in existence
             share_type current_supply;
             share_type confidential_supply; ///< total asset held in confidential balances
@@ -82,7 +84,7 @@ namespace steemit {
 
             /// @return true if this is a market-issued asset; false otherwise.
             bool is_market_issued() const {
-                return bitasset_data_id.valid();
+                return marked_issued;
             }
 
             /// @return true if users may request force-settlement of this market-issued asset; false otherwise
@@ -152,10 +154,8 @@ namespace steemit {
 
             asset_options options;
 
-            /// Current supply, fee pool, and collected fees are stored in a separate object as they change frequently.
-            asset_dynamic_data_id_type dynamic_asset_data_id;
             /// Extra data associated with BitAssets. This field is non-null if and only if is_market_issued() returns true
-            optional <asset_bitasset_data_id_type> bitasset_data_id;
+            bool marked_issued;
 
             optional <account_name_type> buyback_account;
 
@@ -168,17 +168,6 @@ namespace steemit {
                             options.issuer_permissions & disable_force_settle ||
                             options.issuer_permissions & global_settle));
                 }
-            }
-
-            template<class DB>
-            const asset_bitasset_data_object &bitasset_data(const DB &db) const {
-                assert(bitasset_data_id);
-                return db.get(*bitasset_data_id);
-            }
-
-            template<class DB>
-            const asset_dynamic_data_object &dynamic_data(const DB &db) const {
-                return db.get(dynamic_asset_data_id);
             }
 
             /**
@@ -208,6 +197,8 @@ namespace steemit {
             }
 
             id_type id;
+
+            asset_symbol_type symbol;
 
             /// The tunable options for BitAssets are stored in this field.
             bitasset_options options;
@@ -262,6 +253,10 @@ namespace steemit {
         };
 
         struct by_feed_expiration;
+        struct by_symbol;
+        struct by_type;
+        struct by_issuer;
+
         typedef multi_index_container <
         asset_bitasset_data_object,
         indexed_by<
@@ -269,14 +264,25 @@ namespace steemit {
                 by_id>, member<asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
         ordered_non_unique <tag<by_feed_expiration>,
         const_mem_fun<asset_bitasset_data_object, time_point_sec, &asset_bitasset_data_object::feed_expiration_time>
-        >
+        >,
+        indexed_by <
+        ordered_unique<tag <
+                       by_symbol>, member<asset_bitasset_data_object, asset_symbol_type, &asset_bitasset_data_object::symbol>>
         >
         >
         asset_bitasset_data_index;
 
-        struct by_symbol;
-        struct by_type;
-        struct by_issuer;
+        typedef multi_index_container <
+        asset_dynamic_data_object,
+        indexed_by<
+                ordered_unique < tag <
+                by_id>, member<asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
+        ordered_unique <tag<
+                by_symbol>, member<asset_dynamic_data_object, asset_symbol_type, &asset_dynamic_data_object::symbol>>
+        >
+        >
+        asset_dynamic_data_index;
+
         typedef multi_index_container <
         asset_object,
         indexed_by<
@@ -298,10 +304,12 @@ namespace steemit {
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::asset_dynamic_data_object,
-        (current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
+        (symbol)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_dynamic_data_object, steemit::chain::asset_dynamic_data_index)
 
 FC_REFLECT(steemit::chain::asset_bitasset_data_object,
-        (feeds)
+        (symbol)
+                (feeds)
                 (current_feed)
                 (current_feed_publication_time)
                 (options)

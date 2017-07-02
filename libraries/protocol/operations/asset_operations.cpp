@@ -1,6 +1,6 @@
 #include <string>
 
-#include <steemit/protocol/asset_operations.hpp>
+#include <steemit/protocol/operations/asset_operations.hpp>
 
 #include <fc/exception/exception.hpp>
 
@@ -110,7 +110,7 @@ namespace steemit {
 
             asset dummy =
                     asset(1, asset_to_update) * new_options.core_exchange_rate;
-            FC_ASSERT(dummy.asset_id == asset_id_type());
+            FC_ASSERT(dummy.symbol == STEEM_SYMBOL);
         }
 
         share_type asset_update_operation::calculate_fee(const asset_update_operation::fee_parameters_type &k) const {

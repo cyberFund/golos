@@ -145,6 +145,21 @@ namespace steemit {
             const asset_object *asset_to_settle = nullptr;
         };
 
+        class asset_force_settle_evaluator
+                : public evaluator_impl<asset_force_settle_evaluator> {
+        public:
+            typedef asset_force_settle_operation operation_type;
+
+            asset_force_settle_evaluator(database &db)
+                    : evaluator_impl<asset_force_settle_evaluator>(db) {
+
+            }
+
+            void do_apply(const operation_type &op);
+
+            const asset_object *asset_to_settle = nullptr;
+        };
+
         class asset_publish_feeds_evaluator
                 : public evaluator_impl<asset_publish_feeds_evaluator> {
         public:
@@ -157,7 +172,7 @@ namespace steemit {
 
             void do_apply(const asset_publish_feed_operation &o);
 
-            std::map<std::pair<asset_id_type, asset_id_type>, price_feed> median_feed_values;
+            std::map<std::pair<asset_symbol_type, asset_symbol_type>, price_feed> median_feed_values;
         };
 
         class asset_claim_fees_evaluator

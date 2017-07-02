@@ -2,7 +2,7 @@
 
 #include <steemit/chain/evaluator.hpp>
 
-#include <steemit/protocol/market_operations.hpp>
+#include <steemit/protocol/operations/market_operations.hpp>
 #include <steemit/protocol/types.hpp>
 
 namespace steemit {

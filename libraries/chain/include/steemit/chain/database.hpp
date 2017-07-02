@@ -157,6 +157,14 @@ namespace steemit {
 
             const asset_object *find_asset(const asset_symbol_type &name) const;
 
+            const asset_dynamic_data_object &get_asset_dynamic_data(const asset_symbol_type &name) const;
+
+            const asset_dynamic_data_object *find_asset_dynamic_data(const asset_symbol_type &name) const;
+
+            const asset_bitasset_data_object &get_asset_bitasset_data(const asset_symbol_type &name) const;
+
+            const asset_bitasset_data_object *find_asset_bitasset_data(const asset_symbol_type &name) const;
+
             const witness_object &get_witness(const account_name_type &name) const;
 
             const witness_object *find_witness(const account_name_type &name) const;
@@ -181,9 +189,9 @@ namespace steemit {
 
             const escrow_object *find_escrow(const account_name_type &name, uint32_t escrow_id) const;
 
-            const limit_order_object &get_limit_order(const account_name_type &owner, order_id_type id) const;
+            const limit_order_object &get_limit_order(const account_name_type &owner, integral_id_type id) const;
 
-            const limit_order_object *find_limit_order(const account_name_type &owner, order_id_type id) const;
+            const limit_order_object *find_limit_order(const account_name_type &owner, integral_id_type id) const;
 
             const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
 

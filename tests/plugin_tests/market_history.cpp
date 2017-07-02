@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             auto time_a = fc::time_point_sec(
                     (fill_order_a_time.sec_since_epoch() / 15) * 15);
 
-            limit_order_create_operation op;
+            limit_order_create op;
             op.owner = "alice";
             op.amount_to_sell = ASSET("1.000 TBD");
             op.min_to_receive = ASSET("2.000 TESTS");
@@ -294,7 +294,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
 
             BOOST_REQUIRE(order->time == fill_order_a_time);
             BOOST_REQUIRE(order->op.current_owner == "bob");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("1.500 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
             BOOST_REQUIRE(order->op.open_order_id == 0);
@@ -303,7 +303,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
 
             BOOST_REQUIRE(order->time == fill_order_b_time);
             BOOST_REQUIRE(order->op.current_owner == "sam");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.500 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
             BOOST_REQUIRE(order->op.open_order_id == 0);
@@ -312,7 +312,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
 
             BOOST_REQUIRE(order->time == fill_order_c_time);
             BOOST_REQUIRE(order->op.current_owner == "alice");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.250 TBD"));
             BOOST_REQUIRE(order->op.open_owner == "sam");
             BOOST_REQUIRE(order->op.open_order_id == 0);
@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
 
             BOOST_REQUIRE(order->time == fill_order_c_time);
             BOOST_REQUIRE(order->op.current_owner == "bob");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.450 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
             BOOST_REQUIRE(order->op.open_order_id == 0);

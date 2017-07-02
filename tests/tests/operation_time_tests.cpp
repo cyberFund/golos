@@ -1415,7 +1415,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             set_price_feed(price(asset::from_string("1.250 TESTS"), asset::from_string("1.000 TBD")));
 
-            convert_operation op;
+            convert op;
             comment_operation comment;
             vote_operation vote;
             signed_transaction tx;
@@ -1452,7 +1452,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.signatures.clear();
             op.owner = "alice";
             op.amount = asset(2000, SBD_SYMBOL);
-            op.requestid = 2;
+            op.request_id = 2;
             tx.operations.push_back(op);
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -1487,7 +1487,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(alice_3.sbd_balance.amount.value ==
                           (start_balance - op.amount).amount.value);
             BOOST_REQUIRE(vop.owner == "alice");
-            BOOST_REQUIRE(vop.requestid == 2);
+            BOOST_REQUIRE(vop.request_id == 2);
             BOOST_REQUIRE(vop.amount_in.amount.value ==
                           ASSET("2.000 TBD").amount.value);
             BOOST_REQUIRE(vop.amount_out.amount.value ==
@@ -1690,7 +1690,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Testing interest over smallest interest period");
 
-            convert_operation op;
+            convert op;
             comment_operation comment;
             vote_operation vote;
             signed_transaction tx;
@@ -1875,7 +1875,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Creating Limit Order for STEEM that will stay on the books for 30 minutes exactly.");
 
-            limit_order_create_operation op;
+            limit_order_create op;
             op.owner = "alice";
             op.amount_to_sell = asset(alice_sbd.amount.value / 20, SBD_SYMBOL);
             op.min_to_receive = op.amount_to_sell * exchange_rate;
@@ -1943,7 +1943,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 2);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 2);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           (asset(alice_sbd.amount.value / 20, SBD_SYMBOL) *
                            exchange_rate).amount.value);
@@ -2030,7 +2030,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                                 alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 5);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 5);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           asset((alice_sbd.amount.value / 10) * 3 -
                                 alice_sbd.amount.value /
@@ -2043,7 +2043,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                           asset(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 5);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 5);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
@@ -2116,7 +2116,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 7);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 7);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
@@ -2170,7 +2170,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "sam");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 8);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 8);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
@@ -2251,7 +2251,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           7 * (alice_sbd.amount.value / 20));
             BOOST_REQUIRE(fill_order_op.current_owner == "dave");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 10);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 10);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           7 * (alice_sbd.amount.value / 20));
 
@@ -2306,7 +2306,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           alice_sbd.amount.value / 20);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 11);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 11);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           alice_sbd.amount.value / 20);
 
@@ -2385,7 +2385,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           3 * (alice_sbd.amount.value / 40));
             BOOST_REQUIRE(fill_order_op.current_owner == "dave");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 13);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 13);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           3 * (alice_sbd.amount.value / 40));
 
