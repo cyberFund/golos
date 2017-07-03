@@ -46,6 +46,8 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/utilities/asset.hpp
         include/steemit/chain/utilities/reward.hpp
         include/steemit/chain/utilities/uint256.hpp
+
+        include/steemit/chain/policies/account_police.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES

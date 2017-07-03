@@ -145,10 +145,6 @@ namespace steemit {
 
             const witness_object *find_witness(const account_name_type &name) const;
 
-            const account_object &get_account(const account_name_type &name) const;
-
-            const account_object *find_account(const account_name_type &name) const;
-
             const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
 
             const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
@@ -194,8 +190,6 @@ namespace steemit {
              * Update an account's bandwidth and returns if the account had the requisite bandwidth for the trx
              */
             bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
-
-            void max_bandwidth_per_share() const;
 
             /**
              *  Calculate the percent of block production slots that were missed in the
@@ -355,10 +349,6 @@ namespace steemit {
 
             asset get_savings_balance(const account_object &a, asset_symbol_type symbol) const;
 
-            asset get_balance(const string &aname, asset_symbol_type symbol) const {
-                return get_balance(get_account(aname), symbol);
-            }
-
             /** this updates the votes for witnesses as a result of account voting proxy changing */
             void adjust_proxied_witness_votes(const account_object &a,
                     const std::array<share_type,
@@ -384,19 +374,7 @@ namespace steemit {
 
             share_type pay_curators(const comment_object &c, share_type &max_rewards);
 
-            share_type cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment);
-
             void process_comment_cashout();
-
-            void process_funds();
-
-            void process_conversions();
-
-            void process_savings_withdraws();
-
-            void account_recovery_processing();
-
-            void expire_escrow_ratification();
 
             void process_decline_voting_rights();
 
@@ -464,14 +442,9 @@ namespace steemit {
              * can be reapplied at the proper time */
             std::deque<signed_transaction> _popped_tx;
 
-
             bool apply_order(const limit_order_object &new_order_object);
 
             bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
-
-            void cancel_order(const limit_order_object &obj);
-
-            int match(const limit_order_object &bid, const limit_order_object &ask, const price &trade_price);
 
             void perform_vesting_share_split(uint32_t magnitude);
 
@@ -537,8 +510,6 @@ namespace steemit {
 
             void update_median_witness_props();
 
-            void clear_null_account_balance();
-
             void update_global_dynamic_data(const signed_block &b);
 
             void update_signing_witness(const witness_object &signing_witness, const signed_block &new_block);
@@ -546,8 +517,6 @@ namespace steemit {
             void update_last_irreversible_block();
 
             void clear_expired_transactions();
-
-            void clear_expired_delegations();
 
             void clear_expired_orders();
 

@@ -8,31 +8,11 @@
 #include <steemit/chain/transaction_object.hpp>
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
+
+#include <steemit/chain/policies/account_police.hpp>
+
 namespace steemit {
 namespace chain {
-
-
-struct account_read_police {
-    explicit account_read_police(database_basic &ref,int f) : references(ref) {
-        std::cout << "account_read_police" << std::endl;
-    }
-
-    account_read_police() = default;
-
-    account_read_police(const account_read_police &) = default;
-
-    account_read_police &operator=(const account_read_police &) = default;
-
-    account_read_police(account_read_police &&) = default;
-
-    account_read_police &operator=(account_read_police &&) = default;
-
-    virtual ~account_read_police() = default;
-
-    database_basic &references;
-
-};
-
 
 struct account_write_police {
     explicit account_write_police(database_basic &ref, int f) : references(ref) {
@@ -58,13 +38,11 @@ struct account_write_police {
 template<typename... Policies>
 class database_police final : public database_basic, public Policies ... {
 public:
-    database_police(): _evaluator_registry(*this), Policies(*this,1)...{}
+    database_police(): _evaluator_registry(*this), Policies(*this,_evaluator_registry)...{}
+
     ~database_police() = default;
     void initialize_indexes(){
         add_core_index<database_basic,dynamic_global_property_index>(*this);
-        add_core_index<database_basic,account_index>(*this);
-        add_core_index<database_basic,account_authority_index>(*this);
-        add_core_index<database_basic,account_bandwidth_index>(*this);
         add_core_index<database_basic,witness_index>(*this);
         add_core_index<database_basic,transaction_index>(*this);
         add_core_index<database_basic,block_summary_index>(*this);
@@ -81,7 +59,6 @@ public:
         add_core_index<database_basic,hardfork_property_index>(*this);
         add_core_index<database_basic,withdraw_vesting_route_index>(*this);
         add_core_index<database_basic,owner_authority_history_index>(*this);
-        add_core_index<database_basic,account_recovery_request_index>(*this);
         add_core_index<database_basic,change_recovery_account_request_index>(*this);
         add_core_index<database_basic,escrow_index>(*this);
         add_core_index<database_basic,savings_withdraw_index>(*this);
@@ -102,8 +79,6 @@ public:
         _evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
         _evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
         _evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator>();
-        _evaluator_registry.register_evaluator<account_create_evaluator>();
-        _evaluator_registry.register_evaluator<account_update_evaluator>();
         _evaluator_registry.register_evaluator<witness_update_evaluator>();
         _evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
         _evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
