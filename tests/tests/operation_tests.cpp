@@ -2442,11 +2442,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-            convert("alice", ASSET("2.500 TESTS"));
+            convert_operation("alice", ASSET("2.500 TESTS"));
 
             validate_database();
 
-            convert op;
+            convert_operation op;
             op.owner = "alice";
             op.amount = ASSET("2.500 TBD");
 
@@ -2491,7 +2491,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             fund("alice", 10000);
             fund("bob", 10000);
 
-            convert op;
+            convert_operation op;
             signed_transaction tx;
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -2500,8 +2500,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-            convert("alice", ASSET("2.500 TESTS"));
-            convert("bob", ASSET("7.000 TESTS"));
+            convert_operation("alice", ASSET("2.500 TESTS"));
+            convert_operation("bob", ASSET("7.000 TESTS"));
 
             const auto &new_alice = db.get_account("alice");
             const auto &new_bob = db.get_account("bob");
@@ -2655,7 +2655,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert("bob", ASSET("1000.000 TESTS"));
+            convert_operation("bob", ASSET("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
@@ -3048,7 +3048,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert("bob", ASSET("1000.000 TESTS"));
+            convert_operation("bob", ASSET("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 

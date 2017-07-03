@@ -150,8 +150,8 @@ namespace steemit {
             static const version version_instance;
         };
 
-        template<uint8_t m, uint8_t h, uint16_t r, typename ... StaticRanges>
-        const version static_version<m, h, r, StaticRanges...>::version_instance = version(m, h, r);
+        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion, typename ... StaticRanges>
+        const version static_version<MinorVersion, HardforkVersion, ReleaseVersion, StaticRanges...>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);
     }
 } // steemit::protocol
 

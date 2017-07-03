@@ -22,56 +22,23 @@ namespace steemit {
             return asset.symbol == symbol;
         }
 
-        template<uint8_t m, uint8_t h, uint16_t r>
-        void limit_order_create<m, h, r, steemit::type_traits::static_range<(
-                h <= 16)>>::validate() const {
+        void limit_order_create_operation::validate() const {
             validate_account_name(owner);
-            FC_ASSERT((is_asset_type(amount_to_sell, STEEM_SYMBOL) &&
-                       is_asset_type(min_to_receive, SBD_SYMBOL))
-                      || (is_asset_type(amount_to_sell, SBD_SYMBOL) &&
-                          is_asset_type(min_to_receive, STEEM_SYMBOL)),
-                    "Limit order must be for the STEEM:SBD market");
             (amount_to_sell / min_to_receive).validate();
         }
 
-        template<uint8_t m = 0, uint8_t h, uint16_t r = 0>
-        void limit_order_custom_rate_create<m, h, r, steemit::type_traits::static_range<(
-                h <= 16)>>::validate() const {
+        void limit_order_custom_rate_create_operation::validate() const {
             validate_account_name(owner);
             FC_ASSERT(amount_to_sell.symbol ==
                       exchange_rate.base.symbol, "Sell asset must be the base of the price");
             exchange_rate.validate();
 
-            FC_ASSERT((is_asset_type(amount_to_sell, STEEM_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, SBD_SYMBOL)) ||
-                      (is_asset_type(amount_to_sell, SBD_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, STEEM_SYMBOL)),
-                    "Limit order must be for the STEEM:SBD market");
-
             FC_ASSERT((amount_to_sell * exchange_rate).amount >
                       0, "Amount to sell cannot round to 0 when traded");
         }
 
-        template<uint8_t m, uint8_t h, uint16_t r>
-        void limit_order_create<m, h, r, steemit::type_traits::static_range<(
-                h == 17)>>::validate() const {
-            FC_ASSERT(amount_to_sell.symbol != min_to_receive.symbol);
-            FC_ASSERT(fee.amount >= 0);
-            FC_ASSERT(amount_to_sell.amount > 0);
-            FC_ASSERT(min_to_receive.amount > 0);
-        }
-
-        template<uint8_t m, uint8_t h, uint16_t r>
-        void limit_order_cancel<m, h, r, steemit::type_traits::static_range<(
-                h <= 16)>>::validate() const {
+        void limit_order_cancel_operation::validate() const {
             validate_account_name(owner);
-        }
-
-        template<uint8_t m, uint8_t h, uint16_t r>
-        void limit_order_cancel<m, h, r, steemit::type_traits::static_range<(
-                h == 17)>>::validate() const {
-            validate_account_name(owner);
-            FC_ASSERT(fee.amount >= 0);
         }
 
         void convert::validate() const {
