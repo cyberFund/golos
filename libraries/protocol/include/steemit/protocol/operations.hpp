@@ -3,8 +3,10 @@
 #include <steemit/protocol/operations/operation_utilities.hpp>
 #include <steemit/protocol/operations/asset_operations.hpp>
 #include <steemit/protocol/operations/market_operations.hpp>
+#include <steemit/protocol/operations/market_virtual_operations.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 #include <steemit/protocol/operations/steem_virtual_operations.hpp>
+#include <steemit/protocol/operations/asset_virtual_operations.hpp>
 
 namespace steemit {
     namespace protocol {

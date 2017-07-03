@@ -38,16 +38,16 @@ namespace steemit {
             const asset_object *_receive_asset = nullptr;
         };
 
-        class limit_order_custom_rate_create_evaluator
-                : public steemit::chain::evaluator_impl<limit_order_custom_rate_create_evaluator> {
+        class limit_order_create2_evaluator
+                : public steemit::chain::evaluator_impl<limit_order_create2_evaluator> {
         public:
-            typedef protocol::limit_order_custom_rate_create_operation operation_type;
+            typedef protocol::limit_order_create2_operation operation_type;
 
-            limit_order_custom_rate_create_evaluator(database &db)
-                    : steemit::chain::evaluator_impl<limit_order_custom_rate_create_evaluator>(db) {
+            limit_order_create2_evaluator(database &db)
+                    : steemit::chain::evaluator_impl<limit_order_create2_evaluator>(db) {
             }
 
-            void do_apply(const protocol::limit_order_custom_rate_create_operation &op);
+            void do_apply(const protocol::limit_order_create2_operation &op);
 
             asset calculate_market_fee(const asset_object *aobj, const asset &trade_amount);
 

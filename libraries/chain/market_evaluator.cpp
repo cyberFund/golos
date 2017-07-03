@@ -120,7 +120,7 @@ namespace steemit {
             }
         }
 
-        void limit_order_custom_rate_create_evaluator::do_apply(const limit_order_custom_rate_create_operation &op) {
+        void limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &op) {
             if (db().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
                     const database &d = db();

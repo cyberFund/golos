@@ -84,7 +84,7 @@ namespace steemit {
          *  than calculating it from other fields.
          */
 
-        struct limit_order_custom_rate_create_operation
+        struct limit_order_create2_operation
                 : public base_operation {
             struct fee_parameters_type {
                 uint64_t fee = 5;
@@ -184,12 +184,11 @@ namespace steemit {
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
 FC_REFLECT(steemit::protocol::limit_order_create_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::limit_order_custom_rate_create_operation::fee_parameters_type, (fee))
+FC_REFLECT(steemit::protocol::limit_order_create2_operation::fee_parameters_type, (fee))
 FC_REFLECT(steemit::protocol::limit_order_cancel_operation::fee_parameters_type, (fee))
 FC_REFLECT(steemit::protocol::call_order_update_operation::fee_parameters_type, (fee))
 
 FC_REFLECT(steemit::protocol::limit_order_create_operation, (fee)(owner)(order_id)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_custom_rate_create_operation, (fee)(owner)(order_id)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_custom_rate_create_operation, (fee)(owner)(order_id)(amount_to_sell)(expiration)(fill_or_kill)(extensions))
-FC_REFLECT(steemit::protocol::operations::limit_order_cancel_operation, (fee)(fee_paying_account)(order)(extensions))
-FC_REFLECT(steemit::protocol::operations::call_order_update_operation, (fee)(funding_account)(delta_collateral)(delta_debt)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_create2_operation, (fee)(owner)(order_id)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (fee)(owner)(order_id)(extensions))
+FC_REFLECT(steemit::protocol::call_order_update_operation, (fee)(funding_account)(delta_collateral)(delta_debt)(extensions))

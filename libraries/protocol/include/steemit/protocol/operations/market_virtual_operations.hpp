@@ -15,13 +15,6 @@ namespace steemit {
          * emitted for the purpose of accurately tracking account history, accelerating
          * a reindex.
          */
-        template<version_type VersionNumber = 1>
-        struct fill_order_operation
-                : public virtual_operation,
-                  public static_version<VersionNumber> {
-
-        };
-
         template<>
         struct fill_order_operation<1>
                 : public virtual_operation, public static_version<1> {
