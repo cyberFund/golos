@@ -445,14 +445,14 @@ namespace steemit {
         }
 
         struct comment_options_extension_visitor {
-            comment_options_extension_visitor(const comment_object &c, database &db)
+            comment_options_extension_visitor(const comment_object &c, database_basic &db)
                     : _c(c), _db(db) {
             }
 
             typedef void result_type;
 
             const comment_object &_c;
-            database &_db;
+            database_basic &_db;
 
             void operator()(const comment_payout_beneficiaries &cpb) const {
                 if (this->_db.is_producing()) {
@@ -1748,7 +1748,7 @@ namespace steemit {
         }
 
         void custom_json_evaluator::do_apply(const custom_json_operation &o) {
-            database &d = db();
+            database_basic &d = db();
             std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
             if (!eval) {
                 return;
@@ -1769,7 +1769,7 @@ namespace steemit {
 
 
         void custom_binary_evaluator::do_apply(const custom_binary_operation &o) {
-            database &d = db();
+            database_basic &d = db();
             FC_ASSERT(d.has_hardfork(STEEMIT_HARDFORK_0_14__317));
 
             std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
@@ -1792,7 +1792,7 @@ namespace steemit {
 
 
         template<typename Operation>
-        void pow_apply(database &db, Operation o) {
+        void pow_apply(database_basic &db, Operation o) {
             const auto &dgp = db.get_dynamic_global_properties();
 
             if (db.is_producing() ||
@@ -1896,7 +1896,7 @@ namespace steemit {
 
 
         void pow2_evaluator::do_apply(const pow2_operation &o) {
-            database &db = this->db();
+            database_basic &db = this->db();
             const auto &dgp = db.get_dynamic_global_properties();
             uint32_t target_pow = db.get_pow_summary_target();
             account_name_type worker_account;

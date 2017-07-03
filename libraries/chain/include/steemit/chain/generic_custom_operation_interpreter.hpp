@@ -18,14 +18,14 @@
 namespace steemit {
     namespace chain {
 
-        class database;
+        class database_basic;
 
         template<typename CustomOperationType>
         class generic_custom_operation_interpreter
                 : public custom_operation_interpreter,
                   public evaluator_registry<CustomOperationType> {
         public:
-            generic_custom_operation_interpreter(database &db)
+            generic_custom_operation_interpreter(database_basic &db)
                     : evaluator_registry<CustomOperationType>(db) {
             }
 

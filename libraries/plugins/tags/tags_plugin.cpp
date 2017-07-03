@@ -444,10 +444,10 @@ namespace steemit {
         tags_plugin::tags_plugin(application *app)
                 : plugin(app), my(new detail::tags_plugin_impl(*this)) {
             chain::database &db = database();
-            add_plugin_index<tag_index>(db);
-            add_plugin_index<tag_stats_index>(db);
-            add_plugin_index<peer_stats_index>(db);
-            add_plugin_index<author_tag_stats_index>(db);
+            add_plugin_index<chain::database,tag_index>(db);
+            add_plugin_index<chain::database,tag_stats_index>(db);
+            add_plugin_index<chain::database,peer_stats_index>(db);
+            add_plugin_index<chain::database,author_tag_stats_index>(db);
         }
 
         tags_plugin::~tags_plugin() {

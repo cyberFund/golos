@@ -6,7 +6,7 @@
 namespace steemit {
     namespace chain {
 
-        class database;
+        class database_basic;
 
         template<typename OperationType=steemit::protocol::operation>
         class evaluator {
@@ -22,7 +22,7 @@ namespace steemit {
             typedef OperationType operation_sv_type;
             // typedef typename EvaluatorType::operation_type op_type;
 
-            evaluator_impl(database &d)
+            evaluator_impl(database_basic &d)
                     : _db(d) {
             }
 
@@ -36,26 +36,13 @@ namespace steemit {
                 return OperationType::template tag<typename EvaluatorType::operation_type>::value;
             }
 
-            database &db() {
+            database_basic &db() {
                 return _db;
             }
 
         protected:
-            database &_db;
+            database_basic &_db;
         };
 
     }
 }
-
-#define STEEMIT_DEFINE_EVALUATOR(X) \
-class X ## _evaluator : public steemit::chain::evaluator_impl< X ## _evaluator > \
-{                                                                           \
-   public:                                                                  \
-      typedef X ## _operation operation_type;                               \
-                                                                            \
-      X ## _evaluator( database& db )                                       \
-         : steemit::chain::evaluator_impl< X ## _evaluator >( db )          \
-      {}                                                                    \
-                                                                            \
-      void do_apply( const X ## _operation& o );                            \
-};

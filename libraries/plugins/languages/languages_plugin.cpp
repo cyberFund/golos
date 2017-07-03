@@ -405,10 +405,10 @@ namespace steemit {
         languages_plugin::languages_plugin(application *app)
                 : plugin(app), my(new detail::languages_plugin_impl(*this)) {
             chain::database &db = database();
-            add_plugin_index<language_index>(db);
-            add_plugin_index<language_stats_index>(db);
-            add_plugin_index<peer_stats_index>(db);
-            add_plugin_index<author_language_stats_index>(db);
+            add_plugin_index<chain::database,language_index>(db);
+            add_plugin_index<chain::database,language_stats_index>(db);
+            add_plugin_index<chain::database,peer_stats_index>(db);
+            add_plugin_index<chain::database,author_language_stats_index>(db);
         }
 
         languages_plugin::~languages_plugin() {

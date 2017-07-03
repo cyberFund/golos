@@ -198,7 +198,7 @@ namespace steemit {
                 db.pre_apply_operation.connect([&](const operation_notification &o) { my->pre_operation(o); });
                 db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
 
-                add_plugin_index<key_lookup_index>(db);
+                add_plugin_index<chain::database,key_lookup_index>(db);
             }
             FC_CAPTURE_AND_RETHROW()
         }

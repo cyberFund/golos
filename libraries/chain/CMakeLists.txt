@@ -31,6 +31,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/history_object.hpp
         include/steemit/chain/immutable_chain_parameters.hpp
         include/steemit/chain/index.hpp
+        include/steemit/chain/metadatabase.hpp
         include/steemit/chain/node_property_object.hpp
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/shared_authority.hpp

@@ -68,7 +68,7 @@ namespace steemit {
         } // end namespace detail
 
         void private_message_evaluator::do_apply(const private_message_operation &pm) {
-            database &d = db();
+            database_basic &d = db();
 
             const flat_map<string, string> &tracked_accounts = _plugin->my->_tracked_accounts;
 
@@ -123,7 +123,7 @@ namespace steemit {
         void private_message_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
             ilog("Intializing private message plugin");
             chain::database &db = database();
-            add_plugin_index<message_index>(db);
+            add_plugin_index<chain::database,message_index>(db);
 
             app().register_api_factory<private_message_api>("private_message_api");
 

@@ -403,7 +403,7 @@ namespace steemit {
                 db.pre_apply_operation.connect([&](const operation_notification &o) { _my->pre_operation(o); });
                 db.post_apply_operation.connect([&](const operation_notification &o) { _my->post_operation(o); });
 
-                add_plugin_index<bucket_index>(db);
+                add_plugin_index<chain::database,bucket_index>(db);
 
                 if (options.count("chain-stats-bucket-size")) {
                     const std::string &buckets = options["chain-stats-bucket-size"].as<string>();

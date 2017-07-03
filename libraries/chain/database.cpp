@@ -6,10 +6,7 @@
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/db_with.hpp>
-#include <steemit/chain/evaluator_registry.hpp>
 #include <steemit/chain/history_object.hpp>
-#include <steemit/chain/index.hpp>
-#include <steemit/chain/steem_evaluator.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/transaction_object.hpp>
 #include <steemit/chain/shared_db_merkle.hpp>
@@ -65,20 +62,7 @@ namespace steemit {
             share_type steem_awarded = 0;
         };
 
-        class database_impl {
-        public:
-            database_impl(database_basic &self);
-
-            database_basic &_self;
-            evaluator_registry<operation> _evaluator_registry;
-        };
-
-        database_impl::database_impl(database_basic &self)
-                : _self(self), _evaluator_registry(self) {
-        }
-
-        database_basic::database_basic()
-                : _my(new database_impl(*this)) {
+        database_basic::database_basic() {
         }
 
         database_basic::~database_basic() {
@@ -2327,50 +2311,6 @@ namespace steemit {
             return get_dynamic_global_properties().last_irreversible_block_num;
         }
 
-        void database_basic::initialize_evaluators() {
-            _my->_evaluator_registry.register_evaluator<vote_evaluator>();
-            _my->_evaluator_registry.register_evaluator<comment_evaluator>();
-            _my->_evaluator_registry.register_evaluator<comment_options_evaluator>();
-            _my->_evaluator_registry.register_evaluator<delete_comment_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
-            _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
-            _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
-            _my->_evaluator_registry.register_evaluator<custom_evaluator>();
-            _my->_evaluator_registry.register_evaluator<custom_binary_evaluator>();
-            _my->_evaluator_registry.register_evaluator<custom_json_evaluator>();
-            _my->_evaluator_registry.register_evaluator<pow_evaluator>();
-            _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
-            _my->_evaluator_registry.register_evaluator<report_over_production_evaluator>();
-            _my->_evaluator_registry.register_evaluator<feed_publish_evaluator>();
-            _my->_evaluator_registry.register_evaluator<convert_evaluator>();
-            _my->_evaluator_registry.register_evaluator<limit_order_create_evaluator>();
-            _my->_evaluator_registry.register_evaluator<limit_order_create2_evaluator>();
-            _my->_evaluator_registry.register_evaluator<limit_order_cancel_evaluator>();
-            _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator>();
-            _my->_evaluator_registry.register_evaluator<prove_authority_evaluator>();
-            _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
-            _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_transfer_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_approve_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_release_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_to_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_from_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<cancel_transfer_from_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
-            _my->_evaluator_registry.register_evaluator<reset_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
-            _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
-        }
-
         void database_basic::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
             bool inserted = _custom_operation_interpreters.emplace(id, registry).second;
             // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
@@ -2385,38 +2325,6 @@ namespace steemit {
             return std::shared_ptr<custom_operation_interpreter>();
         }
 
-        void database_basic::initialize_indexes() {
-            add_core_index<dynamic_global_property_index>(*this);
-            add_core_index<account_index>(*this);
-            add_core_index<account_authority_index>(*this);
-            add_core_index<account_bandwidth_index>(*this);
-            add_core_index<witness_index>(*this);
-            add_core_index<transaction_index>(*this);
-            add_core_index<block_summary_index>(*this);
-            add_core_index<witness_schedule_index>(*this);
-            add_core_index<comment_index>(*this);
-            add_core_index<comment_vote_index>(*this);
-            add_core_index<witness_vote_index>(*this);
-            add_core_index<limit_order_index>(*this);
-            add_core_index<feed_history_index>(*this);
-            add_core_index<convert_request_index>(*this);
-            add_core_index<liquidity_reward_balance_index>(*this);
-            add_core_index<operation_index>(*this);
-            add_core_index<account_history_index>(*this);
-            add_core_index<hardfork_property_index>(*this);
-            add_core_index<withdraw_vesting_route_index>(*this);
-            add_core_index<owner_authority_history_index>(*this);
-            add_core_index<account_recovery_request_index>(*this);
-            add_core_index<change_recovery_account_request_index>(*this);
-            add_core_index<escrow_index>(*this);
-            add_core_index<savings_withdraw_index>(*this);
-            add_core_index<decline_voting_rights_request_index>(*this);
-            add_core_index<vesting_delegation_index>(*this);
-            add_core_index<vesting_delegation_expiration_index>(*this);
-            add_core_index<reward_fund_index>(*this);
-
-            _plugin_index_signal();
-        }
 
         const std::string &database_basic::get_json_schema() const {
             return _json_schema;
@@ -3029,13 +2937,6 @@ namespace steemit {
                 _current_trx_id = transaction_id_type();
 
             } FC_CAPTURE_AND_RETHROW((trx))
-        }
-
-        void database_basic::apply_operation(const operation &op) {
-            operation_notification note(op);
-            notify_pre_apply_operation(note);
-            _my->_evaluator_registry.get_evaluator(op).apply(op);
-            notify_post_apply_operation(note);
         }
 
         const witness_object &database_basic::validate_block_header(uint32_t skip, const signed_block &next_block) const {
@@ -4309,5 +4210,6 @@ namespace steemit {
                 }
             }
         }
-    }
+
+}
 } //steemit::chain

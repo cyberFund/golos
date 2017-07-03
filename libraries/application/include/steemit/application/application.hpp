@@ -25,7 +25,7 @@
 
 #include <steemit/application/api_access.hpp>
 #include <steemit/application/api_context.hpp>
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/metadatabase.hpp>
 
 #include <steemit/network/node.hpp>
 

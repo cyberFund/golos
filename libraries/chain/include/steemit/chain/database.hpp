@@ -10,7 +10,6 @@
 #include <steemit/chain/block_log.hpp>
 
 #include <steemit/protocol/protocol.hpp>
-
 #include <fc/signals.hpp>
 
 #include <fc/log/logger.hpp>
@@ -26,8 +25,6 @@ namespace steemit {
         using steemit::protocol::asset;
         using steemit::protocol::asset_symbol_type;
         using steemit::protocol::price;
-
-        class database_impl;
 
         class custom_operation_interpreter;
 
@@ -444,14 +441,14 @@ namespace steemit {
             uint32_t last_non_undoable_block_num() const;
             //////////////////// db_init.cpp ////////////////////
 
-            void initialize_evaluators();
+            virtual void initialize_evaluators()=0;
 
             void set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry);
 
             std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
 
             /// Reset the object graph in-memory
-            void initialize_indexes();
+            virtual void initialize_indexes()=0;
 
             void init_schema();
 
@@ -515,6 +512,8 @@ namespace steemit {
             //void pop_undo() { object_database::pop_undo(); }
             void notify_changed_objects();
 
+            fc::signal<void()> _plugin_index_signal;
+
         private:
             optional<chainbase::database::session> _pending_tx_session;
 
@@ -526,7 +525,7 @@ namespace steemit {
 
             void _apply_transaction(const signed_transaction &trx);
 
-            void apply_operation(const operation &op);
+            virtual void apply_operation(const operation &op)=0;
 
 
             ///Steps involved in applying a new block
@@ -564,8 +563,6 @@ namespace steemit {
 
             ///@}
 
-            std::unique_ptr<database_impl> _my;
-
             vector<signed_transaction> _pending_tx;
             fork_database _fork_db;
             fc::time_point_sec _hardfork_times[STEEMIT_NUM_HARDFORKS + 1];
@@ -575,10 +572,8 @@ namespace steemit {
             block_log _block_log;
 
             // this function needs access to _plugin_index_signal
-            template<typename MultiIndexType>
-            friend void add_plugin_index(database_basic &db);
-
-            fc::signal<void()> _plugin_index_signal;
+            template<typename DataBase,typename MultiIndexType>
+            friend void add_plugin_index(DataBase &db);
 
             transaction_id_type _current_trx_id;
             uint32_t _current_block_num = 0;
@@ -598,59 +593,5 @@ namespace steemit {
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
         };
-
-
-    struct account_read_police {
-        explicit account_read_police(database_basic &ref,int f) : references(ref) {
-            std::cout << "account_read_police" << std::endl;
-        }
-
-        account_read_police() = default;
-
-        account_read_police(const account_read_police &) = default;
-
-        account_read_police &operator=(const account_read_police &) = default;
-
-        account_read_police(account_read_police &&) = default;
-
-        account_read_police &operator=(account_read_police &&) = default;
-
-        virtual ~account_read_police() = default;
-
-        database_basic &references;
-
-    };
-
-
-    struct account_write_police {
-        explicit account_write_police(database_basic &ref, int f) : references(ref) {
-            std::cout << "account_write_police" << std::endl;
-        }
-
-        account_write_police() = default;
-
-        account_write_police(const account_write_police &) = default;
-
-        account_write_police &operator=(const account_write_police &) = default;
-
-        account_write_police(account_write_police &&) = default;
-
-        account_write_police &operator=(account_write_police &&) = default;
-
-        virtual ~account_write_police() = default;
-
-        database_basic &references;
-
-    };
-
-    template<typename... Policies>
-    struct database_police final : public database_basic, public Policies ... {
-        database_police() :database_basic(), Policies(*this,1)... {}
-
-        ~database_police() = default;
-    };
-
-    using database = database_police<account_read_police, account_write_police>;
-
     }
 }
