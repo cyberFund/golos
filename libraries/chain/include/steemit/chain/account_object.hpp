@@ -5,17 +5,18 @@
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 
+#include <steemit/chain/operation_history_object.hpp>
 #include <steemit/chain/steem_object_types.hpp>
-#include <steemit/chain/witness_objects.hpp>
 #include <steemit/chain/shared_authority.hpp>
 
 #include <numeric>
-#include <chainbase/chainbase.hpp>
 
 namespace steemit {
     namespace chain {
 
         using steemit::protocol::authority;
+
+        class account_object;
 
         /**
          * @class account_statistics_object
@@ -105,7 +106,7 @@ namespace steemit {
             id_type id;
 
             account_name_type owner;
-            asset_symbol_type asset_type;
+            protocol::asset_symbol_type asset_type;
             share_type balance;
 
             asset get_balance() const {
@@ -207,7 +208,7 @@ namespace steemit {
              * This is utilized to restrict buyback accounts to the assets that trade in their markets.
              * In the future we may expand this to allow accounts to e.g. voluntarily restrict incoming transfers.
              */
-            optional<flat_set<asset_symbol_type>> allowed_assets;
+            optional<flat_set<protocol::asset_symbol_type>> allowed_assets;
 
             /// This function should be used only when the account votes for a witness directly
             share_type witness_vote_weight() const {
@@ -422,18 +423,18 @@ namespace steemit {
                                 composite_key<
                                         account_balance_object,
                                         member<account_balance_object, account_name_type, &account_balance_object::owner>,
-                                        member<account_balance_object, asset_symbol_type, &account_balance_object::asset_type>
+                                        member<account_balance_object, protocol::asset_symbol_type, &account_balance_object::asset_type>
                                 >
                         >,
                         ordered_unique<tag<by_asset_balance>,
                                 composite_key<
                                         account_balance_object,
-                                        member<account_balance_object, asset_symbol_type, &account_balance_object::asset_type>,
+                                        member<account_balance_object, protocol::asset_symbol_type, &account_balance_object::asset_type>,
                                         member<account_balance_object, share_type, &account_balance_object::balance>,
                                         member<account_balance_object, account_name_type, &account_balance_object::owner>
                                 >,
                                 composite_key_compare<
-                                        std::less<asset_symbol_type>,
+                                        std::less<protocol::asset_symbol_type>,
                                         std::greater<share_type>,
                                         std::less<account_name_type>
                                 >

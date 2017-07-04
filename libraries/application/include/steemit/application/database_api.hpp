@@ -350,7 +350,7 @@ namespace steemit {
              *
              * This function has semantics identical to @ref get_objects
              */
-            vector<optional<asset_object>> get_assets(const vector<asset_id_type> &asset_ids) const;
+            vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
 
             /**
              * @brief Get assets alphabetically by symbol name
@@ -380,7 +380,7 @@ namespace steemit {
              * @param limit Maximum number of orders to retrieve
              * @return The limit orders, ordered from least price to greatest
              */
-            vector<limit_order_object> get_limit_orders(asset_id_type a, asset_id_type b, uint32_t limit) const;
+            vector<limit_order_object> get_limit_orders(string a, string b, uint32_t limit) const;
 
             /**
              * @brief Get call orders in a given asset
@@ -388,7 +388,7 @@ namespace steemit {
              * @param limit Maximum number of orders to retrieve
              * @return The call orders, ordered from earliest to be called to latest
              */
-            vector<call_order_object> get_call_orders(asset_id_type a, uint32_t limit) const;
+            vector<call_order_object> get_call_orders(string a, uint32_t limit) const;
 
             /**
              * @brief Get forced settlement orders in a given asset
@@ -396,12 +396,12 @@ namespace steemit {
              * @param limit Maximum number of orders to retrieve
              * @return The settle orders, ordered from earliest settlement date to latest
              */
-            vector<force_settlement_object> get_settle_orders(asset_id_type a, uint32_t limit) const;
+            vector<force_settlement_object> get_settle_orders(string a, uint32_t limit) const;
 
             /**
              *  @return all open margin positions for a given account id.
              */
-            vector<call_order_object> get_margin_positions(const account_object::id_type &id) const;
+            vector<call_order_object> get_margin_positions(const account_name_type &id) const;
 
             /**
              * @brief Request notification when the active orders in the market between two assets changes
@@ -413,14 +413,14 @@ namespace steemit {
              * contain, in order, the operations which changed the market, and their results.
              */
             void subscribe_to_market(std::function<void(const variant &)> callback,
-                    asset_id_type a, asset_id_type b);
+                    string a, string b);
 
             /**
              * @brief Unsubscribe from updates to a given market
              * @param a First asset ID
              * @param b Second asset ID
              */
-            void unsubscribe_from_market(asset_id_type a, asset_id_type b);
+            void unsubscribe_from_market(string a, string b);
 
             /**
              * @brief Returns the ticker for the market assetA:assetB

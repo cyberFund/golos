@@ -74,24 +74,24 @@ namespace steemit {
             uint64_t get_witness_count() const;
 
             // Assets
-            vector<optional<asset_object>> get_assets(const vector<asset_id_type> &asset_ids) const;
+            vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
 
             vector<asset_object> list_assets(const string &lower_bound_symbol, uint32_t limit) const;
 
             vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &symbols_or_ids) const;
 
             // Markets / feeds
-            vector<limit_order_object> get_limit_orders(asset_id_type a, asset_id_type b, uint32_t limit) const;
+            vector<limit_order_object> get_limit_orders(string a, string b, uint32_t limit) const;
 
-            vector<call_order_object> get_call_orders(asset_id_type a, uint32_t limit) const;
+            vector<call_order_object> get_call_orders(string a, uint32_t limit) const;
 
-            vector<force_settlement_object> get_settle_orders(asset_id_type a, uint32_t limit) const;
+            vector<force_settlement_object> get_settle_orders(string a, uint32_t limit) const;
 
             vector<call_order_object> get_margin_positions(const account_object::id_type &id) const;
 
-            void subscribe_to_market(std::function<void(const variant &)> callback, asset_id_type a, asset_id_type b);
+            void subscribe_to_market(std::function<void(const variant &)> callback, string a, string b);
 
-            void unsubscribe_from_market(asset_id_type a, asset_id_type b);
+            void unsubscribe_from_market(string a, string b);
 
             market_ticker get_ticker(const string &base, const string &quote) const;
 
@@ -429,28 +429,6 @@ namespace steemit {
             return results;
         }
 
-        std::vector<account_object::id_type> database_api::get_account_references(account_object::id_type account_id) const {
-            return my->_db.with_read_lock([&]() {
-                return my->get_account_references(account_id);
-            });
-        }
-
-        std::vector<account_object::id_type> database_api_impl::get_account_references(account_object::id_type account_id) const {
-            /*const auto& idx = _db.get_index<account_index>();
-   const auto& aidx = dynamic_cast<const primary_index<account_index>&>(idx);
-   const auto& refs = aidx.get_secondary_index<steemit::chain::account_member_index>();
-   auto itr = refs.account_to_account_memberships.find(account_name);
-   std::vector<account_object::id_type> result;
-
-   if( itr != refs.account_to_account_memberships.end() )
-   {
-      result.reserve( itr->second.size() );
-      for( auto item : itr->second ) result.push_back(item);
-   }
-   return result;*/
-            FC_ASSERT(false, "database_api::get_account_references --- Needs to be refactored for steem.");
-        }
-
         std::vector<optional<account_api_obj>> database_api::lookup_account_names(const std::vector<std::string> &account_names) const {
             return my->_db.with_read_lock([&]() {
                 return my->lookup_account_names(account_names);
@@ -719,16 +697,16 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        vector<optional<asset_object>> database_api::get_assets(const vector<asset_id_type> &asset_ids) const {
+        vector<optional<asset_object>> database_api::get_assets(const vector<string> &asset_ids) const {
             return my->get_assets(asset_ids);
         }
 
-        vector<optional<asset_object>> database_api_impl::get_assets(const vector<asset_id_type> &asset_ids) const {
+        vector<optional<asset_object>> database_api_impl::get_assets(const vector<string> &asset_ids) const {
             vector<optional<asset_object>> result;
             result.reserve(asset_ids.size());
             std::transform(asset_ids.begin(), asset_ids.end(), std::back_inserter(result),
-                    [this](asset_id_type id) -> optional<asset_object> {
-                        if (auto o = _db.find(id)) {
+                    [this](string id) -> optional<asset_object> {
+                        if (auto o = _db.find_asset(asset::from_string(id).symbol)) {
                             subscribe_to_item(id);
                             return *o;
                         }
@@ -743,11 +721,11 @@ namespace steemit {
 
         vector<asset_object> database_api_impl::list_assets(const string &lower_bound_symbol, uint32_t limit) const {
             FC_ASSERT(limit <= 100);
-            const auto &assets_by_symbol = _db.get_index_type<asset_index>().indices().get<by_symbol>();
+            const auto &assets_by_symbol = _db.get_index<asset_index>().indices().get<by_symbol>();
             vector<asset_object> result;
             result.reserve(limit);
 
-            auto itr = assets_by_symbol.lower_bound(lower_bound_symbol);
+            auto itr = assets_by_symbol.lower_bound(asset::from_string(lower_bound_symbol).symbol);
 
             if (lower_bound_symbol == "") {
                 itr = assets_by_symbol.begin();
@@ -789,15 +767,15 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        vector<limit_order_object> database_api::get_limit_orders(asset_id_type a, asset_id_type b, uint32_t limit) const {
+        vector<limit_order_object> database_api::get_limit_orders(string a, string b, uint32_t limit) const {
             return my->get_limit_orders(a, b, limit);
         }
 
 /**
  *  @return the limit orders for both sides of the book for the two assets specified up to limit number on each side.
  */
-        vector<limit_order_object> database_api_impl::get_limit_orders(asset_id_type a, asset_id_type b, uint32_t limit) const {
-            const auto &limit_order_idx = _db.get_index_type<limit_order_index>();
+        vector<limit_order_object> database_api_impl::get_limit_orders(string a, string b, uint32_t limit) const {
+            const auto &limit_order_idx = _db.get_index<limit_order_index>();
             const auto &limit_price_idx = limit_order_idx.indices().get<by_price>();
 
             vector<limit_order_object> result;
@@ -822,37 +800,37 @@ namespace steemit {
             return result;
         }
 
-        vector<call_order_object> database_api::get_call_orders(asset_id_type a, uint32_t limit) const {
+        vector<call_order_object> database_api::get_call_orders(string a, uint32_t limit) const {
             return my->get_call_orders(a, limit);
         }
 
-        vector<call_order_object> database_api_impl::get_call_orders(asset_id_type a, uint32_t limit) const {
-            const auto &call_index = _db.get_index_type<call_order_index>().indices().get<by_price>();
+        vector<call_order_object> database_api_impl::get_call_orders(string a, uint32_t limit) const {
+            const auto &call_index = _db.get_index<call_order_index>().indices().get<by_price>();
             const asset_object &mia = _db.get(a);
-            price index_price = price::min(mia.bitasset_data(_db).options.short_backing_asset, mia.get_id());
+            price index_price = price::min(_db.get_asset_bitasset_data(mia.symbol).options.short_backing_asset, mia.get_id());
 
             return vector<call_order_object>(call_index.lower_bound(index_price.min()),
                     call_index.lower_bound(index_price.max()));
         }
 
-        vector<force_settlement_object> database_api::get_settle_orders(asset_id_type a, uint32_t limit) const {
+        vector<force_settlement_object> database_api::get_settle_orders(string a, uint32_t limit) const {
             return my->get_settle_orders(a, limit);
         }
 
-        vector<force_settlement_object> database_api_impl::get_settle_orders(asset_id_type a, uint32_t limit) const {
-            const auto &settle_index = _db.get_index_type<force_settlement_index>().indices().get<by_expiration>();
+        vector<force_settlement_object> database_api_impl::get_settle_orders(string a, uint32_t limit) const {
+            const auto &settle_index = _db.get_index<force_settlement_index>().indices().get<by_expiration>();
             const asset_object &mia = _db.get(a);
             return vector<force_settlement_object>(settle_index.lower_bound(mia.get_id()),
                     settle_index.upper_bound(mia.get_id()));
         }
 
-        vector<call_order_object> database_api::get_margin_positions(const account_object::id_type &id) const {
+        vector<call_order_object> database_api::get_margin_positions(const account_name_type &id) const {
             return my->get_margin_positions(id);
         }
 
-        vector<call_order_object> database_api_impl::get_margin_positions(const account_object::id_type &id) const {
+        vector<call_order_object> database_api_impl::get_margin_positions(const account_name_type &id) const {
             try {
-                const auto &idx = _db.get_index_type<call_order_index>();
+                const auto &idx = _db.get_index<call_order_index>();
                 const auto &aidx = idx.indices().get<by_account>();
                 auto start = aidx.lower_bound(boost::make_tuple(id, asset_id_type(0)));
                 auto end = aidx.lower_bound(boost::make_tuple(
@@ -866,11 +844,11 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((id))
         }
 
-        void database_api::subscribe_to_market(std::function<void(const variant &)> callback, asset_id_type a, asset_id_type b) {
+        void database_api::subscribe_to_market(std::function<void(const variant &)> callback, string a, string b) {
             my->subscribe_to_market(callback, a, b);
         }
 
-        void database_api_impl::subscribe_to_market(std::function<void(const variant &)> callback, asset_id_type a, asset_id_type b) {
+        void database_api_impl::subscribe_to_market(std::function<void(const variant &)> callback, string a, string b) {
             if (a > b) {
                 std::swap(a, b);
             }
@@ -878,11 +856,11 @@ namespace steemit {
             _market_subscriptions[std::make_pair(a, b)] = callback;
         }
 
-        void database_api::unsubscribe_from_market(asset_id_type a, asset_id_type b) {
+        void database_api::unsubscribe_from_market(string a, string b) {
             my->unsubscribe_from_market(a, b);
         }
 
-        void database_api_impl::unsubscribe_from_market(asset_id_type a, asset_id_type b) {
+        void database_api_impl::unsubscribe_from_market(string a, string b) {
             if (a > b) {
                 std::swap(a, b);
             }

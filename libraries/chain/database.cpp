@@ -10,6 +10,7 @@
 #include <steemit/chain/history_object.hpp>
 #include <steemit/chain/index.hpp>
 #include <steemit/chain/market_object.hpp>
+#include <steemit/chain/market_evaluator.hpp>
 #include <steemit/chain/steem_evaluator.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/transaction_object.hpp>
@@ -51,12 +52,9 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
-)
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
-)
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
-)
+FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
+FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
+FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
 
 namespace steemit {
     namespace chain {
@@ -2272,10 +2270,10 @@ namespace steemit {
         }
 
         /**
- *  Iterates over all conversion requests with a conversion date before
- *  the head block time and then converts them to/from steem/sbd at the
- *  current median price feed history price times the premium
- */
+         *  Iterates over all conversion requests with a conversion date before
+         *  the head block time and then converts them to/from steem/sbd at the
+         *  current median price feed history price times the premium
+         */
         void database::process_conversions() {
             auto now = head_block_time();
             const auto &request_by_date = get_index<convert_request_index>().indices().get<by_conversion_date>();
