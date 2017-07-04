@@ -1396,7 +1396,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
                 BOOST_TEST_MESSAGE("Check feed_history");
 
-                feed_history = db.get(feed_history_id_type());
+                feed_history = db.get(feed_history_object::id_type());
                 BOOST_REQUIRE(feed_history.current_median_history ==
                               feed_history.price_history[(i + 1) / 2]);
                 BOOST_REQUIRE(feed_history.price_history[i + 1] ==

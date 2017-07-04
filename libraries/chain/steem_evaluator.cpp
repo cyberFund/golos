@@ -412,7 +412,7 @@ namespace steemit {
 
             const auto &vote_idx = this->_db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
 
-            auto vote_itr = vote_idx.lower_bound(comment_id_type(comment.id));
+            auto vote_itr = vote_idx.lower_bound(comment_object::id_type(comment.id));
             while (vote_itr != vote_idx.end() &&
                    vote_itr->comment == comment.id) {
                 const auto &cur_vote = *vote_itr;
@@ -574,7 +574,7 @@ namespace steemit {
                                 auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
                 }
 
-                comment_id_type id;
+                comment_object::id_type id;
 
                 const comment_object *parent = nullptr;
                 if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
@@ -1168,7 +1168,7 @@ namespace steemit {
                     });
                 }
 
-                itr = wd_idx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+                itr = wd_idx.upper_bound(boost::make_tuple(from_account.id, account_object::id_type()));
                 uint16_t total_percent = 0;
 
                 while (itr->from_account == from_account.id &&
@@ -1200,7 +1200,7 @@ namespace steemit {
 
             if (o.proxy.size()) {
                 const auto &new_proxy = this->_db.get_account(o.proxy);
-                flat_set<account_id_type> proxy_chain({account.id, new_proxy.id
+                flat_set<account_object::id_type> proxy_chain({account.id, new_proxy.id
                 });
                 proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
 

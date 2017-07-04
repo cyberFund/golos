@@ -1,5 +1,7 @@
 #pragma once
 
+#include <steemit/protocol/types.hpp>
+
 #include <fc/string.hpp>
 #include <fc/time.hpp>
 

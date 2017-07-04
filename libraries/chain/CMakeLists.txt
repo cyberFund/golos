@@ -36,6 +36,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/chain/market_evaluator.hpp
         include/steemit/chain/market_object.hpp
         include/steemit/chain/node_property_object.hpp
+        include/steemit/chain/operation_history_object.hpp
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp

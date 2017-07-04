@@ -118,7 +118,7 @@ namespace steemit {
 
             id_type id;
 
-            account_id_type owner;
+            account_object::id_type owner;
             int64_t steem_volume = 0;
             int64_t sbd_volume = 0;
             uint128_t weight = 0;
@@ -180,8 +180,8 @@ namespace steemit {
 
             id_type id;
 
-            account_id_type from_account;
-            account_id_type to_account;
+            account_object::id_type from_account;
+            account_object::id_type to_account;
             uint16_t percent = 0;
             bool auto_vest = false;
         };
@@ -200,7 +200,7 @@ namespace steemit {
 
             id_type id;
 
-            account_id_type account;
+            account_object::id_type account;
             time_point_sec effective_date;
         };
 
@@ -215,7 +215,7 @@ namespace steemit {
             reward_fund_object() {
             }
 
-            reward_fund_id_type id;
+            reward_fund_object::id_type id;
             reward_fund_name_type name;
             asset reward_balance = asset(0, STEEM_SYMBOL);
             fc::uint128_t recent_rshares2 = 0;
@@ -230,12 +230,12 @@ namespace steemit {
         convert_request_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<convert_request_object, convert_request_id_type, &convert_request_object::id>>,
+                by_id>, member<convert_request_object, convert_request_object::id_type, &convert_request_object::id>>,
         ordered_unique <tag<by_conversion_date>,
         composite_key<convert_request_object,
                 member <
                 convert_request_object, time_point_sec, &convert_request_object::conversion_date>,
-        member<convert_request_object, convert_request_id_type, &convert_request_object::id>
+        member<convert_request_object, convert_request_object::id_type, &convert_request_object::id>
         >
         >,
         ordered_unique <tag<by_owner>,
@@ -257,15 +257,15 @@ namespace steemit {
         liquidity_reward_balance_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<liquidity_reward_balance_object, liquidity_reward_balance_id_type, &liquidity_reward_balance_object::id>>,
-        ordered_unique <tag<by_owner>, member<liquidity_reward_balance_object, account_id_type, &liquidity_reward_balance_object::owner>>,
+                by_id>, member<liquidity_reward_balance_object, liquidity_reward_balance_object::id_type, &liquidity_reward_balance_object::id>>,
+        ordered_unique <tag<by_owner>, member<liquidity_reward_balance_object, account_object::id_type, &liquidity_reward_balance_object::owner>>,
         ordered_unique <tag<by_volume_weight>,
         composite_key<liquidity_reward_balance_object,
                 member <
                 liquidity_reward_balance_object, fc::uint128, &liquidity_reward_balance_object::weight>,
-        member<liquidity_reward_balance_object, account_id_type, &liquidity_reward_balance_object::owner>
+        member<liquidity_reward_balance_object, account_object::id_type, &liquidity_reward_balance_object::owner>
         >,
-        composite_key_compare <std::greater<fc::uint128>, std::less<account_id_type>>
+        composite_key_compare <std::greater<fc::uint128>, std::less<account_object::id_type>>
         >
         >,
         allocator <liquidity_reward_balance_object>
@@ -276,7 +276,7 @@ namespace steemit {
         feed_history_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<feed_history_object, feed_history_id_type, &feed_history_object::id>>
+                by_id>, member<feed_history_object, feed_history_object::id_type, &feed_history_object::id>>
         >,
         allocator <feed_history_object>
         >
@@ -288,20 +288,20 @@ namespace steemit {
         withdraw_vesting_route_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<withdraw_vesting_route_object, withdraw_vesting_route_id_type, &withdraw_vesting_route_object::id>>,
+                by_id>, member<withdraw_vesting_route_object, withdraw_vesting_route_object::id_type, &withdraw_vesting_route_object::id>>,
         ordered_unique <tag<by_withdraw_route>,
         composite_key<withdraw_vesting_route_object,
                 member <
-                withdraw_vesting_route_object, account_id_type, &withdraw_vesting_route_object::from_account>,
-        member<withdraw_vesting_route_object, account_id_type, &withdraw_vesting_route_object::to_account>
+                withdraw_vesting_route_object, account_object::id_type, &withdraw_vesting_route_object::from_account>,
+        member<withdraw_vesting_route_object, account_object::id_type, &withdraw_vesting_route_object::to_account>
         >,
-        composite_key_compare <std::less<account_id_type>, std::less<account_id_type>>
+        composite_key_compare <std::less<account_object::id_type>, std::less<account_object::id_type>>
         >,
         ordered_unique <tag<by_destination>,
         composite_key<withdraw_vesting_route_object,
                 member <
-                withdraw_vesting_route_object, account_id_type, &withdraw_vesting_route_object::to_account>,
-        member<withdraw_vesting_route_object, withdraw_vesting_route_id_type, &withdraw_vesting_route_object::id>
+                withdraw_vesting_route_object, account_object::id_type, &withdraw_vesting_route_object::to_account>,
+        member<withdraw_vesting_route_object, withdraw_vesting_route_object::id_type, &withdraw_vesting_route_object::id>
         >
         >
         >,
@@ -318,7 +318,7 @@ namespace steemit {
         escrow_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<escrow_object, escrow_id_type, &escrow_object::id>>,
+                by_id>, member<escrow_object, escrow_object::id_type, &escrow_object::id>>,
         ordered_unique <tag<by_from_id>,
         composite_key<escrow_object,
                 member <
@@ -329,14 +329,14 @@ namespace steemit {
         ordered_unique <tag<by_to>,
         composite_key<escrow_object,
                 member < escrow_object, account_name_type, &escrow_object::to>,
-        member<escrow_object, escrow_id_type, &escrow_object::id>
+        member<escrow_object, escrow_object::id_type, &escrow_object::id>
         >
         >,
         ordered_unique <tag<by_agent>,
         composite_key<escrow_object,
                 member <
                 escrow_object, account_name_type, &escrow_object::agent>,
-        member<escrow_object, escrow_id_type, &escrow_object::id>
+        member<escrow_object, escrow_object::id_type, &escrow_object::id>
         >
         >,
         ordered_unique <tag<by_ratification_deadline>,
@@ -344,16 +344,16 @@ namespace steemit {
                 const_mem_fun <
                 escrow_object, bool, &escrow_object::is_approved>,
         member<escrow_object, time_point_sec, &escrow_object::ratification_deadline>,
-        member<escrow_object, escrow_id_type, &escrow_object::id>
+        member<escrow_object, escrow_object::id_type, &escrow_object::id>
         >,
-        composite_key_compare <std::less<bool>, std::less<time_point_sec>, std::less<escrow_id_type>>
+        composite_key_compare <std::less<bool>, std::less<time_point_sec>, std::less<escrow_object::id_type>>
         >,
         ordered_unique <tag<by_sbd_balance>,
         composite_key<escrow_object,
                 member < escrow_object, asset, &escrow_object::sbd_balance>,
-        member<escrow_object, escrow_id_type, &escrow_object::id>
+        member<escrow_object, escrow_object::id_type, &escrow_object::id>
         >,
-        composite_key_compare <std::greater<asset>, std::less<escrow_id_type>>
+        composite_key_compare <std::greater<asset>, std::less<escrow_object::id_type>>
         >
         >,
         allocator <escrow_object>
@@ -367,7 +367,7 @@ namespace steemit {
         savings_withdraw_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<savings_withdraw_object, savings_withdraw_id_type, &savings_withdraw_object::id>>,
+                by_id>, member<savings_withdraw_object, savings_withdraw_object::id_type, &savings_withdraw_object::id>>,
         ordered_unique <tag<by_from_rid>,
         composite_key<savings_withdraw_object,
                 member <
@@ -380,7 +380,7 @@ namespace steemit {
                 member <
                 savings_withdraw_object, account_name_type, &savings_withdraw_object::to>,
         member<savings_withdraw_object, time_point_sec, &savings_withdraw_object::complete>,
-        member<savings_withdraw_object, savings_withdraw_id_type, &savings_withdraw_object::id>
+        member<savings_withdraw_object, savings_withdraw_object::id_type, &savings_withdraw_object::id>
         >
         >,
         ordered_unique <tag<by_complete_from_rid>,
@@ -402,17 +402,17 @@ namespace steemit {
         decline_voting_rights_request_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<decline_voting_rights_request_object, decline_voting_rights_request_id_type, &decline_voting_rights_request_object::id>>,
+                by_id>, member<decline_voting_rights_request_object, decline_voting_rights_request_object::id_type, &decline_voting_rights_request_object::id>>,
         ordered_unique <tag<by_account>,
-        member<decline_voting_rights_request_object, account_id_type, &decline_voting_rights_request_object::account>
+        member<decline_voting_rights_request_object, account_object::id_type, &decline_voting_rights_request_object::account>
         >,
         ordered_unique <tag<by_effective_date>,
         composite_key<decline_voting_rights_request_object,
                 member <
                 decline_voting_rights_request_object, time_point_sec, &decline_voting_rights_request_object::effective_date>,
-        member<decline_voting_rights_request_object, account_id_type, &decline_voting_rights_request_object::account>
+        member<decline_voting_rights_request_object, account_object::id_type, &decline_voting_rights_request_object::account>
         >,
-        composite_key_compare <std::less<time_point_sec>, std::less<account_id_type>>
+        composite_key_compare <std::less<time_point_sec>, std::less<account_object::id_type>>
         >
         >,
         allocator <decline_voting_rights_request_object>
@@ -424,7 +424,7 @@ namespace steemit {
         reward_fund_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<reward_fund_object, reward_fund_id_type, &reward_fund_object::id>>,
+                by_id>, member<reward_fund_object, reward_fund_object::id_type, &reward_fund_object::id>>,
         ordered_unique <tag<by_name>, member<reward_fund_object, reward_fund_name_type, &reward_fund_object::name>>
         >,
         allocator <reward_fund_object>

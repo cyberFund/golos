@@ -230,8 +230,8 @@ FC_REFLECT(steemit::chain::limit_order_object,
         (id)(created)(expiration)(seller)(orderid)(for_sale)(sell_price))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::limit_order_object, steemit::chain::limit_order_index)
 
-FC_REFLECT(steemit::chain::call_order_object, (borrower)(collateral)(debt)(call_price))
+FC_REFLECT(steemit::chain::call_order_object, (id)(borrower)(collateral)(debt)(call_price))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::call_order_object, steemit::chain::call_order_index)
 
-FC_REFLECT(steemit::chain::force_settlement_object, (owner)(balance)(settlement_date)(settlement_id))
+FC_REFLECT(steemit::chain::force_settlement_object, (id)(owner)(balance)(settlement_date)(settlement_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::force_settlement_object, steemit::chain::force_settlement_index)

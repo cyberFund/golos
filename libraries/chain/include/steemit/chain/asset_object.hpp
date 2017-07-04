@@ -46,7 +46,7 @@ namespace steemit {
 
             id_type id;
 
-            asset_symbol_type symbol;
+            protocol::asset_symbol_type symbol;
 
             /// The number of shares currently in existence
             share_type current_supply;
@@ -75,7 +75,7 @@ namespace steemit {
 
             id_type id;
 
-            asset_symbol_type symbol;
+            protocol::asset_symbol_type symbol;
 
             /// This function does not check if any registered asset has this symbol or not; it simply checks whether the
             /// symbol would be valid.
@@ -89,31 +89,31 @@ namespace steemit {
 
             /// @return true if users may request force-settlement of this market-issued asset; false otherwise
             bool can_force_settle() const {
-                return !(options.flags & disable_force_settle);
+                return !(options.flags & protocol::disable_force_settle);
             }
 
             /// @return true if the issuer of this market-issued asset may globally settle the asset; false otherwise
             bool can_global_settle() const {
-                return options.issuer_permissions & global_settle;
+                return options.issuer_permissions & protocol::global_settle;
             }
 
             /// @return true if this asset charges a fee for the issuer on market operations; false otherwise
             bool charges_market_fees() const {
-                return options.flags & charge_market_fee;
+                return options.flags & protocol::charge_market_fee;
             }
 
             /// @return true if this asset may only be transferred to/from the issuer or market orders
             bool is_transfer_restricted() const {
-                return options.flags & transfer_restricted;
+                return options.flags & protocol::transfer_restricted;
             }
 
             bool can_override() const {
-                return options.flags & override_authority;
+                return options.flags & protocol::override_authority;
             }
 
             bool allow_confidential() const {
                 return !(options.flags &
-                         asset_issuer_permission_flags::disable_confidential);
+                         protocol::asset_issuer_permission_flags::disable_confidential);
             }
 
             /// Helper function to get an asset object with the given amount in this asset's type
@@ -136,11 +136,11 @@ namespace steemit {
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
             string amount_to_pretty_string(share_type amount) const {
-                return amount_to_string(amount) + " " + symbol;
+                return amount_to_string(amount) + " " + symbol_name;
             }
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
-            string amount_to_pretty_string(const asset &amount) const {
+            string amount_to_pretty_string(const protocol::asset &amount) const {
                 FC_ASSERT(amount.symbol == id);
                 return amount_to_pretty_string(amount.amount);
             }
@@ -152,7 +152,7 @@ namespace steemit {
             /// ID of the account which issued this asset.
             account_name_type issuer;
 
-            asset_options options;
+            protocol::asset_options options;
 
             /// Extra data associated with BitAssets. This field is non-null if and only if is_market_issued() returns true
             bool marked_issued;
@@ -162,20 +162,15 @@ namespace steemit {
             void validate() const {
                 // UIAs may not be prediction markets, have force settlement, or global settlements
                 if (!is_market_issued()) {
-                    FC_ASSERT(!(options.flags & disable_force_settle ||
-                                options.flags & global_settle));
                     FC_ASSERT(!(
-                            options.issuer_permissions & disable_force_settle ||
-                            options.issuer_permissions & global_settle));
+                            options.flags & protocol::disable_force_settle ||
+                            options.flags & protocol::global_settle));
+                    FC_ASSERT(!(
+                            options.issuer_permissions &
+                            protocol::disable_force_settle ||
+                            options.issuer_permissions &
+                            protocol::global_settle));
                 }
-            }
-
-            /**
-             *  The total amount of an asset that is reserved for future issuance.
-             */
-            template<class DB>
-            share_type reserved(const DB &db) const {
-                return options.max_supply - dynamic_data(db).current_supply;
             }
         };
 
@@ -194,14 +189,15 @@ namespace steemit {
             }
 
             asset_bitasset_data_object() {
+
             }
 
             id_type id;
 
-            asset_symbol_type symbol;
+            protocol::asset_symbol_type symbol;
 
             /// The tunable options for BitAssets are stored in this field.
-            bitasset_options options;
+            protocol::bitasset_options options;
 
             /// Feeds published for this asset. If issuer is not committee, the keys in this map are the feed publishing
             /// accounts; otherwise, the feed publishers are the currently active committee_members and witnesses and this map
@@ -235,7 +231,7 @@ namespace steemit {
              */
             ///@{
             /// Price at which force settlements of a black swanned asset will occur
-            price settlement_price;
+            protocol::price settlement_price;
             /// Amount of collateral which is available for force settlement
             share_type settlement_fund;
             ///@}
@@ -267,7 +263,7 @@ namespace steemit {
         >,
         indexed_by <
         ordered_unique<tag <
-                       by_symbol>, member<asset_bitasset_data_object, asset_symbol_type, &asset_bitasset_data_object::symbol>>
+                       by_symbol>, member<asset_bitasset_data_object, protocol::asset_symbol_type, &asset_bitasset_data_object::symbol>>
         >
         >
         asset_bitasset_data_index;
@@ -278,7 +274,7 @@ namespace steemit {
                 ordered_unique < tag <
                 by_id>, member<asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
         ordered_unique <tag<
-                by_symbol>, member<asset_dynamic_data_object, asset_symbol_type, &asset_dynamic_data_object::symbol>>
+                by_symbol>, member<asset_dynamic_data_object, protocol::asset_symbol_type, &asset_dynamic_data_object::symbol>>
         >
         >
         asset_dynamic_data_index;
@@ -304,11 +300,12 @@ namespace steemit {
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::asset_dynamic_data_object,
-        (symbol)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
+        (id)(symbol)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_dynamic_data_object, steemit::chain::asset_dynamic_data_index)
 
 FC_REFLECT(steemit::chain::asset_bitasset_data_object,
-        (symbol)
+        (id)
+                (symbol)
                 (feeds)
                 (current_feed)
                 (current_feed_publication_time)
@@ -322,7 +319,8 @@ FC_REFLECT(steemit::chain::asset_bitasset_data_object,
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_bitasset_data_object, steemit::chain::asset_bitasset_data_index)
 
 FC_REFLECT(steemit::chain::asset_object,
-        (symbol)
+        (id)
+                (symbol)
                 (precision)
                 (issuer)
                 (options)

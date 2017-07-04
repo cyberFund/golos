@@ -41,7 +41,7 @@ namespace steemit {
             validate_account_name(owner);
         }
 
-        void convert::validate() const {
+        void convert_operation::validate() const {
             validate_account_name(owner);
             /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
             /// market fluxuations through converting large quantities without moving the price.

@@ -4,7 +4,7 @@
 #include <steemit/chain/evaluator.hpp>
 #include <steemit/chain/database.hpp>
 
-#include <steemit/protocol/operations.hpp>
+#include <steemit/protocol/operations/operations.hpp>
 
 namespace steemit {
     namespace chain {

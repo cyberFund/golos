@@ -272,7 +272,7 @@ namespace steemit {
 
                 // Reversible blocks are *usually* in the TAPOS buffer.  Since this
                 // is the fastest check, we do it first.
-                block_summary_id_type bsid = block_num & 0xFFFF;
+                block_summary_object::id_type bsid = block_num & 0xFFFF;
                 const block_summary_object *bs = find<block_summary_object, by_id>(bsid);
                 if (bs != nullptr) {
                     if (protocol::block_header::num_from_id(bs->block_id) ==
@@ -1342,7 +1342,7 @@ namespace steemit {
 
         void database::adjust_witness_votes(const account_object &a, share_type delta) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
+            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
             while (itr != vidx.end() && itr->account == a.id) {
                 adjust_witness_vote(get(itr->witness), delta);
                 ++itr;
@@ -1384,7 +1384,7 @@ namespace steemit {
 
         void database::clear_witness_votes(const account_object &a) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
+            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
             while (itr != vidx.end() && itr->account == a.id) {
                 const auto &current = *itr;
                 ++itr;
@@ -1536,7 +1536,7 @@ namespace steemit {
                 asset total_steem_converted = asset(0, STEEM_SYMBOL);
 
                 // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
-                for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+                for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_object::id_type()));
                      itr != didx.end() && itr->from_account == from_account.id;
                      ++itr) {
                     if (itr->auto_vest) {
@@ -1560,7 +1560,7 @@ namespace steemit {
                     }
                 }
 
-                for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+                for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_object::id_type()));
                      itr != didx.end() && itr->from_account == from_account.id;
                      ++itr) {
                     if (!itr->auto_vest) {
@@ -1951,7 +1951,7 @@ namespace steemit {
 
             if (funds.size()) {
                 for (size_t i = 0; i < funds.size(); i++) {
-                    modify(get<reward_fund_object, by_id>(reward_fund_id_type(i)), [&](reward_fund_object &rfo) {
+                    modify(get<reward_fund_object, by_id>(reward_fund_object::id_type(i)), [&](reward_fund_object &rfo) {
                         rfo.recent_rshares2 = funds[i].recent_rshares2;
                         rfo.reward_balance -= funds[i].steem_awarded;
                     });
@@ -3023,7 +3023,10 @@ namespace steemit {
         }
 
         void database::apply_transaction(const signed_transaction &trx, uint32_t skip) {
-            detail::with_skip_flags(*this, skip, [&]() { _apply_transaction(trx); });
+            detail::with_skip_flags(*this, skip, [&]() {
+                _apply_transaction(trx);
+            });
+
             notify_on_applied_transaction(trx);
         }
 
@@ -3048,14 +3051,19 @@ namespace steemit {
 
                 if (!(skip &
                       (skip_transaction_signatures | skip_authority_check))) {
-                    auto get_active = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).active); };
-                    auto get_owner = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).owner); };
-                    auto get_posting = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).posting); };
+                    auto get_active = [&](const string &name) {
+                        return authority(get<account_authority_object, by_account>(name).active);
+                    };
+                    auto get_owner = [&](const string &name) {
+                        return authority(get<account_authority_object, by_account>(name).owner);
+                    };
+                    auto get_posting = [&](const string &name) {
+                        return authority(get<account_authority_object, by_account>(name).posting);
+                    };
 
                     try {
                         trx.verify_authority(chain_id, get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH);
-                    }
-                    catch (protocol::tx_missing_active_auth &e) {
+                    } catch (protocol::tx_missing_active_auth &e) {
                         if (get_shared_db_merkle().find(head_block_num() + 1) ==
                             get_shared_db_merkle().end()) {
                             throw e;
@@ -3174,7 +3182,7 @@ namespace steemit {
 
         void database::create_block_summary(const signed_block &next_block) {
             try {
-                block_summary_id_type sid(next_block.block_num() & 0xffff);
+                block_summary_object::id_type sid(next_block.block_num() & 0xffff);
                 modify(get<block_summary_object>(sid), [&](block_summary_object &p) {
                     p.block_id = next_block.id();
                 });
@@ -4879,7 +4887,7 @@ namespace steemit {
                 const auto &a = *itr;
 
                 const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-                auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
+                auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
                 while (wit_itr != vidx.end() && wit_itr->account == a.id) {
                     adjust_witness_vote(get(wit_itr->witness), a.witness_vote_weight());
                     ++wit_itr;
@@ -4897,7 +4905,7 @@ namespace steemit {
                 uint16_t witnesses_voted_for = 0;
                 if (force || (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT)) {
                     const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-                    auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
+                    auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
                     while (wit_itr != vidx.end() && wit_itr->account == a.id) {
                         ++witnesses_voted_for;
                         ++wit_itr;

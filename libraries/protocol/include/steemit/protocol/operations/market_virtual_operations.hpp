@@ -15,10 +15,9 @@ namespace steemit {
          * emitted for the purpose of accurately tracking account history, accelerating
          * a reindex.
          */
-        template<>
-        struct fill_order_operation<1>
-                : public virtual_operation, public static_version<1> {
+        struct fill_order_operation : public virtual_operation {
             fill_order_operation() {
+
             }
 
             fill_order_operation(const string &c_o, uint32_t c_id, const asset &c_p, const string &o_o, uint32_t o_id, const asset &o_p)
@@ -36,11 +35,12 @@ namespace steemit {
         };
 
 
-        template<>
-        struct fill_order_operation<STEEMIT_HARDFORK_0_17>
-                : public virtual_operation,
-                  public static_version<STEEMIT_HARDFORK_0_17> {
-            fill_order_operation(integral_id_type o, account_name_type a, asset p, asset r, asset f)
+        struct fill_asset_order_operation : public virtual_operation {
+            fill_asset_order_operation() {
+
+            }
+
+            fill_asset_order_operation(integral_id_type o, account_name_type a, asset p, asset r, asset f)
                     : order_id(o), account_id(a), pays(p), receives(r) {
             }
 
@@ -60,6 +60,6 @@ namespace steemit {
 
 FC_REFLECT(steemit::protocol::fill_order_operation, (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
 
-FC_REFLECT(graphene::chain::fill_order_operation, (fee)(order_id)(account_id)(pays)(receives))
+FC_REFLECT(steemit::protocol::fill_asset_order_operation, (order_id)(account_id)(pays)(receives))
 
 #endif //GOLOS_MARKET_VIRTUAL_OPERATIONS_HPP

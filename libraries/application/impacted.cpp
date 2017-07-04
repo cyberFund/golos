@@ -138,6 +138,11 @@ namespace steemit {
                 _impacted.insert(op.open_owner);
             }
 
+            void operator()(const fill_asset_order_operation &op) {
+                _impacted.insert(op.current_owner);
+                _impacted.insert(op.open_owner);
+            }
+
             void operator()(const limit_order_cancel_operation &op) {
                 _impacted.insert(op.owner);
             }

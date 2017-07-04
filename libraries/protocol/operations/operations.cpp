@@ -1,4 +1,4 @@
-#include <steemit/protocol/operations.hpp>
+#include <steemit/protocol/operations/operations.hpp>
 
 #include <steemit/protocol/operations/operation_utilities_impl.hpp>
 

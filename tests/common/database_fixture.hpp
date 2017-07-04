@@ -117,12 +117,12 @@ extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
 #define ACTOR(name) \
    PREP_ACTOR(name) \
    const auto& name = account_create(BOOST_PP_STRINGIZE(name), name ## _public_key, name ## _post_key.get_public_key()); \
-   account_id_type name ## _id = name.id; (void)name ## _id;
+   account_object::id_type name ## _id = name.id; (void)name ## _id;
 
 #define GET_ACTOR(name) \
    fc::ecc::private_key name ## _private_key = generate_private_key(BOOST_PP_STRINGIZE(name)); \
    const account_object& name = get_account(BOOST_PP_STRINGIZE(name)); \
-   account_id_type name ## _id = name.id; \
+   account_object::id_type name ## _id = name.id; \
    (void)name ##_id
 
 #define ACTORS_IMPL(r, data, elem) ACTOR(elem)
@@ -144,7 +144,7 @@ namespace steemit {
             chain::database &db;
             signed_transaction trx;
             public_key_type committee_key;
-            account_id_type committee_account;
+            account_object::id_type committee_account;
             fc::ecc::private_key private_key = fc::ecc::private_key::generate();
             fc::ecc::private_key init_account_priv_key;
             string debug_key = graphene::utilities::key_to_wif(init_account_priv_key);

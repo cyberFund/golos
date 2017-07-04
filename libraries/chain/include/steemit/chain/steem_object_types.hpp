@@ -83,99 +83,11 @@ namespace steemit {
             call_order_object_type,
 
             account_statistics_object_type,
-            account_balance_object_type
+            account_balance_object_type,
+
+            operation_history_object_type,
+            account_transaction_history_object_type
         };
-
-        class dynamic_global_property_object;
-
-        class account_object;
-
-        class account_authority_object;
-
-        class account_bandwidth_object;
-
-        class witness_object;
-
-        class transaction_object;
-
-        class block_summary_object;
-
-        class witness_schedule_object;
-
-        class comment_object;
-
-        class comment_vote_object;
-
-        class witness_vote_object;
-
-        class limit_order_object;
-
-        class feed_history_object;
-
-        class convert_request_object;
-
-        class liquidity_reward_balance_object;
-
-        class operation_object;
-
-        class account_history_object;
-
-        class category_object;
-
-        class hardfork_property_object;
-
-        class withdraw_vesting_route_object;
-
-        class owner_authority_history_object;
-
-        class account_recovery_request_object;
-
-        class change_recovery_account_request_object;
-
-        class escrow_object;
-
-        class savings_withdraw_object;
-
-        class decline_voting_rights_request_object;
-
-        class block_stats_object;
-
-        class vesting_delegation_object;
-
-        class vesting_delegation_expiration_object;
-
-        class reward_fund_object;
-
-        typedef object_id<dynamic_global_property_object> dynamic_global_property_id_type;
-        typedef object_id<account_object> account_id_type;
-        typedef object_id<account_authority_object> account_authority_id_type;
-        typedef object_id<account_bandwidth_object> account_bandwidth_id_type;
-        typedef object_id<witness_object> witness_id_type;
-        typedef object_id<transaction_object> transaction_object_id_type;
-        typedef object_id<block_summary_object> block_summary_id_type;
-        typedef object_id<witness_schedule_object> witness_schedule_id_type;
-        typedef object_id<comment_object> comment_id_type;
-        typedef object_id<comment_vote_object> comment_vote_id_type;
-        typedef object_id<witness_vote_object> witness_vote_id_type;
-        typedef object_id<limit_order_object> limit_order_id_type;
-        typedef object_id<feed_history_object> feed_history_id_type;
-        typedef object_id<convert_request_object> convert_request_id_type;
-        typedef object_id<liquidity_reward_balance_object> liquidity_reward_balance_id_type;
-        typedef object_id<operation_object> operation_id_type;
-        typedef object_id<account_history_object> account_history_id_type;
-        typedef object_id<category_object> category_id_type;
-        typedef object_id<hardfork_property_object> hardfork_property_id_type;
-        typedef object_id<withdraw_vesting_route_object> withdraw_vesting_route_id_type;
-        typedef object_id<owner_authority_history_object> owner_authority_history_id_type;
-        typedef object_id<account_recovery_request_object> account_recovery_request_id_type;
-        typedef object_id<change_recovery_account_request_object> change_recovery_account_request_id_type;
-        typedef object_id<escrow_object> escrow_id_type;
-        typedef object_id<savings_withdraw_object> savings_withdraw_id_type;
-        typedef object_id<decline_voting_rights_request_object> decline_voting_rights_request_id_type;
-        typedef object_id<block_stats_object> block_stats_id_type;
-        typedef object_id<vesting_delegation_object> vesting_delegation_id_type;
-        typedef object_id<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
-        typedef object_id<reward_fund_object> reward_fund_id_type;
 
         enum bandwidth_type {
             post,    ///< Rate limiting posting reward eligibility over time
@@ -250,10 +162,6 @@ namespace fc {
     }
 }
 
-namespace fc {
-
-}
-
 FC_REFLECT_ENUM(steemit::chain::object_type,
         (dynamic_global_property_object_type)
                 (account_object_type)
@@ -285,6 +193,15 @@ FC_REFLECT_ENUM(steemit::chain::object_type,
                 (vesting_delegation_object_type)
                 (vesting_delegation_expiration_object_type)
                 (reward_fund_object_type)
+                (asset_dynamic_data_object_type)
+                (asset_object_type)
+                (asset_bitasset_data_object_type)
+                (force_settlement_object_type)
+                (call_order_object_type)
+                (account_statistics_object_type)
+                (account_balance_object_type)
+                (operation_history_object_type)
+                (account_transaction_history_object_type)
 )
 
 FC_REFLECT_TYPENAME(steemit::chain::shared_string)

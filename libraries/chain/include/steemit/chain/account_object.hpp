@@ -10,6 +10,7 @@
 #include <steemit/chain/shared_authority.hpp>
 
 #include <numeric>
+#include <chainbase/chainbase.hpp>
 
 namespace steemit {
     namespace chain {
@@ -42,7 +43,7 @@ namespace steemit {
             /**
              * Keep the most recent operation as a root pointer to a linked list of the transaction history.
              */
-            account_transaction_history_id_type most_recent_op;
+            account_transaction_history_object::id_type most_recent_op;
             /** Total operations related to this account. */
             uint32_t total_ops = 0;
             /** Total operations related to this account that has been removed from the database. */
@@ -526,15 +527,15 @@ namespace steemit {
                 owner_authority_history_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<owner_authority_history_object, owner_authority_history_id_type, &owner_authority_history_object::id>>,
+                                member<owner_authority_history_object, owner_authority_history_object::id_type, &owner_authority_history_object::id>>,
                         ordered_unique<tag<by_account>,
                                 composite_key<owner_authority_history_object,
                                         member<owner_authority_history_object, account_name_type, &owner_authority_history_object::account>,
                                         member<owner_authority_history_object, time_point_sec, &owner_authority_history_object::last_valid_time>,
-                                        member<owner_authority_history_object, owner_authority_history_id_type, &owner_authority_history_object::id>
+                                        member<owner_authority_history_object, owner_authority_history_object::id_type, &owner_authority_history_object::id>
                                 >,
                                 composite_key_compare<
-                                        std::less<account_name_type>, std::less<time_point_sec>, std::less<owner_authority_history_id_type>>
+                                        std::less<account_name_type>, std::less<time_point_sec>, std::less<owner_authority_history_object::id_type>>
                         >
                 >,
                 allocator<owner_authority_history_object>
@@ -546,21 +547,21 @@ namespace steemit {
                 account_authority_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<account_authority_object, account_authority_id_type, &account_authority_object::id>>,
+                                member<account_authority_object, account_authority_object::id_type, &account_authority_object::id>>,
                         ordered_unique<tag<by_account>,
                                 composite_key<account_authority_object,
                                         member<account_authority_object, account_name_type, &account_authority_object::account>,
-                                        member<account_authority_object, account_authority_id_type, &account_authority_object::id>
+                                        member<account_authority_object, account_authority_object::id_type, &account_authority_object::id>
                                 >,
                                 composite_key_compare<
-                                        std::less<account_name_type>, std::less<account_authority_id_type>>
+                                        std::less<account_name_type>, std::less<account_authority_object::id_type>>
                         >,
                         ordered_unique<tag<by_last_owner_update>,
                                 composite_key<account_authority_object,
                                         member<account_authority_object, time_point_sec, &account_authority_object::last_owner_update>,
-                                        member<account_authority_object, account_authority_id_type, &account_authority_object::id>
+                                        member<account_authority_object, account_authority_object::id_type, &account_authority_object::id>
                                 >,
-                                composite_key_compare<std::greater<time_point_sec>, std::less<account_authority_id_type>>
+                                composite_key_compare<std::greater<time_point_sec>, std::less<account_authority_object::id_type>>
                         >
                 >,
                 allocator<account_authority_object>
@@ -573,7 +574,7 @@ namespace steemit {
                 account_bandwidth_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<account_bandwidth_object, account_bandwidth_id_type, &account_bandwidth_object::id>>,
+                                member<account_bandwidth_object, account_bandwidth_object::id_type, &account_bandwidth_object::id>>,
                         ordered_unique<tag<by_account_bandwidth_type>,
                                 composite_key<account_bandwidth_object,
                                         member<account_bandwidth_object, account_name_type, &account_bandwidth_object::account>,
@@ -590,7 +591,7 @@ namespace steemit {
                 vesting_delegation_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<vesting_delegation_object, vesting_delegation_id_type, &vesting_delegation_object::id>>,
+                                member<vesting_delegation_object, vesting_delegation_object::id_type, &vesting_delegation_object::id>>,
                         ordered_unique<tag<by_delegation>,
                                 composite_key<vesting_delegation_object,
                                         member<vesting_delegation_object, account_name_type, &vesting_delegation_object::delegator>,
@@ -609,21 +610,21 @@ namespace steemit {
                 vesting_delegation_expiration_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<vesting_delegation_expiration_object, vesting_delegation_expiration_id_type, &vesting_delegation_expiration_object::id>>,
+                                member<vesting_delegation_expiration_object, vesting_delegation_expiration_object::id_type, &vesting_delegation_expiration_object::id>>,
                         ordered_unique<tag<by_expiration>,
                                 composite_key<vesting_delegation_expiration_object,
                                         member<vesting_delegation_expiration_object, time_point_sec, &vesting_delegation_expiration_object::expiration>,
-                                        member<vesting_delegation_expiration_object, vesting_delegation_expiration_id_type, &vesting_delegation_expiration_object::id>
+                                        member<vesting_delegation_expiration_object, vesting_delegation_expiration_object::id_type, &vesting_delegation_expiration_object::id>
                                 >,
-                                composite_key_compare<std::less<time_point_sec>, std::less<vesting_delegation_expiration_id_type>>
+                                composite_key_compare<std::less<time_point_sec>, std::less<vesting_delegation_expiration_object::id_type>>
                         >,
                         ordered_unique<tag<by_account_expiration>,
                                 composite_key<vesting_delegation_expiration_object,
                                         member<vesting_delegation_expiration_object, account_name_type, &vesting_delegation_expiration_object::delegator>,
                                         member<vesting_delegation_expiration_object, time_point_sec, &vesting_delegation_expiration_object::expiration>,
-                                        member<vesting_delegation_expiration_object, vesting_delegation_expiration_id_type, &vesting_delegation_expiration_object::id>
+                                        member<vesting_delegation_expiration_object, vesting_delegation_expiration_object::id_type, &vesting_delegation_expiration_object::id>
                                 >,
-                                composite_key_compare<std::less<account_name_type>, std::less<time_point_sec>, std::less<vesting_delegation_expiration_id_type>>
+                                composite_key_compare<std::less<account_name_type>, std::less<time_point_sec>, std::less<vesting_delegation_expiration_object::id_type>>
 
                         >
                 >,
@@ -636,21 +637,21 @@ namespace steemit {
                 account_recovery_request_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<account_recovery_request_object, account_recovery_request_id_type, &account_recovery_request_object::id>>,
+                                member<account_recovery_request_object, account_recovery_request_object::id_type, &account_recovery_request_object::id>>,
                         ordered_unique<tag<by_account>,
                                 composite_key<account_recovery_request_object,
                                         member<account_recovery_request_object, account_name_type, &account_recovery_request_object::account_to_recover>,
-                                        member<account_recovery_request_object, account_recovery_request_id_type, &account_recovery_request_object::id>
+                                        member<account_recovery_request_object, account_recovery_request_object::id_type, &account_recovery_request_object::id>
                                 >,
                                 composite_key_compare<
-                                        std::less<account_name_type>, std::less<account_recovery_request_id_type>>
+                                        std::less<account_name_type>, std::less<account_recovery_request_object::id_type>>
                         >,
                         ordered_unique<tag<by_expiration>,
                                 composite_key<account_recovery_request_object,
                                         member<account_recovery_request_object, time_point_sec, &account_recovery_request_object::expires>,
-                                        member<account_recovery_request_object, account_recovery_request_id_type, &account_recovery_request_object::id>
+                                        member<account_recovery_request_object, account_recovery_request_object::id_type, &account_recovery_request_object::id>
                                 >,
-                                composite_key_compare<std::less<time_point_sec>, std::less<account_recovery_request_id_type>>
+                                composite_key_compare<std::less<time_point_sec>, std::less<account_recovery_request_object::id_type>>
                         >
                 >,
                 allocator<account_recovery_request_object>
@@ -662,22 +663,22 @@ namespace steemit {
                 change_recovery_account_request_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<change_recovery_account_request_object, change_recovery_account_request_id_type, &change_recovery_account_request_object::id>>,
+                                member<change_recovery_account_request_object, change_recovery_account_request_object::id_type, &change_recovery_account_request_object::id>>,
                         ordered_unique<tag<by_account>,
                                 composite_key<
                                         change_recovery_account_request_object,
                                         member<change_recovery_account_request_object, account_name_type, &change_recovery_account_request_object::account_to_recover>,
-                                        member<change_recovery_account_request_object, change_recovery_account_request_id_type, &change_recovery_account_request_object::id>
+                                        member<change_recovery_account_request_object, change_recovery_account_request_object::id_type, &change_recovery_account_request_object::id>
                                 >,
                                 composite_key_compare<
-                                        std::less<account_name_type>, std::less<change_recovery_account_request_id_type>>
+                                        std::less<account_name_type>, std::less<change_recovery_account_request_object::id_type>>
                         >,
                         ordered_unique<tag<by_effective_date>,
                                 composite_key<change_recovery_account_request_object,
                                         member<change_recovery_account_request_object, time_point_sec, &change_recovery_account_request_object::effective_on>,
-                                        member<change_recovery_account_request_object, change_recovery_account_request_id_type, &change_recovery_account_request_object::id>
+                                        member<change_recovery_account_request_object, change_recovery_account_request_object::id_type, &change_recovery_account_request_object::id>
                                 >,
-                                composite_key_compare<std::less<time_point_sec>, std::less<change_recovery_account_request_id_type>>
+                                composite_key_compare<std::less<time_point_sec>, std::less<change_recovery_account_request_object::id_type>>
                         >
                 >,
                 allocator<change_recovery_account_request_object>
@@ -704,8 +705,7 @@ FC_REFLECT(steemit::chain::account_object,
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_object, steemit::chain::account_index)
 
 FC_REFLECT(steemit::chain::account_authority_object,
-        (id)(account)(owner)(active)(posting)(last_owner_update)
-)
+        (id)(account)(owner)(active)(posting)(last_owner_update))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_authority_object, steemit::chain::account_authority_index)
 
 FC_REFLECT(steemit::chain::account_bandwidth_object,
@@ -722,16 +722,13 @@ FC_REFLECT(steemit::chain::vesting_delegation_expiration_object,
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::vesting_delegation_expiration_object, steemit::chain::vesting_delegation_expiration_index)
 
 FC_REFLECT(steemit::chain::owner_authority_history_object,
-        (id)(account)(previous_owner_authority)(last_valid_time)
-)
+        (id)(account)(previous_owner_authority)(last_valid_time))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::owner_authority_history_object, steemit::chain::owner_authority_history_index)
 
 FC_REFLECT(steemit::chain::account_recovery_request_object,
-        (id)(account_to_recover)(new_owner_authority)(expires)
-)
+        (id)(account_to_recover)(new_owner_authority)(expires))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_recovery_request_object, steemit::chain::account_recovery_request_index)
 
 FC_REFLECT(steemit::chain::change_recovery_account_request_object,
-        (id)(account_to_recover)(recovery_account)(effective_on)
-)
+        (id)(account_to_recover)(recovery_account)(effective_on))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::change_recovery_account_request_object, steemit::chain::change_recovery_account_request_index)

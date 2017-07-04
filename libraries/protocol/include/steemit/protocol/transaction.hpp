@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/protocol/operations.hpp>
+#include <steemit/protocol/operations/operations.hpp>
 #include <steemit/protocol/sign_state.hpp>
 #include <steemit/protocol/types.hpp>
 
