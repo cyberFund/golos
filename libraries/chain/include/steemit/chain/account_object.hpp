@@ -2,6 +2,7 @@
 
 #include <fc/fixed_string.hpp>
 
+#include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 
@@ -78,7 +79,7 @@ namespace steemit {
             share_type pending_vested_fees;
 
             /// @brief Split up and pay out @ref pending_fees and @ref pending_vested_fees
-            void process_fees(const account_object &a, database &d) const;
+            void process_fees(const account_object &a, chainbase::database &d) const;
 
             /**
              * Core fees are paid into the account_statistics_object by this method
@@ -109,11 +110,11 @@ namespace steemit {
             protocol::asset_symbol_type asset_type;
             share_type balance;
 
-            asset get_balance() const {
-                return asset(balance, asset_type);
+            protocol::asset get_balance() const {
+                return protocol::asset(balance, asset_type);
             }
 
-            void adjust_balance(const asset &delta);
+            void adjust_balance(const protocol::asset &delta);
         };
 
         class account_object
@@ -129,6 +130,7 @@ namespace steemit {
 
             id_type id;
 
+            /// The account's name. This name must be unique among all account names on the graph. May not be empty.
             account_name_type name;
             public_key_type memo_key;
             shared_string json_metadata;
@@ -153,8 +155,8 @@ namespace steemit {
             uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
             time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-            asset balance = asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
-            asset savings_balance = asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
+            protocol::asset balance = protocol::asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
+            protocol::asset savings_balance = protocol::asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
 
             /**
              *  SBD Deposits pay interest based upon the interest rate set by witnesses. The purpose of these
@@ -170,13 +172,13 @@ namespace steemit {
              *  @defgroup sbd_data SBD Balance Data
              */
             ///@{
-            asset sbd_balance = asset(0, SBD_SYMBOL); /// total sbd balance
+            protocol::asset sbd_balance = protocol::asset(0, SBD_SYMBOL); /// total sbd balance
             uint128_t sbd_seconds; ///< total sbd * how long it has been hel
             time_point_sec sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec sbd_last_interest_payment; ///< used to pay interest at most once per month
 
 
-            asset savings_sbd_balance = asset(0, SBD_SYMBOL); /// total sbd balance
+            protocol::asset savings_sbd_balance = protocol::asset(0, SBD_SYMBOL); /// total sbd balance
             uint128_t savings_sbd_seconds; ///< total sbd * how long it has been hel
             time_point_sec savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec savings_sbd_last_interest_payment; ///< used to pay interest at most once per month
@@ -187,11 +189,11 @@ namespace steemit {
             share_type curation_rewards = 0;
             share_type posting_rewards = 0;
 
-            asset vesting_shares = asset(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
-            asset delegated_vesting_shares = asset(0, VESTS_SYMBOL);
-            asset received_vesting_shares = asset(0, VESTS_SYMBOL);
+            protocol::asset vesting_shares = protocol::asset(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
+            protocol::asset delegated_vesting_shares = protocol::asset(0, VESTS_SYMBOL);
+            protocol::asset received_vesting_shares = protocol::asset(0, VESTS_SYMBOL);
 
-            asset vesting_withdraw_rate = asset(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
+            protocol::asset vesting_withdraw_rate = protocol::asset(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
             time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
             share_type withdrawn = 0; /// Track how many shares have been withdrawn
             share_type to_withdraw = 0; /// Might be able to look this up with operation history.
@@ -223,7 +225,7 @@ namespace steemit {
                         share_type());
             }
 
-            asset effective_vesting_shares() const {
+            protocol::asset effective_vesting_shares() const {
                 return vesting_shares - delegated_vesting_shares +
                        received_vesting_shares;
             }
@@ -244,7 +246,16 @@ namespace steemit {
 
             account_name_type account;
 
+            /**
+             * The owner authority represents absolute control over the account. Usually the keys in this authority will
+             * be kept in cold storage, as they should not be needed very often and compromise of these keys constitutes
+             * complete and irrevocable loss of the account. Generally the only time the owner authority is required is to
+             * update the active authority.
+             */
             shared_authority owner;   ///< used for backup control, can set owner or active
+
+            /// The owner authority contains the hot keys of the account. This authority has control over nearly all
+            /// operations the account may perform.
             shared_authority active;  ///< used for all monetary operations, can set active or posting
             shared_authority posting; ///< used for voting and posting
 
@@ -285,7 +296,7 @@ namespace steemit {
             id_type id;
             account_name_type delegator;
             account_name_type delegatee;
-            asset vesting_shares;
+            protocol::asset vesting_shares;
             time_point_sec min_delegation_time;
         };
 
@@ -302,7 +313,7 @@ namespace steemit {
 
             id_type id;
             account_name_type delegator;
-            asset vesting_shares;
+            protocol::asset vesting_shares;
             time_point_sec expiration;
         };
 
@@ -357,59 +368,6 @@ namespace steemit {
             time_point_sec effective_on;
         };
 
-        /**
-    *  @brief This secondary index will allow a reverse lookup of all accounts that a particular key or account
-    *  is an potential signing authority.
-    */
-        class account_member_index : public chainbase::secondary_index {
-        public:
-            virtual void object_inserted(const object &obj) override;
-
-            virtual void object_removed(const object &obj) override;
-
-            virtual void about_to_modify(const object &before) override;
-
-            virtual void object_modified(const object &after) override;
-
-
-            /** given an account or key, map it to the set of accounts that reference it in an active or owner authority */
-            map<account_name_type, set<account_name_type>> account_to_account_memberships;
-            map<public_key_type, set<account_name_type>> account_to_key_memberships;
-            /** some accounts use address authorities in the genesis block */
-            map<address, set<account_name_type>> account_to_address_memberships;
-
-
-        protected:
-            set<account_name_type> get_account_members(const account_object &a) const;
-
-            set<public_key_type> get_key_members(const account_object &a) const;
-
-            set<address> get_address_members(const account_object &a) const;
-
-            set<account_name_type> before_account_members;
-            set<public_key_type> before_key_members;
-            set<address> before_address_members;
-        };
-
-
-        /**
-         *  @brief This secondary index will allow a reverse lookup of all accounts that have been referred by
-         *  a particular account.
-         */
-        class account_referrer_index : public chainbase::secondary_index {
-        public:
-            virtual void object_inserted(const object &obj) override;
-
-            virtual void object_removed(const object &obj) override;
-
-            virtual void about_to_modify(const object &before) override;
-
-            virtual void object_modified(const object &after) override;
-
-            /** maps the referrer to the set of accounts that they have referred */
-            map<account_name_type, set<account_name_type>> referred_by;
-        };
-
         struct by_account_asset;
         struct by_asset_balance;
         /**
@@ -440,7 +398,7 @@ namespace steemit {
                                 >
                         >
                 >
-        > account_balance_object_multi_index_type;
+        > account_balance_index;
 
         struct by_name;
         struct by_proxy;
@@ -459,61 +417,61 @@ namespace steemit {
                 account_object,
                 indexed_by<
                         ordered_unique<tag<by_id>,
-                                member<account_object, account_name_type, &account_object::id>>,
+                                member<account_object, account_object::id_type, &account_object::id>>,
                         ordered_unique<tag<by_name>,
                                 member<account_object, account_name_type, &account_object::name>,
                                 protocol::string_less>,
                         ordered_unique<tag<by_proxy>,
                                 composite_key<account_object,
                                         member<account_object, account_name_type, &account_object::proxy>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 > /// composite key by proxy
                         >,
                         ordered_unique<tag<by_next_vesting_withdrawal>,
                                 composite_key<account_object,
                                         member<account_object, time_point_sec, &account_object::next_vesting_withdrawal>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 > /// composite key by_next_vesting_withdrawal
                         >,
                         ordered_unique<tag<by_last_post>,
                                 composite_key<account_object,
                                         member<account_object, time_point_sec, &account_object::last_post>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 >,
                                 composite_key_compare<std::greater<time_point_sec>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_steem_balance>,
                                 composite_key<account_object,
-                                        member<account_object, asset, &account_object::balance>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, protocol::asset, &account_object::balance>,
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<asset>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<protocol::asset>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_smp_balance>,
                                 composite_key<account_object,
-                                        member<account_object, asset, &account_object::vesting_shares>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, protocol::asset, &account_object::vesting_shares>,
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<asset>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<protocol::asset>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_smd_balance>,
                                 composite_key<account_object,
-                                        member<account_object, asset, &account_object::sbd_balance>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, protocol::asset, &account_object::sbd_balance>,
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<asset>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<protocol::asset>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_post_count>,
                                 composite_key<account_object,
                                         member<account_object, uint32_t, &account_object::post_count>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 >,
                                 composite_key_compare<std::greater<uint32_t>, std::less<account_name_type>>
                         >,
                         ordered_unique<tag<by_vote_count>,
                                 composite_key<account_object,
                                         member<account_object, uint32_t, &account_object::lifetime_vote_count>,
-                                        member<account_object, account_name_type, &account_object::id>
+                                        member<account_object, account_object::id_type, &account_object::id>
                                 >,
                                 composite_key_compare<std::greater<uint32_t>, std::less<account_name_type>>
                         >
@@ -733,3 +691,15 @@ CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_recovery_request_object, steemi
 FC_REFLECT(steemit::chain::change_recovery_account_request_object,
         (id)(account_to_recover)(recovery_account)(effective_on))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::change_recovery_account_request_object, steemit::chain::change_recovery_account_request_index)
+
+FC_REFLECT(steemit::chain::account_balance_object, (id)(owner)(asset_type)(balance))
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_balance_object, steemit::chain::account_balance_index)
+
+FC_REFLECT(steemit::chain::account_statistics_object,
+        (id)
+                (owner)
+                (most_recent_op)
+                (total_ops)(removed_ops)
+                (total_core_in_orders)
+                (lifetime_fees_paid)
+                (pending_fees)(pending_vested_fees));

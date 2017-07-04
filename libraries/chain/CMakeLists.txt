@@ -53,6 +53,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
+        account_object.cpp
         asset_evaluator.cpp
         asset_object.cpp
         block_log.cpp

@@ -255,15 +255,13 @@ namespace steemit {
 
         typedef multi_index_container <
         asset_bitasset_data_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
+        indexed_by<ordered_unique < tag < by_id>,
+        member<asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
         ordered_non_unique <tag<by_feed_expiration>,
         const_mem_fun<asset_bitasset_data_object, time_point_sec, &asset_bitasset_data_object::feed_expiration_time>
         >,
-        indexed_by <
-        ordered_unique<tag <
-                       by_symbol>, member<asset_bitasset_data_object, protocol::asset_symbol_type, &asset_bitasset_data_object::symbol>>
+        ordered_unique <tag<by_symbol>,
+        member<asset_bitasset_data_object, protocol::asset_symbol_type, &asset_bitasset_data_object::symbol>>
         >
         >
         asset_bitasset_data_index;
@@ -284,7 +282,7 @@ namespace steemit {
         indexed_by<
                 ordered_unique < tag <
                 by_id>, member<asset_object, asset_object::id_type, &asset_object::id>>,
-        ordered_unique <tag<by_symbol>, member<asset_object, string, &asset_object::symbol>>,
+        ordered_unique <tag<by_symbol>, member<asset_object, protocol::asset_symbol_type, &asset_object::symbol>>,
         ordered_non_unique <tag<by_issuer>, member<asset_object, account_name_type, &asset_object::issuer>>,
         ordered_unique <tag<by_type>,
         composite_key<asset_object,
@@ -324,8 +322,6 @@ FC_REFLECT(steemit::chain::asset_object,
                 (precision)
                 (issuer)
                 (options)
-                (dynamic_asset_data_id)
-                (bitasset_data_id)
                 (buyback_account)
 )
 

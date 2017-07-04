@@ -126,6 +126,8 @@ namespace steemit {
             std::shared_ptr<steemit::follow::follow_api> _follow_api;
 
             boost::signals2::scoped_connection _block_applied_connection;
+
+            map<pair<asset_symbol_type, asset_symbol_type>, std::function<void(const variant &)>> _market_subscriptions;
         };
 
         applied_operation::applied_operation() {

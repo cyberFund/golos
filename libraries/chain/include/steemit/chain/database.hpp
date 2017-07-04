@@ -6,6 +6,9 @@
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
 #include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/market_object.hpp>
 
 #include <steemit/protocol/protocol.hpp>
 
@@ -14,7 +17,6 @@
 #include <fc/log/logger.hpp>
 
 #include <map>
-#include "market_object.hpp"
 
 namespace steemit {
     namespace chain {
@@ -628,6 +630,10 @@ namespace steemit {
             void clear_expired_delegations();
 
             void clear_expired_orders();
+
+            void update_expired_feeds();
+
+            bool check_for_blackswan( const asset_object& mia, bool enable_black_swan = true );
 
             void process_header_extensions(const signed_block &next_block);
 
