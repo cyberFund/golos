@@ -769,8 +769,22 @@ FC_API(steemit::application::database_api,
                 (get_vesting_delegations)
                 (get_expiring_vesting_delegations)
 
-                // Market
+                // Assets
+                (get_assets)
+                (list_assets)
+                (lookup_asset_symbols)
+
+                // Markets / feeds
                 (get_order_book)
+                (get_limit_orders)
+                (get_call_orders)
+                (get_settle_orders)
+                (get_margin_positions)
+                (subscribe_to_market)
+                (unsubscribe_from_market)
+                (get_ticker)
+                (get_24_volume)
+                (get_trade_history)
                 (get_open_orders)
                 (get_liquidity_queue)
 

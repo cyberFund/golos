@@ -227,7 +227,7 @@ namespace steemit {
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::limit_order_object,
-        (id)(created)(expiration)(seller)(orderid)(for_sale)(sell_price))
+        (id)(created)(expiration)(seller)(order_id)(for_sale)(sell_price))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::limit_order_object, steemit::chain::limit_order_index)
 
 FC_REFLECT(steemit::chain::call_order_object, (id)(borrower)(collateral)(debt)(call_price))

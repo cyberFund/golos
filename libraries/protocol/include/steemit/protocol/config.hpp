@@ -101,10 +101,10 @@
 #define STEEMIT_DEFAULT_FORCE_SETTLEMENT_OFFSET                0 ///< 1%
 #define STEEMIT_DEFAULT_FORCE_SETTLEMENT_MAX_VOLUME            (20* STEEMIT_1_PERCENT) ///< 20%
 #define STEEMIT_DEFAULT_PRICE_FEED_LIFETIME                    (60*60*24) ///< 1 day
-#define GRAPHENE_MAX_FEED_PRODUCERS                             200
-#define GRAPHENE_DEFAULT_MAX_AUTHORITY_MEMBERSHIP               10
-#define GRAPHENE_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES        10
-#define GRAPHENE_DEFAULT_MAX_ASSET_FEED_PUBLISHERS              10
+#define STEEMIT_MAX_FEED_PRODUCERS                             200
+#define STEEMIT_DEFAULT_MAX_AUTHORITY_MEMBERSHIP               10
+#define STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES        10
+#define STEEMIT_DEFAULT_MAX_ASSET_FEED_PUBLISHERS              10
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
@@ -346,10 +346,10 @@
 #define STEEMIT_DEFAULT_FORCE_SETTLEMENT_OFFSET                0 ///< 1%
 #define STEEMIT_DEFAULT_FORCE_SETTLEMENT_MAX_VOLUME            (20* STEEMIT_1_PERCENT) ///< 20%
 #define STEEMIT_DEFAULT_PRICE_FEED_LIFETIME                    (60*60*24) ///< 1 day
-#define GRAPHENE_MAX_FEED_PRODUCERS                             200
-#define GRAPHENE_DEFAULT_MAX_AUTHORITY_MEMBERSHIP               10
-#define GRAPHENE_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES        10
-#define GRAPHENE_DEFAULT_MAX_ASSET_FEED_PUBLISHERS              10
+#define STEEMIT_MAX_FEED_PRODUCERS                             200
+#define STEEMIT_DEFAULT_MAX_AUTHORITY_MEMBERSHIP               10
+#define STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES        10
+#define STEEMIT_DEFAULT_MAX_ASSET_FEED_PUBLISHERS              10
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
@@ -504,6 +504,10 @@
  *  Reserved Account IDs with special meaning
  */
 ///@{
+/// Represents the current committee members, two-week review period
+#define STEEMIT_COMMITTEE_ACCOUNT (account_id_type(0))
+/// Represents the current witnesses
+#define STEEMIT_WITNESS_ACCOUNT (account_id_type(1))
 /// Represents the current witnesses
 #define STEEMIT_MINER_ACCOUNT                   "miners"
 /// Represents the canonical account with NO authority (nobody can access funds in null account)

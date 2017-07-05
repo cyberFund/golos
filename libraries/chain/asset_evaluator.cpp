@@ -14,11 +14,10 @@ namespace steemit {
 
                 database &d = db();
 
-                const auto &chain_parameters = d.get_global_properties().parameters;
                 FC_ASSERT(op.common_options.whitelist_authorities.size() <=
-                          chain_parameters.maximum_asset_whitelist_authorities);
+                          STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
                 FC_ASSERT(op.common_options.blacklist_authorities.size() <=
-                          chain_parameters.maximum_asset_whitelist_authorities);
+                          STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
 
                 // Check that all authorities do exist
                 for (auto id : op.common_options.whitelist_authorities) {
@@ -60,9 +59,9 @@ namespace steemit {
                                   backing.symbol == STEEM_SYMBOL,
                                 "May not create a blockchain-controlled market asset which is not backed by CORE.");
                     FC_ASSERT(op.bitasset_opts->feed_lifetime_sec >
-                              chain_parameters.block_interval &&
+                              STEEMIT_BLOCK_INTERVAL &&
                               op.bitasset_opts->force_settlement_delay_sec >
-                              chain_parameters.block_interval);
+                              STEEMIT_BLOCK_INTERVAL);
                 }
                 if (op.is_prediction_market) {
                     FC_ASSERT(op.bitasset_opts);
@@ -139,8 +138,7 @@ namespace steemit {
                 const database &d = db();
 
                 const asset_object &a = d.get_asset(o.amount_to_reserve.symbol);
-                STEEMIT_ASSERT(
-                        !a.is_market_issued(),
+                STEEMIT_ASSERT(!a.is_market_issued(),
                         asset_reserve_invalid_on_mia,
                         "Cannot reserve ${sym} because it is a market-issued asset",
                         ("sym", a.symbol)
@@ -223,15 +221,13 @@ namespace steemit {
                 FC_ASSERT(o.issuer ==
                           a.issuer, "", ("o.issuer", o.issuer)("a.issuer", a.issuer));
 
-                const auto &chain_parameters = d.get_global_properties().parameters;
-
                 FC_ASSERT(o.new_options.whitelist_authorities.size() <=
-                          chain_parameters.maximum_asset_whitelist_authorities);
+                          STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
                 for (auto id : o.new_options.whitelist_authorities) {
                     d.get_account(id);
                 }
                 FC_ASSERT(o.new_options.blacklist_authorities.size() <=
-                          chain_parameters.maximum_asset_whitelist_authorities);
+                          STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
                 for (auto id : o.new_options.blacklist_authorities) {
                     d.get_account(id);
                 }
@@ -323,7 +319,7 @@ namespace steemit {
                 database &d = db();
 
                 FC_ASSERT(o.new_feed_producers.size() <=
-                          d.get_global_properties().parameters.maximum_asset_feed_publishers);
+                          STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
                 for (auto id : o.new_feed_producers) {
                     d.get_account(id);
                 }

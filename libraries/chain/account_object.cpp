@@ -26,14 +26,6 @@ namespace steemit {
         void account_statistics_object::process_fees(const account_object &a, database &d) const {
             if (pending_fees > 0 || pending_vested_fees > 0) {
                 auto pay_out_fees = [&](const account_object &account, share_type core_fee_total, bool require_vesting) {
-                    // Check the referrer -- if he's no longer a member, pay to the lifetime referrer instead.
-                    // No need to check the registrar; registrars are required to be lifetime members.
-                    if (d.get_account(account.referrer).is_basic_account(d.head_block_time())) {
-                        d.modify(account, [](account_object &a) {
-                            a.referrer = a.lifetime_referrer;
-                        });
-                    }
-
                     share_type network_cut = cut_fee(core_fee_total, account.network_fee_percentage);
                     assert(network_cut <= core_fee_total);
 
@@ -44,11 +36,10 @@ namespace steemit {
                     share_type accumulated = network_cut - reserveed;
                     assert(accumulated + reserveed == network_cut);
 #endif
-                    share_type lifetime_cut = cut_fee(core_fee_total, account.lifetime_referrer_fee_percentage);
                     share_type referral =
-                            core_fee_total - network_cut - lifetime_cut;
+                            core_fee_total - network_cut;
 
-                    d.modify(d.get_asset_dynamic_data_id_type()(d), [network_cut](asset_dynamic_data_object &d) {
+                    d.modify(asset_dynamic_data_object(), [network_cut](asset_dynamic_data_object &d) {
                         d.accumulated_fees += network_cut;
                     });
 
@@ -58,12 +49,8 @@ namespace steemit {
                     share_type referrer_cut = cut_fee(referral, account.referrer_rewards_percentage);
                     share_type registrar_cut = referral - referrer_cut;
 
-                    d.deposit_cashback(d.get(account.lifetime_referrer), lifetime_cut, require_vesting);
-                    d.deposit_cashback(d.get(account.referrer), referrer_cut, require_vesting);
-                    d.deposit_cashback(d.get(account.registrar), registrar_cut, require_vesting);
-
                     assert(referrer_cut + registrar_cut + accumulated +
-                           reserveed + lifetime_cut == core_fee_total);
+                           reserveed == core_fee_total);
                 };
 
                 pay_out_fees(a, pending_fees, true);
