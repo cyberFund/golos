@@ -89,7 +89,7 @@ namespace steemit {
                     });
                 }
 
-                auto next_asset_id = db().get_index<asset_index>().get_next_id();
+                auto next_asset_id = db().get_index<asset_index>().indicies().get<by_symbol>;
 
                 const asset_object &new_asset =
                         db().create<asset_object>([&](asset_object &a) {
@@ -98,8 +98,7 @@ namespace steemit {
                             a.symbol_name = op.symbol_name;
                             a.precision = op.precision;
                             a.options = op.common_options;
-                            if (a.options.core_exchange_rate.base.symbol ==
-                                STEEM_SYMBOL) {
+                            if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
                                 a.options.core_exchange_rate.quote.asset_id = next_asset_id;
                             } else {
                                 a.options.core_exchange_rate.base.asset_id = next_asset_id;

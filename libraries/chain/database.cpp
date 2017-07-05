@@ -1103,7 +1103,7 @@ namespace steemit {
 
         inline const void database::push_virtual_operation(const operation &op, bool force) {
             if (!force) {
-#if defined( STEEMIT_BUILD_LOW_MEMORY ) && !defined( STEEMIT_BUILD_TESTNET )
+#if defined(STEEMIT_BUILD_LOW_MEMORY) && !defined(STEEMIT_BUILD_TESTNET)
                 return;
 #endif
             }
@@ -3751,7 +3751,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional <asset> collateral_freed;
+                optional<asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
