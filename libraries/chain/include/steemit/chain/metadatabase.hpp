@@ -9,7 +9,7 @@
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
-#include <steemit/chain/policies/account_police.hpp>
+#include <steemit/chain/policies/account_policy.hpp>
 
 namespace steemit {
 namespace chain {
@@ -72,9 +72,6 @@ public:
 
     void initialize_evaluators(){
         _evaluator_registry.register_evaluator<vote_evaluator>();
-        _evaluator_registry.register_evaluator<comment_evaluator>();
-        _evaluator_registry.register_evaluator<comment_options_evaluator>();
-        _evaluator_registry.register_evaluator<delete_comment_evaluator>();
         _evaluator_registry.register_evaluator<transfer_evaluator>();
         _evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
         _evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
@@ -90,9 +87,6 @@ public:
         _evaluator_registry.register_evaluator<report_over_production_evaluator>();
         _evaluator_registry.register_evaluator<feed_publish_evaluator>();
         _evaluator_registry.register_evaluator<convert_evaluator>();
-        _evaluator_registry.register_evaluator<limit_order_create_evaluator>();
-        _evaluator_registry.register_evaluator<limit_order_create2_evaluator>();
-        _evaluator_registry.register_evaluator<limit_order_cancel_evaluator>();
         _evaluator_registry.register_evaluator<challenge_authority_evaluator>();
         _evaluator_registry.register_evaluator<prove_authority_evaluator>();
         _evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
@@ -124,7 +118,7 @@ protected:
 
 };
 
-using database = database_police<account_read_police, account_write_police>;
+using database = database_police<account_policy, account_write_police>;
 
 }
 }

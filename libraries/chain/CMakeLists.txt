@@ -47,7 +47,13 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/utilities/reward.hpp
         include/steemit/chain/utilities/uint256.hpp
 
-        include/steemit/chain/policies/account_police.hpp
+        include/steemit/chain/policies/account_policy.hpp
+        include/steemit/chain/policies/asset_policy.hpp
+        include/steemit/chain/policies/comment_policy.hpp
+        include/steemit/chain/policies/escrow_policy.hpp
+        include/steemit/chain/policies/order_policy.hpp
+        include/steemit/chain/policies/witness_policy.hpp
+
         )
 
 list(APPEND CURRENT_TARGET_SOURCES
