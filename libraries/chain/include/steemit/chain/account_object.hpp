@@ -78,9 +78,6 @@ namespace steemit {
              */
             share_type pending_vested_fees;
 
-            /// @brief Split up and pay out @ref pending_fees and @ref pending_vested_fees
-            void process_fees(const account_object &a, chainbase::database &d) const;
-
             /**
              * Core fees are paid into the account_statistics_object by this method
              */
@@ -410,6 +407,16 @@ namespace steemit {
         struct by_post_count;
         struct by_vote_count;
 
+        typedef multi_index_container<
+                account_statistics_object,
+                indexed_by<
+                        ordered_unique<tag<by_id>, member<account_statistics_object, account_statistics_object::id_type, &account_statistics_object::id>>,
+                        ordered_unique<tag<by_name>,
+                                member<account_statistics_object, account_name_type, &account_statistics_object::owner>,
+                                protocol::string_less>
+                >
+        > account_statistics_index;
+
         /**
          * @ingroup object_index
          */
@@ -703,3 +710,4 @@ FC_REFLECT(steemit::chain::account_statistics_object,
                 (total_core_in_orders)
                 (lifetime_fees_paid)
                 (pending_fees)(pending_vested_fees));
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_statistics_index, steemit::chain::account_statistics_index)

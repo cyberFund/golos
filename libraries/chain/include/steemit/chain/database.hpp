@@ -175,6 +175,14 @@ namespace steemit {
 
             const account_object *find_account(const account_name_type &name) const;
 
+            const account_statistics_object &get_account_statistics(const account_name_type &name) const;
+
+            const account_statistics_object *find_account_statistics(const account_name_type &name) const;
+
+            const account_balance_object &get_account_balance(const account_name_type &name) const;
+
+            const account_balance_object *find_account_balance(const account_name_type &name) const;
+
             const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
 
             const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
@@ -194,6 +202,10 @@ namespace steemit {
             const limit_order_object &get_limit_order(const account_name_type &owner, integral_id_type id) const;
 
             const limit_order_object *find_limit_order(const account_name_type &owner, integral_id_type id) const;
+
+            const call_order_object &get_call_order(const account_name_type &owner, integral_id_type id) const;
+
+            const call_order_object *find_call_order(const account_name_type &owner, integral_id_type id) const;
 
             const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
 

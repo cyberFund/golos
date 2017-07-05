@@ -35,11 +35,11 @@ namespace steemit {
                 auto dotpos = op.symbol_name.rfind('.');
                 if (dotpos != std::string::npos) {
                     auto prefix = op.symbol_name.substr(0, dotpos);
-                    auto asset_symbol_itr = asset_indx.find(prefix);
-                    FC_ASSERT(asset_symbol_itr !=
+                    auto asset_symbol_sub_itr = asset_indx.find(prefix);
+                    FC_ASSERT(asset_symbol_sub_itr !=
                               asset_indx.end(), "Asset ${s} may only be created by issuer of ${p}, but ${p} has not been registered",
                             ("s", op.symbol_name)("p", prefix));
-                    FC_ASSERT(asset_symbol_itr->issuer ==
+                    FC_ASSERT(asset_symbol_sub_itr->issuer ==
                               op.issuer, "Asset ${s} may only be created by issuer of ${p}, ${i}",
                             ("s", op.symbol_name)("p", prefix)("i", d.get_account(op.issuer).name));
                 }
@@ -51,13 +51,16 @@ namespace steemit {
                         const asset_object &backing_backing = d.get_asset(backing_bitasset_data.options.short_backing_asset);
                         FC_ASSERT(!backing_backing.is_market_issued(),
                                 "May not create a bitasset backed by a bitasset backed by a bitasset.");
-                        FC_ASSERT(op.issuer != STEEMIT_COMMITTEE_ACCOUNT ||
+                        FC_ASSERT(d.get_account(op.issuer).name !=
+                                  STEEMIT_COMMITTEE_ACCOUNT ||
                                   backing_backing.symbol == STEEM_SYMBOL,
                                 "May not create a blockchain-controlled market asset which is not backed by CORE.");
-                    } else
-                        FC_ASSERT(op.issuer != STEEMIT_COMMITTEE_ACCOUNT ||
+                    } else {
+                        FC_ASSERT(d.get_account(op.issuer).name !=
+                                  STEEMIT_COMMITTEE_ACCOUNT ||
                                   backing.symbol == STEEM_SYMBOL,
                                 "May not create a blockchain-controlled market asset which is not backed by CORE.");
+                    }
                     FC_ASSERT(op.bitasset_opts->feed_lifetime_sec >
                               STEEMIT_BLOCK_INTERVAL &&
                               op.bitasset_opts->force_settlement_delay_sec >
@@ -69,13 +72,14 @@ namespace steemit {
                               d.get_asset(op.bitasset_opts->short_backing_asset).precision);
                 }
 
-            } FC_CAPTURE_AND_RETHROW((op))
+            }
+            FC_CAPTURE_AND_RETHROW((op))
 
             try {
                 const asset_dynamic_data_object &dyn_asset =
                         db().create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
                             a.current_supply = 0;
-                            a.fee_pool = core_fee_paid; //op.calculate_fee(db().current_fee_schedule()).value / 2;
+                            a.fee_pool = 0; //op.calculate_fee(db().current_fee_schedule()).value / 2;
                         });
 
                 if (op.bitasset_opts.valid()) {
@@ -94,8 +98,8 @@ namespace steemit {
                             a.symbol_name = op.symbol_name;
                             a.precision = op.precision;
                             a.options = op.common_options;
-                            if (a.options.core_exchange_rate.base.asset_id.instance.value ==
-                                0) {
+                            if (a.options.core_exchange_rate.base.symbol ==
+                                STEEM_SYMBOL) {
                                 a.options.core_exchange_rate.quote.asset_id = next_asset_id;
                             } else {
                                 a.options.core_exchange_rate.base.asset_id = next_asset_id;
@@ -105,7 +109,8 @@ namespace steemit {
                             }
                         });
                 assert(new_asset.id == next_asset_id);
-            } FC_CAPTURE_AND_RETHROW((op))
+            }
+            FC_CAPTURE_AND_RETHROW((op))
         }
 
         void asset_issue_evaluator::do_apply(const asset_issue_operation &o) {

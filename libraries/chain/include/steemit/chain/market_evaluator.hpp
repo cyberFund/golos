@@ -28,7 +28,7 @@ namespace steemit {
 
             void do_apply(const protocol::limit_order_create_operation &o);
 
-            asset calculate_market_fee(const asset_object *aobj, const asset &trade_amount);
+            protocol::asset calculate_market_fee(const asset_object *aobj, const protocol::asset &trade_amount);
 
         protected:
             share_type _deferred_fee = 0;
@@ -49,7 +49,7 @@ namespace steemit {
 
             void do_apply(const protocol::limit_order_create2_operation &op);
 
-            asset calculate_market_fee(const asset_object *aobj, const asset &trade_amount);
+            protocol::asset calculate_market_fee(const asset_object *aobj, const protocol::asset &trade_amount);
 
         protected:
             share_type _deferred_fee = 0;

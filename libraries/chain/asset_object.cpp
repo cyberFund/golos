@@ -26,7 +26,7 @@ namespace steemit {
         void asset_bitasset_data_object::update_median_feeds(time_point_sec current_time) {
             current_feed_publication_time = current_time;
             vector<std::reference_wrapper<const price_feed>> current_feeds;
-            for (const pair<account_object::id_type, pair<time_point_sec, price_feed>> &f : feeds) {
+            for (const pair<account_name_type, pair<time_point_sec, price_feed>> &f : feeds) {
                 if ((current_time - f.second.first).to_seconds() <
                     options.feed_lifetime_sec &&
                     f.second.first != time_point_sec()) {
@@ -58,7 +58,7 @@ namespace steemit {
    }); \
    median_feed.field_name = median_itr->get().field_name;
 
-            BOOST_PP_SEQ_FOR_EACH(CALCULATE_MEDIAN_VALUE, ~, GRAPHENE_PRICE_FEED_FIELDS)
+            BOOST_PP_SEQ_FOR_EACH(CALCULATE_MEDIAN_VALUE, ~, (settlement_price)(maintenance_collateral_ratio)(maximum_short_squeeze_ratio)(core_exchange_rate))
 #undef CALCULATE_MEDIAN_VALUE
             // *** End Median Calculations ***
 

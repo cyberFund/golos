@@ -116,6 +116,10 @@ namespace steemit {
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(asset_reserve);
 
         STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(invalid_on_mia, asset_reserve, 1, "invalid on mia")
+
+        STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(call_order_update);
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(unfilled_margin_call, call_order_update, 1, "Updating call order would trigger a margin call that cannot be fully filled")
     }
 } // steemit::chain
 

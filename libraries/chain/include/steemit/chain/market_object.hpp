@@ -5,7 +5,6 @@
 
 namespace steemit {
     namespace chain {
-
         /**
          *  @brief an offer to sell a amount of a asset at a specified exchange rate by a certain time
          *  @ingroup object
@@ -51,13 +50,13 @@ namespace steemit {
             }
         };
 
-/**
- * @class call_order_object
- * @brief tracks debt and call price information
- *
- * There should only be one call_order_object per asset pair per account and
- * they will all have the same call price.
- */
+        /**
+         * @class call_order_object
+         * @brief tracks debt and call price information
+         *
+         * There should only be one call_order_object per asset pair per account and
+         * they will all have the same call price.
+         */
         class call_order_object
                 : public object<call_order_object_type, call_order_object> {
         public:
@@ -92,6 +91,7 @@ namespace steemit {
                 return get_collateral() / get_debt();
             }
 
+            integral_id_type order_id;
             account_name_type borrower;
             share_type collateral;  ///< call_price.base.asset_id, access via get_collateral
             share_type debt;        ///< call_price.quote.asset_id, access via get_collateral
@@ -157,7 +157,7 @@ namespace steemit {
         composite_key<limit_order_object,
                 member <
                 limit_order_object, account_name_type, &limit_order_object::seller>,
-        member<limit_order_object, uint32_t, &limit_order_object::order_id>
+        member<limit_order_object, integral_id_type, &limit_order_object::order_id>
         >
         >
         >,
@@ -177,9 +177,9 @@ namespace steemit {
         composite_key<call_order_object,
                 member <
                 call_order_object, price, &call_order_object::call_price>,
-        member<call_order_object, call_order_object::id_type, &call_order_object::id>
+        member<call_order_object, integral_id_type, &call_order_object::order_id>
         >,
-        composite_key_compare <std::less<price>, std::less<call_order_object::id_type>>
+        composite_key_compare <std::less<price>, std::less<integral_id_type>>
         >,
         ordered_unique <tag<by_account>,
         composite_key<call_order_object,
@@ -192,7 +192,7 @@ namespace steemit {
         composite_key<call_order_object,
                 const_mem_fun <
                 call_order_object, price, &call_order_object::collateralization>,
-        member<call_order_object, call_order_object::id_type, &call_order_object::id>
+        member<call_order_object, integral_id_type, &call_order_object::order_id>
         >
         >
         >

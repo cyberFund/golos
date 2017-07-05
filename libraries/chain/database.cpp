@@ -434,6 +434,28 @@ namespace steemit {
             return find<account_object, by_name>(name);
         }
 
+        const account_statistics_object &database::get_account_statistics(const account_name_type &name) const {
+            try {
+                return get<account_statistics_object, by_name>(name);
+            }
+            FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const account_statistics_object *database::find_account_statistics(const account_name_type &name) const {
+            return find<account_statistics_object, by_name>(name);
+        }
+
+        const account_balance_object &database::get_account_balance(const account_name_type &name) const {
+            try {
+                return get<account_balance_object, by_name>(name);
+            }
+            FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const account_balance_object *database::find_account_balance(const account_name_type &name) const {
+            return find<account_balance_object, by_name>(name);
+        }
+
         const comment_object &database::get_comment(const account_name_type &author, const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
@@ -3725,11 +3747,11 @@ namespace steemit {
         bool database::fill_order(const call_order_object &order, const asset &pays, const asset &receives) {
             try {
                 //idump((pays)(receives)(order));
-                FC_ASSERT(order.get_debt().asset_id == receives.asset_id);
-                FC_ASSERT(order.get_collateral().asset_id == pays.asset_id);
+                FC_ASSERT(order.get_debt().symbol == receives.symbol);
+                FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional<asset> collateral_freed;
+                optional <asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -3738,28 +3760,28 @@ namespace steemit {
                         o.collateral = 0;
                     }
                 });
-                const asset_object &mia = receives.asset_id(*this);
+                const asset_object &mia = get_asset(receives.symbol);
                 assert(mia.is_market_issued());
 
-                const asset_dynamic_data_object &mia_ddo = mia.dynamic_asset_data_id(*this);
+                const asset_dynamic_data_object &mia_ddo = get_asset_dynamic_data(mia.symbol);
 
                 modify(mia_ddo, [&](asset_dynamic_data_object &ao) {
                     //idump((receives));
                     ao.current_supply -= receives.amount;
                 });
 
-                const account_object &borrower = order.borrower(*this);
-                if (collateral_freed || pays.asset_id == asset_id_type()) {
-                    const account_statistics_object &borrower_statistics = borrower.statistics(*this);
+                const account_object &borrower = get_account(order.borrower);
+                if (collateral_freed || pays.symbol == STEEM_SYMBOL) {
+                    const account_statistics_object &borrower_statistics = get_account_statistics_object(borrower.name);
                     if (collateral_freed) {
-                        adjust_balance(borrower.get_id(), *collateral_freed);
+                        adjust_balance(borrower, *collateral_freed);
                     }
 
                     modify(borrower_statistics, [&](account_statistics_object &b) {
                         if (collateral_freed && collateral_freed->amount > 0) {
                             b.total_core_in_orders -= collateral_freed->amount;
                         }
-                        if (pays.asset_id == asset_id_type()) {
+                        if (pays.symbol == STEEM_SYMBOL) {
                             b.total_core_in_orders -= pays.amount;
                         }
 
@@ -3767,11 +3789,13 @@ namespace steemit {
                     });
                 }
 
-                assert(pays.asset_id != receives.asset_id);
-                push_applied_operation(fill_order_operation{order.id,
-                                                            order.borrower,
-                                                            pays, receives,
-                                                            asset(0, pays.asset_id)
+                assert(pays.symbol != receives.symbol);
+                push_applied_operation(fill_asset_order_operation{
+                        order.order_id,
+                        order.borrower,
+                        pays,
+                        receives,
+                        asset(0, pays.symbol)
                 });
 
                 if (collateral_freed) {
@@ -3801,7 +3825,7 @@ namespace steemit {
                         receives - issuer_fees);
 
                 assert(pays.symbol != receives.symbol);
-                push_applied_operation(fill_order_operation{settle.id,
+                push_virtual_operation(fill_order_operation{settle.id,
                                                             settle.owner, pays,
                                                             receives,
                                                             issuer_fees

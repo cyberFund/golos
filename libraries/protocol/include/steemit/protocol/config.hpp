@@ -505,9 +505,9 @@
  */
 ///@{
 /// Represents the current committee members, two-week review period
-#define STEEMIT_COMMITTEE_ACCOUNT (account_id_type(0))
+#define STEEMIT_COMMITTEE_ACCOUNT "committee"
 /// Represents the current witnesses
-#define STEEMIT_WITNESS_ACCOUNT (account_id_type(1))
+#define STEEMIT_WITNESS_ACCOUNT "witness"
 /// Represents the current witnesses
 #define STEEMIT_MINER_ACCOUNT                   "miners"
 /// Represents the canonical account with NO authority (nobody can access funds in null account)

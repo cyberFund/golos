@@ -167,6 +167,7 @@ namespace steemit {
             };
 
             optional <asset> fee;
+            integral_id_type order_id = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset delta_collateral; ///< the amount of collateral to add to the margin position
             asset delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt

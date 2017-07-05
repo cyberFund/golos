@@ -185,8 +185,9 @@ namespace steemit {
 
                 const auto &owner = this->_db.get_account(op.owner);
 
-                FC_ASSERT(this->_db.get_balance(owner, op.amount_to_sell.symbol) >=
-                          op.amount_to_sell, "Account does not have sufficient funds for limit order.");
+                FC_ASSERT(
+                        this->_db.get_balance(owner, op.amount_to_sell.symbol) >=
+                        op.amount_to_sell, "Account does not have sufficient funds for limit order.");
 
                 this->_db.adjust_balance(owner, -op.amount_to_sell);
 
@@ -252,10 +253,12 @@ namespace steemit {
                 /// all existing margin positions should have been closed va database::globally_settle_asset
                 FC_ASSERT(!_bitasset_data->has_settlement());
 
-                FC_ASSERT(op.delta_collateral.symbol == _bitasset_data->options.short_backing_asset);
+                FC_ASSERT(op.delta_collateral.symbol ==
+                          _bitasset_data->options.short_backing_asset);
 
                 if (_bitasset_data->is_prediction_market) {
-                    FC_ASSERT(op.delta_collateral.amount == op.delta_debt.amount);
+                    FC_ASSERT(
+                            op.delta_collateral.amount == op.delta_debt.amount);
                 } else if (_bitasset_data->current_feed.settlement_price.is_null()) {
                     FC_THROW_EXCEPTION(insufficient_feeds, "Cannot borrow asset with no price feed.");
                 }
@@ -311,6 +314,7 @@ namespace steemit {
                     FC_ASSERT(op.delta_debt.amount > 0);
 
                     call_obj = &d.create<call_order_object>([&](call_order_object &call) {
+                        call.order_id = op.order_id;
                         call.borrower = op.funding_account;
                         call.collateral = op.delta_collateral.amount;
                         call.debt = op.delta_debt.amount;
@@ -342,12 +346,12 @@ namespace steemit {
 
                 // then we must check for margin calls and other issues
                 if (!_bitasset_data->is_prediction_market) {
-                    call_order_id_type call_order_id = call_obj->id;
+                    call_order_object::id_type call_order_id = call_obj->id;
 
                     // check to see if the order needs to be margin called now, but don't allow black swans and require there to be
                     // limit orders available that could be used to fill the order.
                     if (d.check_call_orders(*_debt_asset, false)) {
-                        const auto call_obj = d.find(call_order_id);
+                        const auto call_obj = d.find<call_order_object, by_id>(call_order_id);
                         // if we filled at least one call order, we are OK if we totally filled.
                         STEEMIT_ASSERT(
                                 !call_obj,
@@ -356,7 +360,7 @@ namespace steemit {
                                 ("a", ~call_obj->call_price)("b", _bitasset_data->current_feed.settlement_price)
                         );
                     } else {
-                        const auto call_obj = d.find(call_order_id);
+                        const auto call_obj = d.find<call_order_object, by_id>(call_order_id);
                         FC_ASSERT(call_obj, "no margin call was executed and yet the call object was deleted");
                         //edump( (~call_obj->call_price) ("<")( _bitasset_data->current_feed.settlement_price) );
                         // We didn't fill any call orders.  This may be because we
