@@ -136,15 +136,7 @@ namespace steemit {
 
             chain_id_type get_chain_id() const;
 
-            const dynamic_global_property_object &get_dynamic_global_properties() const;
-
             const node_property_object &get_node_properties() const;
-
-            const feed_history_object &get_feed_history() const;
-
-            const witness_schedule_object &get_witness_schedule_object() const;
-
-            const hardfork_property_object &get_hardfork_property_object() const;
 
             /**
              *  Deducts fee from the account and the share supply
@@ -335,7 +327,7 @@ namespace steemit {
 
             //void process_decline_voting_rights();
 
-            void update_median_feed();
+            //void update_median_feed();
 
             //asset get_liquidity_reward() const;
 
@@ -457,11 +449,6 @@ namespace steemit {
 
             void create_block_summary(const signed_block &next_block);
 
-           // void update_median_witness_props();
-
-            void update_global_dynamic_data(const signed_block &b);
-
-            void update_signing_witness(const witness_object &signing_witness, const signed_block &new_block);
 
             void update_last_irreversible_block();
 
@@ -469,13 +456,6 @@ namespace steemit {
 
             void process_header_extensions(const signed_block &next_block);
 
-            void reset_virtual_schedule_time();
-
-            void init_hardforks();
-
-            void process_hardforks();
-
-            void apply_hardfork(uint32_t hardfork);
 
             ///@}
 

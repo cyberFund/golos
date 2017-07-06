@@ -2,6 +2,14 @@
 #define GOLOS_COMMENT_OBJECT_POLICY_HPP
 namespace steemit {
 namespace chain {
+
+
+struct reward_fund_context {
+    uint128_t recent_rshares2 = 0;
+    asset reward_balance = asset(0, STEEM_SYMBOL);
+    share_type steem_awarded = 0;
+};
+
 class comment_policy {
     comment_policy() = default;
 
@@ -488,6 +496,52 @@ class comment_policy {
         } else {
             return STEEMIT_1_PERCENT * 50;
         }
+    }
+
+    void perform_vesting_share_split(uint32_t magnitude) {
+        try {
+            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &d) {
+                d.total_vesting_shares.amount *= magnitude;
+                d.total_reward_shares2 = 0;
+            });
+
+            // Need to update all VESTS in accounts and the total VESTS in the dgpo
+            for (const auto &account : get_index<account_index>().indices()) {
+                modify(account, [&](account_object &a) {
+                    a.vesting_shares.amount *= magnitude;
+                    a.withdrawn *= magnitude;
+                    a.to_withdraw *= magnitude;
+                    a.vesting_withdraw_rate = asset(a.to_withdraw /
+                                                    STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16, VESTS_SYMBOL);
+                    if (a.vesting_withdraw_rate.amount == 0) {
+                        a.vesting_withdraw_rate.amount = 1;
+                    }
+
+                    for (uint32_t i = 0;
+                         i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                        a.proxied_vsf_votes[i] *= magnitude;
+                    }
+                });
+            }
+
+            const auto &comments = get_index<comment_index>().indices();
+            for (const auto &comment : comments) {
+                modify(comment, [&](comment_object &c) {
+                    c.net_rshares *= magnitude;
+                    c.abs_rshares *= magnitude;
+                    c.vote_rshares *= magnitude;
+                    c.children_rshares2 = 0;
+                });
+            }
+
+            for (const auto &c : comments) {
+                if (c.net_rshares.value > 0) {
+                    adjust_rshares2(c, 0, utilities::calculate_vshares(c.net_rshares.value));
+                }
+            }
+
+        }
+        FC_CAPTURE_AND_RETHROW()
     }
 
 protected:

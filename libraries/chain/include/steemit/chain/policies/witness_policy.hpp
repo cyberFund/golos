@@ -276,6 +276,36 @@ struct witness_policy {
         });
     }
 
+    void update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
+        try {
+            const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+            uint64_t new_block_aslot = dpo.current_aslot +
+                                       get_slot_at_time(new_block.timestamp);
+
+            modify(signing_witness, [&](witness_object &_wit) {
+                _wit.last_aslot = new_block_aslot;
+                _wit.last_confirmed_block_num = new_block.block_num();
+            });
+        } FC_CAPTURE_AND_RETHROW()
+    }
+
+    void reset_virtual_schedule_time() {
+        const witness_schedule_object &wso = get_witness_schedule_object();
+        modify(wso, [&](witness_schedule_object &o) {
+            o.current_virtual_time = fc::uint128(); // reset it 0
+        });
+
+        const auto &idx = get_index<witness_index>().indices();
+        for (const auto &witness : idx) {
+            modify(witness, [&](witness_object &wobj) {
+                wobj.virtual_position = fc::uint128();
+                wobj.virtual_last_update = wso.current_virtual_time;
+                wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 /
+                                              (wobj.votes.value + 1);
+            });
+        }
+    }
+
 
 protected:
     database_basic &references;

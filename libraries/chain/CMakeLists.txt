@@ -41,7 +41,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/steem_objects.hpp
         include/steemit/chain/transaction_object.hpp
         include/steemit/chain/witness_objects.hpp
-        include/steemit/chain/witness_schedule.hpp
 
         include/steemit/chain/utilities/asset.hpp
         include/steemit/chain/utilities/reward.hpp
@@ -51,11 +50,15 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/policies/asset_policy.hpp
         include/steemit/chain/policies/behaviour_based_policy.hpp
         include/steemit/chain/policies/comment_policy.hpp
+        include/steemit/chain/policies/dynamic_global_property_policy.hpp
         include/steemit/chain/policies/escrow_policy.hpp
+        include/steemit/chain/policies/feed_history_policy.hpp
+        include/steemit/chain/policies/hardfork_property_policy.hpp
         include/steemit/chain/policies/order_policy.hpp
         include/steemit/chain/policies/reward_policy.hpp
         include/steemit/chain/policies/withdrawal_policy.hpp
         include/steemit/chain/policies/witness_policy.hpp
+        include/steemit/chain/policies/witness_schedule_policy.hpp
 
         )
 
@@ -66,7 +69,6 @@ list(APPEND CURRENT_TARGET_SOURCES
         shared_authority.cpp
         steem_evaluator.cpp
         steem_objects.cpp
-        witness_schedule.cpp
 
         utilities/reward.cpp
         )
