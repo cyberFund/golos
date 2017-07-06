@@ -30,22 +30,22 @@ namespace steemit {
             time_point_sec created;
             time_point_sec expiration;
             account_name_type seller;
-            integral_id_type order_id = 0;
+            protocol::integral_id_type order_id = 0;
             share_type for_sale; ///< asset id is sell_price.base.symbol
-            price sell_price;
+            protocol::price sell_price;
 
-            pair <asset_symbol_type, asset_symbol_type> get_market() const {
+            pair <protocol::asset_symbol_type, protocol::asset_symbol_type> get_market() const {
                 return sell_price.base.symbol < sell_price.quote.symbol ?
                        std::make_pair(sell_price.base.symbol, sell_price.quote.symbol)
                                                                         :
                        std::make_pair(sell_price.quote.symbol, sell_price.base.symbol);
             }
 
-            asset amount_for_sale() const {
-                return asset(for_sale, sell_price.base.symbol);
+            protocol::asset amount_for_sale() const {
+                return protocol::asset(for_sale, sell_price.base.symbol);
             }
 
-            asset amount_to_receive() const {
+            protocol::asset amount_to_receive() const {
                 return amount_for_sale() * sell_price;
             }
         };
@@ -71,33 +71,33 @@ namespace steemit {
 
             id_type id;
 
-            asset get_collateral() const {
-                return asset(collateral, call_price.base.symbol);
+            protocol::asset get_collateral() const {
+                return protocol::asset(collateral, call_price.base.symbol);
             }
 
-            asset get_debt() const {
-                return asset(debt, debt_type());
+            protocol::asset get_debt() const {
+                return protocol::asset(debt, debt_type());
             }
 
-            asset amount_to_receive() const {
+            protocol::asset amount_to_receive() const {
                 return get_debt();
             }
 
-            asset_symbol_type debt_type() const {
+            protocol::asset_symbol_type debt_type() const {
                 return call_price.quote.symbol;
             }
 
-            price collateralization() const {
+            protocol::price collateralization() const {
                 return get_collateral() / get_debt();
             }
 
-            integral_id_type order_id;
+            protocol::integral_id_type order_id;
             account_name_type borrower;
             share_type collateral;  ///< call_price.base.asset_id, access via get_collateral
             share_type debt;        ///< call_price.quote.asset_id, access via get_collateral
-            price call_price;  ///< Debt / Collateral
+            protocol::price call_price;  ///< Debt / Collateral
 
-            pair <asset_symbol_type, asset_symbol_type> get_market() const {
+            pair <protocol::asset_symbol_type, protocol::asset_symbol_type> get_market() const {
                 auto tmp = std::make_pair(call_price.base.symbol, call_price.quote.symbol);
                 if (tmp.first > tmp.second) {
                     std::swap(tmp.first, tmp.second);
@@ -127,11 +127,11 @@ namespace steemit {
             id_type id;
 
             account_name_type owner;
-            integral_id_type settlement_id;
-            asset balance;
+            protocol::integral_id_type settlement_id;
+            protocol::asset balance;
             time_point_sec settlement_date;
 
-            asset_symbol_type settlement_asset_symbol() const {
+            protocol::asset_symbol_type settlement_asset_symbol() const {
                 return balance.symbol;
             }
         };
@@ -148,16 +148,16 @@ namespace steemit {
         ordered_unique <tag<by_price>,
         composite_key<limit_order_object,
                 member <
-                limit_order_object, price, &limit_order_object::sell_price>,
+                limit_order_object, protocol::price, &limit_order_object::sell_price>,
         member<limit_order_object, limit_order_object::id_type, &limit_order_object::id>
         >,
-        composite_key_compare <std::greater<price>, std::less<integral_id_type>>
+        composite_key_compare <std::greater<protocol::price>, std::less<protocol::integral_id_type>>
         >,
         ordered_unique <tag<by_account>,
         composite_key<limit_order_object,
                 member <
                 limit_order_object, account_name_type, &limit_order_object::seller>,
-        member<limit_order_object, integral_id_type, &limit_order_object::order_id>
+        member<limit_order_object, protocol::integral_id_type, &limit_order_object::order_id>
         >
         >
         >,
@@ -176,23 +176,23 @@ namespace steemit {
         ordered_unique <tag<by_price>,
         composite_key<call_order_object,
                 member <
-                call_order_object, price, &call_order_object::call_price>,
-        member<call_order_object, integral_id_type, &call_order_object::order_id>
+                call_order_object, protocol::price, &call_order_object::call_price>,
+        member<call_order_object, protocol::integral_id_type, &call_order_object::order_id>
         >,
-        composite_key_compare <std::less<price>, std::less<integral_id_type>>
+        composite_key_compare <std::less<protocol::price>, std::less<protocol::integral_id_type>>
         >,
         ordered_unique <tag<by_account>,
         composite_key<call_order_object,
                 member <
                 call_order_object, account_name_type, &call_order_object::borrower>,
-        const_mem_fun<call_order_object, asset_symbol_type, &call_order_object::debt_type>
+        const_mem_fun<call_order_object, protocol::asset_symbol_type, &call_order_object::debt_type>
         >
         >,
         ordered_unique <tag<by_collateral>,
         composite_key<call_order_object,
                 const_mem_fun <
-                call_order_object, price, &call_order_object::collateralization>,
-        member<call_order_object, integral_id_type, &call_order_object::order_id>
+                call_order_object, protocol::price, &call_order_object::collateralization>,
+        member<call_order_object, protocol::integral_id_type, &call_order_object::order_id>
         >
         >
         >
@@ -209,15 +209,15 @@ namespace steemit {
         composite_key<force_settlement_object,
                 member <
                 force_settlement_object, account_name_type, &force_settlement_object::owner>,
-        member<force_settlement_object, integral_id_type, &force_settlement_object::settlement_id>
+        member<force_settlement_object, protocol::integral_id_type, &force_settlement_object::settlement_id>
         >
         >,
         ordered_unique <tag<by_expiration>,
         composite_key<force_settlement_object,
                 const_mem_fun <
-                force_settlement_object, asset_symbol_type, &force_settlement_object::settlement_asset_symbol>,
+                force_settlement_object, protocol::asset_symbol_type, &force_settlement_object::settlement_asset_symbol>,
         member<force_settlement_object, time_point_sec, &force_settlement_object::settlement_date>,
-        member<force_settlement_object, integral_id_type, &force_settlement_object::settlement_id>
+        member<force_settlement_object, protocol::integral_id_type, &force_settlement_object::settlement_id>
         >
         >
         >

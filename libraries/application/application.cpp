@@ -215,7 +215,7 @@ namespace steemit {
 
                 application_impl(application *self)
                         : _self(self),
-                        //_pending_trx_db(std::make_shared<graphene::db::object_database>()),
+                        //_pending_trx_db(std::make_shared<graphene::get_database::object_database>()),
                           _chain_db(std::make_shared<chain::database>()) {
                 }
 
@@ -691,7 +691,7 @@ namespace steemit {
                                     boost::reverse(fork_history);
 
                                     if (last_non_fork_block ==
-                                        block_id_type()) { // if the fork goes all the way back to genesis (does graphene's fork db allow this?)
+                                        block_id_type()) { // if the fork goes all the way back to genesis (does graphene's fork get_database allow this?)
                                         non_fork_high_block_num = 0;
                                     } else {
                                         non_fork_high_block_num = block_header::num_from_id(last_non_fork_block);
@@ -824,7 +824,7 @@ namespace steemit {
                     fc::usleep(fc::seconds(1));
                     if (_p2p_network) {
                         _p2p_network->close();
-                        fc::usleep(fc::seconds(1)); // p2p node has some calls to the database, give it a second to shutdown before invalidating the chain db pointer
+                        fc::usleep(fc::seconds(1)); // p2p node has some calls to the database, give it a second to shutdown before invalidating the chain get_database pointer
                     }
                     if (_chain_db) {
                         _chain_db->close();
@@ -838,7 +838,7 @@ namespace steemit {
                 const bpo::variables_map *_options = nullptr;
                 api_access _apiaccess;
 
-                //std::shared_ptr<graphene::db::object_database>   _pending_trx_db;
+                //std::shared_ptr<graphene::get_database::object_database>   _pending_trx_db;
                 std::shared_ptr<steemit::chain::database> _chain_db;
                 std::shared_ptr<network::node> _p2p_network;
                 std::shared_ptr<fc::http::websocket_server> _websocket_server;
@@ -954,7 +954,7 @@ namespace steemit {
             return my->_chain_db;
         }
 
-/*std::shared_ptr<graphene::db::object_database> application::pending_trx_database() const
+/*std::shared_ptr<graphene::get_database::object_database> application::pending_trx_database() const
 {
    return my->_pending_trx_db;
 }*/

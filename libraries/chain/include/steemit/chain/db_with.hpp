@@ -72,7 +72,7 @@ namespace steemit {
                         }
                         catch (const fc::exception &e) {
 
-                            //wlog( "Pending transaction became invalid after switching to block ${b}  ${t}", ("b", _db.head_block_id())("t",_db.head_block_time()) );
+                            //wlog( "Pending transaction became invalid after switching to block ${b}  ${t}", ("b", db.head_block_id())("t",db.head_block_time()) );
                             //wlog( "The invalid pending transaction caused exception ${e}", ("e", e.to_detail_string() ) );
 
                         }

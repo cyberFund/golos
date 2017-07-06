@@ -23,11 +23,11 @@ namespace steemit {
             // typedef typename EvaluatorType::operation_type op_type;
 
             evaluator_impl(database &d)
-                    : _db(d) {
+                    : db(d) {
             }
 
             virtual void apply(const OperationType &o) final override {
-                auto *eval = static_cast< EvaluatorType * >(this);
+                auto *eval = static_cast<EvaluatorType *>(this);
                 const auto &op = o.template get<typename EvaluatorType::operation_type>();
                 eval->do_apply(op);
             }
@@ -36,12 +36,12 @@ namespace steemit {
                 return OperationType::template tag<typename EvaluatorType::operation_type>::value;
             }
 
-            database &db() {
-                return _db;
+            database &get_database() {
+                return db;
             }
 
         protected:
-            database &_db;
+            database &db;
         };
 
     }

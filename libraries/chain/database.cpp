@@ -128,7 +128,7 @@ namespace steemit {
                 }
 
                 with_read_lock([&]() {
-                    init_hardforks(); // Writes to local state, but reads from db
+                    init_hardforks(); // Writes to local state, but reads from get_database
                 });
 
             }
@@ -2590,7 +2590,7 @@ namespace steemit {
         schema_list.back()->get_name( ds.custom_operation_types.back().type );
         }
 
-        graphene::db::add_dependent_schemas( schema_list );
+        graphene::get_database::add_dependent_schemas( schema_list );
         std::sort( schema_list.begin(), schema_list.end(),
         []( const std::shared_ptr< abstract_schema >& a,
           const std::shared_ptr< abstract_schema >& b )
@@ -3531,22 +3531,22 @@ namespace steemit {
             }
         }
 
-/**
- *  Matches the two orders,
- *
- *  @return a bit field indicating which orders were filled (and thus removed)
- *
- *  0 - no orders were matched
- *  1 - bid was filled
- *  2 - ask was filled
- *  3 - both were filled
- */
+        /**
+         *  Matches the two orders,
+         *
+         *  @return a bit field indicating which orders were filled (and thus removed)
+         *
+         *  0 - no orders were matched
+         *  1 - bid was filled
+         *  2 - ask was filled
+         *  3 - both were filled
+         */
         template<typename OrderType>
         int database::match(const limit_order_object &usd, const OrderType &core, const price &match_price) {
-            assert(usd.sell_price.quote.asset_id ==
-                   core.sell_price.base.asset_id);
-            assert(usd.sell_price.base.asset_id ==
-                   core.sell_price.quote.asset_id);
+            assert(usd.sell_price.quote.symbol ==
+                   core.sell_price.base.symbol);
+            assert(usd.sell_price.base.symbol ==
+                   core.sell_price.quote.symbol);
             assert(usd.for_sale > 0 && core.for_sale > 0);
 
             auto usd_for_sale = usd.amount_for_sale();

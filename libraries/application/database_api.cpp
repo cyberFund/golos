@@ -745,14 +745,14 @@ namespace steemit {
         }
 
         vector<optional<asset_object>> database_api_impl::lookup_asset_symbols(const vector<string> &symbols_or_ids) const {
-            const auto &assets_by_symbol = _db.get_index_type<asset_index>().indices().get<by_symbol>();
+            const auto &assets_by_symbol = _db.get_index<asset_index>().indices().get<by_symbol>();
             vector<optional<asset_object>> result;
             result.reserve(symbols_or_ids.size());
             std::transform(symbols_or_ids.begin(), symbols_or_ids.end(), std::back_inserter(result),
                     [this, &assets_by_symbol](const string &symbol_or_id) -> optional<asset_object> {
                         if (!symbol_or_id.empty() &&
                             std::isdigit(symbol_or_id[0])) {
-                            auto ptr = _db.find(variant(symbol_or_id).as<asset_id_type>());
+                            auto ptr = _db.find(variant(symbol_or_id).as<asset_symbol_type>());
                             return ptr == nullptr ? optional<asset_object>()
                                                   : *ptr;
                         }
@@ -1211,9 +1211,15 @@ namespace steemit {
 //   wdump((trx)(available_keys));
             auto result = trx.get_required_signatures(STEEMIT_CHAIN_ID,
                     available_keys,
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).active); },
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).owner); },
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).posting); },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).active);
+                    },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+                    },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).posting);
+                    },
                     STEEMIT_MAX_SIG_CHECK_DEPTH);
 //   wdump((result));
             return result;

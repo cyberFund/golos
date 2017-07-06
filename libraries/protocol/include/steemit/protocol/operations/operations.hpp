@@ -80,6 +80,8 @@ namespace steemit {
                 asset_publish_feed_operation,
                 asset_claim_fees_operation,
 
+                call_order_update_operation,
+
                 /// virtual operations below this point
                 fill_convert_request_operation,
                 author_reward_operation,

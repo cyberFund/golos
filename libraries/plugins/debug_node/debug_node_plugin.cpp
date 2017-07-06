@@ -256,7 +256,7 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
          {
             uint32_t hardfork_id;
             from_variant( vo[ "hardfork_id" ], hardfork_id );
-            db.set_hardfork( hardfork_id, false );
+            get_database.set_hardfork( hardfork_id, false );
          }
          break;
       default:
@@ -364,7 +364,7 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
                     return;
                 }
                 //for( const fc::variant_object& update : it->second )
-                //   debug_apply_update( db, update, logging );
+                //   debug_apply_update( get_database, update, logging );
                 for (auto &update : it->second) {
                     update(db);
                 }

@@ -33,9 +33,9 @@ namespace steemit {
         }
 
         void limit_order_create_evaluator::do_apply(const limit_order_create_operation &op) {
-            if (db().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
+            if (get_database().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    const database &d = db();
+                    const database &d = get_database();
 
                     FC_ASSERT(op.expiration >= d.head_block_time());
 
@@ -65,16 +65,16 @@ namespace steemit {
                 FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    const auto &seller_stats = _seller->statistics(db());
-                    db().modify(seller_stats, [&](account_statistics_object &bal) {
+                    const auto &seller_stats = _seller->statistics(get_database());
+                    get_database().modify(seller_stats, [&](account_statistics_object &bal) {
                         if (op.amount_to_sell.symbol == STEEM_SYMBOL) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
 
-                    db().adjust_balance(db().get_account(op.owner), -op.amount_to_sell);
+                    get_database().adjust_balance(get_database().get_account(op.owner), -op.amount_to_sell);
 
-                    bool filled = db().apply_order(db().create<limit_order_object>([&](limit_order_object &obj) {
+                    bool filled = get_database().apply_order(get_database().create<limit_order_object>([&](limit_order_object &obj) {
                         obj.seller = _seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.get_price();
@@ -93,18 +93,18 @@ namespace steemit {
                         "Limit order must be for the STEEM:SBD market");
 
                 FC_ASSERT(op.expiration >
-                          this->_db.head_block_time(), "Limit order has to expire after head block time.");
+                          this->db.head_block_time(), "Limit order has to expire after head block time.");
 
-                const auto &owner = this->_db.get_account(op.owner);
+                const auto &owner = this->db.get_account(op.owner);
 
                 FC_ASSERT(
-                        this->_db.get_balance(owner, op.amount_to_sell.symbol) >=
+                        this->db.get_balance(owner, op.amount_to_sell.symbol) >=
                         op.amount_to_sell, "Account does not have sufficient funds for limit order.");
 
-                this->_db.adjust_balance(owner, -op.amount_to_sell);
+                this->db.adjust_balance(owner, -op.amount_to_sell);
 
-                const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
-                    obj.created = this->_db.head_block_time();
+                const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
+                    obj.created = this->db.head_block_time();
                     obj.seller = op.owner;
                     obj.order_id = op.order_id;
                     obj.for_sale = op.amount_to_sell.amount;
@@ -112,7 +112,7 @@ namespace steemit {
                     obj.expiration = op.expiration;
                 });
 
-                bool filled = this->_db.apply_order(order);
+                bool filled = this->db.apply_order(order);
 
                 if (op.fill_or_kill) {
                     FC_ASSERT(filled, "Cancelling order because it was not filled.");
@@ -121,9 +121,9 @@ namespace steemit {
         }
 
         void limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &op) {
-            if (db().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
+            if (get_database().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    const database &d = db();
+                    const database &d = get_database();
 
                     FC_ASSERT(op.expiration >= d.head_block_time());
 
@@ -153,16 +153,16 @@ namespace steemit {
                 FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    const auto &seller_stats = _seller->statistics(_db);
-                    db().modify(seller_stats, [&](account_statistics_object &bal) {
+                    const auto &seller_stats = _seller->statistics(db);
+                    get_database().modify(seller_stats, [&](account_statistics_object &bal) {
                         if (op.amount_to_sell.symbol == STEEM_SYMBOL) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
 
-                    db().adjust_balance(db().get_account(op.owner), -op.amount_to_sell);
+                    get_database().adjust_balance(get_database().get_account(op.owner), -op.amount_to_sell);
 
-                    bool filled = db().apply_order(db().create<limit_order_object>([&](limit_order_object &obj) {
+                    bool filled = get_database().apply_order(get_database().create<limit_order_object>([&](limit_order_object &obj) {
                         obj.seller = _seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.exchange_rate;
@@ -181,18 +181,18 @@ namespace steemit {
                         "Limit order must be for the STEEM:SBD market");
 
                 FC_ASSERT(op.expiration >
-                          this->_db.head_block_time(), "Limit order has to expire after head block time.");
+                          this->db.head_block_time(), "Limit order has to expire after head block time.");
 
-                const auto &owner = this->_db.get_account(op.owner);
+                const auto &owner = this->db.get_account(op.owner);
 
                 FC_ASSERT(
-                        this->_db.get_balance(owner, op.amount_to_sell.symbol) >=
+                        this->db.get_balance(owner, op.amount_to_sell.symbol) >=
                         op.amount_to_sell, "Account does not have sufficient funds for limit order.");
 
-                this->_db.adjust_balance(owner, -op.amount_to_sell);
+                this->db.adjust_balance(owner, -op.amount_to_sell);
 
-                const auto &order = this->_db.create<limit_order_object>([&](limit_order_object &obj) {
-                    obj.created = this->_db.head_block_time();
+                const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
+                    obj.created = this->db.head_block_time();
                     obj.seller = op.owner;
                     obj.order_id = op.order_id;
                     obj.for_sale = op.amount_to_sell.amount;
@@ -200,7 +200,7 @@ namespace steemit {
                     obj.expiration = op.expiration;
                 });
 
-                bool filled = this->_db.apply_order(order);
+                bool filled = this->db.apply_order(order);
 
                 if (op.fill_or_kill) {
                     FC_ASSERT(filled, "Cancelling order because it was not filled.");
@@ -209,9 +209,9 @@ namespace steemit {
         }
 
         void limit_order_cancel_evaluator::do_apply(const limit_order_cancel_operation &op) {
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
+            if (db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    database &d = db();
+                    database &d = get_database();
 
                     _order = d.find_limit_order(op.owner, op.order_id);
                     FC_ASSERT(_order->seller == op.owner);
@@ -219,7 +219,7 @@ namespace steemit {
                 FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    database &d = db();
+                    database &d = get_database();
 
                     auto base_asset = _order->sell_price.base.symbol;
                     auto quote_asset = _order->sell_price.quote.symbol;
@@ -233,13 +233,13 @@ namespace steemit {
                     d.check_call_orders(d.get_asset(quote_asset));
                 } FC_CAPTURE_AND_RETHROW((op))
             } else {
-                this->_db.cancel_order(this->_db.get_limit_order(op.owner, op.order_id), false);
+                this->db.cancel_order(this->db.get_limit_order(op.owner, op.order_id), false);
             }
         }
 
         void call_order_update_evaluator::do_apply(const call_order_update_operation &op) {
             try {
-                database &d = db();
+                database &d = get_database();
 
                 _paying_account = d.find_account(op.funding_account);
                 _debt_asset = d.find_asset(op.delta_debt.symbol);
@@ -281,7 +281,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((op))
 
             try {
-                database &d = db();
+                database &d = get_database();
 
                 if (op.delta_debt.amount != 0) {
                     d.adjust_balance(d.get_account(op.funding_account), op.delta_debt);
