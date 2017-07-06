@@ -41,15 +41,16 @@ namespace steemit {
             }
 
             fill_asset_order_operation(integral_id_type o, account_name_type a, asset p, asset r, asset f)
-                    : order_id(o), account_id(a), pays(p), receives(r) {
+                    : order_id(o), owner(a), pays(p), receives(r), fee(f) {
             }
 
             integral_id_type order_id;
-            account_name_type account_id;
+            account_name_type owner;
             asset pays;
             asset receives;
+            asset fee; // paid by receiving account
 
-            pair<asset_symbol_type, asset_symbol_type> get_market() const {
+            pair <asset_symbol_type, asset_symbol_type> get_market() const {
                 return pays.symbol < receives.symbol ?
                        std::make_pair(pays.symbol, receives.symbol) :
                        std::make_pair(receives.symbol, pays.symbol);
@@ -60,6 +61,6 @@ namespace steemit {
 
 FC_REFLECT(steemit::protocol::fill_order_operation, (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
 
-FC_REFLECT(steemit::protocol::fill_asset_order_operation, (order_id)(account_id)(pays)(receives))
+FC_REFLECT(steemit::protocol::fill_asset_order_operation, (order_id)(owner)(pays)(receives)(fee))
 
 #endif //GOLOS_MARKET_VIRTUAL_OPERATIONS_HPP

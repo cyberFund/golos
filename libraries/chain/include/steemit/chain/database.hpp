@@ -542,7 +542,7 @@ namespace steemit {
             /**
              * @return true if the order was completely filled and thus freed.
              */
-            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives, bool cull_if_small = true);
+            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
 
             bool fill_order(const call_order_object &order, const asset &pays, const asset &receives);
 

@@ -27,15 +27,11 @@ namespace steemit {
             }
 
             void do_apply(const protocol::limit_order_create_operation &o);
-
-            protocol::asset calculate_market_fee(const asset_object *aobj, const protocol::asset &trade_amount);
-
         protected:
-            share_type _deferred_fee = 0;
-            const protocol::limit_order_create_operation *_op = nullptr;
-            const account_object *_seller = nullptr;
-            const asset_object *_sell_asset = nullptr;
-            const asset_object *_receive_asset = nullptr;
+            share_type deferred_fee = 0;
+            const account_object *seller = nullptr;
+            const asset_object *sell_asset = nullptr;
+            const asset_object *receive_asset = nullptr;
         };
 
         class limit_order_create2_evaluator
@@ -49,14 +45,11 @@ namespace steemit {
 
             void do_apply(const protocol::limit_order_create2_operation &op);
 
-            protocol::asset calculate_market_fee(const asset_object *aobj, const protocol::asset &trade_amount);
-
         protected:
-            share_type _deferred_fee = 0;
-            const protocol::limit_order_create_operation *_op = nullptr;
-            const account_object *_seller = nullptr;
-            const asset_object *_sell_asset = nullptr;
-            const asset_object *_receive_asset = nullptr;
+            share_type deferred_fee = 0;
+            const account_object *seller = nullptr;
+            const asset_object *sell_asset = nullptr;
+            const asset_object *receive_asset = nullptr;
         };
 
         class limit_order_cancel_evaluator

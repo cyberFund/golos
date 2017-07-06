@@ -3,6 +3,7 @@
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 
+#include <steemit/chain/account_object.hpp>
 #include <steemit/chain/steem_object_types.hpp>
 
 #include <boost/multi_index/composite_key.hpp>

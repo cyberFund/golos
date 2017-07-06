@@ -114,6 +114,14 @@ namespace steemit {
             void adjust_balance(const protocol::asset &delta);
         };
 
+        /**
+         * @brief This class represents an account on the object graph
+         * @ingroup object
+         * @ingroup protocol
+         *
+         * Accounts are the primary unit of authority on the graphene system. Users must have an account in order to use
+         * assets, trade in the markets, vote for committee_members, etc.
+         */
         class account_object
                 : public object<account_object_type, account_object> {
         public:
@@ -445,42 +453,42 @@ namespace steemit {
                                         member<account_object, time_point_sec, &account_object::last_post>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<time_point_sec>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<time_point_sec>, std::less<account_object::id_type>>
                         >,
                         ordered_unique<tag<by_steem_balance>,
                                 composite_key<account_object,
                                         member<account_object, protocol::asset, &account_object::balance>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<protocol::asset>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>
                         >,
                         ordered_unique<tag<by_smp_balance>,
                                 composite_key<account_object,
                                         member<account_object, protocol::asset, &account_object::vesting_shares>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<protocol::asset>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>
                         >,
                         ordered_unique<tag<by_smd_balance>,
                                 composite_key<account_object,
                                         member<account_object, protocol::asset, &account_object::sbd_balance>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<protocol::asset>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>
                         >,
                         ordered_unique<tag<by_post_count>,
                                 composite_key<account_object,
                                         member<account_object, uint32_t, &account_object::post_count>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<uint32_t>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<uint32_t>, std::less<account_object::id_type>>
                         >,
                         ordered_unique<tag<by_vote_count>,
                                 composite_key<account_object,
                                         member<account_object, uint32_t, &account_object::lifetime_vote_count>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<uint32_t>, std::less<account_name_type>>
+                                composite_key_compare<std::greater<uint32_t>, std::less<account_object::id_type>>
                         >
                 >,
                 allocator<account_object>
@@ -710,4 +718,4 @@ FC_REFLECT(steemit::chain::account_statistics_object,
                 (total_core_in_orders)
                 (lifetime_fees_paid)
                 (pending_fees)(pending_vested_fees));
-CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_statistics_index, steemit::chain::account_statistics_index)
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_statistics_object, steemit::chain::account_statistics_index)

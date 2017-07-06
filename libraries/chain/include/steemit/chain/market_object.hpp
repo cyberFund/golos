@@ -33,6 +33,7 @@ namespace steemit {
             protocol::integral_id_type order_id = 0;
             share_type for_sale; ///< asset id is sell_price.base.symbol
             protocol::price sell_price;
+            share_type deferred_fee;
 
             pair <protocol::asset_symbol_type, protocol::asset_symbol_type> get_market() const {
                 return sell_price.base.symbol < sell_price.quote.symbol ?
@@ -151,7 +152,7 @@ namespace steemit {
                 limit_order_object, protocol::price, &limit_order_object::sell_price>,
         member<limit_order_object, limit_order_object::id_type, &limit_order_object::id>
         >,
-        composite_key_compare <std::greater<protocol::price>, std::less<protocol::integral_id_type>>
+        composite_key_compare <std::greater<protocol::price>, std::less<limit_order_object::id_type>>
         >,
         ordered_unique <tag<by_account>,
         composite_key<limit_order_object,
@@ -227,7 +228,7 @@ namespace steemit {
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::limit_order_object,
-        (id)(created)(expiration)(seller)(order_id)(for_sale)(sell_price))
+        (id)(created)(expiration)(seller)(order_id)(for_sale)(sell_price)(deferred_fee))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::limit_order_object, steemit::chain::limit_order_index)
 
 FC_REFLECT(steemit::chain::call_order_object, (id)(borrower)(collateral)(debt)(call_price))

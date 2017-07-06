@@ -1,7 +1,7 @@
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/market_object.hpp>
-
 #include <steemit/chain/market_evaluator.hpp>
 
 #include <steemit/chain/database.hpp>
@@ -33,53 +33,55 @@ namespace steemit {
         }
 
         void limit_order_create_evaluator::do_apply(const limit_order_create_operation &op) {
-            if (get_database().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
+            if (db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
                     const database &d = get_database();
 
                     FC_ASSERT(op.expiration >= d.head_block_time());
 
-                    _seller = this->fee_paying_account;
-                    _sell_asset = d.find_asset(op.amount_to_sell.symbol);
-                    _receive_asset = d.find_asset(op.min_to_receive.symbol);
+                    seller = d.find_account(op.owner);
+                    sell_asset = d.find_asset(op.amount_to_sell.symbol);
+                    receive_asset = d.find_asset(op.min_to_receive.symbol);
 
-                    if (_sell_asset->options.whitelist_markets.size()) {
+                    if (sell_asset->options.whitelist_markets.size()) {
                         FC_ASSERT(
-                                _sell_asset->options.whitelist_markets.find(_receive_asset->id) !=
-                                _sell_asset->options.whitelist_markets.end());
+                                sell_asset->options.whitelist_markets.find(receive_asset->symbol) !=
+                                sell_asset->options.whitelist_markets.end());
                     }
-                    if (_sell_asset->options.blacklist_markets.size()) {
+                    if (sell_asset->options.blacklist_markets.size()) {
                         FC_ASSERT(
-                                _sell_asset->options.blacklist_markets.find(_receive_asset->id) ==
-                                _sell_asset->options.blacklist_markets.end());
+                                sell_asset->options.blacklist_markets.find(receive_asset->symbol) ==
+                                sell_asset->options.blacklist_markets.end());
                     }
 
-                    FC_ASSERT(d.is_authorized_asset(*_seller, *_sell_asset));
-                    FC_ASSERT(d.is_authorized_asset(*_seller, *_receive_asset));
+                    FC_ASSERT(d.is_authorized_asset(*seller, *sell_asset));
+                    FC_ASSERT(d.is_authorized_asset(*seller, *receive_asset));
 
-                    FC_ASSERT(d.get_balance(*_seller, *_sell_asset) >=
+                    FC_ASSERT(d.get_balance(*seller, *sell_asset) >=
                               op.amount_to_sell, "insufficient balance",
-                            ("balance", d.get_balance(*_seller, *_sell_asset))("amount_to_sell", op.amount_to_sell));
+                            ("balance", d.get_balance(*seller, *sell_asset))("amount_to_sell", op.amount_to_sell));
 
                 }
                 FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    const auto &seller_stats = _seller->statistics(get_database());
-                    get_database().modify(seller_stats, [&](account_statistics_object &bal) {
+                    const auto &seller_stats = db.get_account_statistics(seller->name);
+                    db.modify(seller_stats, [&](account_statistics_object &bal) {
                         if (op.amount_to_sell.symbol == STEEM_SYMBOL) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
 
-                    get_database().adjust_balance(get_database().get_account(op.owner), -op.amount_to_sell);
+                    db.adjust_balance(db.get_account(op.owner), -op.amount_to_sell);
 
-                    bool filled = get_database().apply_order(get_database().create<limit_order_object>([&](limit_order_object &obj) {
-                        obj.seller = _seller->name;
+                    bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
+                        obj.created = this->db.head_block_time();
+                        obj.order_id = op.order_id;
+                        obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.get_price();
                         obj.expiration = op.expiration;
-                        obj.deferred_fee = _deferred_fee;
+                        obj.deferred_fee = deferred_fee;
                     }));
 
                     FC_ASSERT(!op.fill_or_kill || filled);
@@ -121,39 +123,39 @@ namespace steemit {
         }
 
         void limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &op) {
-            if (get_database().has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
+            if (db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
                     const database &d = get_database();
 
                     FC_ASSERT(op.expiration >= d.head_block_time());
 
-                    _seller = this->fee_paying_account;
-                    _sell_asset = d.find_asset(op.amount_to_sell.symbol);
-                    _receive_asset = d.find_asset(op.min_to_receive.symbol);
+                    seller = d.find_account(op.owner);
+                    sell_asset = d.find_asset(op.amount_to_sell.symbol);
+                    receive_asset = d.find_asset(op.exchange_rate.quote.symbol);
 
-                    if (_sell_asset->options.whitelist_markets.size()) {
+                    if (sell_asset->options.whitelist_markets.size()) {
                         FC_ASSERT(
-                                _sell_asset->options.whitelist_markets.find(_receive_asset->symbol) !=
-                                _sell_asset->options.whitelist_markets.end());
+                                sell_asset->options.whitelist_markets.find(receive_asset->symbol) !=
+                                sell_asset->options.whitelist_markets.end());
                     }
-                    if (_sell_asset->options.blacklist_markets.size()) {
+                    if (sell_asset->options.blacklist_markets.size()) {
                         FC_ASSERT(
-                                _sell_asset->options.blacklist_markets.find(_receive_asset->symbol) ==
-                                _sell_asset->options.blacklist_markets.end());
+                                sell_asset->options.blacklist_markets.find(receive_asset->symbol) ==
+                                sell_asset->options.blacklist_markets.end());
                     }
 
-                    FC_ASSERT(d.is_authorized_asset(*_seller, *_sell_asset));
-                    FC_ASSERT(d.is_authorized_asset(*_seller, *_receive_asset));
+                    FC_ASSERT(d.is_authorized_asset(*seller, *sell_asset));
+                    FC_ASSERT(d.is_authorized_asset(*seller, *receive_asset));
 
-                    FC_ASSERT(d.get_balance(*_seller, *_sell_asset) >=
+                    FC_ASSERT(d.get_balance(*seller, *sell_asset) >=
                               op.amount_to_sell, "insufficient balance",
-                            ("balance", d.get_balance(*_seller, *_sell_asset))("amount_to_sell", op.amount_to_sell));
+                            ("balance", d.get_balance(*seller, *sell_asset))("amount_to_sell", op.amount_to_sell));
 
                 }
                 FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    const auto &seller_stats = _seller->statistics(db);
+                    const auto &seller_stats = db.get_account_statistics(seller->name);
                     get_database().modify(seller_stats, [&](account_statistics_object &bal) {
                         if (op.amount_to_sell.symbol == STEEM_SYMBOL) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
@@ -162,12 +164,14 @@ namespace steemit {
 
                     get_database().adjust_balance(get_database().get_account(op.owner), -op.amount_to_sell);
 
-                    bool filled = get_database().apply_order(get_database().create<limit_order_object>([&](limit_order_object &obj) {
-                        obj.seller = _seller->name;
+                    bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
+                        obj.created = this->db.head_block_time();
+                        obj.order_id = op.order_id;
+                        obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
-                        obj.sell_price = op.exchange_rate;
+                        obj.sell_price = op.get_price();
                         obj.expiration = op.expiration;
-                        obj.deferred_fee = _deferred_fee;
+                        obj.deferred_fee = deferred_fee;
                     }));
 
                     FC_ASSERT(!op.fill_or_kill || filled);
@@ -223,7 +227,6 @@ namespace steemit {
 
                     auto base_asset = _order->sell_price.base.symbol;
                     auto quote_asset = _order->sell_price.quote.symbol;
-                    auto refunded = _order->amount_for_sale();
 
                     d.cancel_order(*_order, false /* don't create a virtual op*/);
 
@@ -298,7 +301,7 @@ namespace steemit {
 
                     // Adjust the total core in orders accodingly
                     if (op.delta_collateral.symbol == STEEM_SYMBOL) {
-                        d.modify(_paying_account->statistics(d), [&](account_statistics_object &stats) {
+                        d.modify(d.get_account_statistics(_paying_account->name), [&](account_statistics_object &stats) {
                             stats.total_core_in_orders += op.delta_collateral.amount;
                         });
                     }
@@ -351,27 +354,27 @@ namespace steemit {
                     // check to see if the order needs to be margin called now, but don't allow black swans and require there to be
                     // limit orders available that could be used to fill the order.
                     if (d.check_call_orders(*_debt_asset, false)) {
-                        const auto call_obj = d.find<call_order_object, by_id>(call_order_id);
+                        const auto order_obj = d.find<call_order_object, by_id>(call_order_id);
                         // if we filled at least one call order, we are OK if we totally filled.
                         STEEMIT_ASSERT(
-                                !call_obj,
+                                !order_obj,
                                 call_order_update_unfilled_margin_call,
                                 "Updating call order would trigger a margin call that cannot be fully filled",
-                                ("a", ~call_obj->call_price)("b", _bitasset_data->current_feed.settlement_price)
+                                ("a", ~order_obj->call_price)("b", _bitasset_data->current_feed.settlement_price)
                         );
                     } else {
-                        const auto call_obj = d.find<call_order_object, by_id>(call_order_id);
-                        FC_ASSERT(call_obj, "no margin call was executed and yet the call object was deleted");
-                        //edump( (~call_obj->call_price) ("<")( _bitasset_data->current_feed.settlement_price) );
+                        const auto order_obj = d.find<call_order_object, by_id>(call_order_id);
+                        FC_ASSERT(order_obj, "no margin call was executed and yet the call object was deleted");
+                        //edump( (~order_obj->call_price) ("<")( _bitasset_data->current_feed.settlement_price) );
                         // We didn't fill any call orders.  This may be because we
                         // aren't in margin call territory, or it may be because there
                         // were no matching orders.  In the latter case, we throw.
                         STEEMIT_ASSERT(
-                                ~call_obj->call_price <
+                                ~order_obj->call_price <
                                 _bitasset_data->current_feed.settlement_price,
                                 call_order_update_unfilled_margin_call,
                                 "Updating call order would trigger a margin call that cannot be fully filled",
-                                ("a", ~call_obj->call_price)("b", _bitasset_data->current_feed.settlement_price)
+                                ("a", ~order_obj->call_price)("b", _bitasset_data->current_feed.settlement_price)
                         );
                     }
                 }
