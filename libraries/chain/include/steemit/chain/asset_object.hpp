@@ -262,7 +262,7 @@ namespace steemit {
         >,
         ordered_unique <tag<by_symbol>,
         member<asset_bitasset_data_object, protocol::asset_symbol_type, &asset_bitasset_data_object::symbol>>
-        >
+        >,allocator <asset_bitasset_data_object>
         >
         asset_bitasset_data_index;
 
@@ -273,7 +273,7 @@ namespace steemit {
                 by_id>, member<asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
         ordered_unique <tag<
                 by_symbol>, member<asset_dynamic_data_object, protocol::asset_symbol_type, &asset_dynamic_data_object::symbol>>
-        >
+        >,allocator <asset_dynamic_data_object>
         >
         asset_dynamic_data_index;
 
@@ -291,7 +291,7 @@ namespace steemit {
         member<asset_object, asset_object::id_type, &asset_object::id>
         >
         >
-        >
+        >,allocator <asset_object>
         >
         asset_index;
     }

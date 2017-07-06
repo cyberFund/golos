@@ -203,10 +203,6 @@ namespace steemit {
 
             const limit_order_object *find_limit_order(const account_name_type &owner, integral_id_type id) const;
 
-            const call_order_object &get_call_order(const account_name_type &owner, integral_id_type id) const;
-
-            const call_order_object *find_call_order(const account_name_type &owner, integral_id_type id) const;
-
             const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
 
             const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
@@ -546,7 +542,7 @@ namespace steemit {
             /**
              * @return true if the order was completely filled and thus freed.
              */
-            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
+            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives, bool cull_if_small = true);
 
             bool fill_order(const call_order_object &order, const asset &pays, const asset &receives);
 
@@ -560,8 +556,6 @@ namespace steemit {
             asset calculate_market_fee(const asset_object &recv_asset, const asset &trade_amount);
 
             asset pay_market_fees(const asset_object &recv_asset, const asset &receives);
-
-            void cancel_order(const limit_order_object &obj);
 
             ///@}
 

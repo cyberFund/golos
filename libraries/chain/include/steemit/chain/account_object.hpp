@@ -394,7 +394,7 @@ namespace steemit {
                                         std::less<account_name_type>
                                 >
                         >
-                >
+                >, allocator<account_balance_object>
         > account_balance_index;
 
         struct by_name;
@@ -414,7 +414,7 @@ namespace steemit {
                         ordered_unique<tag<by_name>,
                                 member<account_statistics_object, account_name_type, &account_statistics_object::owner>,
                                 protocol::string_less>
-                >
+                >, allocator<account_statistics_object>
         > account_statistics_index;
 
         /**

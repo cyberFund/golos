@@ -195,7 +195,7 @@ namespace steemit {
         member<call_order_object, protocol::integral_id_type, &call_order_object::order_id>
         >
         >
-        >
+        >,allocator <call_order_object>
         >
         call_order_index;
 
@@ -220,7 +220,7 @@ namespace steemit {
         member<force_settlement_object, protocol::integral_id_type, &force_settlement_object::settlement_id>
         >
         >
-        >
+        >,allocator <force_settlement_object>
         >
         force_settlement_index;
     }

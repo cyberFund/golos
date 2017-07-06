@@ -92,6 +92,8 @@ namespace steemit {
 
         FC_DECLARE_DERIVED_EXCEPTION(insufficient_feeds, steemit::chain::chain_exception, 37006, "insufficient feeds")
 
+        FC_DECLARE_DERIVED_EXCEPTION(black_swan_exception, steemit::chain::chain_exception, 3090000, "black swan")
+
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(transfer);
 //   STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
 

@@ -76,6 +76,7 @@ namespace steemit {
                 asset_reserve_operation,
                 asset_fund_fee_pool_operation,
                 asset_settle_operation,
+                asset_force_settle_operation,
                 asset_global_settle_operation,
                 asset_publish_feed_operation,
                 asset_claim_fees_operation,

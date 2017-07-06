@@ -93,7 +93,7 @@ namespace steemit {
                 auto next_asset_id = asset_idx.lower_bound(STEEM_SYMBOL);
 
                 const asset_object &new_asset =
-                        get_database().create<asset_object>([&](asset_object &a) {
+                        db.create<asset_object>([&](asset_object &a) {
                             a.issuer = op.issuer;
                             a.symbol = asset::from_string(op.symbol_name).symbol;
                             a.symbol_name = op.symbol_name;
