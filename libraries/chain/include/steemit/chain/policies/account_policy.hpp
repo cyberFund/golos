@@ -28,8 +28,120 @@ struct account_policy {
         evaluator_registry_.register_evaluator<account_update_evaluator>();
     }
 
+    asset get_balance(const account_object &a, asset_symbol_type symbol) const {
+        switch (symbol) {
+            case STEEM_SYMBOL:
+                return a.balance;
+            case SBD_SYMBOL:
+                return a.sbd_balance;
+            default:
+                FC_ASSERT(false, "invalid symbol");
+        }
+    }
 
-    void database_basic::update_owner_authority(const account_object &account, const authority &owner_authority) {
+    asset get_savings_balance(const account_object &a, asset_symbol_type symbol) const {
+        switch (symbol) {
+            case STEEM_SYMBOL:
+                return a.savings_balance;
+            case SBD_SYMBOL:
+                return a.savings_sbd_balance;
+            default:
+                FC_ASSERT(!"invalid symbol");
+        }
+    }
+
+    void adjust_balance(const account_object &a, const asset &delta) {
+        modify(a, [&](account_object &acnt) {
+            switch (delta.symbol) {
+                case STEEM_SYMBOL:
+                    acnt.balance += delta;
+                    break;
+                case SBD_SYMBOL:
+                    if (a.sbd_seconds_last_update != head_block_time()) {
+                        acnt.sbd_seconds +=
+                                fc::uint128_t(a.sbd_balance.amount.value) *
+                                (head_block_time() -
+                                 a.sbd_seconds_last_update).to_seconds();
+                        acnt.sbd_seconds_last_update = head_block_time();
+
+                        if (acnt.sbd_seconds > 0 &&
+                            (acnt.sbd_seconds_last_update -
+                             acnt.sbd_last_interest_payment).to_seconds() >
+                            STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                            auto interest = acnt.sbd_seconds /
+                                            STEEMIT_SECONDS_PER_YEAR;
+                            interest *= get_dynamic_global_properties().sbd_interest_rate;
+                            interest /= STEEMIT_100_PERCENT;
+                            asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                            acnt.sbd_balance += interest_paid;
+                            acnt.sbd_seconds = 0;
+                            acnt.sbd_last_interest_payment = head_block_time();
+
+                            push_virtual_operation(interest_operation(a.name, interest_paid));
+
+                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                props.current_sbd_supply += interest_paid;
+                                props.virtual_supply += interest_paid *
+                                                        get_feed_history().current_median_history;
+                            });
+                        }
+                    }
+                    acnt.sbd_balance += delta;
+                    break;
+                default:
+                    FC_ASSERT(false, "invalid symbol");
+            }
+        });
+    }
+
+
+    void adjust_savings_balance(const account_object &a, const asset &delta) {
+        modify(a, [&](account_object &acnt) {
+            switch (delta.symbol) {
+                case STEEM_SYMBOL:
+                    acnt.savings_balance += delta;
+                    break;
+                case SBD_SYMBOL:
+                    if (a.savings_sbd_seconds_last_update !=
+                        head_block_time()) {
+                        acnt.savings_sbd_seconds +=
+                                fc::uint128_t(a.savings_sbd_balance.amount.value) *
+                                (head_block_time() -
+                                 a.savings_sbd_seconds_last_update).to_seconds();
+                        acnt.savings_sbd_seconds_last_update = head_block_time();
+
+                        if (acnt.savings_sbd_seconds > 0 &&
+                            (acnt.savings_sbd_seconds_last_update -
+                             acnt.savings_sbd_last_interest_payment).to_seconds() >
+                            STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                            auto interest = acnt.savings_sbd_seconds /
+                                            STEEMIT_SECONDS_PER_YEAR;
+                            interest *= get_dynamic_global_properties().sbd_interest_rate;
+                            interest /= STEEMIT_100_PERCENT;
+                            asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                            acnt.savings_sbd_balance += interest_paid;
+                            acnt.savings_sbd_seconds = 0;
+                            acnt.savings_sbd_last_interest_payment = head_block_time();
+
+                            push_virtual_operation(interest_operation(a.name, interest_paid));
+
+                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                props.current_sbd_supply += interest_paid;
+                                props.virtual_supply += interest_paid *
+                                                        get_feed_history().current_median_history;
+                            });
+                        }
+                    }
+                    acnt.savings_sbd_balance += delta;
+                    break;
+                default:
+                    FC_ASSERT(!"invalid symbol");
+            }
+        });
+    }
+
+
+    void update_owner_authority(const account_object &account, const authority &owner_authority) {
         if (head_block_num() >=
             STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
             create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
@@ -111,7 +223,7 @@ struct account_policy {
         }
     }
 
-    void database_basic::pay_fee(const account_object &account, asset fee) {
+    void pay_fee(const account_object &account, asset fee) {
         FC_ASSERT(fee.amount >=
                   0); /// NOTE if this fails then validate() on some operation is probably wrong
         if (fee.amount == 0) {
@@ -123,7 +235,7 @@ struct account_policy {
         adjust_supply(-fee);
     }
 
-    void database_basic::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+    void old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
         try {
             const auto &props = get_dynamic_global_properties();
             if (props.total_vesting_shares.amount > 0) {
@@ -179,7 +291,7 @@ struct account_policy {
         } FC_CAPTURE_AND_RETHROW()
     }
 
-    bool database_basic::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+    bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
         const auto &props = get_dynamic_global_properties();
         bool has_bandwidth = true;
 

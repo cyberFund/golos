@@ -30,14 +30,140 @@ struct witness_policy {
     }
 
 
-    uint32_t database_basic::witness_participation_rate() const {
+    uint32_t witness_participation_rate() const {
         const dynamic_global_property_object &dpo = get_dynamic_global_properties();
         return uint64_t(STEEMIT_100_PERCENT) *
                dpo.recent_slots_filled.popcount() / 128;
     }
 
+    void retally_witness_votes() {
+        const auto &witness_idx = get_index<witness_index>().indices();
 
-    void database_basic::adjust_witness_vote(const witness_object &witness, share_type delta) {
+        // Clear all witness votes
+        for (auto itr = witness_idx.begin();
+             itr != witness_idx.end(); ++itr) {
+            modify(*itr, [&](witness_object &w) {
+                w.votes = 0;
+                w.virtual_position = 0;
+            });
+        }
+
+        const auto &account_idx = get_index<account_index>().indices();
+
+        // Apply all existing votes by account
+        for (auto itr = account_idx.begin();
+             itr != account_idx.end(); ++itr) {
+            if (itr->proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
+                continue;
+            }
+
+            const auto &a = *itr;
+
+            const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
+            auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
+            while (wit_itr != vidx.end() && wit_itr->account == a.id) {
+                adjust_witness_vote(get(wit_itr->witness), a.witness_vote_weight());
+                ++wit_itr;
+            }
+        }
+    }
+
+
+    void retally_witness_vote_counts(bool force) {
+        const auto &account_idx = get_index<account_index>().indices();
+
+        // Check all existing votes by account
+        for (auto itr = account_idx.begin();
+             itr != account_idx.end(); ++itr) {
+            const auto &a = *itr;
+            uint16_t witnesses_voted_for = 0;
+            if (force || (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT)) {
+                const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
+                auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
+                while (wit_itr != vidx.end() && wit_itr->account == a.id) {
+                    ++witnesses_voted_for;
+                    ++wit_itr;
+                }
+            }
+            if (a.witnesses_voted_for != witnesses_voted_for) {
+                modify(a, [&](account_object &account) {
+                    account.witnesses_voted_for = witnesses_voted_for;
+                });
+            }
+        }
+    }
+
+    void process_decline_voting_rights() {
+        const auto &request_idx = get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
+        auto itr = request_idx.begin();
+
+        while (itr != request_idx.end() &&
+               itr->effective_date <= head_block_time()) {
+            const auto &account = get(itr->account);
+
+            /// remove all current votes
+            std::array<share_type,
+                    STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+            delta[0] = -account.vesting_shares.amount;
+            for (int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                delta[i + 1] = -account.proxied_vsf_votes[i];
+            }
+            adjust_proxied_witness_votes(account, delta);
+
+            clear_witness_votes(account);
+
+            modify(get(itr->account), [&](account_object &a) {
+                a.can_vote = false;
+                a.proxy = STEEMIT_PROXY_TO_SELF_ACCOUNT;
+            });
+
+            remove(*itr);
+            itr = request_idx.begin();
+        }
+    }
+
+
+/**
+ * @param to_account - the account to receive the new vesting shares
+ * @param STEEM - STEEM to be converted to vesting shares
+ */
+    asset create_vesting(const account_object &to_account, asset steem) {
+        try {
+            const auto &cprops = get_dynamic_global_properties();
+
+            /**
+   *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+   *  change as the result of the user adding funds
+   *
+   *  V / C  = (V+Vn) / (C+Cn)
+   *
+   *  Simplifies to Vn = (V * Cn ) / C
+   *
+   *  If Cn equals o.amount, then we must solve for Vn to know how many new vesting shares
+   *  the user should receive.
+   *
+   *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
+   */
+            asset new_vesting = steem * cprops.get_vesting_share_price();
+
+            modify(to_account, [&](account_object &to) {
+                to.vesting_shares += new_vesting;
+            });
+
+            modify(cprops, [&](dynamic_global_property_object &props) {
+                props.total_vesting_fund_steem += steem;
+                props.total_vesting_shares += new_vesting;
+            });
+
+            adjust_proxied_witness_votes(to_account, new_vesting.amount);
+
+            return new_vesting;
+        }
+        FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
+    }
+
+
+    void adjust_witness_vote(const witness_object &witness, share_type delta) {
         const witness_schedule_object &wso = get_witness_schedule_object();
         modify(witness, [&](witness_object &w) {
             auto delta_pos = w.votes.value * (wso.current_virtual_time -
@@ -70,7 +196,7 @@ struct witness_policy {
         });
     }
 
-    void database_basic::clear_witness_votes(const account_object &a) {
+    void clear_witness_votes(const account_object &a) {
         const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
         auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
         while (itr != vidx.end() && itr->account == a.id) {
@@ -86,7 +212,7 @@ struct witness_policy {
         }
     }
 
-    account_name_type database_basic::get_scheduled_witness(uint32_t slot_num) const {
+    account_name_type get_scheduled_witness(uint32_t slot_num) const {
         const dynamic_global_property_object &dpo = get_dynamic_global_properties();
         const witness_schedule_object &wso = get_witness_schedule_object();
         uint64_t current_aslot = dpo.current_aslot + slot_num;
@@ -95,7 +221,7 @@ struct witness_policy {
     }
 
 
-    void database_basic::adjust_witness_votes(const account_object &a, share_type delta) {
+    void adjust_witness_votes(const account_object &a, share_type delta) {
         const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
         auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
         while (itr != vidx.end() && itr->account == a.id) {
@@ -105,7 +231,7 @@ struct witness_policy {
     }
 
 
-    void database_basic::update_median_witness_props() {
+    void update_median_witness_props() {
         const witness_schedule_object &wso = get_witness_schedule_object();
 
         /// fetch all witness objects

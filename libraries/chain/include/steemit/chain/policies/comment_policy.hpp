@@ -22,7 +22,7 @@ class comment_policy {
             evaluator_registry_.register_evaluator<delete_comment_evaluator>();
     }
 
-    const time_point_sec database_basic::calculate_discussion_payout_time(const comment_object &comment) const {
+    const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const {
         if (has_hardfork(STEEMIT_HARDFORK_0_17__91) ||
             comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
             return comment.cashout_time;
@@ -31,7 +31,7 @@ class comment_policy {
         }
     }
 
-    const reward_fund_object &database_basic::get_reward_fund(const comment_object &c) const {
+    const reward_fund_object &get_reward_fund(const comment_object &c) const {
         return get<reward_fund_object, by_name>(
                 c.parent_author == STEEMIT_ROOT_POST_PARENT
                 ? STEEMIT_POST_REWARD_FUND_NAME
@@ -39,7 +39,7 @@ class comment_policy {
     }
 
 
-    void database_basic::adjust_total_payout(const comment_object &cur, const asset &sbd_created, const asset &curator_sbd_value, const asset &beneficiary_value) {
+    void adjust_total_payout(const comment_object &cur, const asset &sbd_created, const asset &curator_sbd_value, const asset &beneficiary_value) {
         modify(cur, [&](comment_object &c) {
             if (c.total_payout_value.symbol == sbd_created.symbol) {
                 c.total_payout_value += sbd_created;
@@ -56,7 +56,7 @@ class comment_policy {
  *
  *  @returns unclaimed rewards.
  */
-    share_type database_basic::pay_curators(const comment_object &c, share_type &max_rewards) {
+    share_type pay_curators(const comment_object &c, share_type &max_rewards) {
         try {
             uint128_t total_weight(c.total_vote_weight);
             //edump( (total_weight)(max_rewards) );
@@ -126,7 +126,7 @@ class comment_policy {
     * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
     */
 
-    void database_basic::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+    void adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
         update_children_rshares2(*this, c, old_rshares2, new_rshares2);
 
         const auto &dgpo = get_dynamic_global_properties();
@@ -291,23 +291,23 @@ class comment_policy {
             }
     }
 
-    const comment_object &database_basic::get_comment(const account_name_type &author, const shared_string &permlink) const {
+    const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const {
             try {
                     return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
     }
 
-    const comment_object *database_basic::find_comment(const account_name_type &author, const shared_string &permlink) const {
+    const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
     }
 
-    const comment_object &database_basic::get_comment(const account_name_type &author, const string &permlink) const {
+    const comment_object &get_comment(const account_name_type &author, const string &permlink) const {
             try {
                     return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
     }
 
-    const comment_object *database_basic::find_comment(const account_name_type &author, const string &permlink) const {
+    const comment_object *find_comment(const account_name_type &author, const string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
     }
 
@@ -466,7 +466,7 @@ class comment_policy {
     }
 
 
-    time_point_sec database_basic::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
+    time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
         FC_ASSERT(input_cost.symbol ==
                   SBD_SYMBOL, "Extension payment should be in SBD");
         FC_ASSERT(
@@ -479,7 +479,7 @@ class comment_policy {
     }
 
 
-    uint16_t database_basic::get_curation_rewards_percent(const comment_object &c) const {
+    uint16_t get_curation_rewards_percent(const comment_object &c) const {
         if (has_hardfork(STEEMIT_HARDFORK_0_17__86) &&
             c.parent_author != STEEMIT_ROOT_POST_PARENT) {
             return 0;

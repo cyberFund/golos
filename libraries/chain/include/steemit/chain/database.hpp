@@ -122,10 +122,6 @@ namespace steemit {
 
             bool is_known_transaction(const transaction_id_type &id) const;
 
-            fc::sha256 get_pow_target() const;
-
-            uint32_t get_pow_summary_target() const;
-
             block_id_type get_block_id_for_num( uint32_t block_num )const;
 
             block_id_type find_block_id_for_num(uint32_t block_num) const;
@@ -140,10 +136,6 @@ namespace steemit {
 
             chain_id_type get_chain_id() const;
 
-            const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
-
-            const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
-
             const dynamic_global_property_object &get_dynamic_global_properties() const;
 
             const node_property_object &get_node_properties() const;
@@ -157,14 +149,14 @@ namespace steemit {
             /**
              *  Deducts fee from the account and the share supply
              */
-            void pay_fee(const account_object &a, asset fee);
+            //void pay_fee(const account_object &a, asset fee);
 
-            void old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
+            //void old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
             /**
              * Update an account's bandwidth and returns if the account had the requisite bandwidth for the trx
              */
-            bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
+            //bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
             /**
              *  Calculate the percent of block production slots that were missed in the
@@ -280,7 +272,7 @@ namespace steemit {
              *
              * Passing slot_num == 0 returns STEEMIT_NULL_WITNESS
              */
-            account_name_type get_scheduled_witness(uint32_t slot_num) const;
+            //account_name_type get_scheduled_witness(uint32_t slot_num) const;
 
             /**
              * Get the time at which the given slot occurs.
@@ -303,30 +295,30 @@ namespace steemit {
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
             /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
-            std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
+            //std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
 
-            asset create_vesting(const account_object &to_account, asset steem);
+            //asset create_vesting(const account_object &to_account, asset steem);
 
             //void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value, const asset &beneficiary_value);
 
-            void adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_bid);
+            //void adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_bid);
 
-            void adjust_balance(const account_object &a, const asset &delta);
+            //void adjust_balance(const account_object &a, const asset &delta);
 
-            void adjust_savings_balance(const account_object &a, const asset &delta);
+            //void adjust_savings_balance(const account_object &a, const asset &delta);
 
-            void adjust_supply(const asset &delta, bool adjust_vesting = false);
+            //void adjust_supply(const asset &delta, bool adjust_vesting = false);
 
             //void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
-            void update_owner_authority(const account_object &account, const authority &owner_authority);
+            //void update_owner_authority(const account_object &account, const authority &owner_authority);
 
-            asset get_balance(const account_object &a, asset_symbol_type symbol) const;
+            //asset get_balance(const account_object &a, asset_symbol_type symbol) const;
 
-            asset get_savings_balance(const account_object &a, asset_symbol_type symbol) const;
+            //asset get_savings_balance(const account_object &a, asset_symbol_type symbol) const;
 
             /** this is called by `adjust_proxied_witness_votes` when account proxy to self */
-            void adjust_witness_votes(const account_object &a, share_type delta);
+            //void adjust_witness_votes(const account_object &a, share_type delta);
 
             /** this updates the vote of a single witness as a result of a vote being added or removed*/
             //void adjust_witness_vote(const witness_object &obj, share_type delta);
@@ -337,39 +329,39 @@ namespace steemit {
              */
             //void clear_witness_votes(const account_object &a);
 
-            void process_vesting_withdrawals();
+            //void process_vesting_withdrawals();
 
             //share_type pay_curators(const comment_object &c, share_type &max_rewards);
 
-            void process_decline_voting_rights();
+            //void process_decline_voting_rights();
 
             void update_median_feed();
 
-            asset get_liquidity_reward() const;
+            //asset get_liquidity_reward() const;
 
-            asset get_content_reward() const;
+            //asset get_content_reward() const;
 
-            asset get_curation_reward() const;
+            //asset get_curation_reward() const;
 
-            asset get_pow_reward() const;
+            //asset get_pow_reward() const;
 
             //uint16_t get_curation_rewards_percent(const comment_object &c) const;
 
-            share_type pay_reward_funds(share_type reward);
+            //share_type pay_reward_funds(share_type reward);
 
-            asset get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const;
+            //asset get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const;
 
             //time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const;
 
-            void pay_liquidity_reward();
+            //void pay_liquidity_reward();
 
             /**
              * Helper method to return the current sbd value of a given amount of
              * STEEM.  Return 0 SBD if there isn't a current_median_history
              */
-            asset to_sbd(const asset &steem) const;
+            //asset to_sbd(const asset &steem) const;
 
-            asset to_steem(const asset &sbd) const;
+            //asset to_steem(const asset &sbd) const;
 
             time_point_sec head_block_time() const;
 
@@ -407,11 +399,11 @@ namespace steemit {
 
             void perform_vesting_share_split(uint32_t magnitude);
 
-            void retally_witness_votes();
+            //void retally_witness_votes();
 
-            void retally_witness_vote_counts(bool force = false);
+            //void retally_witness_vote_counts(bool force = false);
 
-            void retally_liquidity_weight();
+            //void retally_liquidity_weight();
 
             void update_virtual_supply();
 
@@ -465,7 +457,7 @@ namespace steemit {
 
             void create_block_summary(const signed_block &next_block);
 
-            void update_median_witness_props();
+           // void update_median_witness_props();
 
             void update_global_dynamic_data(const signed_block &b);
 
