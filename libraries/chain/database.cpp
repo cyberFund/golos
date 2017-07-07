@@ -10,6 +10,7 @@
 #include <steemit/chain/history_object.hpp>
 #include <steemit/chain/index.hpp>
 #include <steemit/chain/market_object.hpp>
+#include <steemit/chain/account_evaluator.hpp>
 #include <steemit/chain/market_evaluator.hpp>
 #include <steemit/chain/steem_evaluator.hpp>
 #include <steemit/chain/steem_objects.hpp>
@@ -52,12 +53,9 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
-)
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
-)
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
-)
+FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
+FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
+FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
 
 namespace steemit {
     namespace chain {
@@ -464,17 +462,6 @@ namespace steemit {
             return find<account_statistics_object, by_name>(name);
         }
 
-        const account_balance_object &database::get_account_balance(const account_name_type &name) const {
-            try {
-                return get<account_balance_object, by_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
-        }
-
-        const account_balance_object *database::find_account_balance(const account_name_type &name) const {
-            return find<account_balance_object, by_name>(name);
-        }
-
         const comment_object &database::get_comment(const account_name_type &author, const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
@@ -604,7 +591,7 @@ namespace steemit {
                 return;
             }
 
-            FC_ASSERT(account.balance >= fee);
+            FC_ASSERT(get_balance(account, STEEM_SYMBOL) >= fee);
             adjust_balance(account, -fee);
             adjust_supply(-fee);
         }
@@ -713,13 +700,14 @@ namespace steemit {
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) >
                                 (account_average_bandwidth * total_vshares);
 
-                if (is_producing())
+                if (is_producing()) {
                     FC_ASSERT(has_bandwidth,
                             "Account exceeded maximum allowed bandwidth per vesting share.",
                             ("account_vshares", account_vshares)
                                     ("account_average_bandwidth", account_average_bandwidth)
                                     ("max_virtual_bandwidth", max_virtual_bandwidth)
                                     ("total_vesting_shares", total_vshares));
+                }
             }
 
             return has_bandwidth;
@@ -953,9 +941,10 @@ namespace steemit {
 
             const auto &witness_obj = get_witness(witness_owner);
 
-            if (!(skip & skip_witness_signature))
+            if (!(skip & skip_witness_signature)) {
                 FC_ASSERT(witness_obj.signing_key ==
                           block_signing_private_key.get_public_key());
+            }
 
             static const size_t max_block_header_size =
                     fc::raw::pack_size(signed_block_header()) + 4;
@@ -1225,10 +1214,10 @@ namespace steemit {
             return assets;
         }
 
-/**
- * @param to_account - the account to receive the new vesting shares
- * @param STEEM - STEEM to be converted to vesting shares
- */
+        /**
+         * @param to_account - the account to receive the new vesting shares
+         * @param STEEM - STEEM to be converted to vesting shares
+         */
         asset database::create_vesting(const account_object &to_account, asset steem) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
@@ -1629,9 +1618,7 @@ namespace steemit {
                         total_steem_converted += converted_steem;
 
                         if (to_deposit > 0) {
-                            modify(to_account, [&](account_object &a) {
-                                a.balance += converted_steem;
-                            });
+                            adjust_balance(to_account, converted_steem);
 
                             modify(cprops, [&](dynamic_global_property_object &o) {
                                 o.total_vesting_fund_steem -= converted_steem;
@@ -1651,9 +1638,9 @@ namespace steemit {
                 auto converted_steem = asset(to_convert, VESTS_SYMBOL) *
                                        cprops.get_vesting_share_price();
 
+                adjust_balance(from_account, converted_steem);
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;
-                    a.balance += converted_steem;
                     a.withdrawn += to_withdraw;
 
                     if (a.withdrawn >= a.to_withdraw ||
@@ -2065,8 +2052,9 @@ namespace steemit {
                     witness_reward *= wso.miner_weight;
                 } else if (cwit.schedule == witness_object::top19) {
                     witness_reward *= wso.top19_weight;
-                } else
+                } else {
                     wlog("Encountered unknown witness type for witness: ${w}", ("w", cwit.owner));
+                }
 
                 witness_reward /= wso.witness_pay_normalization_factor;
 
@@ -2185,9 +2173,7 @@ namespace steemit {
                     // const auto& witness_obj = get_witness( props.current_witness );
                     create_vesting(witness_account, pay);
                 } else {
-                    modify(get_account(witness_account.name), [&](account_object &a) {
-                        a.balance += pay;
-                    });
+                    adjust_balance(witness_account, pay);
                 }
 
                 return pay;
@@ -2201,9 +2187,7 @@ namespace steemit {
                     // const auto& witness_obj = get_witness( props.current_witness );
                     create_vesting(witness_account, pay);
                 } else {
-                    modify(get_account(witness_account.name), [&](account_object &a) {
-                        a.balance += pay;
-                    });
+                    adjust_balance(witness_account, pay);
                 }
 
                 return pay;
@@ -2687,12 +2671,13 @@ namespace steemit {
                 });
 
                 for (int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i) {
-                    create<account_object>([&](account_object &a) {
+                    const account_object &account = create<account_object>([&](account_object &a) {
                         a.name = STEEMIT_INIT_MINER_NAME +
                                  (i ? fc::to_string(i) : std::string());
                         a.memo_key = init_public_key;
-                        a.balance = asset(i ? 0 : init_supply, STEEM_SYMBOL);
                     });
+
+                    adjust_balance(account, asset(i ? 0 : init_supply, STEEM_SYMBOL));
 
                     create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = STEEMIT_INIT_MINER_NAME +
@@ -2789,9 +2774,10 @@ namespace steemit {
                 if (_checkpoints.size() &&
                     _checkpoints.rbegin()->second != block_id_type()) {
                     auto itr = _checkpoints.find(block_num);
-                    if (itr != _checkpoints.end())
+                    if (itr != _checkpoints.end()) {
                         FC_ASSERT(next_block.id() ==
                                   itr->second, "Block did not match checkpoint", ("checkpoint", *itr)("block_id", next_block.id()));
+                    }
 
                     if (_checkpoints.rbegin()->first >= block_num) {
                         skip = skip_witness_signature
@@ -3169,9 +3155,10 @@ namespace steemit {
                                                 fc::seconds(STEEMIT_MAX_TIME_UNTIL_EXPIRATION), "",
                             ("trx.expiration", trx.expiration)("now", now)("max_til_exp", STEEMIT_MAX_TIME_UNTIL_EXPIRATION));
                     if (is_producing() ||
-                        has_hardfork(STEEMIT_HARDFORK_0_9)) // Simple solution to pending trx bug when now == trx.expiration
+                        has_hardfork(STEEMIT_HARDFORK_0_9)) { // Simple solution to pending trx bug when now == trx.expiration
                         FC_ASSERT(now <
                                   trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
+                    }
                     FC_ASSERT(now <=
                               trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
                 }
@@ -3215,8 +3202,9 @@ namespace steemit {
                           next_block.timestamp, "", ("head_block_time", head_block_time())("next", next_block.timestamp)("blocknum", next_block.block_num()));
                 const witness_object &witness = get_witness(next_block.witness);
 
-                if (!(skip & skip_witness_signature))
+                if (!(skip & skip_witness_signature)) {
                     FC_ASSERT(next_block.validate_signee(witness.signing_key));
+                }
 
                 if (!(skip & skip_witness_schedule_check)) {
                     uint32_t slot_num = get_slot_at_time(next_block.timestamp);
@@ -4290,50 +4278,85 @@ namespace steemit {
             }
         }
 
-        void database::adjust_balance(const account_object &a, const asset &delta) {
+        string database::to_pretty_string(const asset &a) const {
+            return get_asset(a.symbol).amount_to_pretty_string(a.amount);
+        }
+
+        void database::adjust_sbd_balance(const account_object &a) {
             modify(a, [&](account_object &acnt) {
-                switch (delta.symbol) {
-                    case STEEM_SYMBOL:
-                        acnt.balance += delta;
-                        break;
-                    case SBD_SYMBOL:
-                        if (a.sbd_seconds_last_update != head_block_time()) {
-                            acnt.sbd_seconds +=
-                                    fc::uint128_t(a.sbd_balance.amount.value) *
-                                    (head_block_time() -
-                                     a.sbd_seconds_last_update).to_seconds();
-                            acnt.sbd_seconds_last_update = head_block_time();
+                if (a.sbd_seconds_last_update !=
+                    head_block_time()) {
+                    acnt.sbd_seconds +=
+                            fc::uint128_t(get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, SBD_SYMBOL)).balance.value) *
+                            (head_block_time() -
+                             a.sbd_seconds_last_update).to_seconds();
+                    acnt.sbd_seconds_last_update = head_block_time();
 
-                            if (acnt.sbd_seconds > 0 &&
-                                (acnt.sbd_seconds_last_update -
-                                 acnt.sbd_last_interest_payment).to_seconds() >
-                                STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                                auto interest = acnt.sbd_seconds /
-                                                STEEMIT_SECONDS_PER_YEAR;
-                                interest *= get_dynamic_global_properties().sbd_interest_rate;
-                                interest /= STEEMIT_100_PERCENT;
-                                asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                                acnt.sbd_balance += interest_paid;
-                                acnt.sbd_seconds = 0;
-                                acnt.sbd_last_interest_payment = head_block_time();
+                    if (acnt.sbd_seconds > 0 &&
+                        (acnt.sbd_seconds_last_update -
+                         acnt.sbd_last_interest_payment).to_seconds() >
+                        STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                        auto interest = acnt.sbd_seconds /
+                                        STEEMIT_SECONDS_PER_YEAR;
+                        interest *= get_dynamic_global_properties().sbd_interest_rate;
+                        interest /= STEEMIT_100_PERCENT;
+                        asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
 
-                                push_virtual_operation(interest_operation(a.name, interest_paid));
+                        modify(get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, SBD_SYMBOL)), [&](account_balance_object &b) {
+                            b.adjust_balance(interest_paid);
+                        });
 
-                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                                    props.current_sbd_supply += interest_paid;
-                                    props.virtual_supply += interest_paid *
-                                                            get_feed_history().current_median_history;
-                                });
-                            }
-                        }
-                        acnt.sbd_balance += delta;
-                        break;
-                    default:
-                        FC_ASSERT(false, "invalid symbol");
+                        acnt.sbd_seconds = 0;
+                        acnt.sbd_last_interest_payment = head_block_time();
+
+                        push_virtual_operation(interest_operation(a.name, interest_paid));
+
+                        modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                            props.current_sbd_supply += interest_paid;
+                            props.virtual_supply += interest_paid *
+                                                    get_feed_history().current_median_history;
+                        });
+                    }
                 }
             });
         }
 
+        void database::adjust_balance(const account_object &a, const asset &delta) {
+            try {
+                if (delta.amount == 0) {
+                    return;
+                }
+
+                auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
+                auto itr = index.find(boost::make_tuple(a.name, delta.symbol));
+                if (itr == index.end()) {
+                    FC_ASSERT(delta.amount >
+                              0, "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
+                            ("a", get_account(a.name).name)
+                                    ("b", to_pretty_string(asset(0, delta.symbol)))
+                                    ("r", to_pretty_string(-delta)));
+                    create<account_balance_object>([a, &delta](account_balance_object &b) {
+                        b.owner = a.name;
+                        b.asset_type = delta.symbol;
+                        b.balance = delta.amount.value;
+                    });
+                } else {
+                    if (delta.amount < 0) {
+                        FC_ASSERT(itr->get_balance() >=
+                                  -delta, "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}", ("a", get_account(a.name).name)("b", to_pretty_string(itr->get_balance()))("r", to_pretty_string(-delta)));
+                    }
+                    modify(*itr, [delta](account_balance_object &b) {
+                        b.adjust_balance(delta);
+                    });
+                }
+
+                if (delta.symbol == SBD_SYMBOL) {
+                    adjust_sbd_balance(a);
+                }
+
+            }
+            FC_CAPTURE_AND_RETHROW((a)(delta))
+        }
 
         void database::adjust_savings_balance(const account_object &a, const asset &delta) {
             modify(a, [&](account_object &acnt) {
@@ -4414,14 +4437,7 @@ namespace steemit {
 
 
         asset database::get_balance(const account_object &a, asset_symbol_type symbol) const {
-            switch (symbol) {
-                case STEEM_SYMBOL:
-                    return a.balance;
-                case SBD_SYMBOL:
-                    return a.sbd_balance;
-                default:
-                    FC_ASSERT(false, "invalid symbol");
-            }
+            return get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, symbol)).balance;
         }
 
         asset database::get_savings_balance(const account_object &a, asset_symbol_type symbol) const {
@@ -4844,9 +4860,10 @@ namespace steemit {
                 /// verify no witness has too many votes
                 const auto &witness_idx = get_index<witness_index>().indices();
                 for (auto itr = witness_idx.begin();
-                     itr != witness_idx.end(); ++itr)
+                     itr != witness_idx.end(); ++itr) {
                     FC_ASSERT(itr->votes <
                               gpo.total_vesting_shares.amount, "", ("itr", *itr));
+                }
 
                 for (auto itr = account_idx.begin();
                      itr != account_idx.end(); ++itr) {
@@ -4873,8 +4890,9 @@ namespace steemit {
                         total_supply += itr->amount;
                     } else if (itr->amount.symbol == SBD_SYMBOL) {
                         total_sbd += itr->amount;
-                    } else
+                    } else {
                         FC_ASSERT(false, "Encountered illegal symbol in convert_request_object");
+                    }
                 }
 
                 const auto &limit_order_idx = get_index<limit_order_index>().indices();
@@ -4899,8 +4917,9 @@ namespace steemit {
                         total_supply += itr->pending_fee;
                     } else if (itr->pending_fee.symbol == SBD_SYMBOL) {
                         total_sbd += itr->pending_fee;
-                    } else
+                    } else {
                         FC_ASSERT(false, "found escrow pending fee that is not SBD or STEEM");
+                    }
                 }
 
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
@@ -4911,8 +4930,9 @@ namespace steemit {
                         total_supply += itr->amount;
                     } else if (itr->amount.symbol == SBD_SYMBOL) {
                         total_sbd += itr->amount;
-                    } else
+                    } else {
                         FC_ASSERT(false, "found savings withdraw that is not SBD or STEEM");
+                    }
                 }
 
                 fc::uint128_t total_rshares2;

@@ -9,7 +9,7 @@ namespace steemit {
         class database;
 
         template<typename OperationType=steemit::protocol::operation>
-        class evaluator {
+        class generic_evaluator {
         public:
             virtual void apply(const OperationType &op) = 0;
 
@@ -17,12 +17,12 @@ namespace steemit {
         };
 
         template<typename EvaluatorType, typename OperationType=steemit::protocol::operation>
-        class evaluator_impl : public evaluator<OperationType> {
+        class evaluator : public generic_evaluator<OperationType> {
         public:
             typedef OperationType operation_sv_type;
             // typedef typename EvaluatorType::operation_type op_type;
 
-            evaluator_impl(database &d)
+            evaluator(database &d)
                     : db(d) {
             }
 

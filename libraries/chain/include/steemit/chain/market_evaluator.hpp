@@ -17,12 +17,12 @@ namespace steemit {
         class call_order_object;
 
         class limit_order_create_evaluator
-                : public evaluator_impl<limit_order_create_evaluator> {
+                : public evaluator<limit_order_create_evaluator> {
         public:
             typedef protocol::limit_order_create_operation operation_type;
 
             limit_order_create_evaluator(database &db)
-                    : evaluator_impl<limit_order_create_evaluator>(db) {
+                    : evaluator<limit_order_create_evaluator>(db) {
 
             }
 
@@ -35,12 +35,12 @@ namespace steemit {
         };
 
         class limit_order_create2_evaluator
-                : public steemit::chain::evaluator_impl<limit_order_create2_evaluator> {
+                : public steemit::chain::evaluator<limit_order_create2_evaluator> {
         public:
             typedef protocol::limit_order_create2_operation operation_type;
 
             limit_order_create2_evaluator(database &db)
-                    : steemit::chain::evaluator_impl<limit_order_create2_evaluator>(db) {
+                    : steemit::chain::evaluator<limit_order_create2_evaluator>(db) {
             }
 
             void do_apply(const protocol::limit_order_create2_operation &op);
@@ -53,12 +53,12 @@ namespace steemit {
         };
 
         class limit_order_cancel_evaluator
-                : public evaluator_impl<limit_order_cancel_evaluator> {
+                : public evaluator<limit_order_cancel_evaluator> {
         public:
             typedef protocol::limit_order_cancel_operation operation_type;
 
             limit_order_cancel_evaluator(database &db)
-                    : evaluator_impl<limit_order_cancel_evaluator>(db) {
+                    : evaluator<limit_order_cancel_evaluator>(db) {
 
             }
 
@@ -69,12 +69,12 @@ namespace steemit {
         };
 
         class call_order_update_evaluator
-                : public evaluator_impl<call_order_update_evaluator> {
+                : public evaluator<call_order_update_evaluator> {
         public:
             typedef protocol::call_order_update_operation operation_type;
 
             call_order_update_evaluator(database &db)
-                    : evaluator_impl<call_order_update_evaluator>(db) {
+                    : evaluator<call_order_update_evaluator>(db) {
 
             }
 

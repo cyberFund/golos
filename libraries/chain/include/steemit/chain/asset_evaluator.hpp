@@ -10,12 +10,12 @@ namespace steemit {
     namespace chain {
 
         class asset_create_evaluator
-                : public evaluator_impl<asset_create_evaluator> {
+                : public evaluator<asset_create_evaluator> {
         public:
             typedef asset_create_operation operation_type;
 
             asset_create_evaluator(database &db)
-                    : evaluator_impl<asset_create_evaluator>(db) {
+                    : evaluator<asset_create_evaluator>(db) {
 
             }
 
@@ -23,12 +23,12 @@ namespace steemit {
         };
 
         class asset_issue_evaluator
-                : public evaluator_impl<asset_issue_evaluator> {
+                : public evaluator<asset_issue_evaluator> {
         public:
             typedef asset_issue_operation operation_type;
 
             asset_issue_evaluator(database &db)
-                    : evaluator_impl<asset_issue_evaluator>(db) {
+                    : evaluator<asset_issue_evaluator>(db) {
 
             }
 
@@ -39,12 +39,12 @@ namespace steemit {
         };
 
         class asset_reserve_evaluator
-                : public evaluator_impl<asset_reserve_evaluator> {
+                : public evaluator<asset_reserve_evaluator> {
         public:
             typedef asset_reserve_operation operation_type;
 
             asset_reserve_evaluator(database &db)
-                    : evaluator_impl<asset_reserve_evaluator>(db) {
+                    : evaluator<asset_reserve_evaluator>(db) {
 
             }
 
@@ -56,12 +56,12 @@ namespace steemit {
 
 
         class asset_update_evaluator
-                : public evaluator_impl<asset_update_evaluator> {
+                : public evaluator<asset_update_evaluator> {
         public:
             typedef asset_update_operation operation_type;
 
             asset_update_evaluator(database &db)
-                    : evaluator_impl<asset_update_evaluator>(db) {
+                    : evaluator<asset_update_evaluator>(db) {
 
             }
 
@@ -71,12 +71,12 @@ namespace steemit {
         };
 
         class asset_update_bitasset_evaluator
-                : public evaluator_impl<asset_update_bitasset_evaluator> {
+                : public evaluator<asset_update_bitasset_evaluator> {
         public:
             typedef asset_update_bitasset_operation operation_type;
 
             asset_update_bitasset_evaluator(database &db)
-                    : evaluator_impl<asset_update_bitasset_evaluator>(db) {
+                    : evaluator<asset_update_bitasset_evaluator>(db) {
 
             }
 
@@ -86,12 +86,12 @@ namespace steemit {
         };
 
         class asset_update_feed_producers_evaluator
-                : public evaluator_impl<asset_update_feed_producers_evaluator> {
+                : public evaluator<asset_update_feed_producers_evaluator> {
         public:
             typedef asset_update_feed_producers_operation operation_type;
 
             asset_update_feed_producers_evaluator(database &db)
-                    : evaluator_impl<asset_update_feed_producers_evaluator>(db) {
+                    : evaluator<asset_update_feed_producers_evaluator>(db) {
 
             }
 
@@ -101,12 +101,12 @@ namespace steemit {
         };
 
         class asset_fund_fee_pool_evaluator
-                : public evaluator_impl<asset_fund_fee_pool_evaluator> {
+                : public evaluator<asset_fund_fee_pool_evaluator> {
         public:
             typedef asset_fund_fee_pool_operation operation_type;
 
             asset_fund_fee_pool_evaluator(database &db)
-                    : evaluator_impl<asset_fund_fee_pool_evaluator>(db) {
+                    : evaluator<asset_fund_fee_pool_evaluator>(db) {
 
             }
 
@@ -116,12 +116,12 @@ namespace steemit {
         };
 
         class asset_global_settle_evaluator
-                : public evaluator_impl<asset_global_settle_evaluator> {
+                : public evaluator<asset_global_settle_evaluator> {
         public:
             typedef asset_global_settle_operation operation_type;
 
             asset_global_settle_evaluator(database &db)
-                    : evaluator_impl<asset_global_settle_evaluator>(db) {
+                    : evaluator<asset_global_settle_evaluator>(db) {
 
             }
 
@@ -131,12 +131,12 @@ namespace steemit {
         };
 
         class asset_settle_evaluator
-                : public evaluator_impl<asset_settle_evaluator> {
+                : public evaluator<asset_settle_evaluator> {
         public:
             typedef asset_settle_operation operation_type;
 
             asset_settle_evaluator(database &db)
-                    : evaluator_impl<asset_settle_evaluator>(db) {
+                    : evaluator<asset_settle_evaluator>(db) {
 
             }
 
@@ -146,12 +146,12 @@ namespace steemit {
         };
 
         class asset_force_settle_evaluator
-                : public evaluator_impl<asset_force_settle_evaluator> {
+                : public evaluator<asset_force_settle_evaluator> {
         public:
             typedef asset_force_settle_operation operation_type;
 
             asset_force_settle_evaluator(database &db)
-                    : evaluator_impl<asset_force_settle_evaluator>(db) {
+                    : evaluator<asset_force_settle_evaluator>(db) {
 
             }
 
@@ -161,12 +161,12 @@ namespace steemit {
         };
 
         class asset_publish_feeds_evaluator
-                : public evaluator_impl<asset_publish_feeds_evaluator> {
+                : public evaluator<asset_publish_feeds_evaluator> {
         public:
             typedef asset_publish_feed_operation operation_type;
 
             asset_publish_feeds_evaluator(database &db)
-                    : evaluator_impl<asset_publish_feeds_evaluator>(db) {
+                    : evaluator<asset_publish_feeds_evaluator>(db) {
 
             }
 
@@ -176,12 +176,12 @@ namespace steemit {
         };
 
         class asset_claim_fees_evaluator
-                : public evaluator_impl<asset_claim_fees_evaluator> {
+                : public evaluator<asset_claim_fees_evaluator> {
         public:
             typedef asset_claim_fees_operation operation_type;
 
             asset_claim_fees_evaluator(database &db)
-                    : evaluator_impl<asset_claim_fees_evaluator>(db) {
+                    : evaluator<asset_claim_fees_evaluator>(db) {
 
             }
 

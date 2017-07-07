@@ -179,10 +179,6 @@ namespace steemit {
 
             const account_statistics_object *find_account_statistics(const account_name_type &name) const;
 
-            const account_balance_object &get_account_balance(const account_name_type &name) const;
-
-            const account_balance_object *find_account_balance(const account_name_type &name) const;
-
             const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
 
             const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
@@ -637,9 +633,13 @@ namespace steemit {
 
             void clear_expired_orders();
 
+            string to_pretty_string(const asset &a) const;
+
+            void adjust_sbd_balance(const account_object &a);
+
             void update_expired_feeds();
 
-            bool check_for_blackswan( const asset_object& mia, bool enable_black_swan = true );
+            bool check_for_blackswan(const asset_object &mia, bool enable_black_swan = true);
 
             void process_header_extensions(const signed_block &next_block);
 

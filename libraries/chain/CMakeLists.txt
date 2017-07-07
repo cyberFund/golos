@@ -14,6 +14,7 @@ endif(MSVC)
 set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp" PROPERTIES GENERATED TRUE)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
+        include/steemit/chain/account_evaluator.hpp
         include/steemit/chain/account_object.hpp
         include/steemit/chain/asset_object.hpp
         include/steemit/chain/asset_evaluator.hpp
@@ -53,6 +54,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
+        account_evaluator.cpp
         account_object.cpp
         asset_evaluator.cpp
         asset_object.cpp
