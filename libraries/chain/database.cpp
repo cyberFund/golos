@@ -29,6 +29,7 @@
 
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
+#include <steemit/chain/asset_evaluator.hpp>
 
 namespace steemit {
     namespace chain {
@@ -2508,6 +2509,19 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator>();
             _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
             _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_create_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_issue_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_reserve_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_update_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_update_bitasset_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_update_feed_producers_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_fund_fee_pool_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_global_settle_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_settle_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_force_settle_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_publish_feeds_evaluator>();
+            _my->_evaluator_registry.register_evaluator<asset_claim_fees_evaluator>();
+            _my->_evaluator_registry.register_evaluator<call_order_update_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2554,6 +2568,12 @@ namespace steemit {
             add_core_index<vesting_delegation_index>(*this);
             add_core_index<vesting_delegation_expiration_index>(*this);
             add_core_index<reward_fund_index>(*this);
+            add_core_index<asset_bitasset_data_index>(*this);
+            add_core_index<asset_dynamic_data_index>(*this);
+            add_core_index<account_balance_index>(*this);
+            add_core_index<account_statistics_index>(*this);
+            add_core_index<call_order_object>(*this);
+            add_core_index<force_settlement_object>(*this);
 
             _plugin_index_signal();
         }

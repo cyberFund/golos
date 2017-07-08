@@ -34,10 +34,10 @@ namespace steemit {
 
                     void operator()(const fill_asset_order_operation &o) const {
                         //ilog( "processing ${o}", ("o",o) );
-                        const auto &buckets = _plugin.tracked_buckets();
+                        const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
                         const auto &bucket_idx = db.get_index<bucket_index>();
-                        const auto &history_idx = db.get_index_type<history_index>().indices().get<by_key>();
+                        const auto &history_idx = db.get_index<history_index>().indices().get<by_key>();
 
                         auto time = db.head_block_time();
 
@@ -308,6 +308,14 @@ namespace steemit {
 
         key_interface::key_interface(asset_symbol_type base, asset_symbol_type quote)
                 : base(base), quote(quote) {
+        }
+
+        history_key::history_key() {
+
+        }
+
+        bucket_key::bucket_key() {
+
         }
 
         market_history_plugin::market_history_plugin(application *app)

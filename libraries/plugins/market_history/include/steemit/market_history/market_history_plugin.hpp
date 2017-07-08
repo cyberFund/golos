@@ -79,6 +79,8 @@ namespace steemit {
 
         class history_key : public key_interface {
         public:
+            history_key();
+
             history_key(asset_symbol_type base, asset_symbol_type quote, int64_t sequence)
                     : key_interface(base, quote), sequence(sequence) {
             }
@@ -102,8 +104,7 @@ namespace steemit {
                     : key_interface(a, b), seconds(s), open(o) {
             }
 
-            bucket_key() {
-            }
+            bucket_key();
 
             uint32_t seconds = 0;
             fc::time_point_sec open;
