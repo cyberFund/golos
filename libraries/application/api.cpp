@@ -357,7 +357,7 @@ namespace steemit {
                 int count = boost::distance(range) - 1;
 
                 asset_holders ah;
-                ah.symbol = asset(0, asset_id).symbol_name();
+                ah.asset_symbol = asset(0, asset_id).symbol_name();
                 ah.count = count;
 
                 result.push_back(ah);
