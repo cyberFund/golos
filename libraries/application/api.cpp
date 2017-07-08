@@ -289,5 +289,81 @@ namespace steemit {
             return _app.p2p_node()->set_advanced_node_parameters(params);
         }
 
+        asset_api::asset_api(steemit::chain::database &db) : _db(db) {
+
+        }
+
+        asset_api::~asset_api() {
+
+        }
+
+        vector<account_asset_balance> asset_api::get_asset_holders(std::string asset_symbol, uint32_t start, uint32_t limit) const {
+            FC_ASSERT(limit <= 100);
+
+            const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
+            auto range = bal_idx.equal_range(boost::make_tuple(protocol::asset::from_string(asset_symbol).symbol));
+
+            vector<account_asset_balance> result;
+
+            uint32_t index = 0;
+            for (const account_balance_object &bal : boost::make_iterator_range(range.first, range.second)) {
+                if (result.size() >= limit) {
+                    break;
+                }
+
+                if (bal.balance.value == 0) {
+                    continue;
+                }
+
+                if (index++ < start) {
+                    continue;
+                }
+
+                const account_object &account = _db.get_account(bal.owner);
+
+                account_asset_balance aab;
+                aab.name = account.name;
+                aab.amount = bal.balance.value;
+
+                result.push_back(aab);
+            }
+
+            return result;
+        }
+
+        // get number of asset holders.
+        int asset_api::get_asset_holders_count(std::string asset_symbol) const {
+
+            const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
+            auto range = bal_idx.equal_range(boost::make_tuple(protocol::asset::from_string(asset_symbol).symbol));
+
+            return (boost::distance(range) - 1);
+        }
+
+        // function to get vector of system assets with holders count.
+        vector<asset_holders> asset_api::get_all_asset_holders() const {
+
+            vector<asset_holders> result;
+
+            vector<asset_symbol_type> total_assets;
+            for (const asset_object &asset_obj : _db.get_index<asset_index>().indices()) {
+                const auto &dasset_obj = _db.get_asset_dynamic_data(asset_obj.symbol);
+
+                asset_symbol_type asset_id = dasset_obj.symbol;
+
+                const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
+                auto range = bal_idx.equal_range(boost::make_tuple(asset_id));
+
+                int count = boost::distance(range) - 1;
+
+                asset_holders ah;
+                ah.symbol = asset(0, asset_id).symbol_name();
+                ah.count = count;
+
+                result.push_back(ah);
+            }
+
+            return result;
+        }
     }
 } // steemit::application

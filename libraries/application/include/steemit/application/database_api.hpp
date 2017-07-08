@@ -39,21 +39,10 @@ namespace steemit {
         };
 
         struct order_book {
-            std::vector<order> asks;
-            std::vector<order> bids;
-        };
-
-        struct order {
-            double price;
-            double quote;
-            double base;
-        };
-
-        struct order_book {
             string base;
             string quote;
-            vector<order> bids;
-            vector<order> asks;
+            std::vector<order> bids;
+            std::vector<order> asks;
         };
 
         struct market_ticker {
@@ -693,7 +682,7 @@ namespace steemit {
 }
 
 FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
-FC_REFLECT(steemit::application::order_book, (asks)(bids));
+FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
