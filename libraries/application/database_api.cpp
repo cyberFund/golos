@@ -114,6 +114,28 @@ namespace steemit {
 
             bool verify_account_authority(const std::string &name_or_id, const flat_set<public_key_type> &signers) const;
 
+            template<typename T>
+            void subscribe_to_item(const T &i) const {
+                auto vec = fc::raw::pack(i);
+                if (!_subscribe_callback) {
+                    return;
+                }
+
+                if (!is_subscribed_to_item(i)) {
+                    idump((i));
+                    _subscribe_filter.insert(vec.data(), vec.size());//(vecconst char*)&i, sizeof(i) );
+                }
+            }
+
+            template<typename T>
+            bool is_subscribed_to_item(const T &i) const {
+                if (!_subscribe_callback) {
+                    return false;
+                }
+
+                return _subscribe_filter.contains(i);
+            }
+
             // signal handlers
             void on_applied_block(const chain::signed_block &b);
 
@@ -750,8 +772,7 @@ namespace steemit {
             result.reserve(symbols_or_ids.size());
             std::transform(symbols_or_ids.begin(), symbols_or_ids.end(), std::back_inserter(result),
                     [this, &assets_by_symbol](const string &symbol_or_id) -> optional<asset_object> {
-                        if (!symbol_or_id.empty() &&
-                            std::isdigit(symbol_or_id[0])) {
+                        if (!symbol_or_id.empty() && std::isdigit(symbol_or_id[0])) {
                             auto ptr = _db.find(variant(symbol_or_id).as<asset_symbol_type>());
                             return ptr == nullptr ? optional<asset_object>()
                                                   : *ptr;
@@ -809,7 +830,7 @@ namespace steemit {
         vector<call_order_object> database_api_impl::get_call_orders(string a, uint32_t limit) const {
             const auto &call_index = _db.get_index<call_order_index>().indices().get<by_price>();
             const asset_object &mia = _db.get(a);
-            price index_price = price::min(_db.get_asset_bitasset_data(mia.symbol).options.short_backing_asset, mia.get_id());
+            price index_price = price::min(_db.get_asset_bitasset_data(mia.symbol).options.short_backing_asset, mia.symbol);
 
             return vector<call_order_object>(call_index.lower_bound(index_price.min()),
                     call_index.lower_bound(index_price.max()));
@@ -822,8 +843,8 @@ namespace steemit {
         vector<force_settlement_object> database_api_impl::get_settle_orders(string a, uint32_t limit) const {
             const auto &settle_index = _db.get_index<force_settlement_index>().indices().get<by_expiration>();
             const asset_object &mia = _db.get(a);
-            return vector<force_settlement_object>(settle_index.lower_bound(mia.get_id()),
-                    settle_index.upper_bound(mia.get_id()));
+            return vector<force_settlement_object>(settle_index.lower_bound(mia.symbol),
+                    settle_index.upper_bound(mia.symbol));
         }
 
         vector<call_order_object> database_api::get_margin_positions(const account_name_type &id) const {
@@ -834,9 +855,9 @@ namespace steemit {
             try {
                 const auto &idx = _db.get_index<call_order_index>();
                 const auto &aidx = idx.indices().get<by_account>();
-                auto start = aidx.lower_bound(boost::make_tuple(id, asset_id_type(0)));
+                auto start = aidx.lower_bound(boost::make_tuple(id, STEEM_SYMBOL));
                 auto end = aidx.lower_bound(boost::make_tuple(
-                        id + 1, asset_id_type(0)));
+                        id + 1, STEEM_SYMBOL));
                 vector<call_order_object> result;
                 while (start != end) {
                     result.push_back(*start);
@@ -965,8 +986,8 @@ namespace steemit {
             FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", base));
             FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", quote));
 
-            auto base_id = assets[0]->id;
-            auto quote_id = assets[1]->id;
+            auto base_id = assets[0]->symbol;
+            auto quote_id = assets[1]->symbol;
             auto orders = get_limit_orders(base_id, quote_id, limit);
 
 
@@ -974,7 +995,7 @@ namespace steemit {
                 return double(a.amount.value) / pow(10, p);
             };
             auto price_to_real = [&](const price &p) {
-                if (p.base.asset_id == base_id) {
+                if (p.base.symbol == base_id) {
                     return asset_to_real(p.base, assets[0]->precision) /
                            asset_to_real(p.quote, assets[1]->precision);
                 } else {
@@ -984,7 +1005,7 @@ namespace steemit {
             };
 
             for (const auto &o : orders) {
-                if (o.sell_price.base.asset_id == base_id) {
+                if (o.sell_price.base.symbol == base_id) {
                     order ord;
                     ord.price = price_to_real(o.sell_price);
                     ord.quote = asset_to_real(share_type(
