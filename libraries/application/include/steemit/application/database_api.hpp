@@ -263,6 +263,18 @@ namespace steemit {
              */
             std::set<std::string> lookup_accounts(const std::string &lower_bound_name, uint32_t limit) const;
 
+            //////////////
+            // Balances //
+            //////////////
+
+            /**
+             * @brief Get an account's balances in various assets
+             * @param name of the account to get balances for
+             * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
+             * @return Balances of the account
+             */
+            vector<asset> get_account_balances(account_name_type id, const flat_set<std::string> &assets) const;
+
             /**
              * @brief Get the total number of accounts registered with the blockchain
              */
@@ -390,7 +402,7 @@ namespace steemit {
             /**
              *  @return all open margin positions for a given account id.
              */
-            vector<call_order_object> get_margin_positions(const account_name_type &id) const;
+            vector<call_order_object> get_margin_positions(const account_name_type &name) const;
 
             /**
              * @brief Request notification when the active orders in the market between two assets changes
@@ -681,6 +693,12 @@ namespace steemit {
     }
 }
 
+FC_REFLECT(graphene::app::order, (price)(quote)(base));
+FC_REFLECT(graphene::app::order_book, (base)(quote)(bids)(asks));
+FC_REFLECT(graphene::app::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
+FC_REFLECT(graphene::app::market_volume, (base)(quote)(base_volume)(quote_volume));
+FC_REFLECT(graphene::app::market_trade, (date)(price)(amount)(value));
+
 FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
 FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
@@ -758,6 +776,9 @@ FC_API(steemit::application::database_api,
                 (get_vesting_delegations)
                 (get_expiring_vesting_delegations)
 
+                // Balances
+                (get_account_balances)
+
                 // Assets
                 (get_assets)
                 (list_assets)
@@ -806,3 +827,4 @@ FC_API(steemit::application::database_api,
                 (get_active_witnesses)
                 (get_miner_queue)
 )
+§

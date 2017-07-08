@@ -73,6 +73,9 @@ namespace steemit {
 
             uint64_t get_witness_count() const;
 
+            // Balances
+            vector<asset> get_account_balances(account_name_type id, const flat_set<std::string> &assets) const;
+
             // Assets
             vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
 
@@ -717,6 +720,37 @@ namespace steemit {
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
+// Balances                                                         //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
+        vector<asset> database_api::get_account_balances(account_name_type id, const flat_set<std::string> &assets) const {
+            return my->get_account_balances(id, assets);
+        }
+
+        vector<asset> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<std::string> &assets) const {
+            vector<asset> result;
+            if (assets.empty()) {
+                // if the caller passes in an empty list of assets, return balances for all assets the account owns
+                const account_balance_index &balance_index = _db.get_index<account_balance_index>();
+                auto range = balance_index.indices().get<by_account_asset>().equal_range(boost::make_tuple(acnt));
+                for (const account_balance_object &balance : boost::make_iterator_range(range.first, range.second)) {
+                    result.push_back(asset(balance.get_balance()));
+                }
+            } else {
+                result.reserve(assets.size());
+
+                std::transform(assets.begin(), assets.end(), std::back_inserter(result),
+                        [this, acnt](std::string id) {
+                            return _db.get_balance(acnt, asset::from_string(id).symbol);
+                        });
+            }
+
+            return result;
+        }
+
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
 // Assets                                                           //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
@@ -772,8 +806,9 @@ namespace steemit {
             result.reserve(symbols_or_ids.size());
             std::transform(symbols_or_ids.begin(), symbols_or_ids.end(), std::back_inserter(result),
                     [this, &assets_by_symbol](const string &symbol_or_id) -> optional<asset_object> {
-                        if (!symbol_or_id.empty() && std::isdigit(symbol_or_id[0])) {
-                            auto ptr = _db.find(variant(symbol_or_id).as<asset_symbol_type>());
+                        if (!symbol_or_id.empty() &&
+                            std::isdigit(symbol_or_id[0])) {
+                            auto ptr = _db.find_asset(protocol::asset::from_string(symbol_or_id).symbol);
                             return ptr == nullptr ? optional<asset_object>()
                                                   : *ptr;
                         }
@@ -803,17 +838,20 @@ namespace steemit {
 
             vector<limit_order_object> result;
 
+            asset_symbol_type a_symbol = protocol::asset::from_string(a).symbol;
+            asset_symbol_type b_symbol = protocol::asset::from_string(b).symbol;
+
             uint32_t count = 0;
-            auto limit_itr = limit_price_idx.lower_bound(price::max(a, b));
-            auto limit_end = limit_price_idx.upper_bound(price::min(a, b));
+            auto limit_itr = limit_price_idx.lower_bound(price::max(a_symbol, b_symbol));
+            auto limit_end = limit_price_idx.upper_bound(price::min(a_symbol, b_symbol));
             while (limit_itr != limit_end && count < limit) {
                 result.push_back(*limit_itr);
                 ++limit_itr;
                 ++count;
             }
             count = 0;
-            limit_itr = limit_price_idx.lower_bound(price::max(b, a));
-            limit_end = limit_price_idx.upper_bound(price::min(b, a));
+            limit_itr = limit_price_idx.lower_bound(price::max(b_symbol, a_symbol));
+            limit_end = limit_price_idx.upper_bound(price::min(b_symbol, a_symbol));
             while (limit_itr != limit_end && count < limit) {
                 result.push_back(*limit_itr);
                 ++limit_itr;
@@ -829,7 +867,7 @@ namespace steemit {
 
         vector<call_order_object> database_api_impl::get_call_orders(string a, uint32_t limit) const {
             const auto &call_index = _db.get_index<call_order_index>().indices().get<by_price>();
-            const asset_object &mia = _db.get(a);
+            const asset_object &mia = _db.get_asset(asset::from_string(a).symbol);
             price index_price = price::min(_db.get_asset_bitasset_data(mia.symbol).options.short_backing_asset, mia.symbol);
 
             return vector<call_order_object>(call_index.lower_bound(index_price.min()),
@@ -842,29 +880,29 @@ namespace steemit {
 
         vector<force_settlement_object> database_api_impl::get_settle_orders(string a, uint32_t limit) const {
             const auto &settle_index = _db.get_index<force_settlement_index>().indices().get<by_expiration>();
-            const asset_object &mia = _db.get(a);
+            const asset_object &mia = _db.get_asset(asset::from_string(a).symbol);
             return vector<force_settlement_object>(settle_index.lower_bound(mia.symbol),
                     settle_index.upper_bound(mia.symbol));
         }
 
-        vector<call_order_object> database_api::get_margin_positions(const account_name_type &id) const {
-            return my->get_margin_positions(id);
+        vector<call_order_object> database_api::get_margin_positions(const account_name_type &name) const {
+            return my->get_margin_positions(name);
         }
 
-        vector<call_order_object> database_api_impl::get_margin_positions(const account_name_type &id) const {
+        vector<call_order_object> database_api_impl::get_margin_positions(const account_name_type &name) const {
             try {
                 const auto &idx = _db.get_index<call_order_index>();
                 const auto &aidx = idx.indices().get<by_account>();
-                auto start = aidx.lower_bound(boost::make_tuple(id, STEEM_SYMBOL));
+                auto start = aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL));
                 auto end = aidx.lower_bound(boost::make_tuple(
-                        id + 1, STEEM_SYMBOL));
+                        name + 1, STEEM_SYMBOL));
                 vector<call_order_object> result;
                 while (start != end) {
                     result.push_back(*start);
                     ++start;
                 }
                 return result;
-            } FC_CAPTURE_AND_RETHROW((id))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         void database_api::subscribe_to_market(std::function<void(const variant &)> callback, string a, string b) {
