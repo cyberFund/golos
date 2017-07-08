@@ -693,14 +693,12 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(graphene::app::order, (price)(quote)(base));
-FC_REFLECT(graphene::app::order_book, (base)(quote)(bids)(asks));
-FC_REFLECT(graphene::app::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
-FC_REFLECT(graphene::app::market_volume, (base)(quote)(base_volume)(quote_volume));
-FC_REFLECT(graphene::app::market_trade, (date)(price)(amount)(value));
-
 FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
 FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
+FC_REFLECT(steemit::application::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
+FC_REFLECT(steemit::application::market_volume, (base)(quote)(base_volume)(quote_volume));
+FC_REFLECT(steemit::application::market_trade, (date)(price)(amount)(value));
+
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
