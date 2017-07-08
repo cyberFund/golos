@@ -42,19 +42,19 @@ namespace steemit {
             uint32_t _maximum_history_per_bucket_size = 100;
             std::vector <std::string> _recipient_ip_vec;
             // Statistics sender                
-            stat_client * stat_sender;
-            uint32_t stat_sender_port = 8125;
-            uint32_t stat_sender_timeout = 3;
+            std::unique_ptr<stat_client> stat_sender;
+            uint32_t stat_sender_port;
+            uint32_t stat_sender_timeout;
         };
 
         struct operation_process {
             const blockchain_statistics_plugin &_plugin;
             const bucket_object &_bucket;
             chain::database &_db;
-            stat_client * &stat_sender;
+            std::unique_ptr<stat_client> &stat_sender;
 
             operation_process(blockchain_statistics_plugin &bsp,
-                const bucket_object &b, stat_client * &stat_sender)
+                const bucket_object &b, std::unique_ptr<stat_client> &stat_sender)
                     : _plugin(bsp), _bucket(b), _db(bsp.database()), stat_sender(stat_sender) {
             }
 
@@ -478,7 +478,7 @@ namespace steemit {
         }
 
         blockchain_statistics_plugin::~blockchain_statistics_plugin() {
-            delete _my->stat_sender;
+            _my->stat_sender.reset();;
             wlog("chain_stats plugin: stat_sender was shoutdowned");
         }
 
@@ -519,11 +519,17 @@ namespace steemit {
                         _my->_recipient_ip_vec.push_back(it);
                     }
                 }
+                if (options.count("stat_sender_port")) {
+                    _my->stat_sender_port = options["stat_sender_port"].as<uint32_t>();
+                }
+                if (options.count("stat_sender_timeout")) {
+                    _my->stat_sender_timeout = options["stat_sender_timeout"].as<uint32_t>();
+                }
                 
                 wlog("chain-stats-bucket-size: ${b}", ("b", _my->_tracked_buckets));
                 wlog("chain-stats-history-per-bucket: ${h}", ("h", _my->_maximum_history_per_bucket_size));
                 
-                _my->stat_sender = new stat_client();
+                _my->stat_sender = std::unique_ptr<stat_client>(new stat_client());
 
                 wlog("chain_stats plugin: stat_sender was initialized");
                 ilog("chain_stats_plugin: plugin_initialize() end");
