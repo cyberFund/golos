@@ -3,6 +3,7 @@
 #include <steemit/application/database_api.hpp>
 
 #include <steemit/snapshot/snapshot_plugin.hpp>
+#include <steemit/market_history/market_history_plugin.hpp>
 
 #include <steemit/chain/utilities/reward.hpp>
 
@@ -90,7 +91,7 @@ namespace steemit {
 
             vector<force_settlement_object> get_settle_orders(string a, uint32_t limit) const;
 
-            vector<call_order_object> get_margin_positions(const account_object::id_type &id) const;
+            vector<call_order_object> get_margin_positions(const account_name_type &name) const;
 
             void subscribe_to_market(std::function<void(const variant &)> callback, string a, string b);
 
@@ -724,16 +725,15 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        vector<asset> database_api::get_account_balances(account_name_type id, const flat_set<std::string> &assets) const {
-            return my->get_account_balances(id, assets);
+        vector<asset> database_api::get_account_balances(account_name_type name, const flat_set<std::string> &assets) const {
+            return my->get_account_balances(name, assets);
         }
 
         vector<asset> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<std::string> &assets) const {
             vector<asset> result;
             if (assets.empty()) {
                 // if the caller passes in an empty list of assets, return balances for all assets the account owns
-                const account_balance_index &balance_index = _db.get_index<account_balance_index>();
-                auto range = balance_index.indices().get<by_account_asset>().equal_range(boost::make_tuple(acnt));
+                auto range = _db.get_index<account_balance_index>().indices().get<by_account_asset>().equal_range(boost::make_tuple(acnt));
                 for (const account_balance_object &balance : boost::make_iterator_range(range.first, range.second)) {
                     result.push_back(asset(balance.get_balance()));
                 }
@@ -894,8 +894,7 @@ namespace steemit {
                 const auto &idx = _db.get_index<call_order_index>();
                 const auto &aidx = idx.indices().get<by_account>();
                 auto start = aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL));
-                auto end = aidx.lower_bound(boost::make_tuple(
-                        name + 1, STEEM_SYMBOL));
+                auto end = ++aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL));
                 vector<call_order_object> result;
                 while (start != end) {
                     result.push_back(*start);
@@ -914,7 +913,7 @@ namespace steemit {
                 std::swap(a, b);
             }
             FC_ASSERT(a != b);
-            _market_subscriptions[std::make_pair(a, b)] = callback;
+            _market_subscriptions[std::make_pair(asset::from_string(a).symbol, asset::from_string(b).symbol)] = callback;
         }
 
         void database_api::unsubscribe_from_market(string a, string b) {
@@ -926,7 +925,7 @@ namespace steemit {
                 std::swap(a, b);
             }
             FC_ASSERT(a != b);
-            _market_subscriptions.erase(std::make_pair(a, b));
+            _market_subscriptions.erase(std::make_pair(asset::from_string(a).symbol, asset::from_string(b).symbol));
         }
 
         market_ticker database_api::get_ticker(const string &base, const string &quote) const {
@@ -1024,15 +1023,15 @@ namespace steemit {
             FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", base));
             FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", quote));
 
-            auto base_id = assets[0]->symbol;
-            auto quote_id = assets[1]->symbol;
-            auto orders = get_limit_orders(base_id, quote_id, limit);
+            asset_symbol_type base_id = assets[0]->symbol;
+            auto orders = get_limit_orders(assets[0]->symbol_name, assets[1]->symbol_name, limit);
 
 
-            auto asset_to_real = [&](const asset &a, int p) {
-                return double(a.amount.value) / pow(10, p);
+            std::function<double(const asset &, int)> asset_to_real = [&](const asset &a, int p) -> double {
+                return double(a.amount.value) / std::pow(10, p);
             };
-            auto price_to_real = [&](const price &p) {
+
+            std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
                 if (p.base.symbol == base_id) {
                     return asset_to_real(p.base, assets[0]->precision) /
                            asset_to_real(p.quote, assets[1]->precision);
@@ -1046,17 +1045,17 @@ namespace steemit {
                 if (o.sell_price.base.symbol == base_id) {
                     order ord;
                     ord.price = price_to_real(o.sell_price);
-                    ord.quote = asset_to_real(share_type(
+                    ord.order_price.quote = asset(share_type(
                             (uint128_t(o.for_sale.value) *
                              o.sell_price.quote.amount.value) /
                             o.sell_price.base.amount.value), assets[1]->precision);
-                    ord.base = asset_to_real(o.for_sale, assets[0]->precision);
+                    ord.order_price.base = asset(o.for_sale, assets[0]->precision);
                     result.bids.push_back(ord);
                 } else {
                     order ord;
                     ord.price = price_to_real(o.sell_price);
-                    ord.quote = asset_to_real(o.for_sale, assets[1]->precision);
-                    ord.base = asset_to_real(share_type(
+                    ord.order_price.quote = asset(o.for_sale, assets[1]->precision);
+                    ord.order_price.base = asset(share_type(
                             (uint128_t(o.for_sale.value) *
                              o.sell_price.quote.amount.value) /
                             o.sell_price.base.amount.value), assets[0]->precision);
@@ -1072,6 +1071,7 @@ namespace steemit {
                 fc::time_point_sec start,
                 fc::time_point_sec stop,
                 unsigned limit) const {
+
             return my->get_trade_history(base, quote, start, stop, limit);
         }
 
@@ -1092,14 +1092,14 @@ namespace steemit {
             if (base_id > quote_id) {
                 std::swap(base_id, quote_id);
             }
-            const auto &history_idx = _db.get_index_type<graphene::market_history::history_index>().indices().get<by_key>();
+            const auto &history_idx = _db.get_index<steemit::market_history::history_index>().indices().get<by_key>();
             history_key hkey;
             hkey.base = base_id;
             hkey.quote = quote_id;
             hkey.sequence = std::numeric_limits<int64_t>::min();
 
-            auto price_to_real = [&](const share_type a, int p) {
-                return double(a.value) / pow(10, p);
+            std::function<double(const share_type, int)> price_to_real = [&](const share_type a, int p) -> double {
+                return double(a.value) / std::pow(10, p);
             };
 
             if (start.sec_since_epoch() == 0) {
@@ -1179,7 +1179,7 @@ namespace steemit {
                 auto itr = sell_itr;
                 order cur;
                 cur.order_price = itr->sell_price;
-                cur.real_price = (cur.order_price).to_real();
+                cur.price = (cur.order_price).to_real();
                 cur.sbd = itr->for_sale;
                 cur.steem = (asset(itr->for_sale, SBD_SYMBOL) *
                              cur.order_price).amount;
@@ -1193,7 +1193,7 @@ namespace steemit {
                 auto itr = buy_itr;
                 order cur;
                 cur.order_price = itr->sell_price;
-                cur.real_price = (~cur.order_price).to_real();
+                cur.price = (~cur.order_price).to_real();
                 cur.steem = itr->for_sale;
                 cur.sbd = (asset(itr->for_sale, STEEM_SYMBOL) *
                            cur.order_price).amount;

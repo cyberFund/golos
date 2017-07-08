@@ -68,6 +68,57 @@ namespace steemit {
             std::unique_ptr<detail::market_history_plugin_impl> _my;
         };
 
+        class key_interface {
+        public:
+            key_interface();
+            key_interface(asset_symbol_type base, asset_symbol_type quote);
+
+            asset_symbol_type base;
+            asset_symbol_type quote;
+        };
+
+        class history_key : public key_interface {
+        public:
+            history_key(asset_symbol_type base, asset_symbol_type quote, int64_t sequence)
+                    : key_interface(base, quote), sequence(sequence) {
+            }
+
+            int64_t sequence = 0;
+
+            friend bool operator<(const history_key &a, const history_key &b) {
+                return std::tie(a.base, a.quote, a.sequence) <
+                       std::tie(b.base, b.quote, b.sequence);
+            }
+
+            friend bool operator==(const history_key &a, const history_key &b) {
+                return std::tie(a.base, a.quote, a.sequence) ==
+                       std::tie(b.base, b.quote, b.sequence);
+            }
+        };
+
+        class bucket_key : public key_interface {
+        public:
+            bucket_key(asset_symbol_type a, asset_symbol_type b, uint32_t s, fc::time_point_sec o)
+                    : key_interface(a, b), seconds(s), open(o) {
+            }
+
+            bucket_key() {
+            }
+
+            uint32_t seconds = 0;
+            fc::time_point_sec open;
+
+            friend bool operator<(const bucket_key &a, const bucket_key &b) {
+                return std::tie(a.base, a.quote, a.seconds, a.open) <
+                       std::tie(b.base, b.quote, b.seconds, b.open);
+            }
+
+            friend bool operator==(const bucket_key &a, const bucket_key &b) {
+                return std::tie(a.base, a.quote, b.seconds, a.open) ==
+                       std::tie(b.base, b.quote, b.seconds, b.open);
+            }
+        };
+
         struct bucket_object
                 : public object<bucket_object_type, bucket_object> {
             template<typename Constructor, typename Allocator>
@@ -148,6 +199,10 @@ namespace steemit {
 
     }
 } // steemit::market_history
+
+FC_REFLECT(steemit::market_history::key_interface, (base)(quote))
+FC_REFLECT_DERIVED(steemit::market_history::history_key, (steemit::market_history::key_interface), (sequence))
+FC_REFLECT_DERIVED(steemit::market_history::bucket_key, (steemit::market_history::key_interface), (seconds)(open))
 
 FC_REFLECT(steemit::market_history::bucket_object,
         (id)

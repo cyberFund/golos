@@ -862,7 +862,7 @@ namespace steemit {
                                         << ' ' << setw(spacing)
                                         << asset(orders.bids[i].steem, STEEM_SYMBOL).to_string()
                                         << ' ' << setw(spacing)
-                                        << orders.bids[i].real_price; //(~orders.bids[i].order_price).to_real();
+                                        << orders.bids[i].price; //(~orders.bids[i].order_price).to_real();
                             } else {
                                 ss << setw((spacing * 4) + 5) << ' ';
                             }
@@ -873,7 +873,7 @@ namespace steemit {
                                 ask_sum += asset(orders.asks[i].sbd, SBD_SYMBOL);
                                 //ss << ' ' << setw( spacing ) << (~orders.asks[i].order_price).to_real()
                                 ss << ' ' << setw(spacing)
-                                   << orders.asks[i].real_price
+                                   << orders.asks[i].price
                                    << ' ' << setw(spacing)
                                    << asset(orders.asks[i].steem, STEEM_SYMBOL).to_string()
                                    << ' ' << setw(spacing)

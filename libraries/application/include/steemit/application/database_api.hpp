@@ -32,7 +32,7 @@ namespace steemit {
 
         struct order {
             price order_price;
-            double real_price; // dollars per steem
+            double price; // dollars per steem
             share_type steem;
             share_type sbd;
             fc::time_point_sec created;
@@ -273,7 +273,7 @@ namespace steemit {
              * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
              * @return Balances of the account
              */
-            vector<asset> get_account_balances(account_name_type id, const flat_set<std::string> &assets) const;
+            vector<asset> get_account_balances(account_name_type name, const flat_set<std::string> &assets) const;
 
             /**
              * @brief Get the total number of accounts registered with the blockchain
@@ -693,7 +693,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
+FC_REFLECT(steemit::application::order, (order_price)(price)(steem)(sbd)(created));
 FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
 FC_REFLECT(steemit::application::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
 FC_REFLECT(steemit::application::market_volume, (base)(quote)(base_volume)(quote_volume));
@@ -825,4 +825,3 @@ FC_API(steemit::application::database_api,
                 (get_active_witnesses)
                 (get_miner_queue)
 )
-§

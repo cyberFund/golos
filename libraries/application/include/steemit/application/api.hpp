@@ -270,7 +270,7 @@ FC_API(steemit::application::network_node_api,
                 (get_advanced_node_parameters)
                 (set_advanced_node_parameters)
 )
-FC_API(graphene::app::asset_api,
+FC_API(steemit::application::asset_api,
         (get_asset_holders)
                 (get_asset_holders_count)
                 (get_all_asset_holders)
