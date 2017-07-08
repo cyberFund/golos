@@ -79,7 +79,7 @@ namespace steemit {
                         */
 
 
-                        auto max_history = _plugin.max_history();
+                        auto max_history = _plugin.get_max_history_per_bucket();
                         for (auto bucket : buckets) {
                             auto cutoff = (fc::time_point() +
                                            fc::seconds(bucket * max_history));
@@ -280,12 +280,7 @@ namespace steemit {
                 void update_market_histories(const operation_notification &o);
 
                 market_history_plugin &_self;
-                flat_set<uint32_t> _tracked_buckets = flat_set<uint32_t>  {15,
-                                                                           60,
-                                                                           300,
-                                                                           3600,
-                                                                           86400
-                };
+                flat_set<uint32_t> _tracked_buckets = flat_set<uint32_t>  {15, 60, 300, 3600, 86400};
                 int32_t _maximum_history_per_bucket_size = 1000;
             };
 
@@ -297,7 +292,7 @@ namespace steemit {
                     return;
                 }
 
-                o.op.visit(operation_process_fill_order(_self));
+                o.op.visit(operation_process_fill_order(_self, fc::time_point::now()));
             }
 
         } // detail

@@ -1,10 +1,12 @@
 set(CURRENT_TARGET market_history)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
+        include/steemit/market_history/market_history_api.hpp
         include/steemit/market_history/market_history_plugin.hpp
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
+        market_history_api.cpp
         market_history_plugin.cpp
         )
 

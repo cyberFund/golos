@@ -2572,8 +2572,8 @@ namespace steemit {
             add_core_index<asset_dynamic_data_index>(*this);
             add_core_index<account_balance_index>(*this);
             add_core_index<account_statistics_index>(*this);
-            add_core_index<call_order_object>(*this);
-            add_core_index<force_settlement_object>(*this);
+            add_core_index<call_order_index>(*this);
+            add_core_index<force_settlement_index>(*this);
 
             _plugin_index_signal();
         }
