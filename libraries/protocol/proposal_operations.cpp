@@ -74,6 +74,5 @@ namespace steemit {
                 a.insert(i);
             }
         }
-
     }
 } // graphene::chain

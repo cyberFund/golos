@@ -78,11 +78,11 @@ namespace steemit {
          */
         struct proposal_update_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee = 20 * GRAPHENE_BLOCKCHAIN_PRECISION;
+                uint64_t fee = 20;
                 uint32_t price_per_kbyte = 10;
             };
 
-            proposal_id_type proposal;
+            proposal_object::id_type proposal;
             flat_set<account_name_type> active_approvals_to_add;
             flat_set<account_name_type> active_approvals_to_remove;
             flat_set<account_name_type> owner_approvals_to_add;
@@ -113,11 +113,11 @@ namespace steemit {
          */
         struct proposal_delete_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION;
+                uint64_t fee = 0;
             };
 
             bool using_owner_authority = false;
-            proposal_id_type proposal;
+            proposal_object::id_type proposal;
             extensions_type extensions;
 
             void validate() const;
@@ -127,9 +127,9 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::proposal_create_operation, (expiration_time)
+FC_REFLECT(steemit::protocol::proposal_create_operation, (expiration_time)
         (proposed_ops)(review_period_seconds)(extensions))
-FC_REFLECT(steemit::chain::proposal_update_operation, (proposal)
+FC_REFLECT(steemit::protocol::proposal_update_operation, (proposal)
         (active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)(owner_approvals_to_remove)
         (key_approvals_to_add)(key_approvals_to_remove)(extensions))
-FC_REFLECT(steemit::chain::proposal_delete_operation, (using_owner_authority)(proposal)(extensions))
+FC_REFLECT(steemit::protocol::proposal_delete_operation, (using_owner_authority)(proposal)(extensions))
