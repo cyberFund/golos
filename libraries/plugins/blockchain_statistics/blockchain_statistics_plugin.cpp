@@ -551,7 +551,7 @@ namespace steemit {
             else {
                 wlog("chain_stats plugin: stat_sender was not started: no recipient's IPs were provided");
             }
-            
+
             ilog("chain_stats plugin: plugin_startup() end");
         }
 

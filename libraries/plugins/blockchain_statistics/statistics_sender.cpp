@@ -63,12 +63,13 @@ void stat_client::start(int br_port, int timeout) {
 
         while (QUEUE_ENABLED.load() || !stat_q.empty()) {
             if (!stat_q.empty()) {
-               
-                std::string tmp_s;
-                stat_q.dequeue(tmp_s);
-                for (auto recipient : broadcast_endpoint_vec) {
-                    socket.send_to(boost::asio::buffer(tmp_s), recipient);
-                }
+                while (!stat_q.empty()) {
+                    std::string tmp_s;
+                    stat_q.dequeue(tmp_s);
+                    for (auto recipient : broadcast_endpoint_vec) {
+                        socket.send_to(boost::asio::buffer(tmp_s), recipient);
+                    }
+                }                
             }
             std::this_thread::sleep_for(std::chrono::seconds(sender_sleeping_time));
         }
@@ -87,19 +88,3 @@ void stat_client::start(int br_port, int timeout) {
          std::cerr << ex.what() << std::endl;
     }
 }
-
-// std::string get_value_string(uint32_t val) {
-//     std::string tmp_s = val > 0 ? "+" : "-";
-//     tmp_s += std::to_string(val) + "|g";
-//     return tmp_s;
-// }
-// std::string get_value_string(share_type val) {
-//     std::string tmp_s = val > 0 ? "+" : "-";
-//     tmp_s = std::string(val) + "|g";
-//     return tmp_s;
-// }
-// std::string get_value_string(fc::uint128_t val) {
-//     std::string tmp_s = val > 0 ? "+" : "-";
-//     tmp_s = std::string(val) + "|g";
-//     return tmp_s;
-// }
