@@ -163,6 +163,11 @@ namespace steemit {
             FC_ASSERT(amount.amount >= 0);
         }
 
+        void asset_force_settle_operation::validate() const {
+            FC_ASSERT(fee.amount >= 0);
+            FC_ASSERT(amount.amount >= 0);
+        }
+
         void asset_update_bitasset_operation::validate() const {
             FC_ASSERT(fee.amount >= 0);
             new_options.validate();

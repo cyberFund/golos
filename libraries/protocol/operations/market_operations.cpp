@@ -48,5 +48,14 @@ namespace steemit {
             FC_ASSERT(is_asset_type(amount, SBD_SYMBOL), "Can only convert SBD to STEEM");
             FC_ASSERT(amount.amount > 0, "Must convert some SBD");
         }
+
+        void call_order_update_operation::validate() const {
+            try {
+                FC_ASSERT(fee->amount >= 0);
+                FC_ASSERT(delta_collateral.symbol != delta_debt.symbol);
+                FC_ASSERT(
+                        delta_collateral.amount != 0 || delta_debt.amount != 0);
+            } FC_CAPTURE_AND_RETHROW((*this))
+        }
     }
 }

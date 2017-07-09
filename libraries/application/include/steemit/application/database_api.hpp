@@ -229,22 +229,11 @@ namespace steemit {
 
             reward_fund_api_obj get_reward_fund(string name) const;
 
-            //////////
-            // Keys //
-            //////////
-
-            std::vector<std::set<std::string>> get_key_references(std::vector<public_key_type> key) const;
-
             //////////////
             // Accounts //
             //////////////
 
             std::vector<extended_account> get_accounts(std::vector<std::string> names) const;
-
-            /**
-             *  @return all accounts that referr to the key or account id in their owner or active authorities.
-             */
-            std::vector<account_object::id_type> get_account_references(account_object::id_type account_id) const;
 
             /**
              * @brief Get a list of accounts by name
@@ -368,7 +357,7 @@ namespace steemit {
              *
              * This function has semantics identical to @ref get_objects
              */
-            vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &symbols_or_ids) const;
+            vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &asset_symbols) const;
 
             /////////////////////
             // Markets / feeds //
@@ -753,12 +742,8 @@ FC_API(steemit::application::database_api,
                 (get_next_scheduled_hardfork)
                 (get_reward_fund)
 
-                // Keys
-                (get_key_references)
-
                 // Accounts
                 (get_accounts)
-                (get_account_references)
                 (lookup_account_names)
                 (lookup_accounts)
                 (get_account_count)
@@ -804,11 +789,11 @@ FC_API(steemit::application::database_api,
                 (verify_authority)
                 (verify_account_authority)
 
-                // votes
+                // Votes
                 (get_active_votes)
                 (get_account_votes)
 
-                // content
+                // Content
                 (get_content)
                 (get_content_replies)
                 (get_discussions_by_author_before_date)

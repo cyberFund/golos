@@ -51,13 +51,10 @@ namespace steemit {
 
             dynamic_global_property_api_obj get_dynamic_global_properties() const;
 
-            // Keys
-            std::vector<std::set<std::string>> get_key_references(std::vector<public_key_type> key) const;
-
             // Accounts
             std::vector<extended_account> get_accounts(std::vector<std::string> names) const;
 
-            std::vector<account_object::id_type> get_account_references(account_object::id_type account_id) const;
+            std::vector<account_name_type> get_account_references(account_name_type account_id) const;
 
             std::vector<optional<account_api_obj>> lookup_account_names(const std::vector<std::string> &account_names) const;
 
@@ -82,7 +79,7 @@ namespace steemit {
 
             vector<asset_object> list_assets(const string &lower_bound_symbol, uint32_t limit) const;
 
-            vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &symbols_or_ids) const;
+            vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &asset_symbols) const;
 
             // Markets / feeds
             vector<limit_order_object> get_limit_orders(string a, string b, uint32_t limit) const;
@@ -397,27 +394,6 @@ namespace steemit {
                 shf.live_time = hpo.next_hardfork_time;
                 return shf;
             });
-        }
-
-//////////////////////////////////////////////////////////////////////
-//                                                                  //
-// Keys                                                             //
-//                                                                  //
-//////////////////////////////////////////////////////////////////////
-
-        std::vector<std::set<std::string>> database_api::get_key_references(std::vector<public_key_type> key) const {
-            return my->_db.with_read_lock([&]() {
-                return my->get_key_references(key);
-            });
-        }
-
-/**
- *  @return all accounts that referr to the key or account id in their owner or active authorities.
- */
-        std::vector<std::set<std::string>> database_api_impl::get_key_references(std::vector<public_key_type> keys) const {
-            FC_ASSERT(false, "database_api::get_key_references has been deprecated. Please use account_by_key_api::get_key_references instead.");
-            std::vector<std::set<std::string>> final_result;
-            return final_result;
         }
 
 //////////////////////////////////////////////////////////////////////
@@ -796,25 +772,19 @@ namespace steemit {
             return result;
         }
 
-        vector<optional<asset_object>> database_api::lookup_asset_symbols(const vector<string> &symbols_or_ids) const {
-            return my->lookup_asset_symbols(symbols_or_ids);
+        vector<optional<asset_object>> database_api::lookup_asset_symbols(const vector<string> &asset_symbols) const {
+            return my->lookup_asset_symbols(asset_symbols);
         }
 
-        vector<optional<asset_object>> database_api_impl::lookup_asset_symbols(const vector<string> &symbols_or_ids) const {
+        vector<optional<asset_object>> database_api_impl::lookup_asset_symbols(const vector<string> &asset_symbols) const {
             const auto &assets_by_symbol = _db.get_index<asset_index>().indices().get<by_symbol>();
             vector<optional<asset_object>> result;
-            result.reserve(symbols_or_ids.size());
-            std::transform(symbols_or_ids.begin(), symbols_or_ids.end(), std::back_inserter(result),
+            result.reserve(asset_symbols.size());
+            std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this, &assets_by_symbol](const string &symbol_or_id) -> optional<asset_object> {
-                        if (!symbol_or_id.empty() &&
-                            std::isdigit(symbol_or_id[0])) {
-                            auto ptr = _db.find_asset(protocol::asset::from_string(symbol_or_id).symbol);
-                            return ptr == nullptr ? optional<asset_object>()
-                                                  : *ptr;
-                        }
-                        auto itr = assets_by_symbol.find(symbol_or_id);
-                        return itr == assets_by_symbol.end()
-                               ? optional<asset_object>() : *itr;
+                        auto ptr = _db.find_asset(protocol::asset::from_string(symbol_or_id).symbol);
+                        return ptr == nullptr ? optional<asset_object>()
+                                              : *ptr;
                     });
             return result;
         }
@@ -901,7 +871,8 @@ namespace steemit {
                     ++start;
                 }
                 return result;
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         void database_api::subscribe_to_market(std::function<void(const variant &)> callback, string a, string b) {
@@ -986,7 +957,8 @@ namespace steemit {
                 if (!orders.bids.empty()) {
                     result.highest_bid = orders.bids[0].price;
                 }
-            } FC_CAPTURE_AND_RETHROW((base)(quote))
+            }
+            FC_CAPTURE_AND_RETHROW((base)(quote))
 
             return result;
         }
@@ -1086,8 +1058,8 @@ namespace steemit {
             FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", base));
             FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", quote));
 
-            auto base_id = assets[0]->id;
-            auto quote_id = assets[1]->id;
+            auto base_id = assets[0]->symbol;
+            auto quote_id = assets[1]->symbol;
 
             if (base_id > quote_id) {
                 std::swap(base_id, quote_id);
@@ -1116,7 +1088,7 @@ namespace steemit {
                 if (itr->time < start) {
                     market_trade trade;
 
-                    if (assets[0]->id == itr->op.receives.asset_id) {
+                    if (assets[0]->symbol == itr->op.receives.symbol) {
                         trade.amount = price_to_real(itr->op.pays.amount, assets[1]->precision);
                         trade.value = price_to_real(itr->op.receives.amount, assets[0]->precision);
                     } else {
@@ -1156,54 +1128,6 @@ namespace steemit {
                 }
                 return result;
             });
-        }
-
-        order_book database_api_impl::get_order_book(uint32_t limit) const {
-            FC_ASSERT(limit <= 1000);
-            order_book result;
-
-            auto max_sell = price::max(SBD_SYMBOL, STEEM_SYMBOL);
-            auto max_buy = price::max(STEEM_SYMBOL, SBD_SYMBOL);
-
-            const auto &limit_price_idx = _db.get_index<limit_order_index>().indices().get<by_price>();
-            auto sell_itr = limit_price_idx.lower_bound(max_sell);
-            auto buy_itr = limit_price_idx.lower_bound(max_buy);
-            auto end = limit_price_idx.end();
-//   idump((max_sell)(max_buy));
-//   if( sell_itr != end ) idump((*sell_itr));
-//   if( buy_itr != end ) idump((*buy_itr));
-
-            while (sell_itr != end &&
-                   sell_itr->sell_price.base.symbol == SBD_SYMBOL &&
-                   result.bids.size() < limit) {
-                auto itr = sell_itr;
-                order cur;
-                cur.order_price = itr->sell_price;
-                cur.price = (cur.order_price).to_real();
-                cur.sbd = itr->for_sale;
-                cur.steem = (asset(itr->for_sale, SBD_SYMBOL) *
-                             cur.order_price).amount;
-                cur.created = itr->created;
-                result.bids.push_back(cur);
-                ++sell_itr;
-            }
-            while (buy_itr != end &&
-                   buy_itr->sell_price.base.symbol == STEEM_SYMBOL &&
-                   result.asks.size() < limit) {
-                auto itr = buy_itr;
-                order cur;
-                cur.order_price = itr->sell_price;
-                cur.price = (~cur.order_price).to_real();
-                cur.steem = itr->for_sale;
-                cur.sbd = (asset(itr->for_sale, STEEM_SYMBOL) *
-                           cur.order_price).amount;
-                cur.created = itr->created;
-                result.asks.push_back(cur);
-                ++buy_itr;
-            }
-
-
-            return result;
         }
 
         std::vector<liquidity_balance> database_api::get_liquidity_queue(std::string start_account, uint32_t limit) const {
