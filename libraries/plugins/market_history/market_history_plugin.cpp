@@ -36,8 +36,8 @@ namespace steemit {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
-                        const auto &bucket_idx = db.get_index<bucket_index>();
-                        const auto &history_idx = db.get_index<history_index>().indices().get<by_key>();
+                        const auto &bucket_idx = db.get_index<asset_bucket_index>();
+                        const auto &history_idx = db.get_index<asset_order_history_index>().indices().get<by_key>();
 
                         auto time = db.head_block_time();
 
@@ -58,7 +58,7 @@ namespace steemit {
                             hkey.sequence = 0;
                         }
 
-                        db.create<order_history_object>([&](order_history_object &ho) {
+                        db.create<asset_order_history_object>([&](asset_order_history_object &ho) {
                             ho.key = hkey;
                             ho.time = time;
                             ho.op = o;
@@ -109,7 +109,7 @@ namespace steemit {
                             auto itr = by_key_idx.find(key);
                             if (itr == by_key_idx.end()) { // create new bucket
                                 /* const auto& obj = */
-                                db.create<bucket_object>([&](bucket_object &b) {
+                                db.create<asset_bucket_object>([&](asset_bucket_object &b) {
                                     b.key = key;
                                     b.quote_volume += trade_price.quote.amount;
                                     b.base_volume += trade_price.base.amount;
@@ -125,7 +125,7 @@ namespace steemit {
                                 //wlog( "    creating bucket ${b}", ("b",obj) );
                             } else { // update existing bucket
                                 //wlog( "    before updating bucket ${b}", ("b",*itr) );
-                                db.modify(*itr, [&](bucket_object &b) {
+                                db.modify(*itr, [&](asset_bucket_object &b) {
                                     b.base_volume += trade_price.base.amount;
                                     b.quote_volume += trade_price.quote.amount;
                                     b.close_base = trade_price.base.amount;
@@ -161,7 +161,7 @@ namespace steemit {
                     }
 
                     void operator()(const fill_order_operation &o) const {
-                        auto &db = _self.database();
+                        auto &db = _plugin._my->_self.database();
                         const auto &bucket_idx = db.get_index<bucket_index>().indices().get<by_bucket>();
 
                         db.create<order_history_object>([&](order_history_object &ho) {
@@ -169,16 +169,16 @@ namespace steemit {
                             ho.op = o;
                         });
 
-                        if (!_maximum_history_per_bucket_size) {
+                        if (!_plugin._my->maximum_history_per_bucket_size) {
                             return;
                         }
-                        if (!_tracked_buckets.size()) {
+                        if (!_plugin._my->_tracked_buckets.size()) {
                             return;
                         }
 
-                        for (auto bucket : _tracked_buckets) {
+                        for (auto bucket : _plugin._my->_tracked_buckets) {
                             auto cutoff = db.head_block_time() - fc::seconds(
-                                    bucket * _maximum_history_per_bucket_size);
+                                    bucket * _plugin._my->maximum_history_per_bucket_size);
 
                             auto open = fc::time_point_sec(
                                     (db.head_block_time().sec_since_epoch() /
@@ -191,70 +191,70 @@ namespace steemit {
                                     b.open = open;
                                     b.seconds = bucket;
 
-                                    if (op.open_pays.symbol == STEEM_SYMBOL) {
-                                        b.high_steem = op.open_pays.amount;
-                                        b.high_sbd = op.current_pays.amount;
-                                        b.low_steem = op.open_pays.amount;
-                                        b.low_sbd = op.current_pays.amount;
-                                        b.open_steem = op.open_pays.amount;
-                                        b.open_sbd = op.current_pays.amount;
-                                        b.close_steem = op.open_pays.amount;
-                                        b.close_sbd = op.current_pays.amount;
-                                        b.steem_volume = op.open_pays.amount;
-                                        b.sbd_volume = op.current_pays.amount;
+                                    if (o.open_pays.symbol == STEEM_SYMBOL) {
+                                        b.high_steem = o.open_pays.amount;
+                                        b.high_sbd = o.current_pays.amount;
+                                        b.low_steem = o.open_pays.amount;
+                                        b.low_sbd = o.current_pays.amount;
+                                        b.open_steem = o.open_pays.amount;
+                                        b.open_sbd = o.current_pays.amount;
+                                        b.close_steem = o.open_pays.amount;
+                                        b.close_sbd = o.current_pays.amount;
+                                        b.steem_volume = o.open_pays.amount;
+                                        b.sbd_volume = o.current_pays.amount;
                                     } else {
-                                        b.high_steem = op.current_pays.amount;
-                                        b.high_sbd = op.open_pays.amount;
-                                        b.low_steem = op.current_pays.amount;
-                                        b.low_sbd = op.open_pays.amount;
-                                        b.open_steem = op.current_pays.amount;
-                                        b.open_sbd = op.open_pays.amount;
-                                        b.close_steem = op.current_pays.amount;
-                                        b.close_sbd = op.open_pays.amount;
-                                        b.steem_volume = op.current_pays.amount;
-                                        b.sbd_volume = op.open_pays.amount;
+                                        b.high_steem = o.current_pays.amount;
+                                        b.high_sbd = o.open_pays.amount;
+                                        b.low_steem = o.current_pays.amount;
+                                        b.low_sbd = o.open_pays.amount;
+                                        b.open_steem = o.current_pays.amount;
+                                        b.open_sbd = o.open_pays.amount;
+                                        b.close_steem = o.current_pays.amount;
+                                        b.close_sbd = o.open_pays.amount;
+                                        b.steem_volume = o.current_pays.amount;
+                                        b.sbd_volume = o.open_pays.amount;
                                     }
                                 });
                             } else {
                                 db.modify(*itr, [&](bucket_object &b) {
-                                    if (op.open_pays.symbol == STEEM_SYMBOL) {
-                                        b.steem_volume += op.open_pays.amount;
-                                        b.sbd_volume += op.current_pays.amount;
-                                        b.close_steem = op.open_pays.amount;
-                                        b.close_sbd = op.current_pays.amount;
+                                    if (o.open_pays.symbol == STEEM_SYMBOL) {
+                                        b.steem_volume += o.open_pays.amount;
+                                        b.sbd_volume += o.current_pays.amount;
+                                        b.close_steem = o.open_pays.amount;
+                                        b.close_sbd = o.current_pays.amount;
 
                                         if (b.high() <
-                                            price(op.current_pays, op.open_pays)) {
-                                            b.high_steem = op.open_pays.amount;
-                                            b.high_sbd = op.current_pays.amount;
+                                            price(o.current_pays, o.open_pays)) {
+                                            b.high_steem = o.open_pays.amount;
+                                            b.high_sbd = o.current_pays.amount;
                                         }
 
                                         if (b.low() >
-                                            price(op.current_pays, op.open_pays)) {
-                                            b.low_steem = op.open_pays.amount;
-                                            b.low_sbd = op.current_pays.amount;
+                                            price(o.current_pays, o.open_pays)) {
+                                            b.low_steem = o.open_pays.amount;
+                                            b.low_sbd = o.current_pays.amount;
                                         }
                                     } else {
-                                        b.steem_volume += op.current_pays.amount;
-                                        b.sbd_volume += op.open_pays.amount;
-                                        b.close_steem = op.current_pays.amount;
-                                        b.close_sbd = op.open_pays.amount;
+                                        b.steem_volume += o.current_pays.amount;
+                                        b.sbd_volume += o.open_pays.amount;
+                                        b.close_steem = o.current_pays.amount;
+                                        b.close_sbd = o.open_pays.amount;
 
                                         if (b.high() <
-                                            price(op.open_pays, op.current_pays)) {
-                                            b.high_steem = op.current_pays.amount;
-                                            b.high_sbd = op.open_pays.amount;
+                                            price(o.open_pays, o.current_pays)) {
+                                            b.high_steem = o.current_pays.amount;
+                                            b.high_sbd = o.open_pays.amount;
                                         }
 
                                         if (b.low() >
-                                            price(op.open_pays, op.current_pays)) {
-                                            b.low_steem = op.current_pays.amount;
-                                            b.low_sbd = op.open_pays.amount;
+                                            price(o.open_pays, o.current_pays)) {
+                                            b.low_steem = o.current_pays.amount;
+                                            b.low_sbd = o.open_pays.amount;
                                         }
                                     }
                                 });
 
-                                if (_maximum_history_per_bucket_size > 0) {
+                                if (_plugin._my->maximum_history_per_bucket_size > 0) {
                                     open = fc::time_point_sec();
                                     itr = bucket_idx.lower_bound(boost::make_tuple(seconds, open));
 
@@ -281,11 +281,11 @@ namespace steemit {
 
                 market_history_plugin &_self;
                 flat_set<uint32_t> _tracked_buckets = flat_set<uint32_t>  {15, 60, 300, 3600, 86400};
-                int32_t _maximum_history_per_bucket_size = 1000;
+                int32_t maximum_history_per_bucket_size = 1000;
             };
 
             void market_history_plugin_impl::update_market_histories(const operation_notification &o) {
-                if (_maximum_history_per_bucket_size == 0) {
+                if (maximum_history_per_bucket_size == 0) {
                     return;
                 }
                 if (_tracked_buckets.size() == 0) {
@@ -296,22 +296,6 @@ namespace steemit {
             }
 
         } // detail
-
-        key_interface::key_interface() {
-
-        }
-
-        key_interface::key_interface(asset_symbol_type base, asset_symbol_type quote)
-                : base(base), quote(quote) {
-        }
-
-        history_key::history_key() {
-
-        }
-
-        bucket_key::bucket_key() {
-
-        }
 
         market_history_plugin::market_history_plugin(application *app)
                 : plugin(app),
@@ -347,11 +331,11 @@ namespace steemit {
                     _my->_tracked_buckets = fc::json::from_string(buckets).as<flat_set<uint32_t>>();
                 }
                 if (options.count("history-per-size")) {
-                    _my->_maximum_history_per_bucket_size = options["history-per-size"].as<uint32_t>();
+                    _my->maximum_history_per_bucket_size = options["history-per-size"].as<uint32_t>();
                 }
 
                 wlog("bucket-size ${b}", ("b", _my->_tracked_buckets));
-                wlog("history-per-size ${h}", ("h", _my->_maximum_history_per_bucket_size));
+                wlog("history-per-size ${h}", ("h", _my->maximum_history_per_bucket_size));
 
                 ilog("market_history: plugin_initialize() end");
             } FC_CAPTURE_AND_RETHROW()
@@ -370,7 +354,7 @@ namespace steemit {
         }
 
         uint32_t market_history_plugin::get_max_history_per_bucket() const {
-            return _my->_maximum_history_per_bucket_size;
+            return _my->maximum_history_per_bucket_size;
         }
     }
 } // steemit::market_history

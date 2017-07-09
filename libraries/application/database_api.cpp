@@ -1092,8 +1092,8 @@ namespace steemit {
             if (base_id > quote_id) {
                 std::swap(base_id, quote_id);
             }
-            const auto &history_idx = _db.get_index<steemit::market_history::history_index>().indices().get<by_key>();
-            history_key hkey;
+            const auto &history_idx = _db.get_index<market_history::asset_order_history_index>().indices().get<market_history::by_key>();
+            market_history::history_key hkey;
             hkey.base = base_id;
             hkey.quote = quote_id;
             hkey.sequence = std::numeric_limits<int64_t>::min();
