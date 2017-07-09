@@ -2568,6 +2568,7 @@ namespace steemit {
             add_core_index<vesting_delegation_index>(*this);
             add_core_index<vesting_delegation_expiration_index>(*this);
             add_core_index<reward_fund_index>(*this);
+            add_core_index<asset_index>(*this);
             add_core_index<asset_bitasset_data_index>(*this);
             add_core_index<asset_dynamic_data_index>(*this);
             add_core_index<account_balance_index>(*this);
