@@ -57,19 +57,17 @@ void stat_client::start(int br_port, int timeout) {
                     port
                 )
             );
-        }            
+        }
 
         cds::threading::Manager::attachThread();
 
         while (QUEUE_ENABLED.load() || !stat_q.empty()) {
-            if (!stat_q.empty()) {
-                while (!stat_q.empty()) {
-                    std::string tmp_s;
-                    stat_q.dequeue(tmp_s);
-                    for (auto recipient : broadcast_endpoint_vec) {
-                        socket.send_to(boost::asio::buffer(tmp_s), recipient);
-                    }
-                }                
+            while (!stat_q.empty()) {
+                std::string tmp_s;
+                stat_q.dequeue(tmp_s);
+                for (auto recipient : broadcast_endpoint_vec) {
+                    socket.send_to(boost::asio::buffer(tmp_s), recipient);
+                }
             }
             std::this_thread::sleep_for(std::chrono::seconds(sender_sleeping_time));
         }
