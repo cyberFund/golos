@@ -284,6 +284,7 @@ namespace steemit {
                 auth.last_owner_update = fc::time_point_sec::min();
             });
 
+if (o.delegation > 0) {
             _db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
                 vdo.delegator = o.creator;
                 vdo.delegatee = o.new_account_name;
@@ -291,6 +292,7 @@ namespace steemit {
                 vdo.min_delegation_time = _db.head_block_time() +
                                           STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
             });
+            }
 
             if (o.fee.amount > 0) {
                 _db.create_vesting(new_account, o.fee);
