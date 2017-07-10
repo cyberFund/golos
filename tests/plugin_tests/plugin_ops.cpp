@@ -61,7 +61,7 @@ void test_b_evaluator::do_apply( const test_b_operation& o )
 {
    const auto& account = db().get_account( o.account );
 
-   db().modify( account, [&]( account_object& a )
+   get_database().modify( account, [&]( account_object& a )
    {
       a.json_metadata = "b";
    });

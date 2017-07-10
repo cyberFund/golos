@@ -90,6 +90,10 @@ namespace steemit {
 
         FC_DECLARE_DERIVED_EXCEPTION(pop_empty_chain, steemit::chain::undo_database_exception, 4070001, "there are no blocks to pop")
 
+        FC_DECLARE_DERIVED_EXCEPTION(insufficient_feeds, steemit::chain::chain_exception, 37006, "insufficient feeds")
+
+        FC_DECLARE_DERIVED_EXCEPTION(black_swan_exception, steemit::chain::chain_exception, 3090000, "black swan")
+
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(transfer);
 //   STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
 
@@ -111,6 +115,13 @@ namespace steemit {
 
         STEEMIT_DECLARE_INTERNAL_EXCEPTION(verify_auth_account_not_found, 2, "Auth account not found")
 
+        STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(asset_reserve);
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(invalid_on_mia, asset_reserve, 1, "invalid on mia")
+
+        STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(call_order_update);
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(unfilled_margin_call, call_order_update, 1, "Updating call order would trigger a margin call that cannot be fully filled")
     }
 } // steemit::chain
 

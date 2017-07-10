@@ -39,8 +39,35 @@ namespace steemit {
         };
 
         struct order_book {
-            std::vector<order> asks;
+            string base;
+            string quote;
             std::vector<order> bids;
+            std::vector<order> asks;
+        };
+
+        struct market_ticker {
+            string base;
+            string quote;
+            double latest;
+            double lowest_ask;
+            double highest_bid;
+            double percent_change;
+            double base_volume;
+            double quote_volume;
+        };
+
+        struct market_volume {
+            string base;
+            string quote;
+            double base_volume;
+            double quote_volume;
+        };
+
+        struct market_trade {
+            fc::time_point_sec date;
+            double price;
+            double amount;
+            double value;
         };
 
         struct api_context;
@@ -202,22 +229,11 @@ namespace steemit {
 
             reward_fund_api_obj get_reward_fund(string name) const;
 
-            //////////
-            // Keys //
-            //////////
-
-            std::vector<std::set<std::string>> get_key_references(std::vector<public_key_type> key) const;
-
             //////////////
             // Accounts //
             //////////////
 
             std::vector<extended_account> get_accounts(std::vector<std::string> names) const;
-
-            /**
-             *  @return all accounts that referr to the key or account id in their owner or active authorities.
-             */
-            std::vector<account_id_type> get_account_references(account_id_type account_id) const;
 
             /**
              * @brief Get a list of accounts by name
@@ -235,6 +251,18 @@ namespace steemit {
              * @return Map of account names to corresponding IDs
              */
             std::set<std::string> lookup_accounts(const std::string &lower_bound_name, uint32_t limit) const;
+
+            //////////////
+            // Balances //
+            //////////////
+
+            /**
+             * @brief Get an account's balances in various assets
+             * @param name of the account to get balances for
+             * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
+             * @return Balances of the account
+             */
+            vector<asset> get_account_balances(account_name_type name, const flat_set<std::string> &assets) const;
 
             /**
              * @brief Get the total number of accounts registered with the blockchain
@@ -270,7 +298,7 @@ namespace steemit {
              *
              * This function has semantics identical to @ref get_objects
              */
-            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_id_type> &witness_ids) const;
+            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
 
             std::vector<convert_request_api_obj> get_conversion_requests(const std::string &account_name) const;
 
@@ -302,14 +330,124 @@ namespace steemit {
             uint64_t get_witness_count() const;
 
             ////////////
-            // Market //
+            // Assets //
             ////////////
 
             /**
-             * @breif Gets the current order book for STEEM:SBD market
-             * @param limit Maximum number of orders for each side of the spread to return -- Must not exceed 1000
+             * @brief Get a list of assets by ID
+             * @param asset_ids IDs of the assets to retrieve
+             * @return The assets corresponding to the provided IDs
+             *
+             * This function has semantics identical to @ref get_objects
              */
-            order_book get_order_book(uint32_t limit = 1000) const;
+            vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
+
+            /**
+             * @brief Get assets alphabetically by symbol name
+             * @param lower_bound_symbol Lower bound of symbol names to retrieve
+             * @param limit Maximum number of assets to fetch (must not exceed 100)
+             * @return The assets found
+             */
+            vector<asset_object> list_assets(const string &lower_bound_symbol, uint32_t limit) const;
+
+            /**
+             * @brief Get a list of assets by symbol
+             * @param asset_symbols Symbols or stringified IDs of the assets to retrieve
+             * @return The assets corresponding to the provided symbols or IDs
+             *
+             * This function has semantics identical to @ref get_objects
+             */
+            vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &asset_symbols) const;
+
+            /////////////////////
+            // Markets / feeds //
+            /////////////////////
+
+            /**
+             * @brief Get limit orders in a given market
+             * @param a ID of asset being sold
+             * @param b ID of asset being purchased
+             * @param limit Maximum number of orders to retrieve
+             * @return The limit orders, ordered from least price to greatest
+             */
+            vector<limit_order_object> get_limit_orders(string a, string b, uint32_t limit) const;
+
+            /**
+             * @brief Get call orders in a given asset
+             * @param a ID of asset being called
+             * @param limit Maximum number of orders to retrieve
+             * @return The call orders, ordered from earliest to be called to latest
+             */
+            vector<call_order_object> get_call_orders(string a, uint32_t limit) const;
+
+            /**
+             * @brief Get forced settlement orders in a given asset
+             * @param a ID of asset being settled
+             * @param limit Maximum number of orders to retrieve
+             * @return The settle orders, ordered from earliest settlement date to latest
+             */
+            vector<force_settlement_object> get_settle_orders(string a, uint32_t limit) const;
+
+            /**
+             *  @return all open margin positions for a given account id.
+             */
+            vector<call_order_object> get_margin_positions(const account_name_type &name) const;
+
+            /**
+             * @brief Request notification when the active orders in the market between two assets changes
+             * @param callback Callback method which is called when the market changes
+             * @param a First asset ID
+             * @param b Second asset ID
+             *
+             * Callback will be passed a variant containing a vector<pair<operation, operation_result>>. The vector will
+             * contain, in order, the operations which changed the market, and their results.
+             */
+            void subscribe_to_market(std::function<void(const variant &)> callback,
+                    string a, string b);
+
+            /**
+             * @brief Unsubscribe from updates to a given market
+             * @param a First asset ID
+             * @param b Second asset ID
+             */
+            void unsubscribe_from_market(string a, string b);
+
+            /**
+             * @brief Returns the ticker for the market assetA:assetB
+             * @param a String name of the first asset
+             * @param b String name of the second asset
+             * @return The market ticker for the past 24 hours.
+             */
+            market_ticker get_ticker(const string &base, const string &quote) const;
+
+            /**
+             * @brief Returns the 24 hour volume for the market assetA:assetB
+             * @param a String name of the first asset
+             * @param b String name of the second asset
+             * @return The market volume over the past 24 hours
+             */
+            market_volume get_24_volume(const string &base, const string &quote) const;
+
+            /**
+             * @brief Returns the order book for the market base:quote
+             * @param base String name of the first asset
+             * @param quote String name of the second asset
+             * @param depth of the order book. Up to depth of each asks and bids, capped at 50. Prioritizes most moderate of each
+             * @return Order book of the market
+             */
+            order_book get_order_book(const string &base, const string &quote, unsigned limit = 50) const;
+
+            /**
+             * @brief Returns recent trades for the market assetA:assetB
+             * Note: Currentlt, timezone offsets are not supported. The time must be UTC.
+             * @param a String name of the first asset
+             * @param b String name of the second asset
+             * @param stop Stop time as a UNIX timestamp
+             * @param limit Number of trasactions to retrieve, capped at 100
+             * @param start Start time as a UNIX timestamp
+             * @return Recent transactions in the market
+             */
+            vector<market_trade> get_trade_history(const string &base, const string &quote, fc::time_point_sec start, fc::time_point_sec stop, unsigned limit = 100) const;
 
             std::vector<extended_limit_order> get_open_orders(std::string owner) const;
 
@@ -511,7 +649,7 @@ namespace steemit {
 
             void set_url(discussion &d) const;
 
-            discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
+            discussion get_discussion(comment_object::id_type, uint32_t truncate_body = 0) const;
 
             static bool filter_default(const comment_api_obj &c) {
                 return false;
@@ -528,14 +666,14 @@ namespace steemit {
             template<typename Compare, typename Index, typename StartItr>
             std::multimap<tags::tag_object, discussion, Compare> get_discussions(const discussion_query &query,
                     const std::string &tag,
-                    comment_id_type parent,
+                    comment_object::id_type parent,
                     const Index &tidx, StartItr tidx_itr,
                     const std::function<bool(const comment_api_obj &)> &filter = &database_api::filter_default,
                     const std::function<bool(const comment_api_obj &)> &exit = &database_api::exit_default,
                     const std::function<bool(const tags::tag_object &)> &tag_exit = &database_api::tag_exit_default,
                     bool ignore_parent = false) const;
 
-            comment_id_type get_parent(const discussion_query &q) const;
+            comment_object::id_type get_parent(const discussion_query &q) const;
 
             void recursively_fetch_content(state &_state, discussion &root, std::set<std::string> &referenced_accounts) const;
 
@@ -545,7 +683,11 @@ namespace steemit {
 }
 
 FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
-FC_REFLECT(steemit::application::order_book, (asks)(bids));
+FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
+FC_REFLECT(steemit::application::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
+FC_REFLECT(steemit::application::market_volume, (base)(quote)(base_volume)(quote_volume));
+FC_REFLECT(steemit::application::market_trade, (date)(price)(amount)(value));
+
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
@@ -600,12 +742,8 @@ FC_API(steemit::application::database_api,
                 (get_next_scheduled_hardfork)
                 (get_reward_fund)
 
-                // Keys
-                (get_key_references)
-
                 // Accounts
                 (get_accounts)
-                (get_account_references)
                 (lookup_account_names)
                 (lookup_accounts)
                 (get_account_count)
@@ -621,8 +759,25 @@ FC_API(steemit::application::database_api,
                 (get_vesting_delegations)
                 (get_expiring_vesting_delegations)
 
-                // Market
+                // Balances
+                (get_account_balances)
+
+                // Assets
+                (get_assets)
+                (list_assets)
+                (lookup_asset_symbols)
+
+                // Markets / feeds
                 (get_order_book)
+                (get_limit_orders)
+                (get_call_orders)
+                (get_settle_orders)
+                (get_margin_positions)
+                (subscribe_to_market)
+                (unsubscribe_from_market)
+                (get_ticker)
+                (get_24_volume)
+                (get_trade_history)
                 (get_open_orders)
                 (get_liquidity_queue)
 
@@ -634,11 +789,11 @@ FC_API(steemit::application::database_api,
                 (verify_authority)
                 (verify_account_authority)
 
-                // votes
+                // Votes
                 (get_active_votes)
                 (get_account_votes)
 
-                // content
+                // Content
                 (get_content)
                 (get_content_replies)
                 (get_discussions_by_author_before_date)

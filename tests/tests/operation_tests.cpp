@@ -2442,7 +2442,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-            convert("alice", ASSET("2.500 TESTS"));
+            convert_operation("alice", ASSET("2.500 TESTS"));
 
             validate_database();
 
@@ -2500,8 +2500,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-            convert("alice", ASSET("2.500 TESTS"));
-            convert("bob", ASSET("7.000 TESTS"));
+            convert_operation("alice", ASSET("2.500 TESTS"));
+            convert_operation("bob", ASSET("7.000 TESTS"));
 
             const auto &new_alice = db.get_account("alice");
             const auto &new_bob = db.get_account("bob");
@@ -2558,10 +2558,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(new_bob.sbd_balance.amount.value ==
                           ASSET("4.000 TBD").amount.value);
 
-            auto convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.requestid));
+            auto convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.request_id));
             BOOST_REQUIRE(convert_request != convert_request_idx.end());
             BOOST_REQUIRE(convert_request->owner == op.owner);
-            BOOST_REQUIRE(convert_request->requestid == op.requestid);
+            BOOST_REQUIRE(convert_request->request_id == op.request_id);
             BOOST_REQUIRE(convert_request->amount.amount.value ==
                           op.amount.amount.value);
             //BOOST_REQUIRE( convert_request->premium == 100000 );
@@ -2581,10 +2581,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(new_bob.sbd_balance.amount.value ==
                           ASSET("4.000 TBD").amount.value);
 
-            convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.requestid));
+            convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.request_id));
             BOOST_REQUIRE(convert_request != convert_request_idx.end());
             BOOST_REQUIRE(convert_request->owner == op.owner);
-            BOOST_REQUIRE(convert_request->requestid == op.requestid);
+            BOOST_REQUIRE(convert_request->request_id == op.request_id);
             BOOST_REQUIRE(convert_request->amount.amount.value ==
                           ASSET("3.000 TBD").amount.value);
             //BOOST_REQUIRE( convert_request->premium == 100000 );
@@ -2609,7 +2609,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            limit_order_create_operation op;
+            limit_order_create op;
             op.owner = "alice";
             op.amount_to_sell = ASSET("1.000 TESTS");
             op.min_to_receive = ASSET("1.000 TBD");
@@ -2655,16 +2655,16 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert("bob", ASSET("1000.000 TESTS"));
+            convert_operation("bob", ASSET("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
             BOOST_TEST_MESSAGE("--- Test failure when account does not have required funds");
-            limit_order_create_operation op;
+            limit_order_create op;
             signed_transaction tx;
 
             op.owner = "bob";
-            op.orderid = 1;
+            op.order_id = 1;
             op.amount_to_sell = ASSET("10.000 TESTS");
             op.min_to_receive = ASSET("10.000 TBD");
             op.fill_or_kill = false;
@@ -2675,7 +2675,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("bob", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("bob", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(bob.balance.amount.value ==
                           ASSET("0.000 TESTS").amount.value);
@@ -2694,7 +2694,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("alice", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("alice", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("1000.000 TESTS").amount.value);
@@ -2713,7 +2713,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("alice", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("alice", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("1000.000 TESTS").amount.value);
@@ -2731,10 +2731,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            auto limit_order = limit_order_idx.find(std::make_tuple("alice", op.orderid));
+            auto limit_order = limit_order_idx.find(std::make_tuple("alice", op.order_id));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == op.owner);
-            BOOST_REQUIRE(limit_order->orderid == op.orderid);
+            BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == op.amount_to_sell.amount);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(op.amount_to_sell / op.min_to_receive));
@@ -2755,10 +2755,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-            limit_order = limit_order_idx.find(std::make_tuple("alice", op.orderid));
+            limit_order = limit_order_idx.find(std::make_tuple("alice", op.order_id));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == op.owner);
-            BOOST_REQUIRE(limit_order->orderid == op.orderid);
+            BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 10000);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("10.000 TESTS"), op.min_to_receive));
@@ -2772,7 +2772,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test sucess killing an order that will not be filled");
 
-            op.orderid = 2;
+            op.order_id = 2;
             op.fill_or_kill = true;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2781,7 +2781,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("alice", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("alice", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
@@ -2794,7 +2794,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             // Fill 5 STEEM for 7.5 SBD
 
             op.owner = "bob";
-            op.orderid = 1;
+            op.order_id = 1;
             op.amount_to_sell = ASSET("7.500 TBD");
             op.min_to_receive = ASSET("5.000 TESTS");
             op.fill_or_kill = false;
@@ -2810,14 +2810,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order = limit_order_idx.find(std::make_tuple("alice", 1));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "alice");
-            BOOST_REQUIRE(limit_order->orderid == op.orderid);
+            BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 5000);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("10.000 TESTS"), ASSET("15.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("bob", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("bob", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
@@ -2828,11 +2828,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(bob.sbd_balance.amount.value ==
                           ASSET("992.500 TBD").amount.value);
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_orderid == 1);
+            BOOST_REQUIRE(fill_order_op.open_order_id == 1);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           ASSET("5.000 TESTS").amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 1);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 1);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           ASSET("7.500 TBD").amount.value);
             validate_database();
@@ -2850,7 +2850,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order = limit_order_idx.find(std::make_tuple("bob", 1));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "bob");
-            BOOST_REQUIRE(limit_order->orderid == 1);
+            BOOST_REQUIRE(limit_order->order_id == 1);
             BOOST_REQUIRE(limit_order->for_sale.value == 7500);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("15.000 TBD"), ASSET("10.000 TESTS")));
@@ -2871,7 +2871,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test filling an existing order and new order fully");
 
             op.owner = "alice";
-            op.orderid = 3;
+            op.order_id = 3;
             op.amount_to_sell = ASSET("5.000 TESTS");
             op.min_to_receive = ASSET("7.500 TBD");
             tx.operations.clear();
@@ -2897,7 +2897,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test filling limit order with better order when partial order is better.");
 
             op.owner = "alice";
-            op.orderid = 4;
+            op.order_id = 4;
             op.amount_to_sell = ASSET("10.000 TESTS");
             op.min_to_receive = ASSET("11.000 TBD");
             tx.operations.clear();
@@ -2907,7 +2907,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             op.owner = "bob";
-            op.orderid = 4;
+            op.order_id = 4;
             op.amount_to_sell = ASSET("12.000 TBD");
             op.min_to_receive = ASSET("10.000 TESTS");
             tx.operations.clear();
@@ -2921,7 +2921,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 4)) ==
                           limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "bob");
-            BOOST_REQUIRE(limit_order->orderid == 4);
+            BOOST_REQUIRE(limit_order->order_id == 4);
             BOOST_REQUIRE(limit_order->for_sale.value == 1000);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("12.000 TBD"), ASSET("10.000 TESTS")));
@@ -2937,9 +2937,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                           ASSET("965.500 TBD").amount.value);
             validate_database();
 
-            limit_order_cancel_operation can;
+            limit_order_cancel can;
             can.owner = "bob";
-            can.orderid = 4;
+            can.order_id = 4;
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(can);
@@ -2952,7 +2952,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             auto start_sbd = gpo.current_sbd_supply;
 
             op.owner = "alice";
-            op.orderid = 5;
+            op.order_id = 5;
             op.amount_to_sell = ASSET("20.000 TESTS");
             op.min_to_receive = ASSET("22.000 TBD");
             tx.operations.clear();
@@ -2962,7 +2962,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             op.owner = "bob";
-            op.orderid = 5;
+            op.order_id = 5;
             op.amount_to_sell = ASSET("12.000 TBD");
             op.min_to_receive = ASSET("10.000 TESTS");
             tx.operations.clear();
@@ -2976,7 +2976,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", 5)) ==
                           limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "alice");
-            BOOST_REQUIRE(limit_order->orderid == 5);
+            BOOST_REQUIRE(limit_order->order_id == 5);
             BOOST_REQUIRE(limit_order->for_sale.value == 9091);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("20.000 TESTS"), ASSET("22.000 TBD")));
@@ -3048,7 +3048,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert("bob", ASSET("1000.000 TESTS"));
+            convert_operation("bob", ASSET("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
@@ -3057,7 +3057,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             signed_transaction tx;
 
             op.owner = "bob";
-            op.orderid = 1;
+            op.order_id = 1;
             op.amount_to_sell = ASSET("10.000 TESTS");
             op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
             op.fill_or_kill = false;
@@ -3068,7 +3068,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("bob", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("bob", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(bob.balance.amount.value ==
                           ASSET("0.000 TESTS").amount.value);
@@ -3087,7 +3087,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("alice", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("alice", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("1000.000 TESTS").amount.value);
@@ -3106,7 +3106,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("alice", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("alice", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("1000.000 TESTS").amount.value);
@@ -3124,10 +3124,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            auto limit_order = limit_order_idx.find(std::make_tuple("alice", op.orderid));
+            auto limit_order = limit_order_idx.find(std::make_tuple("alice", op.order_id));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == op.owner);
-            BOOST_REQUIRE(limit_order->orderid == op.orderid);
+            BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == op.amount_to_sell.amount);
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
@@ -3147,10 +3147,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-            limit_order = limit_order_idx.find(std::make_tuple("alice", op.orderid));
+            limit_order = limit_order_idx.find(std::make_tuple("alice", op.order_id));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == op.owner);
-            BOOST_REQUIRE(limit_order->orderid == op.orderid);
+            BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 10000);
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
@@ -3163,7 +3163,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test sucess killing an order that will not be filled");
 
-            op.orderid = 2;
+            op.order_id = 2;
             op.fill_or_kill = true;
             tx.operations.clear();
             tx.signatures.clear();
@@ -3172,7 +3172,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("alice", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("alice", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
@@ -3185,7 +3185,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             // Fill 5 STEEM for 7.5 SBD
 
             op.owner = "bob";
-            op.orderid = 1;
+            op.order_id = 1;
             op.amount_to_sell = ASSET("7.500 TBD");
             op.exchange_rate = price(ASSET("3.000 TBD"), ASSET("2.000 TESTS"));
             op.fill_or_kill = false;
@@ -3201,14 +3201,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order = limit_order_idx.find(std::make_tuple("alice", 1));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "alice");
-            BOOST_REQUIRE(limit_order->orderid == op.orderid);
+            BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 5000);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("2.000 TESTS"), ASSET("3.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
             BOOST_REQUIRE(
-                    limit_order_idx.find(std::make_tuple("bob", op.orderid)) ==
+                    limit_order_idx.find(std::make_tuple("bob", op.order_id)) ==
                     limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
@@ -3219,11 +3219,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(bob.sbd_balance.amount.value ==
                           ASSET("992.500 TBD").amount.value);
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_orderid == 1);
+            BOOST_REQUIRE(fill_order_op.open_order_id == 1);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           ASSET("5.000 TESTS").amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_orderid == 1);
+            BOOST_REQUIRE(fill_order_op.current_order_id == 1);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           ASSET("7.500 TBD").amount.value);
             validate_database();
@@ -3241,7 +3241,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order = limit_order_idx.find(std::make_tuple("bob", 1));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "bob");
-            BOOST_REQUIRE(limit_order->orderid == 1);
+            BOOST_REQUIRE(limit_order->order_id == 1);
             BOOST_REQUIRE(limit_order->for_sale.value == 7500);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("3.000 TBD"), ASSET("2.000 TESTS")));
@@ -3262,7 +3262,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test filling an existing order and new order fully");
 
             op.owner = "alice";
-            op.orderid = 3;
+            op.order_id = 3;
             op.amount_to_sell = ASSET("5.000 TESTS");
             op.exchange_rate = price(ASSET("2.000 TESTS"), ASSET("3.000 TBD"));
             tx.operations.clear();
@@ -3288,7 +3288,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test filling limit order with better order when partial order is better.");
 
             op.owner = "alice";
-            op.orderid = 4;
+            op.order_id = 4;
             op.amount_to_sell = ASSET("10.000 TESTS");
             op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.100 TBD"));
             tx.operations.clear();
@@ -3298,7 +3298,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             op.owner = "bob";
-            op.orderid = 4;
+            op.order_id = 4;
             op.amount_to_sell = ASSET("12.000 TBD");
             op.exchange_rate = price(ASSET("1.200 TBD"), ASSET("1.000 TESTS"));
             tx.operations.clear();
@@ -3312,7 +3312,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 4)) ==
                           limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "bob");
-            BOOST_REQUIRE(limit_order->orderid == 4);
+            BOOST_REQUIRE(limit_order->order_id == 4);
             BOOST_REQUIRE(limit_order->for_sale.value == 1000);
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
@@ -3327,9 +3327,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                           ASSET("965.500 TBD").amount.value);
             validate_database();
 
-            limit_order_cancel_operation can;
+            limit_order_cancel can;
             can.owner = "bob";
-            can.orderid = 4;
+            can.order_id = 4;
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(can);
@@ -3342,7 +3342,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             auto start_sbd = gpo.current_sbd_supply;
 
             op.owner = "alice";
-            op.orderid = 5;
+            op.order_id = 5;
             op.amount_to_sell = ASSET("20.000 TESTS");
             op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.100 TBD"));
             tx.operations.clear();
@@ -3352,7 +3352,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             op.owner = "bob";
-            op.orderid = 5;
+            op.order_id = 5;
             op.amount_to_sell = ASSET("12.000 TBD");
             op.exchange_rate = price(ASSET("1.200 TBD"), ASSET("1.000 TESTS"));
             tx.operations.clear();
@@ -3366,7 +3366,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", 5)) ==
                           limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "alice");
-            BOOST_REQUIRE(limit_order->orderid == 5);
+            BOOST_REQUIRE(limit_order->order_id == 5);
             BOOST_REQUIRE(limit_order->for_sale.value == 9091);
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("1.000 TESTS"), ASSET("1.100 TBD")));
@@ -3399,9 +3399,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            limit_order_create_operation c;
+            limit_order_create c;
             c.owner = "alice";
-            c.orderid = 1;
+            c.order_id = 1;
             c.amount_to_sell = ASSET("1.000 TESTS");
             c.min_to_receive = ASSET("1.000 TBD");
 
@@ -3412,9 +3412,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            limit_order_cancel_operation op;
+            limit_order_cancel op;
             op.owner = "alice";
-            op.orderid = 1;
+            op.order_id = 1;
 
             tx.operations.clear();
             tx.signatures.clear();
@@ -3458,11 +3458,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test cancel non-existent order");
 
-            limit_order_cancel_operation op;
+            limit_order_cancel op;
             signed_transaction tx;
 
             op.owner = "alice";
-            op.orderid = 5;
+            op.order_id = 5;
             tx.operations.push_back(op);
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -3471,9 +3471,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test cancel order");
 
-            limit_order_create_operation create;
+            limit_order_create create;
             create.owner = "alice";
-            create.orderid = 5;
+            create.order_id = 5;
             create.amount_to_sell = ASSET("5.000 TESTS");
             create.min_to_receive = ASSET("7.500 TBD");
             tx.operations.clear();

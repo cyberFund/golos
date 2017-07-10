@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 // n.b. we generate STEEMIT_MIN_UNDO_HISTORY+1 extra blocks which will be discarded on save
                 for (uint32_t i = 1;; ++i) {
                     BOOST_CHECK(db.head_block_id() == b.id());
-                    //witness_id_type prev_witness = b.witness;
+                    //witness_object::id_type prev_witness = b.witness;
                     string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
                     b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, database::skip_nothing);
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 b = cutoff_block;
                 for (uint32_t i = 0; i < 200; ++i) {
                     BOOST_CHECK(db.head_block_id() == b.id());
-                    //witness_id_type prev_witness = b.witness;
+                    //witness_object::id_type prev_witness = b.witness;
                     string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
                     b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, database::skip_nothing);

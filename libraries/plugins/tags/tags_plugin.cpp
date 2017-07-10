@@ -56,7 +56,7 @@ namespace steemit {
 
                 void remove_stats(const tag_object &tag, const tag_stats_object &stats) const {
                     _db.modify(stats, [&](tag_stats_object &s) {
-                        if (tag.parent == comment_id_type()) {
+                        if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 -= tag.children_rshares2;
                             s.top_posts--;
                         } else {
@@ -68,7 +68,7 @@ namespace steemit {
 
                 void add_stats(const tag_object &tag, const tag_stats_object &stats) const {
                     _db.modify(stats, [&](tag_stats_object &s) {
-                        if (tag.parent == comment_id_type()) {
+                        if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 += tag.children_rshares2;
                             s.top_posts++;
                         } else {
@@ -172,8 +172,8 @@ namespace steemit {
                 void create_tag(const string &tag, const comment_object &comment, double hot, double trending) const {
 
 
-                    comment_id_type parent;
-                    account_id_type author = _db.get_account(comment.author).id;
+                    comment_object::id_type parent;
+                    account_object::id_type author = _db.get_account(comment.author).id;
 
                     if (comment.parent_author.size()) {
                         parent = _db.get_comment(comment.parent_author, comment.parent_permlink).id;
@@ -285,7 +285,7 @@ namespace steemit {
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
                 }
 
-                const peer_stats_object &get_or_create_peer_stats(account_id_type voter, account_id_type peer) const {
+                const peer_stats_object &get_or_create_peer_stats(account_object::id_type voter, account_object::id_type peer) const {
                     const auto &peeridx = _db.get_index<peer_stats_index>().indices().get<by_voter_peer>();
                     auto itr = peeridx.find(boost::make_tuple(voter, peer));
                     if (itr == peeridx.end()) {
@@ -297,7 +297,7 @@ namespace steemit {
                     return *itr;
                 }
 
-                void update_indirect_vote(account_id_type a, account_id_type b, int positive) const {
+                void update_indirect_vote(account_object::id_type a, account_object::id_type b, int positive) const {
                     if (a == b) {
                         return;
                     }
@@ -331,7 +331,7 @@ namespace steemit {
                     });
 
                     const auto &voteidx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_id_type(c.id), account_id_type()));
+                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_object::id_type(c.id), account_object::id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
                         update_indirect_vote(voter.id, itr->voter,
                                 (itr->vote_percent > 0) == (vote > 0));
@@ -378,9 +378,9 @@ namespace steemit {
                 void operator()(const vote_operation &op) const {
                     update_tags(_db.get_comment(op.author, op.permlink));
                     /*
-                    update_peer_stats( _db.get_account(op.voter),
-                                       _db.get_account(op.author),
-                                       _db.get_comment(op.author, op.permlink),
+                    update_peer_stats( db.get_account(op.voter),
+                                       db.get_account(op.author),
+                                       db.get_comment(op.author, op.permlink),
                                        op.weight );
                                        */
                 }

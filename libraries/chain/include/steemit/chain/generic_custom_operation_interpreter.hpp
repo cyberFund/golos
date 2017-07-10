@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <steemit/protocol/steem_operations.hpp>
-#include <steemit/protocol/operation_util_impl.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
+#include <steemit/protocol/operations/operation_utilities_impl.hpp>
 
 #include <steemit/chain/evaluator.hpp>
 #include <steemit/chain/evaluator_registry.hpp>

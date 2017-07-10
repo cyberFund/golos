@@ -203,7 +203,7 @@ namespace detail_ns {
     };
 
     template<typename O>
-    struct js_name<chainbase::oid<O>> {
+    struct js_name<chainbase::object_id<O>> {
         static std::string name() {
             return "protocol_id_type \"" +
                    remove_namespace(fc::get_typename<O>::name()) + "\"";
@@ -422,7 +422,7 @@ namespace detail_ns {
     };
 
     template<typename T>
-    struct serializer<chainbase::oid<T>, true> {
+    struct serializer<chainbase::object_id<T>, true> {
         static void init() {
         }
 

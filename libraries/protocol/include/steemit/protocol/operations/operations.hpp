@@ -1,8 +1,12 @@
 #pragma once
 
-#include <steemit/protocol/operation_util.hpp>
-#include <steemit/protocol/steem_operations.hpp>
-#include <steemit/protocol/steem_virtual_operations.hpp>
+#include <steemit/protocol/operations/operation_utilities.hpp>
+#include <steemit/protocol/operations/asset_operations.hpp>
+#include <steemit/protocol/operations/market_operations.hpp>
+#include <steemit/protocol/operations/market_virtual_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_virtual_operations.hpp>
+#include <steemit/protocol/operations/asset_virtual_operations.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -64,6 +68,21 @@ namespace steemit {
                 account_create_with_delegation_operation,
                 comment_payout_extension_operation,
 
+                asset_create_operation,
+                asset_update_operation,
+                asset_update_bitasset_operation,
+                asset_update_feed_producers_operation,
+                asset_issue_operation,
+                asset_reserve_operation,
+                asset_fund_fee_pool_operation,
+                asset_settle_operation,
+                asset_force_settle_operation,
+                asset_global_settle_operation,
+                asset_publish_feed_operation,
+                asset_claim_fees_operation,
+
+                call_order_update_operation,
+
                 /// virtual operations below this point
                 fill_convert_request_operation,
                 author_reward_operation,
@@ -77,7 +96,9 @@ namespace steemit {
                 fill_transfer_from_savings_operation,
                 hardfork_operation,
                 comment_payout_update_operation,
-                return_vesting_delegation_operation
+                return_vesting_delegation_operation,
+                asset_settle_cancel_operation,
+                fill_asset_order_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,

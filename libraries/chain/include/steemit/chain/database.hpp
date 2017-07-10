@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- */
 #pragma once
 
 #include <steemit/chain/global_property_object.hpp>
@@ -8,6 +5,10 @@
 #include <steemit/chain/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
+#include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/market_object.hpp>
 
 #include <steemit/protocol/protocol.hpp>
 
@@ -115,7 +116,18 @@ namespace steemit {
 
             void close(bool rewind = true);
 
-            //////////////////// db_block.cpp ////////////////////
+            /**
+             * @brief Retrieve a particular account's balance in a given asset
+             * @param owner Account whose balance should be retrieved
+             * @param asset_id ID of the asset to get balance in
+             * @return owner's balance in asset
+             */
+            asset get_balance(account_name_type owner, asset_symbol_type asset_id) const;
+
+            /// This is an overloaded method.
+            asset get_balance(const account_object &owner, const asset_object &asset_obj) const;
+
+            bool is_authorized_asset(const account_object &acct, const asset_object &asset_obj) const;
 
             /**
              *  @return true if the block is in our fork DB or saved to disk as
@@ -129,7 +141,7 @@ namespace steemit {
 
             uint32_t get_pow_summary_target() const;
 
-                     block_id_type              get_block_id_for_num( uint32_t block_num )const;
+            block_id_type get_block_id_for_num(uint32_t block_num) const;
 
             block_id_type find_block_id_for_num(uint32_t block_num) const;
 
@@ -143,6 +155,17 @@ namespace steemit {
 
             chain_id_type get_chain_id() const;
 
+            const asset_object &get_asset(const asset_symbol_type &name) const;
+
+            const asset_object *find_asset(const asset_symbol_type &name) const;
+
+            const asset_dynamic_data_object &get_asset_dynamic_data(const asset_symbol_type &name) const;
+
+            const asset_dynamic_data_object *find_asset_dynamic_data(const asset_symbol_type &name) const;
+
+            const asset_bitasset_data_object &get_asset_bitasset_data(const asset_symbol_type &name) const;
+
+            const asset_bitasset_data_object *find_asset_bitasset_data(const asset_symbol_type &name) const;
 
             const witness_object &get_witness(const account_name_type &name) const;
 
@@ -151,6 +174,10 @@ namespace steemit {
             const account_object &get_account(const account_name_type &name) const;
 
             const account_object *find_account(const account_name_type &name) const;
+
+            const account_statistics_object &get_account_statistics(const account_name_type &name) const;
+
+            const account_statistics_object *find_account_statistics(const account_name_type &name) const;
 
             const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
 
@@ -168,9 +195,9 @@ namespace steemit {
 
             const escrow_object *find_escrow(const account_name_type &name, uint32_t escrow_id) const;
 
-            const limit_order_object &get_limit_order(const account_name_type &owner, uint32_t id) const;
+            const limit_order_object &get_limit_order(const account_name_type &owner, integral_id_type id) const;
 
-            const limit_order_object *find_limit_order(const account_name_type &owner, uint32_t id) const;
+            const limit_order_object *find_limit_order(const account_name_type &owner, integral_id_type id) const;
 
             const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
 
@@ -471,14 +498,62 @@ namespace steemit {
              * can be reapplied at the proper time */
             std::deque<signed_transaction> _popped_tx;
 
+            /// @{ @group Market Helpers
+            void globally_settle_asset(const asset_object &bitasset, const price &settle_price);
 
-            bool apply_order(const limit_order_object &new_order_object);
+            void cancel_order(const force_settlement_object &order, bool create_virtual_op = true);
 
-            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
+            void cancel_order(const limit_order_object &order, bool create_virtual_op = true);
 
-            void cancel_order(const limit_order_object &obj);
+            /**
+             * @brief Process a new limit order through the markets
+             * @param order The new order to process
+             * @return true if order was completely filled; false otherwise
+             *
+             * This function takes a new limit order, and runs the markets attempting to match it with existing orders
+             * already on the books.
+             */
+            bool apply_order(const limit_order_object &new_order_object, bool allow_black_swan = true);
+
+            /**
+             * Matches the two orders,
+             *
+             * @return a bit field indicating which orders were filled (and thus removed)
+             *
+             * 0 - no orders were matched
+             * 1 - bid was filled
+             * 2 - ask was filled
+             * 3 - both were filled
+             */
+            ///@{
+            template<typename OrderType>
+            int match(const limit_order_object &bid, const OrderType &ask, const price &match_price);
 
             int match(const limit_order_object &bid, const limit_order_object &ask, const price &trade_price);
+
+            /// @return the amount of asset settled
+            asset match(const call_order_object &call, const force_settlement_object &settle, const price &match_price, asset max_settlement);
+            ///@}
+
+            /**
+             * @return true if the order was completely filled and thus freed.
+             */
+            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
+
+            bool fill_order(const call_order_object &order, const asset &pays, const asset &receives);
+
+            bool fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives);
+
+            bool check_call_orders(const asset_object &mia, bool enable_black_swan = true);
+
+            // helpers to fill_order
+            void pay_order(const account_object &receiver, const asset &receives, const asset &pays);
+
+            asset calculate_market_fee(const asset_object &recv_asset, const asset &trade_amount);
+
+            asset pay_market_fees(const asset_object &recv_asset, const asset &receives);
+
+            ///@}
 
             void perform_vesting_share_split(uint32_t magnitude);
 
@@ -522,6 +597,8 @@ namespace steemit {
         private:
             optional<chainbase::database::session> _pending_tx_session;
 
+            bool _is_authorized_asset(const account_object &acct, const asset_object &asset_obj) const;
+
             void apply_block(const signed_block &next_block, uint32_t skip = skip_nothing);
 
             void apply_transaction(const signed_transaction &trx, uint32_t skip = skip_nothing);
@@ -555,6 +632,14 @@ namespace steemit {
             void clear_expired_delegations();
 
             void clear_expired_orders();
+
+            string to_pretty_string(const asset &a) const;
+
+            void adjust_sbd_balance(const account_object &a);
+
+            void update_expired_feeds();
+
+            bool check_for_blackswan(const asset_object &mia, bool enable_black_swan = true);
 
             void process_header_extensions(const signed_block &next_block);
 

@@ -18,7 +18,7 @@ namespace steemit {
                     return follow_map;
                 }();
 
-                const auto &idx = db().get_index<follow_index>().indices().get<by_follower_following>();
+                const auto &idx = get_database().get_index<follow_index>().indices().get<by_follower_following>();
                 auto itr = idx.find(boost::make_tuple(o.follower, o.following));
 
                 uint16_t what = 0;
@@ -46,7 +46,7 @@ namespace steemit {
                 bool was_followed = false;
 
                 if (itr == idx.end()) {
-                    db().create<follow_object>([&](follow_object &obj) {
+                    get_database().create<follow_object>([&](follow_object &obj) {
                         obj.follower = o.follower;
                         obj.following = o.following;
                         obj.what = what;
@@ -54,15 +54,15 @@ namespace steemit {
                 } else {
                     was_followed = itr->what & 1 << blog;
 
-                    db().modify(*itr, [&](follow_object &obj) {
+                    get_database().modify(*itr, [&](follow_object &obj) {
                         obj.what = what;
                     });
                 }
 
-                const auto &follower = db().find<follow_count_object, by_account>(o.follower);
+                const auto &follower = get_database().find<follow_count_object, by_account>(o.follower);
 
                 if (follower == nullptr) {
-                    db().create<follow_count_object>([&](follow_count_object &obj) {
+                    get_database().create<follow_count_object>([&](follow_count_object &obj) {
                         obj.account = o.follower;
 
                         if (is_following) {
@@ -70,7 +70,7 @@ namespace steemit {
                         }
                     });
                 } else {
-                    db().modify(*follower, [&](follow_count_object &obj) {
+                    get_database().modify(*follower, [&](follow_count_object &obj) {
                         if (was_followed) {
                             obj.following_count--;
                         }
@@ -80,10 +80,10 @@ namespace steemit {
                     });
                 }
 
-                const auto &following = db().find<follow_count_object, by_account>(o.following);
+                const auto &following = get_database().find<follow_count_object, by_account>(o.following);
 
                 if (following == nullptr) {
-                    db().create<follow_count_object>([&](follow_count_object &obj) {
+                    get_database().create<follow_count_object>([&](follow_count_object &obj) {
                         obj.account = o.following;
 
                         if (is_following) {
@@ -91,7 +91,7 @@ namespace steemit {
                         }
                     });
                 } else {
-                    db().modify(*following, [&](follow_count_object &obj) {
+                    get_database().modify(*following, [&](follow_count_object &obj) {
                         if (was_followed) {
                             obj.follower_count--;
                         }

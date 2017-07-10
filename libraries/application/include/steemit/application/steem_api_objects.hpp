@@ -23,18 +23,18 @@ namespace steemit {
       created( o.created ),
       expiration( o.expiration ),
       seller( o.seller ),
-      orderid( o.orderid ),
+      order_id( o.order_id ),
       for_sale( o.for_sale ),
       sell_price( o.sell_price )
    {}
 
    limit_order(){}
 
-   chain::limit_order_id_type id;
+   chain::integral_id_type id;
    time_point_sec             created;
    time_point_sec             expiration;
    account_name_type          seller;
-   uint32_t                   orderid;
+   uint32_t                   order_id;
    share_type                 for_sale;
    price                      sell_price;
 };*/
@@ -100,7 +100,7 @@ namespace steemit {
             comment_api_obj() {
             }
 
-            comment_id_type id;
+            comment_object::id_type id;
             string category;
             account_name_type parent_author;
             string parent_permlink;
@@ -138,7 +138,7 @@ namespace steemit {
 
             int32_t net_votes;
 
-            comment_id_type root_comment;
+            comment_object::id_type root_comment;
 
             asset max_accepted_payout;
             uint16_t percent_steem_dollars;
@@ -162,7 +162,7 @@ namespace steemit {
             category_api_obj() {
             }
 
-            category_id_type id;
+            category_object::id_type id;
             string name;
             share_type abs_rshares;
             asset total_payouts;
@@ -284,7 +284,7 @@ namespace steemit {
             account_api_obj() {
             }
 
-            account_id_type id;
+            account_object::id_type id;
 
             account_name_type name;
             authority owner;
@@ -371,7 +371,7 @@ namespace steemit {
             owner_authority_history_api_obj() {
             }
 
-            owner_authority_history_id_type id;
+            owner_authority_history_object::id_type id;
 
             account_name_type account;
             authority previous_owner_authority;
@@ -390,7 +390,7 @@ namespace steemit {
             account_recovery_request_api_obj() {
             }
 
-            account_recovery_request_id_type id;
+            account_recovery_request_object::id_type id;
             account_name_type account_to_recover;
             authority new_owner_authority;
             time_point_sec expires;
@@ -414,7 +414,7 @@ namespace steemit {
             savings_withdraw_api_obj() {
             }
 
-            savings_withdraw_id_type id;
+            savings_withdraw_object::id_type id;
             account_name_type from;
             account_name_type to;
             string memo;
@@ -433,7 +433,7 @@ namespace steemit {
             feed_history_api_obj() {
             }
 
-            feed_history_id_type id;
+            feed_history_object::id_type id;
             price current_median_history;
             deque<price> price_history;
         };
@@ -465,7 +465,7 @@ namespace steemit {
             witness_api_obj() {
             }
 
-            witness_id_type id;
+            witness_object::id_type id;
             account_name_type owner;
             time_point_sec created;
             string url;

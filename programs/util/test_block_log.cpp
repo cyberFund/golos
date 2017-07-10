@@ -2,12 +2,12 @@
 
 int main(int argc, char **argv, char **envp) {
     try {
-        //steemit::chain::database db;
+        //steemit::chain::database get_database;
         steemit::chain::block_log log;
 
         fc::temp_directory temp_dir(".");
 
-        //db.open( temp_dir );
+        //get_database.open( temp_dir );
         log.open(temp_dir.path() / "log");
 
         idump((log.head()));

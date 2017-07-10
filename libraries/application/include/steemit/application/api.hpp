@@ -51,6 +51,15 @@ namespace steemit {
 
         struct api_context;
 
+        struct account_asset_balance {
+            account_name_type name;
+            share_type amount;
+        };
+        struct asset_holders {
+            std::string asset_symbol;
+            int count;
+        };
+
         /**
          * @brief The network_broadcast_api class allows broadcasting of transactions.
          */
@@ -186,6 +195,25 @@ namespace steemit {
         };
 
         /**
+    * @brief
+    */
+        class asset_api {
+        public:
+            asset_api(steemit::chain::database &db);
+
+            ~asset_api();
+
+            vector<account_asset_balance> get_asset_holders(std::string asset_symbol, uint32_t start, uint32_t limit) const;
+
+            int get_asset_holders_count(std::string asset_symbol) const;
+
+            vector<asset_holders> get_all_asset_holders() const;
+
+        private:
+            steemit::chain::database &_db;
+        };
+
+        /**
          * @brief The login_api class implements the bottom layer of the RPC API
          *
          * All other APIs must be requested from this API.
@@ -241,6 +269,11 @@ FC_API(steemit::application::network_node_api,
                 (get_potential_peers)
                 (get_advanced_node_parameters)
                 (set_advanced_node_parameters)
+)
+FC_API(steemit::application::asset_api,
+        (get_asset_holders)
+                (get_asset_holders_count)
+                (get_all_asset_holders)
 )
 FC_API(steemit::application::login_api,
         (login)

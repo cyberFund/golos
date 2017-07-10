@@ -10,16 +10,16 @@ namespace steemit {
     namespace protocol {
 
         struct base_operation {
-            void get_required_authorities(vector <authority> &) const {
+            void get_required_authorities(vector<authority> &) const {
             }
 
-            void get_required_active_authorities(flat_set <account_name_type> &) const {
+            void get_required_active_authorities(flat_set<account_name_type> &) const {
             }
 
-            void get_required_posting_authorities(flat_set <account_name_type> &) const {
+            void get_required_posting_authorities(flat_set<account_name_type> &) const {
             }
 
-            void get_required_owner_authorities(flat_set <account_name_type> &) const {
+            void get_required_owner_authorities(flat_set<account_name_type> &) const {
             }
 
             bool is_virtual() const {
@@ -28,6 +28,8 @@ namespace steemit {
 
             void validate() const {
             }
+
+            static uint64_t calculate_data_fee(uint64_t bytes, uint64_t price_per_kbyte);
         };
 
         struct virtual_operation : public base_operation {
@@ -40,18 +42,18 @@ namespace steemit {
             }
         };
 
-        typedef static_variant <
-        void_t,
-        version,              // Normal witness version reporting, for diagnostics and voting
-        hardfork_version_vote // Voting for the next hardfork to trigger
+        typedef static_variant<
+                void_t,
+                version,              // Normal witness version reporting, for diagnostics and voting
+                hardfork_version_vote // Voting for the next hardfork to trigger
         > block_header_extensions;
 
-        typedef static_variant <
-        void_t
+        typedef static_variant<
+                void_t
         > future_extensions;
 
-        typedef flat_set <block_header_extensions> block_header_extensions_type;
-        typedef flat_set <future_extensions> extensions_type;
+        typedef flat_set<block_header_extensions> block_header_extensions_type;
+        typedef flat_set<future_extensions> extensions_type;
 
 
     }

@@ -1,7 +1,9 @@
 set(CURRENT_TARGET protocol)
 
-list(APPEND CURRENT_TARGET_HEADERS
+list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/protocol/asset.hpp
+        include/steemit/protocol/operations/asset_operations.hpp
+        include/steemit/protocol/operations/asset_virtual_operations.hpp
         include/steemit/protocol/authority.hpp
         include/steemit/protocol/base.hpp
         include/steemit/protocol/block.hpp
@@ -9,27 +11,32 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/protocol/config.hpp
         include/steemit/protocol/exceptions.hpp
         include/steemit/protocol/get_config.hpp
-        include/steemit/protocol/operation_util.hpp
-        include/steemit/protocol/operation_util_impl.hpp
-        include/steemit/protocol/operations.hpp
+        include/steemit/protocol/operations/market_operations.hpp
+        include/steemit/protocol/operations/market_virtual_operations.hpp
+        include/steemit/protocol/operations/operation_utilities.hpp
+        include/steemit/protocol/operations/operation_utilities_impl.hpp
+        include/steemit/protocol/operations/operations.hpp
         include/steemit/protocol/protocol.hpp
         include/steemit/protocol/sign_state.hpp
-        include/steemit/protocol/steem_operations.hpp
-        include/steemit/protocol/steem_virtual_operations.hpp
+        include/steemit/protocol/operations/steem_operations.hpp
+        include/steemit/protocol/operations/steem_virtual_operations.hpp
         include/steemit/protocol/transaction.hpp
         include/steemit/protocol/types.hpp
         include/steemit/protocol/version.hpp
         )
 
-list(APPEND CURRENT_TARGET_SOURCES
+list(APPEND ${CURRENT_TARGET}_SOURCES
         asset.cpp
+        operations/asset_operations.cpp
         authority.cpp
+        base.cpp
         block.cpp
         get_config.cpp
-        operation_util_impl.cpp
-        operations.cpp
+        operations/market_operations.cpp
+        operations/operation_utilities_impl.cpp
+        operations/operations.cpp
         sign_state.cpp
-        steem_operations.cpp
+        operations/steem_operations.cpp
         transaction.cpp
         types.cpp
         version.cpp
@@ -37,13 +44,13 @@ list(APPEND CURRENT_TARGET_SOURCES
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_${CURRENT_TARGET} SHARED
-            ${CURRENT_TARGET_HEADERS}
-            ${CURRENT_TARGET_SOURCES}
+            ${${CURRENT_TARGET}_HEADERS}
+            ${${CURRENT_TARGET}_SOURCES}
             )
 else()
     add_library(golos_${CURRENT_TARGET} STATIC
-            ${CURRENT_TARGET_HEADERS}
-            ${CURRENT_TARGET_SOURCES}
+            ${${CURRENT_TARGET}_HEADERS}
+            ${${CURRENT_TARGET}_SOURCES}
             )
 endif()
 
@@ -62,4 +69,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/protocol")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")

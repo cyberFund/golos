@@ -598,7 +598,7 @@ namespace steemit {
                         }
                     }
 
-                    // std::merge lets us de-duplicate account_id's that occur in both
+                    // std::merge lets us de-duplicate account_name's that occur in both
                     //   sets, and dump them into a vector (as required by remote_db api)
                     //   at the same time
                     vector<string> v_approving_account_names;
@@ -817,7 +817,7 @@ namespace steemit {
                         ss
                                 << "\n=====================================================================================================\n";
                         for (const auto &o : orders) {
-                            ss << ' ' << setw(10) << o.orderid;
+                            ss << ' ' << setw(10) << o.order_id;
                             ss << ' ' << setw(10) << o.real_price;
                             ss << ' ' << setw(10)
                                << fc::variant(asset(o.for_sale, o.sell_price.base.symbol)).as_string();
@@ -2074,7 +2074,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             FC_ASSERT(!is_locked());
             convert_operation op;
             op.owner = from;
-            op.requestid = fc::time_point::now().sec_since_epoch();
+            op.request_id = fc::time_point::now().sec_since_epoch();
             op.amount = amount;
 
             signed_transaction tx;
@@ -2196,7 +2196,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             FC_ASSERT(!is_locked());
             limit_order_create_operation op;
             op.owner = owner;
-            op.orderid = order_id;
+            op.order_id = order_id;
             op.amount_to_sell = amount_to_sell;
             op.min_to_receive = min_to_receive;
             op.fill_or_kill = fill_or_kill;
@@ -2215,7 +2215,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             FC_ASSERT(!is_locked());
             limit_order_cancel_operation op;
             op.owner = owner;
-            op.orderid = orderid;
+            op.order_id = orderid;
 
             signed_transaction tx;
             tx.operations.push_back(op);
