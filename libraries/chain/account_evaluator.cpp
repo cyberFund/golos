@@ -19,7 +19,7 @@ namespace steemit {
                       o.fee, "Insufficient balance to create account.", ("creator.balance", db.get_balance(creator.name, STEEM_SYMBOL))("required", o.fee));
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
-                const witness_schedule_object &wso = _db.get_witness_schedule_object();
+                const witness_schedule_object &wso = db.get_witness_schedule_object();
                 FC_ASSERT(o.fee >= asset(wso.median_props.account_creation_fee * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
                         ("f", asset(wso.median_props.account_creation_fee * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
                                 ("p", o.fee));
@@ -171,13 +171,15 @@ namespace steemit {
                 auth.last_owner_update = fc::time_point_sec::min();
             });
 
-            db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
-                vdo.delegator = o.creator;
-                vdo.delegatee = o.new_account_name;
-                vdo.vesting_shares = o.delegation;
-                vdo.min_delegation_time = db.head_block_time() +
-                                          STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
-            });
+            if (o.delegation.amount > 0) {
+                db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
+                    vdo.delegator = o.creator;
+                    vdo.delegatee = o.new_account_name;
+                    vdo.vesting_shares = o.delegation;
+                    vdo.min_delegation_time = db.head_block_time() +
+                                              STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
+                });
+            }
 
             if (o.fee.amount > 0) {
                 db.create_vesting(new_account, o.fee);
