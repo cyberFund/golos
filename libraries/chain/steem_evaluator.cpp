@@ -136,10 +136,8 @@ namespace steemit {
 
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = _db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >= wso.median_props.account_creation_fee *
-                                   asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
-                        ("f", wso.median_props.account_creation_fee *
-                              asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
+                FC_ASSERT(o.fee >= asset(wso.median_props.account_creation_fee * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
+                        ("f", asset(wso.median_props.account_creation_fee * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
                                 ("p", o.fee));
             } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = _db.get_witness_schedule_object();
