@@ -20,8 +20,11 @@ namespace steemit {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >= asset(wso.median_props.account_creation_fee * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
-                        ("f", asset(wso.median_props.account_creation_fee * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
+                FC_ASSERT(o.fee >=
+                          asset(wso.median_props.account_creation_fee.amount *
+                                STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
+                        ("f", wso.median_props.account_creation_fee *
+                              asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
                                 ("p", o.fee));
             } else if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
@@ -92,9 +95,9 @@ namespace steemit {
             const auto &props = db.get_dynamic_global_properties();
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
-            FC_ASSERT(db.get_balance(creator, STEEM_SYMBOL) >=
+            FC_ASSERT(creator.balance >=
                       o.fee, "Insufficient balance to create account.",
-                    ("creator.balance", db.get_balance(creator, STEEM_SYMBOL))
+                    ("creator.balance", creator.balance)
                             ("required", o.fee));
 
             FC_ASSERT(
