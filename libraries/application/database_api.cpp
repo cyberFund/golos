@@ -952,10 +952,10 @@ namespace steemit {
 
                 const auto orders = get_order_book(base, quote, 1);
                 if (!orders.asks.empty()) {
-                    result.lowest_ask = orders.asks[0].dollars_per_steem_price;
+                    result.lowest_ask = orders.asks[0].real_price;
                 }
                 if (!orders.bids.empty()) {
-                    result.highest_bid = orders.bids[0].dollars_per_steem_price;
+                    result.highest_bid = orders.bids[0].real_price;
                 }
             }
             FC_CAPTURE_AND_RETHROW((base)(quote))
@@ -1016,7 +1016,7 @@ namespace steemit {
             for (const auto &o : orders) {
                 if (o.sell_price.base.symbol == base_id) {
                     order ord;
-                    ord.dollars_per_steem_price = price_to_real(o.sell_price);
+                    ord.real_price = price_to_real(o.sell_price);
                     ord.order_price.quote = asset(share_type(
                             (uint128_t(o.for_sale.value) *
                              o.sell_price.quote.amount.value) /
@@ -1025,7 +1025,7 @@ namespace steemit {
                     result.bids.push_back(ord);
                 } else {
                     order ord;
-                    ord.dollars_per_steem_price = price_to_real(o.sell_price);
+                    ord.real_price = price_to_real(o.sell_price);
                     ord.order_price.quote = asset(o.for_sale, assets[1]->precision);
                     ord.order_price.base = asset(share_type(
                             (uint128_t(o.for_sale.value) *

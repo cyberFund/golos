@@ -32,7 +32,7 @@ namespace steemit {
 
         struct order {
             price order_price;
-            double dollars_per_steem_price; // dollars per steem
+            double real_price; // dollars per steem
             share_type steem;
             share_type sbd;
             fc::time_point_sec created;
@@ -682,7 +682,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::order, (order_price)(price)(steem)(sbd)(created));
+FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
 FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
 FC_REFLECT(steemit::application::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
 FC_REFLECT(steemit::application::market_volume, (base)(quote)(base_volume)(quote_volume));
