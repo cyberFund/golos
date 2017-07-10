@@ -32,7 +32,7 @@ namespace steemit {
 
         struct order {
             price order_price;
-            double price; // dollars per steem
+            double dollars_per_steem_price; // dollars per steem
             share_type steem;
             share_type sbd;
             fc::time_point_sec created;
