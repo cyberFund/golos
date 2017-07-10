@@ -764,8 +764,35 @@ namespace steemit {
 
         void transfer_evaluator::do_apply(const transfer_operation &o) {
 
-            const auto &from_account = this->db.get_account(o.from);
-            const auto &to_account = this->db.get_account(o.to);
+            const auto &from_account = db.get_account(o.from);
+            const auto &to_account = db.get_account(o.to);
+
+            const asset_object &asset_type = db.get_asset(o.amount.symbol);
+
+            STEEMIT_ASSERT(
+                    db.is_authorized_asset(from_account, asset_type),
+                    transfer_from_account_not_whitelisted,
+                    "'from' account ${from} is not whitelisted for asset ${asset}",
+                    ("from", o.from)
+                            ("asset", o.amount.symbol)
+            );
+            STEEMIT_ASSERT(
+                    db.is_authorized_asset(to_account, asset_type),
+                    transfer_to_account_not_whitelisted,
+                    "'to' account ${to} is not whitelisted for asset ${asset}",
+                    ("to", o.to)
+                            ("asset", o.amount.symbol)
+            );
+
+            if (asset_type.is_transfer_restricted()) {
+                STEEMIT_ASSERT(
+                        from_account.name == asset_type.issuer ||
+                        to_account.name == asset_type.issuer,
+                        transfer_restricted_transfer_asset,
+                        "Asset {asset} has transfer_restricted flag enabled",
+                        ("asset", o.amount.symbol)
+                );
+            }
 
             if (from_account.active_challenged) {
                 this->db.modify(from_account, [&](account_object &a) {
@@ -776,6 +803,7 @@ namespace steemit {
 
             FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol) >=
                       o.amount, "Account does not have sufficient funds for transfer.");
+
             this->db.adjust_balance(from_account, -o.amount);
             this->db.adjust_balance(to_account, o.amount);
         }
@@ -938,8 +966,8 @@ namespace steemit {
 
             if (o.proxy.size()) {
                 const auto &new_proxy = this->db.get_account(o.proxy);
-                flat_set <account_object::id_type> proxy_chain({account.id,
-                                                                new_proxy.id
+                flat_set<account_object::id_type> proxy_chain({account.id,
+                                                               new_proxy.id
                 });
                 proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
 
@@ -1794,7 +1822,8 @@ namespace steemit {
             if (o.require_owner) {
                 FC_ASSERT(challenged.reset_account ==
                           o.challenger, "Owner authority can only be challenged by its reset account.");
-                FC_ASSERT(db.get_balance(challenger, STEEM_SYMBOL) >= STEEMIT_OWNER_CHALLENGE_FEE);
+                FC_ASSERT(db.get_balance(challenger, STEEM_SYMBOL) >=
+                          STEEMIT_OWNER_CHALLENGE_FEE);
                 FC_ASSERT(!challenged.owner_challenged);
                 FC_ASSERT(this->db.head_block_time() -
                           challenged.last_owner_proved >

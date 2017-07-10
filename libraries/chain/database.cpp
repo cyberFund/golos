@@ -2522,6 +2522,7 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<asset_publish_feeds_evaluator>();
             _my->_evaluator_registry.register_evaluator<asset_claim_fees_evaluator>();
             _my->_evaluator_registry.register_evaluator<call_order_update_evaluator>();
+            _my->_evaluator_registry.register_evaluator<account_whitelist_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {

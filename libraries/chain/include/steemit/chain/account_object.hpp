@@ -217,6 +217,37 @@ namespace steemit {
              */
             optional<flat_set<protocol::asset_symbol_type>> allowed_assets;
 
+            /**
+          * This is a set of all accounts which have 'whitelisted' this account. Whitelisting is only used in core
+          * validation for the purpose of authorizing accounts to hold and transact in whitelisted assets. This
+          * account cannot update this set, except by transferring ownership of the account, which will clear it. Other
+          * accounts may add or remove their IDs from this set.
+          */
+            flat_set<account_name_type> whitelisting_accounts;
+
+            /**
+             * Optionally track all of the accounts this account has whitelisted or blacklisted, these should
+             * be made Immutable so that when the account object is cloned no deep copy is required.  This state is
+             * tracked for GUI display purposes.
+             *
+             * TODO: move white list tracking to its own multi-index container rather than having 4 fields on an
+             * account.   This will scale better because under the current design if you whitelist 2000 accounts,
+             * then every time someone fetches this account object they will get the full list of 2000 accounts.
+             */
+            ///@{
+            set<account_name_type> whitelisted_accounts;
+            set<account_name_type> blacklisted_accounts;
+            ///@}
+
+
+            /**
+             * This is a set of all accounts which have 'blacklisted' this account. Blacklisting is only used in core
+             * validation for the purpose of forbidding accounts from holding and transacting in whitelisted assets. This
+             * account cannot update this set, and it will be preserved even if the account is transferred. Other accounts
+             * may add or remove their IDs from this set.
+             */
+            flat_set<account_name_type> blacklisting_accounts;
+
             /// This function should be used only when the account votes for a witness directly
             share_type witness_vote_weight() const {
                 return std::accumulate(proxied_vsf_votes.begin(),
@@ -675,6 +706,9 @@ FC_REFLECT(steemit::chain::account_object,
                 (posting_rewards)
                 (proxied_vsf_votes)(witnesses_voted_for)
                 (last_post)
+                (whitelisting_accounts)(blacklisting_accounts)
+                (whitelisted_accounts)(blacklisted_accounts)
+                (allowed_assets)
 )
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_object, steemit::chain::account_index)
 
