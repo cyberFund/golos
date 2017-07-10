@@ -43,8 +43,6 @@ namespace steemit {
             std::vector <std::string> _recipient_ip_vec;
             // Statistics sender
             std::shared_ptr<stat_client> stat_sender;
-            uint32_t data_recipient_port;
-            uint32_t stat_sender_sleeping_time;
         };
 
         struct operation_process {
@@ -478,7 +476,7 @@ namespace steemit {
         }
 
         blockchain_statistics_plugin::~blockchain_statistics_plugin() {
-            _my->stat_sender.reset();;
+            _my->stat_sender.reset();
             wlog("chain_stats plugin: stat_sender was shoutdowned");
         }
 
@@ -499,6 +497,22 @@ namespace steemit {
         void blockchain_statistics_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
             try {
                 ilog("chain_stats_plugin: plugin_initialize() begin");
+
+                uint32_t data_recipient_port;
+                uint32_t stat_sender_sleeping_time;
+
+                if (options.count("data_recipient_port")) {
+                    data_recipient_port = options["data_recipient_port"].as<uint32_t>();
+                }
+
+                if (options.count("stat_sender_sleeping_time")) {
+                    stat_sender_sleeping_time = options["stat_sender_sleeping_time"].as<uint32_t>();
+                }
+
+                _my->stat_sender = std::shared_ptr<stat_client>(new stat_client(data_recipient_port, stat_sender_sleeping_time));
+
+                wlog("chain_stats plugin: stat_sender was initialized");
+
                 chain::database &db = database();
 
                 db.applied_block.connect([&](const signed_block &b) { _my->on_block(b); });
@@ -516,22 +530,13 @@ namespace steemit {
                 }
                 if (options.count("chain-stats-recipient-ip")) {
                     for (auto it: options["chain-stats-recipient-ip"].as<std::vector<std::string>>()) {
-                        _my->_recipient_ip_vec.push_back(it);
+                        _my->stat_sender->add_address(it);
                     }
-                }
-                if (options.count("data_recipient_port")) {
-                    _my->data_recipient_port = options["data_recipient_port"].as<uint32_t>();
-                }
-                if (options.count("stat_sender_sleeping_time")) {
-                    _my->stat_sender_sleeping_time = options["stat_sender_sleeping_time"].as<uint32_t>();
                 }
                 
                 wlog("chain-stats-bucket-size: ${b}", ("b", _my->_tracked_buckets));
                 wlog("chain-stats-history-per-bucket: ${h}", ("h", _my->_maximum_history_per_bucket_size));
                 
-                _my->stat_sender = std::shared_ptr<stat_client>(new stat_client());
-
-                wlog("chain_stats plugin: stat_sender was initialized");
                 ilog("chain_stats_plugin: plugin_initialize() end");
             } FC_CAPTURE_AND_RETHROW()
         }
@@ -541,11 +546,8 @@ namespace steemit {
 
             app().register_api_factory<blockchain_statistics_api>("chain_stats_api");
 
-            if (!_my->_recipient_ip_vec.empty()) {
-                for (auto address : _my->_recipient_ip_vec) {
-                    _my->stat_sender->add_address(address);
-                }
-                _my->stat_sender->start(_my->data_recipient_port, _my->stat_sender_sleeping_time);
+            if (_my->stat_sender->can_start()) {                
+                _my->stat_sender->start();
                 wlog("chain_stats plugin: stat_sender was started");
             }
             else {

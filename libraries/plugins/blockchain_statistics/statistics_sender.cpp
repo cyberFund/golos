@@ -13,6 +13,11 @@
 stat_client::stat_client() {
     QUEUE_ENABLED = false;
 }
+
+stat_client::stat_client(uint32_t br_port, uint32_t timeout) : port(br_port),
+    sender_sleeping_time(timeout) {
+}
+
 stat_client::~stat_client() {
     QUEUE_ENABLED = false;
     if (!recipient_ip_vec.empty()) {
@@ -20,13 +25,13 @@ stat_client::~stat_client() {
     }
     cds::Terminate();
 }
+
 void stat_client::add_address(const std::string & address) {
     recipient_ip_vec.push_back(address);
 }
-void stat_client::init(int br_port, int timeout) {    
+
+void stat_client::init() {    
     QUEUE_ENABLED = true;
-    port = br_port;
-    sender_sleeping_time = timeout;
     cds::Initialize();
 }
 
@@ -38,8 +43,12 @@ void stat_client::push(const std::string & item) {
     stat_q.enqueue(item);
 }
 
-void stat_client::start(int br_port, int timeout) {
-    init(br_port, timeout);
+bool stat_client::can_start() {
+    return !recipient_ip_vec.empty();
+}
+
+void stat_client::start() {
+    init();
     // Lambda which implements the data sending loop
     auto run_broadcast_loop = [&]() {
         boost::asio::io_service io_service;

@@ -21,25 +21,35 @@ private:
     // The thread which contains data sending loop
     std::thread sender_thread;
     // Lock-free FCQueue (not intrusive)
-    cds::container::FCQueue<std::string, std::queue<std::string>, cds::container::fcqueue::traits> stat_q;
+    cds::container::FCQueue<std::string,
+        std::queue<std::string>, cds::container::fcqueue::traits> stat_q;
     // Vector of ip addersses where data will be send
     std::vector<std::string> recipient_ip_vec;
     // Port for asio broadcasting 
-    int port;
+    uint32_t port;
     // Timeout in seconds
-    int sender_sleeping_time;
+    uint32_t sender_sleeping_time;
 
-    void init(int port, int timeout);
+    void init();
+
 
 public:
-    // adds address to _recipient_ip_vec.
-    void add_address(const std::string & address);
     stat_client();
+    stat_client(uint32_t br_port, uint32_t timeout);
     ~stat_client();
+
     // terminates sending loop
     void stop();
+
     // pushes a string to the stat_q
     void push(const std::string & item);
+
     // initializing and runs data sending loop in a new thread
-    void start(int br_port, int timeout);
+    void start();
+
+    // Checks is recipient_ip_vec empty of not. 
+    bool can_start();
+    
+    // adds address to _recipient_ip_vec.
+    void add_address(const std::string & address);
 };
