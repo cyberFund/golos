@@ -477,7 +477,7 @@ namespace steemit {
 
         blockchain_statistics_plugin::~blockchain_statistics_plugin() {
             _my->stat_sender.reset();
-            wlog("chain_stats plugin: stat_sender was shoutdowned");
+            wlog("blockchain stats plugin: stat_sender was shoutdowned");
         }
 
         void blockchain_statistics_plugin::plugin_set_program_options(
@@ -498,20 +498,20 @@ namespace steemit {
             try {
                 ilog("chain_stats_plugin: plugin_initialize() begin");
 
-                uint32_t data_recipient_port;
+                uint32_t data_recipient_default_port;
                 uint32_t stat_sender_sleeping_time;
 
-                if (options.count("data_recipient_port")) {
-                    data_recipient_port = options["data_recipient_port"].as<uint32_t>();
+                if (options.count("data_recipient_default_port")) {
+                    data_recipient_default_port = options["data_recipient_default_port"].as<uint32_t>();
                 }
 
                 if (options.count("stat_sender_sleeping_time")) {
                     stat_sender_sleeping_time = options["stat_sender_sleeping_time"].as<uint32_t>();
                 }
 
-                _my->stat_sender = std::shared_ptr<stat_client>(new stat_client(data_recipient_port, stat_sender_sleeping_time));
+                _my->stat_sender = std::shared_ptr<stat_client>(new stat_client(data_recipient_default_port, stat_sender_sleeping_time));
 
-                wlog("chain_stats plugin: stat_sender was initialized");
+                wlog("blockchain stats plugin: stat_sender was initialized");
 
                 chain::database &db = database();
 
@@ -546,9 +546,9 @@ namespace steemit {
 
             app().register_api_factory<blockchain_statistics_api>("chain_stats_api");
 
-            if (_my->stat_sender->can_start()) {                
+            if (_my->stat_sender->can_start()) {
                 _my->stat_sender->start();
-                wlog("chain_stats plugin: stat_sender was started");
+                wlog("blockchain stats plugin: stat_sender was started");
             }
             else {
                 wlog("chain_stats plugin: stat_sender was not started: no recipient's IPs were provided");

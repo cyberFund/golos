@@ -21,7 +21,7 @@ class stat_client {
 
 public:
     stat_client();
-    stat_client(uint32_t br_port, uint32_t timeout);
+    stat_client(uint32_t default_port, uint32_t timeout);
     ~stat_client();
 
     // terminates sending loop
@@ -49,7 +49,7 @@ private:
     // Stat sender will send data to all endpoints from recipient_endpoint_vec
     std::vector<boost::asio::ip::udp::endpoint> recipient_endpoint_vec;
     // Port for asio broadcasting 
-    uint32_t port;
+    uint32_t default_port;
     // Timeout in seconds
     uint32_t sender_sleeping_time;
 

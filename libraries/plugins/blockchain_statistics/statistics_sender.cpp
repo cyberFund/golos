@@ -1,6 +1,13 @@
 #include <boost/asio.hpp>
-#include <fc/network/ip.hpp>
-// boost/asio/ip/detail/endpoint.hpp
+#include <boost/lexical_cast.hpp>
+#include <boost/system/error_code.hpp>
+
+#include <fc/exception/exception.hpp>
+#include <boost/exception/all.hpp>
+#include <fc/io/sstream.hpp>
+#include <fc/log/logger.hpp>
+#include <fc/io/json.hpp>
+
 
 #include <string>
 #include <cstdio>
@@ -16,8 +23,7 @@ stat_client::stat_client() {
     QUEUE_ENABLED = false;
 }
 
-stat_client::stat_client(uint32_t br_port, uint32_t timeout) : port(br_port),
-    sender_sleeping_time(timeout) {
+stat_client::stat_client(uint32_t default_port, uint32_t timeout) : default_port(default_port), sender_sleeping_time(timeout) {
 }
 
 stat_client::~stat_client() {
@@ -81,21 +87,41 @@ void stat_client::start() {
     }
 }
 
-void stat_client::add_address(const std::string & address) {
-    /*
-        Using correct parsing from fc endpoint.
-        Then make asio udp endpoint. Then push it to the vector.
-    */
-    auto tmp_ep = fc::ip::endpoint::from_string(address);
-
-    auto tmp_ip = fc::string(tmp_ep.get_address());
-    uint32_t tmp_port = tmp_ep.port();
-
-    boost::asio::ip::udp::endpoint boost_endpoint(boost::asio::ip::address::from_string(tmp_ip), tmp_port);
-    recipient_endpoint_vec.push_back(boost_endpoint);
-}
-
 void stat_client::init() {
     QUEUE_ENABLED = true;
     cds::Initialize();
+}
+
+void stat_client::add_address(const std::string & address) {
+    // Parsing "IP:PORT". If there is no port, then use Default one from configs.
+    try
+    {
+        boost::asio::ip::udp::endpoint ep;
+        boost::asio::ip::address ip;
+        uint16_t port;        
+        boost::system::error_code ec;
+
+        auto pos = address.find(':');
+
+        if (pos != std::string::npos) {
+            ip = boost::asio::ip::address::from_string( address.substr( 0, pos ) , ec);
+            port = boost::lexical_cast<uint16_t>( address.substr( pos + 1, address.size() ) );
+        }
+        else {
+            ip = boost::asio::ip::address::from_string( address , ec);
+            port = default_port;
+        }
+        
+        if (ip.is_unspecified()) {
+            ep = boost::asio::ip::udp::endpoint(ip, port);            
+            recipient_endpoint_vec.push_back(ep);
+        }
+        else {
+            // TODO something with exceptions and logs!
+            ep = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+            std::cout << ep << "\n";
+            recipient_endpoint_vec.push_back(ep);
+        }
+    }
+    FC_CAPTURE_AND_LOG(())
 }
