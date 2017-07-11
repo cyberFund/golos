@@ -1,9 +1,12 @@
 #ifndef GOLOS_BEHAVIOUR_BASED_POLICY_HPP
 #define GOLOS_BEHAVIOUR_BASED_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct behaviour_based_policy {
-
+struct behaviour_based_policy: public generic_policy {
+public:
     behaviour_based_policy() = default;
 
     behaviour_based_policy(const behaviour_based_policy &) = default;
@@ -16,7 +19,7 @@ struct behaviour_based_policy {
 
     virtual ~behaviour_based_policy() = default;
 
-    behaviour_based_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    behaviour_based_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
     }
 
     share_type pay_reward_funds(share_type reward) {
@@ -29,7 +32,7 @@ struct behaviour_based_policy {
             auto r = (reward * itr->percent_content_rewards) /
                      STEEMIT_100_PERCENT;
 
-            modify(*itr, [&](reward_fund_object &rfo) {
+            references.modify(*itr, [&](reward_fund_object &rfo) {
                 rfo.reward_balance += asset(r, STEEM_SYMBOL);
             });
 
@@ -199,9 +202,6 @@ struct behaviour_based_policy {
         return (when - first_slot_time).to_seconds() /
                STEEMIT_BLOCK_INTERVAL + 1;
     }
-
-protected:
-    database_basic &references;
 
 };
 }}

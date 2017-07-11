@@ -14,7 +14,8 @@
 
 #include <fc/log/logger.hpp>
 
-#include <map>
+#include <steemit/chain/policies/hardfork_property_policy.hpp>
+#include <steemit/chain/policies/dynamic_global_property_policy.hpp>
 
 namespace steemit {
     namespace chain {
@@ -40,9 +41,12 @@ namespace steemit {
          */
         class database_basic : public chainbase::database {
         public:
+
             database_basic();
 
             virtual ~database_basic();
+
+            database_basic(hardfork_property_policy& hardfork_property, dynamic_global_property_policy&dynamic_global_property_);
 
             bool is_producing() const {
                 return _is_producing;
@@ -59,28 +63,19 @@ namespace steemit {
             enum validation_steps {
                 skip_nothing = 0,
                 skip_witness_signature = 1 << 0,  ///< used while reindexing
-                skip_transaction_signatures =
-                1 << 1,  ///< used by non-witness nodes
-                skip_transaction_dupe_check =
-                1 << 2,  ///< used while reindexing
+                skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
+                skip_transaction_dupe_check = 1 << 2,  ///< used while reindexing
                 skip_fork_db = 1 << 3,  ///< used while reindexing
-                skip_block_size_check =
-                1 << 4,  ///< used when applying locally generated transactions
-                skip_tapos_check = 1
-                        << 5,  ///< used while reindexing -- note this skips expiration check as well
-                skip_authority_check = 1
-                        << 6,  ///< used while reindexing -- disables any checking of authority on transactions
+                skip_block_size_check = 1 << 4,  ///< used when applying locally generated transactions
+                skip_tapos_check = 1 << 5,  ///< used while reindexing -- note this skips expiration check as well
+                skip_authority_check = 1 << 6,  ///< used while reindexing -- disables any checking of authority on transactions
                 skip_merkle_check = 1 << 7,  ///< used while reindexing
                 skip_undo_history_check = 1 << 8,  ///< used while reindexing
-                skip_witness_schedule_check =
-                1 << 9,  ///< used while reindexing
-                skip_validate = 1
-                        << 10, ///< used prior to checkpoint, skips validate() call on transaction
-                skip_validate_invariants = 1
-                        << 11, ///< used to skip database invariant check on block application
+                skip_witness_schedule_check = 1 << 9,  ///< used while reindexing
+                skip_validate = 1 << 10, ///< used prior to checkpoint, skips validate() call on transaction
+                skip_validate_invariants = 1 << 11, ///< used to skip database invariant check on block application
                 skip_undo_block = 1 << 12, ///< used to skip undo db on reindex
-                skip_block_log =
-                1 << 13  ///< used to skip block logging on reindex
+                skip_block_log = 1 << 13  ///< used to skip block logging on reindex
             };
 
             /**
@@ -284,7 +279,7 @@ namespace steemit {
              *
              * If no such N exists, return 0.
              */
-            uint32_t get_slot_at_time(fc::time_point_sec when) const;
+            //uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
             /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
             //std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
@@ -355,15 +350,15 @@ namespace steemit {
 
             //asset to_steem(const asset &sbd) const;
 
-            time_point_sec head_block_time() const;
+            //time_point_sec head_block_time() const;
 
-            uint32_t head_block_num() const;
+            //uint32_t head_block_num() const;
 
-            block_id_type head_block_id() const;
+            //block_id_type head_block_id() const;
 
             node_property_object &node_properties();
 
-            uint32_t last_non_undoable_block_num() const;
+            //uint32_t last_non_undoable_block_num() const;
             //////////////////// db_init.cpp ////////////////////
 
             virtual void initialize_evaluators() = 0;
@@ -389,7 +384,7 @@ namespace steemit {
              * can be reapplied at the proper time */
             std::deque<signed_transaction> _popped_tx;
 
-            void perform_vesting_share_split(uint32_t magnitude);
+            //void perform_vesting_share_split(uint32_t magnitude);
 
             //void retally_witness_votes();
 
@@ -397,13 +392,13 @@ namespace steemit {
 
             //void retally_liquidity_weight();
 
-            void update_virtual_supply();
+            //void update_virtual_supply();
 
-            bool has_hardfork(uint32_t hardfork) const;
+            //bool has_hardfork(uint32_t hardfork) const;
 
             /* For testing and debugging only. Given a hardfork
                with id N, applies all hardforks with id <= N */
-            void set_hardfork(uint32_t hardfork, bool process_now = true);
+            //void set_hardfork(uint32_t hardfork, bool process_now = true);
 
             void validate_invariants() const;
 
@@ -449,7 +444,6 @@ namespace steemit {
 
             void create_block_summary(const signed_block &next_block);
 
-
             void update_last_irreversible_block();
 
             void clear_expired_transactions();
@@ -459,11 +453,14 @@ namespace steemit {
 
             ///@}
 
+
+            hardfork_property_policy& hardfork_property_;
+            dynamic_global_property_policy& dynamic_global_property_;
+
             vector<signed_transaction> _pending_tx;
             fork_database _fork_db;
             fc::time_point_sec _hardfork_times[STEEMIT_NUM_HARDFORKS + 1];
-            protocol::hardfork_version _hardfork_versions[
-                    STEEMIT_NUM_HARDFORKS + 1];
+            protocol::hardfork_version _hardfork_versions[STEEMIT_NUM_HARDFORKS + 1];
 
             block_log _block_log;
 

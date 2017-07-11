@@ -1,12 +1,13 @@
 #ifndef GOLOS_ACCOUNT_POLICE_HPP
 #define GOLOS_ACCOUNT_POLICE_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
 
-class database_basic;
-
-struct account_policy {
-
+struct account_policy: public generic_policy {
+public:
     account_policy() = default;
 
     account_policy(const account_policy &) = default;
@@ -19,7 +20,7 @@ struct account_policy {
 
     virtual ~account_policy() = default;
 
-    account_policy(database_basic &ref,evaluator_registry<operation>& evaluator_registry_) : references(ref) {
+    account_policy(database_basic &ref,evaluator_registry<operation>& evaluator_registry_) : generic_policy(ref) {
         add_core_index<database_basic,account_index>(ref);
         add_core_index<database_basic,account_authority_index>(ref);
         add_core_index<database_basic,account_bandwidth_index>(ref);
@@ -51,17 +52,14 @@ struct account_policy {
     }
 
     void adjust_balance(const account_object &a, const asset &delta) {
-        modify(a, [&](account_object &acnt) {
+        references.modify(a, [&](account_object &acnt) {
             switch (delta.symbol) {
                 case STEEM_SYMBOL:
                     acnt.balance += delta;
                     break;
                 case SBD_SYMBOL:
                     if (a.sbd_seconds_last_update != head_block_time()) {
-                        acnt.sbd_seconds +=
-                                fc::uint128_t(a.sbd_balance.amount.value) *
-                                (head_block_time() -
-                                 a.sbd_seconds_last_update).to_seconds();
+                        acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
                         acnt.sbd_seconds_last_update = head_block_time();
 
                         if (acnt.sbd_seconds > 0 &&
@@ -77,9 +75,9 @@ struct account_policy {
                             acnt.sbd_seconds = 0;
                             acnt.sbd_last_interest_payment = head_block_time();
 
-                            push_virtual_operation(interest_operation(a.name, interest_paid));
+                            references.push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
                                 props.current_sbd_supply += interest_paid;
                                 props.virtual_supply += interest_paid *
                                                         get_feed_history().current_median_history;
@@ -96,7 +94,7 @@ struct account_policy {
 
 
     void adjust_savings_balance(const account_object &a, const asset &delta) {
-        modify(a, [&](account_object &acnt) {
+        references.modify(a, [&](account_object &acnt) {
             switch (delta.symbol) {
                 case STEEM_SYMBOL:
                     acnt.savings_balance += delta;
@@ -123,9 +121,9 @@ struct account_policy {
                             acnt.savings_sbd_seconds = 0;
                             acnt.savings_sbd_last_interest_payment = head_block_time();
 
-                            push_virtual_operation(interest_operation(a.name, interest_paid));
+                            references.push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
                                 props.current_sbd_supply += interest_paid;
                                 props.virtual_supply += interest_paid *
                                                         get_feed_history().current_median_history;
@@ -144,14 +142,14 @@ struct account_policy {
     void update_owner_authority(const account_object &account, const authority &owner_authority) {
         if (head_block_num() >=
             STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
-            create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
+            references.create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
                 hist.account = account.name;
                 hist.previous_owner_authority = get<account_authority_object, by_account>(account.name).owner;
                 hist.last_valid_time = head_block_time();
             });
         }
 
-        modify(get<account_authority_object, by_account>(account.name), [&](account_authority_object &auth) {
+        references.modify(get<account_authority_object, by_account>(account.name), [&](account_authority_object &auth) {
             auth.owner = owner_authority;
             auth.last_owner_update = head_block_time();
         });
@@ -179,22 +177,22 @@ struct account_policy {
 
         if (null_account.balance.amount > 0) {
             total_steem += null_account.balance;
-            references.adjust_balance(null_account, -null_account.balance);
+            adjust_balance(null_account, -null_account.balance);
         }
 
         if (null_account.savings_balance.amount > 0) {
             total_steem += null_account.savings_balance;
-            references.adjust_savings_balance(null_account, -null_account.savings_balance);
+            adjust_savings_balance(null_account, -null_account.savings_balance);
         }
 
         if (null_account.sbd_balance.amount > 0) {
             total_sbd += null_account.sbd_balance;
-            references.adjust_balance(null_account, -null_account.sbd_balance);
+            adjust_balance(null_account, -null_account.sbd_balance);
         }
 
         if (null_account.savings_sbd_balance.amount > 0) {
             total_sbd += null_account.savings_sbd_balance;
-            references.adjust_savings_balance(null_account, -null_account.savings_sbd_balance);
+            adjust_savings_balance(null_account, -null_account.savings_sbd_balance);
         }
 
         if (null_account.vesting_shares.amount > 0) {
@@ -215,11 +213,11 @@ struct account_policy {
         }
 
         if (total_steem.amount > 0) {
-            references.adjust_supply(-total_steem);
+            adjust_supply(-total_steem);
         }
 
         if (total_sbd.amount > 0) {
-            references.adjust_supply(-total_sbd);
+            adjust_supply(-total_sbd);
         }
     }
 
@@ -251,7 +249,7 @@ struct account_policy {
                     });
                 }
 
-                modify(*band, [&](account_bandwidth_object &b) {
+                references.modify(*band, [&](account_bandwidth_object &b) {
                     b.lifetime_bandwidth +=
                             trx_size * STEEMIT_BANDWIDTH_PRECISION;
 
@@ -324,7 +322,7 @@ struct account_policy {
 
             new_bandwidth += trx_bandwidth;
 
-            modify(*band, [&](account_bandwidth_object &b) {
+            references.modify(*band, [&](account_bandwidth_object &b) {
                 b.average_bandwidth = new_bandwidth;
                 b.lifetime_bandwidth += trx_bandwidth;
                 b.last_bandwidth_update = head_block_time();
@@ -338,7 +336,7 @@ struct account_policy {
             has_bandwidth = (account_vshares * max_virtual_bandwidth) >
                             (account_average_bandwidth * total_vshares);
 
-            if (is_producing())
+            if (references.is_producing())
                 FC_ASSERT(has_bandwidth,
                           "Account exceeded maximum allowed bandwidth per vesting share.",
                           ("account_vshares", account_vshares)
@@ -367,7 +365,7 @@ struct account_policy {
 
             adjust_proxied_witness_votes(proxy, delta, depth + 1);
         } else {
-            references.adjust_witness_votes(a, delta);
+            adjust_witness_votes(a, delta);
         }
     }
 
@@ -399,7 +397,7 @@ struct account_policy {
                  i >= 0; --i) {
                 total_delta += delta[i];
             }
-            references.adjust_witness_votes(a, total_delta);
+            adjust_witness_votes(a, total_delta);
         }
     }
 
@@ -421,8 +419,8 @@ struct account_policy {
  *  This method does not pay out witnesses.
  */
     void process_funds() {
-        const auto &props = references.get_dynamic_global_properties();
-        const auto &wso = references.get_witness_schedule_object();
+        const auto &props = get_dynamic_global_properties();
+        const auto &wso = get_witness_schedule_object();
 
         if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
             /**
@@ -511,10 +509,12 @@ struct account_policy {
         const auto &idx = get_index<savings_withdraw_index>().indices().get<by_complete_from_rid>();
         auto itr = idx.begin();
         while (itr != idx.end()) {
+
             if (itr->complete > head_block_time()) {
                 break;
             }
-            references.adjust_balance(get_account(itr->to), itr->amount);
+
+            adjust_balance(get_account(itr->to), itr->amount);
 
             references.modify(get_account(itr->from), [&](account_object &a) {
                 a.savings_withdraw_requests--;
@@ -529,9 +529,8 @@ struct account_policy {
 
 
     asset get_producer_reward() {
-        const auto &props = references.get_dynamic_global_properties();
-        static_assert(STEEMIT_BLOCK_INTERVAL ==
-                      3, "this code assumes a 3-second time interval");
+        const auto &props = get_dynamic_global_properties();
+        static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
         asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
 
         const auto &witness_account = get_account(props.current_witness);
@@ -575,7 +574,7 @@ struct account_policy {
 
     void account_recovery_processing() {
         // Clear expired recovery requests
-        const auto &rec_req_idx = get_index<account_recovery_request_index>().indices().get<by_expiration>();
+        const auto &rec_req_idx = references.get_index<account_recovery_request_index>().indices().get<by_expiration>();
         auto rec_req = rec_req_idx.begin();
 
         while (rec_req != rec_req_idx.end() &&
@@ -585,7 +584,7 @@ struct account_policy {
         }
 
         // Clear invalid historical authorities
-        const auto &hist_idx = get_index<owner_authority_history_index>().indices(); //by id
+        const auto &hist_idx = references.get_index<owner_authority_history_index>().indices(); //by id
         auto hist = hist_idx.begin();
 
         while (hist != hist_idx.end() && time_point_sec(
@@ -596,7 +595,7 @@ struct account_policy {
         }
 
         // Apply effective recovery_account changes
-        const auto &change_req_idx = get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
+        const auto &change_req_idx = references.get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
         auto change_req = change_req_idx.begin();
 
         while (change_req != change_req_idx.end() &&
@@ -612,7 +611,7 @@ struct account_policy {
 
     void clear_expired_delegations() {
         auto now = head_block_time();
-        const auto &delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
+        const auto &delegations_by_exp = references.get_index<vesting_delegation_expiration_index, by_expiration>();
         auto itr = delegations_by_exp.begin();
         while (itr != delegations_by_exp.end() && itr->expiration < now) {
             references.modify(get_account(itr->delegator), [&](account_object &a) {
@@ -626,8 +625,6 @@ struct account_policy {
         }
     }
 
-protected:
-    database_basic &references;
 };
 
 }}

@@ -1,8 +1,11 @@
 #ifndef GOLOS_WITHDRAWAL_POLICY_HPP
 #define GOLOS_WITHDRAWAL_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct withdrawal_policy {
+struct withdrawal_policy: public generic_policy {
 
     withdrawal_policy() = default;
 
@@ -16,7 +19,7 @@ struct withdrawal_policy {
 
     virtual ~withdrawal_policy() = default;
 
-    withdrawal_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    withdrawal_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
         evaluator_registry_.register_evaluator<limit_order_create_evaluator>();
         evaluator_registry_.register_evaluator<limit_order_create2_evaluator>();
         evaluator_registry_.register_evaluator<limit_order_cancel_evaluator>();
@@ -24,12 +27,12 @@ struct withdrawal_policy {
 
     const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
         try {
-            return get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
+            return references.get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
         } FC_CAPTURE_AND_RETHROW((owner)(request_id))
     }
 
     const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
-        return find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
+        return references.find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
     }
 
     void process_vesting_withdrawals() {
@@ -70,22 +73,19 @@ struct withdrawal_policy {
                  itr != didx.end() && itr->from_account == from_account.id;
                  ++itr) {
                 if (itr->auto_vest) {
-                    share_type to_deposit = (
-                            (fc::uint128_t(to_withdraw.value) *
-                             itr->percent) /
-                            STEEMIT_100_PERCENT).to_uint64();
+                    share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) / STEEMIT_100_PERCENT).to_uint64();
                     vests_deposited_as_vests += to_deposit;
 
                     if (to_deposit > 0) {
                         const auto &to_account = get(itr->to_account);
 
-                        modify(to_account, [&](account_object &a) {
+                        references.modify(to_account, [&](account_object &a) {
                             a.vesting_shares.amount += to_deposit;
                         });
 
                         adjust_proxied_witness_votes(to_account, to_deposit);
 
-                        push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), asset(to_deposit, VESTS_SYMBOL)));
+                        references.push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), asset(to_deposit, VESTS_SYMBOL)));
                     }
                 }
             }
@@ -106,16 +106,16 @@ struct withdrawal_policy {
                     total_steem_converted += converted_steem;
 
                     if (to_deposit > 0) {
-                        modify(to_account, [&](account_object &a) {
+                        references.modify(to_account, [&](account_object &a) {
                             a.balance += converted_steem;
                         });
 
-                        modify(cprops, [&](dynamic_global_property_object &o) {
+                        references.modify(cprops, [&](dynamic_global_property_object &o) {
                             o.total_vesting_fund_steem -= converted_steem;
                             o.total_vesting_shares.amount -= to_deposit;
                         });
 
-                        push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), converted_steem));
+                        references.push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), converted_steem));
                     }
                 }
             }
@@ -128,7 +128,7 @@ struct withdrawal_policy {
             auto converted_steem = asset(to_convert, VESTS_SYMBOL) *
                                    cprops.get_vesting_share_price();
 
-            modify(from_account, [&](account_object &a) {
+            references.modify(from_account, [&](account_object &a) {
                 a.vesting_shares.amount -= to_withdraw;
                 a.balance += converted_steem;
                 a.withdrawn += to_withdraw;
@@ -142,7 +142,7 @@ struct withdrawal_policy {
                 }
             });
 
-            modify(cprops, [&](dynamic_global_property_object &o) {
+            references.modify(cprops, [&](dynamic_global_property_object &o) {
                 o.total_vesting_fund_steem -= converted_steem;
                 o.total_vesting_shares.amount -= to_convert;
             });
@@ -151,12 +151,9 @@ struct withdrawal_policy {
                 adjust_proxied_witness_votes(from_account, -to_withdraw);
             }
 
-            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));
+            references.push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));
         }
     }
-
-protected:
-    database_basic &references;
 
 };
 }}

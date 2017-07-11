@@ -1,8 +1,11 @@
 #ifndef GOLOS_REWARD_POLICY_HPP
 #define GOLOS_REWARD_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct reward_policy {
+struct reward_policy: public generic_policy {
 
     reward_policy() = default;
 
@@ -16,7 +19,7 @@ struct reward_policy {
 
     virtual ~reward_policy() = default;
 
-    reward_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    reward_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref){
     }
 
     const reward_fund_object &get_reward_fund(const comment_object &c) const {
@@ -114,14 +117,14 @@ struct reward_policy {
             if (itr != ridx.end() && itr->volume_weight() > 0) {
                 adjust_supply(reward, true);
                 adjust_balance(get(itr->owner), reward);
-                modify(*itr, [&](liquidity_reward_balance_object &obj) {
+                references.modify(*itr, [&](liquidity_reward_balance_object &obj) {
                     obj.steem_volume = 0;
                     obj.sbd_volume = 0;
                     obj.last_update = head_block_time();
                     obj.weight = 0;
                 });
 
-                push_virtual_operation(liquidity_reward_operation(get(itr->owner).name, reward));
+                references.push_virtual_operation(liquidity_reward_operation(get(itr->owner).name, reward));
             }
         }
     }
@@ -129,7 +132,7 @@ struct reward_policy {
     void retally_liquidity_weight() {
         const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
         for (const auto &i : ridx) {
-            modify(i, [](liquidity_reward_balance_object &o) {
+            references.modify(i, [](liquidity_reward_balance_object &o) {
                 o.update_weight(true/*HAS HARDFORK10 if this method is called*/);
             });
         }
@@ -140,7 +143,7 @@ struct reward_policy {
         const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
         auto itr = ridx.find(owner.id);
         if (itr != ridx.end()) {
-            modify<liquidity_reward_balance_object>(*itr, [&](liquidity_reward_balance_object &r) {
+            references.modify<liquidity_reward_balance_object>(*itr, [&](liquidity_reward_balance_object &r) {
                 if (head_block_time() - r.last_update >=
                     STEEMIT_LIQUIDITY_TIMEOUT_SEC) {
                     r.sbd_volume = 0;
@@ -158,7 +161,7 @@ struct reward_policy {
                 r.last_update = head_block_time();
             });
         } else {
-            create<liquidity_reward_balance_object>([&](liquidity_reward_balance_object &r) {
+            references.create<liquidity_reward_balance_object>([&](liquidity_reward_balance_object &r) {
                 r.owner = owner.id;
                 if (is_sdb) {
                     r.sbd_volume = volume.amount.value;
@@ -172,9 +175,6 @@ struct reward_policy {
         }
     }
 
-
-protected:
-    database_basic &references;
 
 };
 }}

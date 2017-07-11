@@ -10,30 +10,23 @@
 #include <steemit/chain/operation_notification.hpp>
 
 #include <steemit/chain/policies/account_policy.hpp>
+#include <steemit/chain/policies/asset_policy.hpp>
+#include <steemit/chain/policies/behaviour_based_policy.hpp>
+#include <steemit/chain/policies/comment_policy.hpp>
+#include <steemit/chain/policies/dynamic_global_property_policy.hpp>
+#include <steemit/chain/policies/escrow_policy.hpp>
+#include <steemit/chain/policies/feed_history_policy.hpp>
+#include <steemit/chain/policies/hardfork_property_policy.hpp>
+#include <steemit/chain/policies/order_policy.hpp>
+#include <steemit/chain/policies/reward_policy.hpp>
+#include <steemit/chain/policies/withdrawal_policy.hpp>
+#include <steemit/chain/policies/witness_policy.hpp>
+#include <steemit/chain/policies/witness_schedule_policy.hpp>
 
 namespace steemit {
 namespace chain {
 
-struct account_write_police {
-    explicit account_write_police(database_basic &ref, int f) : references(ref) {
-        std::cout << "account_write_police" << std::endl;
-    }
 
-    account_write_police() = default;
-
-    account_write_police(const account_write_police &) = default;
-
-    account_write_police &operator=(const account_write_police &) = default;
-
-    account_write_police(account_write_police &&) = default;
-
-    account_write_police &operator=(account_write_police &&) = default;
-
-    virtual ~account_write_police() = default;
-
-    database_basic &references;
-
-};
 
 template<typename... Policies>
 class database_police final : public database_basic, public Policies ... {
@@ -118,7 +111,21 @@ protected:
 
 };
 
-using database = database_police<account_policy, account_write_police>;
+using database = database_police<
+        account_policy,
+        asset_symbol_type ,
+        behaviour_based_policy,
+        comment_policy,
+        dynamic_global_property_policy,
+        escrow_policy,
+        feed_history_policy,
+        hardfork_property_policy,
+        order_policy,
+        reward_policy,
+        withdrawal_policy,
+        witness_policy,
+        witness_schedule_policy
+>;
 
 }
 }

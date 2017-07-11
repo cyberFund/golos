@@ -272,6 +272,7 @@
 #define STEEMIT_MAX_MINER_WITNESSES             1
 #define STEEMIT_MAX_RUNNER_WITNESSES            1
 #define STEEMIT_MAX_WITNESSES                   (STEEMIT_MAX_VOTED_WITNESSES+STEEMIT_MAX_MINER_WITNESSES+STEEMIT_MAX_RUNNER_WITNESSES) /// 21 is more than enough
+#define STEEMIT_DEFAULT_MIN_WITNESS_COUNT      (11)
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEMIT_MAX_MEMO_SIZE                   2048

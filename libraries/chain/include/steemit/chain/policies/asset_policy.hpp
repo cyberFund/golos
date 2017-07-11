@@ -1,9 +1,12 @@
 #ifndef GOLOS_ASSET_OBJECT_POLICY_HPP
 #define GOLOS_ASSET_OBJECT_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct asset_policy {
-
+struct asset_policy: public generic_policy {
+public:
     asset_policy() = default;
 
     asset_policy(const asset_policy &) = default;
@@ -16,7 +19,7 @@ struct asset_policy {
 
     virtual ~asset_policy() = default;
 
-    asset_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    asset_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
 
     }
 
@@ -27,7 +30,7 @@ struct asset_policy {
             adjust_vesting = false;
         }
 
-        modify(props, [&](dynamic_global_property_object &props) {
+        references.modify(props, [&](dynamic_global_property_object &props) {
             switch (delta.symbol) {
                 case STEEM_SYMBOL: {
                     asset new_vesting((adjust_vesting && delta.amount > 0) ?
@@ -76,14 +79,14 @@ struct asset_policy {
             auto amount_to_issue =
                     itr->amount * fhistory.current_median_history;
 
-            references.adjust_balance(user, amount_to_issue);
+            adjust_balance(user, amount_to_issue);
 
             net_sbd += itr->amount;
             net_steem += amount_to_issue;
 
             references.push_virtual_operation(fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
 
-            remove(*itr);
+            references.remove(*itr);
             itr = request_by_date.begin();
         }
 
@@ -97,8 +100,6 @@ struct asset_policy {
         });
     }
 
-protected:
-    database_basic &references;
-
-};}}
+};
+}}
 #endif //GOLOS_ASSET_OBJECT_POLICY_HPP

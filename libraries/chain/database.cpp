@@ -84,13 +84,12 @@ namespace steemit {
                     // Rewind all undo state. This should return us to the state at the last irreversible block.
                     with_write_lock([&]() {
                         undo_all();
-                        FC_ASSERT(revision() ==
-                                  head_block_num(), "Chainbase revision does not match head block num",
+                        FC_ASSERT(revision() == head_block_num(), "Chainbase revision does not match head block num",
                                 ("rev", revision())("head_block", head_block_num()));
                     });
 
-                    if (head_block_num()) {
-                        auto head_block = _block_log.read_block_by_num(head_block_num());
+                    if (dynamic_global_property_.head_block_num()) {
+                        auto head_block = _block_log.read_block_by_num(dynamic_global_property_.head_block_num());
                         // This assertion should be caught and a reindex should occur
                         FC_ASSERT(head_block.valid() && head_block->id() ==
                                                         head_block_id(), "Chain state does not match block log. Please reindex blockchain.");
@@ -100,7 +99,7 @@ namespace steemit {
                 }
 
                 with_read_lock([&]() {
-                    init_hardforks(); // Writes to local state, but reads from db
+                    hardfork_property_.init_hardforks(); // Writes to local state, but reads from db
                 });
 
             }
@@ -473,9 +472,7 @@ namespace steemit {
         void database_basic::push_transaction(const signed_transaction &trx, uint32_t skip) {
             try {
                 try {
-                    FC_ASSERT(fc::raw::pack_size(trx) <=
-                              (get_dynamic_global_properties().maximum_block_size -
-                               256));
+                    FC_ASSERT(fc::raw::pack_size(trx) <= (get_dynamic_global_properties().maximum_block_size - 256));
                     set_producing(true);
                     detail::with_skip_flags(*this, skip,
                             [&]() {
@@ -623,14 +620,14 @@ namespace steemit {
             pending_block.timestamp = when;
             pending_block.transaction_merkle_root = pending_block.calculate_merkle_root();
             pending_block.witness = witness_owner;
-            if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
+            if (hardfork_property_.has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
                 const auto &witness = get_witness(witness_owner);
 
                 if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
                     pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
                 }
 
-                const auto &hfp = get_hardfork_property_object();
+                const auto &hfp = hardfork_property_.get_hardfork_property_object();
 
                 if (hfp.current_hardfork_version <
                     STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
@@ -766,21 +763,8 @@ namespace steemit {
             return head_slot_time + (slot_num * interval);
         }
 
-
-        uint32_t database_basic::head_block_num() const {
-            return get_dynamic_global_properties().head_block_number;
-        }
-
-        block_id_type database_basic::head_block_id() const {
-            return get_dynamic_global_properties().head_block_id;
-        }
-
-        node_property_object &database_basic::node_properties() {
+         node_property_object &database_basic::node_properties() {
             return _node_property_object;
-        }
-
-        uint32_t database_basic::last_non_undoable_block_num() const {
-            return get_dynamic_global_properties().last_irreversible_block_num;
         }
 
         void database_basic::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -1130,7 +1114,7 @@ namespace steemit {
                 if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) // Cannot remove after hardfork
                 {
                     const auto &witness = get_witness(next_block.witness);
-                    const auto &hardfork_state = get_hardfork_property_object();
+                    const auto &hardfork_state = hardfork_property_.get_hardfork_property_object();
                     FC_ASSERT(witness.running_version >=
                               hardfork_state.current_hardfork_version,
                             "Block produced by witness that is not running current hardfork",
@@ -1349,10 +1333,8 @@ namespace steemit {
 
         const witness_object &database_basic::validate_block_header(uint32_t skip, const signed_block &next_block) const {
             try {
-                FC_ASSERT(head_block_id() ==
-                          next_block.previous, "", ("head_block_id", head_block_id())("next.prev", next_block.previous));
-                FC_ASSERT(head_block_time() <
-                          next_block.timestamp, "", ("head_block_time", head_block_time())("next", next_block.timestamp)("blocknum", next_block.block_num()));
+                FC_ASSERT(head_block_id() == next_block.previous, "", ("head_block_id", head_block_id())("next.prev", next_block.previous));
+                FC_ASSERT(head_block_time() < next_block.timestamp, "", ("head_block_time", head_block_time())("next", next_block.timestamp)("blocknum", next_block.block_num()));
                 const witness_object &witness = get_witness(next_block.witness);
 
                 if (!(skip & skip_witness_signature))
@@ -1450,8 +1432,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
-                                    log_head_num + 1);
+                            std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(log_head_num + 1);
                             FC_ASSERT(block, "Current fork in the fork database_basic does not contain the last_irreversible_block");
                             _block_log.append(block->data);
                             log_head_num++;
@@ -1471,11 +1452,15 @@ namespace steemit {
             //Transactions must have expired by at least two forking windows in order to be removed.
             auto &transaction_idx = get_index<transaction_index>();
             const auto &dedupe_index = transaction_idx.indices().get<by_expiration>();
-            while ((!dedupe_index.empty()) &&
-                   (head_block_time() > dedupe_index.begin()->expiration)) {
+            while ((!dedupe_index.empty()) && (head_block_time() > dedupe_index.begin()->expiration)) {
                 remove(*dedupe_index.begin());
             }
         }
+
+        database_basic::database_basic(hardfork_property_policy &hardfork_property,dynamic_global_property_policy&dynamic_global_property_) :
+                hardfork_property_(hardfork_property),
+                dynamic_global_property_(dynamic_global_property_)
+                {}
 
 }
 } //steemit::chain

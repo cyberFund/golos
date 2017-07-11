@@ -1,8 +1,13 @@
 #ifndef GOLOS_WITNESS_POLICY_HPP
 #define GOLOS_WITNESS_POLICY_HPP
+
+#include <algorithm>
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct witness_policy {
+struct witness_policy:public generic_policy {
 
     witness_policy() = default;
 
@@ -16,12 +21,12 @@ struct witness_policy {
 
     virtual ~witness_policy() = default;
 
-    witness_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    witness_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
     }
 
     const witness_object &get_witness(const account_name_type &name) const {
         try {
-            return get<witness_object, by_name>(name);
+            return references.get<witness_object, by_name>(name);
         } FC_CAPTURE_AND_RETHROW((name))
     }
 
@@ -70,7 +75,7 @@ struct witness_policy {
 
 
     void retally_witness_vote_counts(bool force) {
-        const auto &account_idx = get_index<account_index>().indices();
+        const auto &account_idx = references.get_index<account_index>().indices();
 
         // Check all existing votes by account
         for (auto itr = account_idx.begin();
@@ -86,7 +91,7 @@ struct witness_policy {
                 }
             }
             if (a.witnesses_voted_for != witnesses_voted_for) {
-                modify(a, [&](account_object &account) {
+                references.modify(a, [&](account_object &account) {
                     account.witnesses_voted_for = witnesses_voted_for;
                 });
             }
@@ -94,7 +99,7 @@ struct witness_policy {
     }
 
     void process_decline_voting_rights() {
-        const auto &request_idx = get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
+        const auto &request_idx = references.get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
         auto itr = request_idx.begin();
 
         while (itr != request_idx.end() &&
@@ -112,12 +117,12 @@ struct witness_policy {
 
             clear_witness_votes(account);
 
-            modify(get(itr->account), [&](account_object &a) {
+            references.modify(get(itr->account), [&](account_object &a) {
                 a.can_vote = false;
                 a.proxy = STEEMIT_PROXY_TO_SELF_ACCOUNT;
             });
 
-            remove(*itr);
+            references.remove(*itr);
             itr = request_idx.begin();
         }
     }
@@ -146,11 +151,11 @@ struct witness_policy {
    */
             asset new_vesting = steem * cprops.get_vesting_share_price();
 
-            modify(to_account, [&](account_object &to) {
+            references.modify(to_account, [&](account_object &to) {
                 to.vesting_shares += new_vesting;
             });
 
-            modify(cprops, [&](dynamic_global_property_object &props) {
+            references.modify(cprops, [&](dynamic_global_property_object &props) {
                 props.total_vesting_fund_steem += steem;
                 props.total_vesting_shares += new_vesting;
             });
@@ -172,8 +177,7 @@ struct witness_policy {
 
             w.virtual_last_update = wso.current_virtual_time;
             w.votes += delta;
-            FC_ASSERT(w.votes <=
-                      get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props", get_dynamic_global_properties().total_vesting_shares));
+            FC_ASSERT(w.votes <= get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props", get_dynamic_global_properties().total_vesting_shares));
 
             if (has_hardfork(STEEMIT_HARDFORK_0_2)) {
                 w.virtual_scheduled_time = w.virtual_last_update +
@@ -202,11 +206,11 @@ struct witness_policy {
         while (itr != vidx.end() && itr->account == a.id) {
             const auto &current = *itr;
             ++itr;
-            remove(current);
+            references.remove(current);
         }
 
         if (has_hardfork(STEEMIT_HARDFORK_0_6__104)) { // TODO: this check can be removed after hard fork
-            modify(a, [&](account_object &acc) {
+            references.modify(a, [&](account_object &acc) {
                 acc.witnesses_voted_for = 0;
             });
         }
@@ -222,7 +226,7 @@ struct witness_policy {
 
 
     void adjust_witness_votes(const account_object &a, share_type delta) {
-        const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
+        const auto &vidx = references.get_index<witness_vote_index>().indices().get<by_account_witness>();
         auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
         while (itr != vidx.end() && itr->account == a.id) {
             adjust_witness_vote(get(itr->witness), delta);
@@ -243,11 +247,9 @@ struct witness_policy {
 
         /// sort them by account_creation_fee
         std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
-            return a->props.account_creation_fee.amount <
-                   b->props.account_creation_fee.amount;
+            return a->props.account_creation_fee.amount < b->props.account_creation_fee.amount;
         });
-        asset median_account_creation_fee = active[active.size() /
-                                                   2]->props.account_creation_fee;
+        asset median_account_creation_fee = active[active.size() / 2]->props.account_creation_fee;
 
         /// sort them by maximum_block_size
         std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
@@ -264,13 +266,13 @@ struct witness_policy {
         uint16_t median_sbd_interest_rate = active[active.size() /
                                                    2]->props.sbd_interest_rate;
 
-        modify(wso, [&](witness_schedule_object &_wso) {
+        references.modify(wso, [&](witness_schedule_object &_wso) {
             _wso.median_props.account_creation_fee = median_account_creation_fee;
             _wso.median_props.maximum_block_size = median_maximum_block_size;
             _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
         });
 
-        modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
+        references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
             _dgpo.maximum_block_size = median_maximum_block_size;
             _dgpo.sbd_interest_rate = median_sbd_interest_rate;
         });
@@ -282,7 +284,7 @@ struct witness_policy {
             uint64_t new_block_aslot = dpo.current_aslot +
                                        get_slot_at_time(new_block.timestamp);
 
-            modify(signing_witness, [&](witness_object &_wit) {
+            references.modify(signing_witness, [&](witness_object &_wit) {
                 _wit.last_aslot = new_block_aslot;
                 _wit.last_confirmed_block_num = new_block.block_num();
             });
@@ -291,13 +293,13 @@ struct witness_policy {
 
     void reset_virtual_schedule_time() {
         const witness_schedule_object &wso = get_witness_schedule_object();
-        modify(wso, [&](witness_schedule_object &o) {
+        references.modify(wso, [&](witness_schedule_object &o) {
             o.current_virtual_time = fc::uint128(); // reset it 0
         });
 
         const auto &idx = get_index<witness_index>().indices();
         for (const auto &witness : idx) {
-            modify(witness, [&](witness_object &wobj) {
+            references.modify(witness, [&](witness_object &wobj) {
                 wobj.virtual_position = fc::uint128();
                 wobj.virtual_last_update = wso.current_virtual_time;
                 wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 /
@@ -305,10 +307,6 @@ struct witness_policy {
             });
         }
     }
-
-
-protected:
-    database_basic &references;
 
 };
 }}

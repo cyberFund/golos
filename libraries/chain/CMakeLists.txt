@@ -27,6 +27,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/evaluator_registry.hpp
         include/steemit/chain/fork_database.hpp
         include/steemit/chain/generic_custom_operation_interpreter.hpp
+        include/steemit/chain/genesis_state.hpp
         include/steemit/chain/global_property_object.hpp
         include/steemit/chain/history_object.hpp
         include/steemit/chain/immutable_chain_parameters.hpp
@@ -53,6 +54,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/policies/dynamic_global_property_policy.hpp
         include/steemit/chain/policies/escrow_policy.hpp
         include/steemit/chain/policies/feed_history_policy.hpp
+        include/steemit/chain/policies/generic_policy.hpp
         include/steemit/chain/policies/hardfork_property_policy.hpp
         include/steemit/chain/policies/order_policy.hpp
         include/steemit/chain/policies/reward_policy.hpp
@@ -71,7 +73,10 @@ list(APPEND CURRENT_TARGET_SOURCES
         steem_objects.cpp
 
         utilities/reward.cpp
-        )
+
+        policies/generic_policy.cpp
+
+)
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_${CURRENT_TARGET} SHARED

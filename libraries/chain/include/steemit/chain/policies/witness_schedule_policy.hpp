@@ -1,8 +1,13 @@
 #ifndef GOLOS_WITNESS_SCHEDULE_POLICY_HPP
 #define GOLOS_WITNESS_SCHEDULE_POLICY_HPP
+
+#include <algorithm>
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct witness_schedule_policy {
+struct witness_schedule_policy: public generic_policy {
 
     witness_schedule_policy() = default;
 
@@ -16,24 +21,24 @@ struct witness_schedule_policy {
 
     virtual ~witness_schedule_policy() = default;
 
-    witness_schedule_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    witness_schedule_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
     }
 
     const witness_schedule_object &get_witness_schedule_object() const {
         try {
-            return get<witness_schedule_object>();
+            return references.get<witness_schedule_object>();
         } FC_CAPTURE_AND_RETHROW()
     }
 
-    void reset_virtual_schedule_time(database_basic &db) {
+    void reset_virtual_schedule_time() {
         const witness_schedule_object &wso = db.get_witness_schedule_object();
-        db.modify(wso, [&](witness_schedule_object &o) {
+        references.modify(wso, [&](witness_schedule_object &o) {
             o.current_virtual_time = fc::uint128(); // reset it 0
         });
 
         const auto &idx = db.get_index<witness_index>().indices();
         for (const auto &witness : idx) {
-            db.modify(witness, [&](witness_object &wobj) {
+            references.modify(witness, [&](witness_object &wobj) {
                 wobj.virtual_position = fc::uint128();
                 wobj.virtual_last_update = wso.current_virtual_time;
                 wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 /
@@ -42,7 +47,7 @@ struct witness_schedule_policy {
         }
     }
 
-    void update_median_witness_props(database_basic &db) {
+    void update_median_witness_props() {
         const witness_schedule_object &wso = db.get_witness_schedule_object();
 
         /// fetch all witness objects
@@ -75,19 +80,19 @@ struct witness_schedule_policy {
         uint16_t median_sbd_interest_rate = active[active.size() /
                                                    2]->props.sbd_interest_rate;
 
-        db.modify(wso, [&](witness_schedule_object &_wso) {
+        references.modify(wso, [&](witness_schedule_object &_wso) {
             _wso.median_props.account_creation_fee = median_account_creation_fee;
             _wso.median_props.maximum_block_size = median_maximum_block_size;
             _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
         });
 
-        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
+        references.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
             _dgpo.maximum_block_size = median_maximum_block_size;
             _dgpo.sbd_interest_rate = median_sbd_interest_rate;
         });
     }
 
-    void update_witness_schedule4(database_basic &db) {
+    void update_witness_schedule4() {
         const witness_schedule_object &wso = db.get_witness_schedule_object();
         vector<account_name_type> active_witnesses;
         active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
@@ -96,7 +101,7 @@ struct witness_schedule_policy {
         flat_set<witness_id_type> selected_voted;
         selected_voted.reserve(wso.max_voted_witnesses);
 
-        const auto &widx = db.get_index<witness_index>().indices().get<by_vote_name>();
+        const auto &widx = references.get_index<witness_index>().indices().get<by_vote_name>();
         for (auto itr = widx.begin();
              itr != widx.end() &&
              selected_voted.size() < wso.max_voted_witnesses;
@@ -107,7 +112,7 @@ struct witness_schedule_policy {
             }
             selected_voted.insert(itr->id);
             active_witnesses.push_back(itr->owner);
-            db.modify(*itr, [&](witness_object &wo) { wo.schedule = witness_object::top19; });
+            references.modify(*itr, [&](witness_object &wo) { wo.schedule = witness_object::top19; });
         }
 
         auto num_elected = active_witnesses.size();
@@ -116,7 +121,7 @@ struct witness_schedule_policy {
         flat_set<witness_id_type> selected_miners;
         selected_miners.reserve(wso.max_miner_witnesses);
         const auto &gprops = db.get_dynamic_global_properties();
-        const auto &pow_idx = db.get_index<witness_index>().indices().get<by_pow>();
+        const auto &pow_idx = references.get_index<witness_index>().indices().get<by_pow>();
         auto mitr = pow_idx.upper_bound(0);
         while (mitr != pow_idx.end() &&
                selected_miners.size() < wso.max_miner_witnesses) {
@@ -134,10 +139,10 @@ struct witness_schedule_policy {
             // Remove processed miner from the queue
             auto itr = mitr;
             ++mitr;
-            db.modify(*itr, [&](witness_object &wit) {
+            references.modify(*itr, [&](witness_object &wit) {
                 wit.pow_worker = 0;
             });
-            db.modify(gprops, [&](dynamic_global_property_object &obj) {
+            references.modify(gprops, [&](dynamic_global_property_object &obj) {
                 obj.num_pow_witnesses--;
             });
         }
@@ -146,7 +151,7 @@ struct witness_schedule_policy {
 
         /// Add the running witnesses in the lead
         fc::uint128 new_virtual_time = wso.current_virtual_time;
-        const auto &schedule_idx = db.get_index<witness_index>().indices().get<by_schedule_time>();
+        const auto &schedule_idx = references.get_index<witness_index>().indices().get<by_schedule_time>();
         auto sitr = schedule_idx.begin();
         vector<decltype(sitr)> processed_witnesses;
         for (auto witness_count =
@@ -170,8 +175,7 @@ struct witness_schedule_policy {
             }
         }
 
-        auto num_timeshare =
-                active_witnesses.size() - num_miners - num_elected;
+        auto num_timeshare = active_witnesses.size() - num_miners - num_elected;
 
         /// Update virtual schedule of processed witnesses
         bool reset_virtual_time = false;
@@ -184,7 +188,7 @@ struct witness_schedule_policy {
                 reset_virtual_time = true; /// overflow
                 break;
             }
-            db.modify(*(*itr), [&](witness_object &wo) {
+            references.modify(*(*itr), [&](witness_object &wo) {
                 wo.virtual_position = fc::uint128();
                 wo.virtual_last_update = new_virtual_time;
                 wo.virtual_scheduled_time = new_virtual_scheduled_time;
@@ -262,7 +266,7 @@ struct witness_schedule_policy {
 
             // We no longer have a majority
             if (hf_itr == hardfork_version_votes.end()) {
-                db.modify(db.get_hardfork_property_object(), [&](hardfork_property_object &hpo) {
+                references.modify(db.get_hardfork_property_object(), [&](hardfork_property_object &hpo) {
                     hpo.next_hardfork = hpo.current_hardfork_version;
                 });
             }
@@ -271,7 +275,7 @@ struct witness_schedule_policy {
         assert(num_elected + num_miners + num_timeshare ==
                active_witnesses.size());
 
-        db.modify(wso, [&](witness_schedule_object &_wso) {
+        references.modify(wso, [&](witness_schedule_object &_wso) {
             // active witnesses has exactly STEEMIT_MAX_WITNESSES elements, asserted above
             for (size_t i = 0; i < active_witnesses.size(); i++) {
                 _wso.current_shuffled_witnesses[i] = active_witnesses[i];
@@ -320,7 +324,7 @@ struct witness_schedule_policy {
  *
  *  See @ref witness_object::virtual_last_update
  */
-    void update_witness_schedule(database_basic &db) {
+    void update_witness_schedule() {
         if ((db.head_block_num() % STEEMIT_MAX_WITNESSES) ==
             0) //wso.next_shuffle_block_num )
         {
@@ -354,7 +358,7 @@ struct witness_schedule_policy {
                     active_witnesses.push_back(itr->owner);
 
                     /// don't consider the top 19 for the purpose of virtual time scheduling
-                    db.modify(*itr, [&](witness_object &wo) {
+                    references.modify(*itr, [&](witness_object &wo) {
                         wo.virtual_scheduled_time = fc::uint128::max_value();
                     });
                 }
@@ -369,7 +373,7 @@ struct witness_schedule_policy {
 
                 if (sitr != schedule_idx.end()) {
                     active_witnesses.push_back(sitr->owner);
-                    db.modify(*sitr, [&](witness_object &wo) {
+                    references.modify(*sitr, [&](witness_object &wo) {
                         wo.virtual_position = fc::uint128();
                         new_virtual_time = wo.virtual_scheduled_time; /// everyone advances to this time
 
@@ -395,16 +399,16 @@ struct witness_schedule_policy {
             }
 
             /// Add the next POW witness to the active set if there is one...
-            const auto &pow_idx = db.get_index<witness_index>().indices().get<by_pow>();
+            const auto &pow_idx = references.get_index<witness_index>().indices().get<by_pow>();
 
             auto itr = pow_idx.upper_bound(0);
             /// if there is more than 1 POW witness, then pop the first one from the queue...
             if (props.num_pow_witnesses > STEEMIT_MAX_WITNESSES) {
                 if (itr != pow_idx.end()) {
-                    db.modify(*itr, [&](witness_object &wit) {
+                    references.modify(*itr, [&](witness_object &wit) {
                         wit.pow_worker = 0;
                     });
-                    db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &obj) {
+                    references.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &obj) {
                         obj.num_pow_witnesses--;
                     });
                 }
@@ -423,7 +427,7 @@ struct witness_schedule_policy {
                 ++itr;
             }
 
-            db.modify(wso, [&](witness_schedule_object &_wso) {
+            references.modify(wso, [&](witness_schedule_object &_wso) {
                 /*
                    _wso.current_shuffled_witnesses.clear();
                    _wso.current_shuffled_witnesses.reserve( active_witnesses.size() );
@@ -477,8 +481,6 @@ struct witness_schedule_policy {
             update_median_witness_props(db);
         }
     }
-protected:
-    database_basic &references;
 
 };
 }}

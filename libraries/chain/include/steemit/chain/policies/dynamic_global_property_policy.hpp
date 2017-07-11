@@ -1,28 +1,31 @@
 #ifndef GOLOS_DYNAMIC_GLOBAL_PROPERTY_POLICY_HPP
 #define GOLOS_DYNAMIC_GLOBAL_PROPERTY_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct dynamic_global_property_policy {
+struct dynamic_global_property_policy: public generic_policy {
 
     dynamic_global_property_policy() = default;
 
-    dynamic_global_property_policy(const behaviour_based_policy &) = default;
+    dynamic_global_property_policy(const dynamic_global_property_policy &) = default;
 
-    dynamic_global_property_policy &operator=(const behaviour_based_policy &) = default;
+    dynamic_global_property_policy &operator=(const dynamic_global_property_policy &) = default;
 
-    dynamic_global_property_policy(behaviour_based_policy &&) = default;
+    dynamic_global_property_policy(dynamic_global_property_policy &&) = default;
 
-    dynamic_global_property_policy &operator=(behaviour_based_policy &&) = default;
+    dynamic_global_property_policy &operator=(dynamic_global_property_policy &&) = default;
 
     virtual ~dynamic_global_property_policy() = default;
 
-    dynamic_global_property_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    dynamic_global_property_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
 
     }
 
     const dynamic_global_property_object &get_dynamic_global_properties() const {
         try {
-            return get<dynamic_global_property_object>();
+            return references.get<dynamic_global_property_object>();
         }
         FC_CAPTURE_AND_RETHROW()
 
@@ -47,7 +50,7 @@ struct dynamic_global_property_policy {
                     const auto &witness_missed = get_witness(get_scheduled_witness(
                             i + 1));
                     if (witness_missed.owner != b.witness) {
-                        modify(witness_missed, [&](witness_object &w) {
+                        references.modify(witness_missed, [&](witness_object &w) {
                             w.total_missed++;
                             if (has_hardfork(STEEMIT_HARDFORK_0_14__278)) {
                                 if (head_block_num() -
@@ -63,7 +66,7 @@ struct dynamic_global_property_policy {
             }
 
             // dynamic global properties updating
-            modify(_dgp, [&](dynamic_global_property_object &dgp) {
+            references.modify(_dgp, [&](dynamic_global_property_object &dgp) {
                 // This is constant time assuming 100% participation. It is O(B) otherwise (B = Num blocks between update)
                 for (uint32_t i = 0; i < missed_blocks + 1; i++) {
                     dgp.participation_count -= dgp.recent_slots_filled.hi &
@@ -123,8 +126,7 @@ struct dynamic_global_property_policy {
                                             STEEMIT_BLOCK_INTERVAL;
             });
 
-            if (!(get_node_properties().skip_flags &
-                  skip_undo_history_check)) {
+            if (!(get_node_properties().skip_flags & skip_undo_history_check)) {
                 STEEMIT_ASSERT(_dgp.head_block_number -
                                _dgp.last_irreversible_block_num <
                                STEEMIT_MAX_UNDO_HISTORY, undo_database_exception,
@@ -138,7 +140,7 @@ struct dynamic_global_property_policy {
 
     void update_virtual_supply() {
         try {
-            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
+            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
                 dgp.virtual_supply = dgp.current_supply
                                      +
                                      (get_feed_history().current_median_history.is_null()
@@ -307,8 +309,20 @@ struct dynamic_global_property_policy {
     }
 
 
-protected:
-    database_basic &references;
+        uint32_t database_basic::head_block_num() const {
+            return get_dynamic_global_properties().head_block_number;
+        }
+
+        block_id_type database_basic::head_block_id() const {
+            return get_dynamic_global_properties().head_block_id;
+        }
+
+        uint32_t database_basic::last_non_undoable_block_num() const {
+            return get_dynamic_global_properties().last_irreversible_block_num;
+        }
+
+
+
 
 };
 }}

@@ -1,8 +1,11 @@
 #ifndef GOLOS_HARDFORK_PROPERTY_POLICY_HPP
 #define GOLOS_HARDFORK_PROPERTY_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct hardfork_property_policy {
+struct hardfork_property_policy: public generic_policy {
 
     hardfork_property_policy() = default;
 
@@ -16,12 +19,12 @@ struct hardfork_property_policy {
 
     virtual ~hardfork_property_policy() = default;
 
-    hardfork_property_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    hardfork_property_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
     }
 
     const hardfork_property_object &get_hardfork_property_object() const {
         try {
-            return get<hardfork_property_object>();
+            return references.get<hardfork_property_object>();
         } FC_CAPTURE_AND_RETHROW()
     }
 
@@ -31,10 +34,11 @@ struct hardfork_property_policy {
             const auto &hardforks = get_hardfork_property_object();
 
             if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                while (_hardfork_versions[hardforks.last_hardfork] <
-                       hardforks.next_hardfork
+                while (
+                        _hardfork_versions[hardforks.last_hardfork] < hardforks.next_hardfork
                        &&
-                       hardforks.next_hardfork_time <= head_block_time()) {
+                       hardforks.next_hardfork_time <= head_block_time()
+                ) {
                     if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
                         apply_hardfork(hardforks.last_hardfork + 1);
                     } else {
@@ -67,7 +71,7 @@ struct hardfork_property_policy {
             if (i <= STEEMIT_HARDFORK_0_5__54) {
                 _hardfork_times[i] = head_block_time();
             } else {
-                modify(hardforks, [&](hardfork_property_object &hpo) {
+                references.modify(hardforks, [&](hardfork_property_object &hpo) {
                     hpo.next_hardfork = _hardfork_versions[i];
                     hpo.next_hardfork_time = head_block_time();
                 });
@@ -158,17 +162,17 @@ struct hardfork_property_policy {
                     }
                 }
 
-                modify(get<account_authority_object, by_account>(STEEMIT_MINER_ACCOUNT), [&](account_authority_object &auth) {
+                references.modify(get<account_authority_object, by_account>(STEEMIT_MINER_ACCOUNT), [&](account_authority_object &auth) {
                     auth.posting = authority();
                     auth.posting.weight_threshold = 1;
                 });
 
-                modify(get<account_authority_object, by_account>(STEEMIT_NULL_ACCOUNT), [&](account_authority_object &auth) {
+                references.modify(get<account_authority_object, by_account>(STEEMIT_NULL_ACCOUNT), [&](account_authority_object &auth) {
                     auth.posting = authority();
                     auth.posting.weight_threshold = 1;
                 });
 
-                modify(get<account_authority_object, by_account>(STEEMIT_TEMP_ACCOUNT), [&](account_authority_object &auth) {
+                references.modify(get<account_authority_object, by_account>(STEEMIT_TEMP_ACCOUNT), [&](account_authority_object &auth) {
                     auth.posting = authority();
                     auth.posting.weight_threshold = 1;
                 });
@@ -196,7 +200,7 @@ struct hardfork_property_policy {
 
                     update_owner_authority(*account, authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1));
 
-                    modify(get<account_authority_object, by_account>(account->name), [&](account_authority_object &auth) {
+                    references.modify(get<account_authority_object, by_account>(account->name), [&](account_authority_object &auth) {
                         auth.active = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
                         auth.posting = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
                     });
@@ -223,7 +227,7 @@ struct hardfork_property_policy {
                 auto reward_steem = gpo.total_reward_fund_steem;
 
 
-                modify(get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
+                references.modify(get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
                     rfo.percent_content_rewards = STEEMIT_POST_REWARD_FUND_PERCENT;
                     rfo.reward_balance = asset((reward_steem.amount.value *
                                                 rfo.percent_content_rewards) /
@@ -232,12 +236,12 @@ struct hardfork_property_policy {
 
                 });
 
-                modify(get<reward_fund_object, by_name>(STEEMIT_COMMENT_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
+                references.modify(get<reward_fund_object, by_name>(STEEMIT_COMMENT_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
                     rfo.percent_content_rewards = STEEMIT_COMMENT_REWARD_FUND_PERCENT;
                     rfo.reward_balance = reward_steem;
                 });
 
-                modify(gpo, [&](dynamic_global_property_object &g) {
+                references.modify(gpo, [&](dynamic_global_property_object &g) {
                     g.total_reward_fund_steem = asset(0, STEEM_SYMBOL);
                     g.total_reward_shares2 = 0;
 
@@ -275,7 +279,7 @@ struct hardfork_property_policy {
                 }
 
                 for (auto itr : root_posts) {
-                    modify(*itr, [&](comment_object &c) {
+                    references.modify(*itr, [&](comment_object &c) {
                         c.cashout_time = std::max(c.created +
                                                   STEEMIT_CASHOUT_WINDOW_SECONDS, c.cashout_time);
                         c.children_rshares2 = 0;
@@ -283,7 +287,7 @@ struct hardfork_property_policy {
                 }
 
                 for (auto itr : replies) {
-                    modify(*itr, [&](comment_object &c) {
+                    references.modify(*itr, [&](comment_object &c) {
                         c.cashout_time = std::max(calculate_discussion_payout_time(c),
                                                   c.created + STEEMIT_CASHOUT_WINDOW_SECONDS);
                         c.children_rshares2 = 0;
@@ -296,7 +300,7 @@ struct hardfork_property_policy {
                 break;
         }
 
-        modify(get_hardfork_property_object(), [&](hardfork_property_object &hfp) {
+        references.modify(get_hardfork_property_object(), [&](hardfork_property_object &hfp) {
             FC_ASSERT(hardfork == hfp.last_hardfork +
                                   1, "Hardfork being applied out of order", ("hardfork", hardfork)("hfp.last_hardfork", hfp.last_hardfork));
             FC_ASSERT(hfp.processed_hardforks.size() ==
@@ -308,7 +312,7 @@ struct hardfork_property_policy {
                       _hardfork_times[hfp.last_hardfork], "Hardfork processing failed sanity check...");
         });
 
-        push_virtual_operation(hardfork_operation(hardfork), true);
+        references.push_virtual_operation(hardfork_operation(hardfork), true);
     }
 
     void init_hardforks() {
@@ -391,11 +395,6 @@ struct hardfork_property_policy {
         FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION ==
                   _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
     }
-
-
-protected:
-    database_basic &references;
-
 };
 }}
 #endif //GOLOS_HARDFORK_PROPERTY_POLICY_HPP

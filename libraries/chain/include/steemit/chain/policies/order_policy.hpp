@@ -1,8 +1,11 @@
 #ifndef GOLOS_LIMIT_ORDER_OBJECT_POLICY_HPP
 #define GOLOS_LIMIT_ORDER_OBJECT_POLICY_HPP
+
+#include "generic_policy.hpp"
+
 namespace steemit {
 namespace chain {
-struct order_policy {
+struct order_policy: public generic_policy {
 
     order_policy() = default;
 
@@ -16,7 +19,7 @@ struct order_policy {
 
     virtual ~order_policy() = default;
 
-    order_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : references(ref) {
+    order_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
         evaluator_registry_.register_evaluator<limit_order_create_evaluator>();
         evaluator_registry_.register_evaluator<limit_order_create2_evaluator>();
         evaluator_registry_.register_evaluator<limit_order_cancel_evaluator>();
@@ -25,7 +28,7 @@ struct order_policy {
 
     void clear_expired_orders() {
         auto now = head_block_time();
-        const auto &orders_by_exp = get_index<limit_order_index>().indices().get<by_expiration>();
+        const auto &orders_by_exp = references.get_index<limit_order_index>().indices().get<by_expiration>();
         auto itr = orders_by_exp.begin();
         while (itr != orders_by_exp.end() && itr->expiration < now) {
             cancel_order(*itr);
@@ -36,7 +39,7 @@ struct order_policy {
     bool apply_order(const limit_order_object &new_order_object) {
         auto order_id = new_order_object.id;
 
-        const auto &limit_price_idx = get_index<limit_order_index>().indices().get<by_price>();
+        const auto &limit_price_idx = references.get_index<limit_order_index>().indices().get<by_price>();
 
         auto max_price = ~new_order_object.sell_price;
         auto limit_itr = limit_price_idx.lower_bound(max_price.max());
@@ -47,12 +50,10 @@ struct order_policy {
             auto old_limit_itr = limit_itr;
             ++limit_itr;
             // match returns 2 when only the old order was fully filled. In this case, we keep matching; otherwise, we stop.
-            finished = (
-                    match(new_order_object, *old_limit_itr, old_limit_itr->sell_price) &
-                    0x1);
+            finished = (match(new_order_object, *old_limit_itr, old_limit_itr->sell_price) & 0x1);
         }
 
-        return find<limit_order_object>(order_id) == nullptr;
+        return references.find<limit_order_object>(order_id) == nullptr;
     }
 
     const limit_order_object &get_limit_order(const account_name_type &name, uint32_t orderid) const {
@@ -61,7 +62,7 @@ struct order_policy {
                 orderid = orderid & 0x0000FFFF;
             }
 
-            return get<limit_order_object, by_account>(boost::make_tuple(name, orderid));
+            return references.get<limit_order_object, by_account>(boost::make_tuple(name, orderid));
         } FC_CAPTURE_AND_RETHROW((name)(orderid))
     }
 
@@ -70,7 +71,7 @@ struct order_policy {
             orderid = orderid & 0x0000FFFF;
         }
 
-        return find<limit_order_object, by_account>(boost::make_tuple(name, orderid));
+        return references.find<limit_order_object, by_account>(boost::make_tuple(name, orderid));
     }
 
     bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
@@ -83,7 +84,7 @@ struct order_policy {
             references.adjust_balance(seller, receives);
 
             if (pays == order.amount_for_sale()) {
-                remove(order);
+                references.remove(order);
                 return true;
             } else {
                 references.modify(order, [&](limit_order_object &b) {
@@ -106,7 +107,7 @@ struct order_policy {
     }
 
     void cancel_order(const limit_order_object &order) {
-        references.adjust_balance(get_account(order.seller), order.amount_for_sale());
+        adjust_balance(get_account(order.seller), order.amount_for_sale());
         references.remove(order);
     }
 
@@ -163,15 +164,10 @@ struct order_policy {
 
         int result = 0;
         result |= fill_order(new_order, new_order_pays, new_order_receives);
-        result |= fill_order(old_order, old_order_pays, old_order_receives)
-                << 1;
+        result |= fill_order(old_order, old_order_pays, old_order_receives) << 1;
         assert(result != 0);
         return result;
     }
-
-protected:
-    database_basic &references;
-
 };
 }}
 #endif
