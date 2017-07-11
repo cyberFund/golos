@@ -278,5 +278,40 @@ namespace steemit {
                 });
             }
         }
+
+        void account_whitelist_evaluator::do_apply(const protocol::account_whitelist_operation &o) {
+            try {
+                const account_object &listed_account = db.get_account(o.account_to_list);
+
+                db.modify(listed_account, [&o](account_object &a) {
+                    if (o.new_listing & o.white_listed) {
+                        a.whitelisting_accounts.insert(o.authorizing_account);
+                    } else {
+                        a.whitelisting_accounts.erase(o.authorizing_account);
+                    }
+
+                    if (o.new_listing & o.black_listed) {
+                        a.blacklisting_accounts.insert(o.authorizing_account);
+                    } else {
+                        a.blacklisting_accounts.erase(o.authorizing_account);
+                    }
+                });
+
+                /** for tracking purposes only, this state is not needed to evaluate */
+                db.modify(db.get_account(o.authorizing_account), [&](account_object &a) {
+                    if (o.new_listing & o.white_listed) {
+                        a.whitelisted_accounts.insert(o.account_to_list);
+                    } else {
+                        a.whitelisted_accounts.erase(o.account_to_list);
+                    }
+
+                    if (o.new_listing & o.black_listed) {
+                        a.blacklisted_accounts.insert(o.account_to_list);
+                    } else {
+                        a.blacklisted_accounts.erase(o.account_to_list);
+                    }
+                });
+            } FC_CAPTURE_AND_RETHROW((o))
+        }
     }
 }

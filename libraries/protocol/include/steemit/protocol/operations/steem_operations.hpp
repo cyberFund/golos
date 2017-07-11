@@ -9,68 +9,6 @@
 
 namespace steemit {
     namespace protocol {
-
-        struct account_create_operation : public base_operation {
-            asset fee;
-            account_name_type creator;
-            account_name_type new_account_name;
-            authority owner;
-            authority active;
-            authority posting;
-            public_key_type memo_key;
-            string json_metadata;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(creator);
-            }
-        };
-
-        struct account_create_with_delegation_operation
-                : public base_operation {
-            asset fee;
-            asset delegation;
-            account_name_type creator;
-            account_name_type new_account_name;
-            authority owner;
-            authority active;
-            authority posting;
-            public_key_type memo_key;
-            string json_metadata;
-
-            extensions_type extensions;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(creator);
-            }
-        };
-
-        struct account_update_operation : public base_operation {
-            account_name_type account;
-            optional<authority> owner;
-            optional<authority> active;
-            optional<authority> posting;
-            public_key_type memo_key;
-            string json_metadata;
-
-            void validate() const;
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (owner) {
-                    a.insert(account);
-                }
-            }
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (!owner) {
-                    a.insert(account);
-                }
-            }
-        };
-
         struct comment_operation : public base_operation {
             account_name_type parent_author;
             string parent_permlink;
@@ -228,7 +166,16 @@ namespace steemit {
         /**
          * @ingroup operations
          *
-         * @brief Transfers STEEM from one account to another.
+         * @brief Transfers an amount of one asset from one account to another
+         *
+         *  Fees are paid by the "from" account
+         *
+         *  @pre amount.amount > 0
+         *  @pre fee.amount >= 0
+         *  @pre from != to
+         *  @post from account's balance will be reduced by fee and amount
+         *  @post to account's balance will be increased by amount
+         *  @return n/a
          */
         struct transfer_operation : public base_operation {
             account_name_type from;
@@ -991,36 +938,6 @@ FC_REFLECT(steemit::protocol::chain_properties, (account_creation_fee)(maximum_b
 FC_REFLECT_TYPENAME(steemit::protocol::pow2_work)
 FC_REFLECT(steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props))
 FC_REFLECT(steemit::protocol::pow2_operation, (work)(new_owner_key)(props))
-
-FC_REFLECT(steemit::protocol::account_create_operation,
-        (fee)
-                (creator)
-                (new_account_name)
-                (owner)
-                (active)
-                (posting)
-                (memo_key)
-                (json_metadata))
-
-FC_REFLECT(steemit::protocol::account_create_with_delegation_operation,
-        (fee)
-                (delegation)
-                (creator)
-                (new_account_name)
-                (owner)
-                (active)
-                (posting)
-                (memo_key)
-                (json_metadata)
-                (extensions))
-
-FC_REFLECT(steemit::protocol::account_update_operation,
-        (account)
-                (owner)
-                (active)
-                (posting)
-                (memo_key)
-                (json_metadata))
 
 FC_REFLECT(steemit::protocol::transfer_operation, (from)(to)(amount)(memo))
 FC_REFLECT(steemit::protocol::transfer_to_vesting_operation, (from)(to)(amount))

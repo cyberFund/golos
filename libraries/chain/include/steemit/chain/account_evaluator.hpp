@@ -1,9 +1,8 @@
 #ifndef GOLOS_ACCOUNT_EVALUATOR_HPP
 #define GOLOS_ACCOUNT_EVALUATOR_HPP
 
-#include <steemit/protocol/operations/steem_operations.hpp>
-
 #include <steemit/chain/evaluator.hpp>
+#include <steemit/protocol/operations/account_operations.hpp>
 
 namespace steemit {
     namespace chain {
@@ -41,6 +40,18 @@ namespace steemit {
             }
 
             void do_apply(const protocol::account_update_operation &o);
+        };
+
+        class account_whitelist_evaluator
+                : public evaluator<account_whitelist_evaluator> {
+        public:
+            typedef protocol::account_whitelist_operation operation_type;
+
+            account_whitelist_evaluator(database &db)
+                    : steemit::chain::evaluator<account_whitelist_evaluator>(db) {
+            }
+
+            void do_apply(const protocol::account_whitelist_operation &o);
         };
     }
 }

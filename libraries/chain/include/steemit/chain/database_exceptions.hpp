@@ -95,7 +95,9 @@ namespace steemit {
         FC_DECLARE_DERIVED_EXCEPTION(black_swan_exception, steemit::chain::chain_exception, 3090000, "black swan")
 
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(transfer);
-//   STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( to_account_not_whitelisted, transfer, 2, "owner mismatch" )
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( restricted_transfer_asset, transfer, 3, "restricted transfer asset" )
 
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(account_create);
 
