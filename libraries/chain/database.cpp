@@ -50,7 +50,6 @@ namespace steemit {
             std::string operation_type;
             std::vector<operation_schema_repr> custom_operation_types;
         };
-
     }
 }
 

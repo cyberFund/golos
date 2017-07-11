@@ -195,10 +195,10 @@ namespace steemit {
              * Each account can have multiple balances, one for each type of asset owned by that
              * account.  The returned list will only contain assets for which the account has a
              * nonzero balance
-             * @param id the name or id of the account whose balances you want
+             * @param account_name the name or id of the account whose balances you want
              * @returns a list of the given account's balances
              */
-            vector<asset> list_account_balances(const string &id);
+            vector<asset> list_account_balances(const account_name_type &account_name);
 
             /** Lists all assets registered on the blockchain.
              *
@@ -1002,8 +1002,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction borrowing the asset
              */
-            signed_transaction borrow_asset(string borrower_name, string amount_to_borrow, string asset_symbol,
-                    string amount_of_collateral, bool broadcast = false);
+            signed_transaction borrow_asset(string borrower_name, asset amount_to_borrow, string amount_of_collateral, bool broadcast);
 
             /** Creates a new user-issued or market-issued asset.
              *
@@ -1043,8 +1042,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction issuing the new shares
              */
-            signed_transaction issue_asset(string to_account, string amount,
-                    string symbol,
+            signed_transaction issue_asset(string to_account, asset amount,
                     string memo,
                     bool broadcast = false);
 
@@ -1222,7 +1220,7 @@ namespace steemit {
              */
             signed_transaction whitelist_account(string authorizing_account,
                     string account_to_list,
-                    account _whitelist_operation::account_listing new_listing_status,
+                    account_whitelist_operation::account_listing new_listing_status,
                     bool broadcast = false);
 
             /**
@@ -1406,7 +1404,7 @@ FC_REFLECT_ENUM(steemit::wallet::authority_type, (owner)(active)(posting))
 
 FC_API(steemit::wallet::wallet_api,
 /// wallet api
-        (help)(gethelp)
+        (help)(get_help)
                 (about)(is_new)(is_locked)(lock)(unlock)(set_password)
                 (load_wallet_file)(save_wallet_file)
 

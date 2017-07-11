@@ -72,10 +72,12 @@ namespace steemit {
             uint64_t get_witness_count() const;
 
             // Balances
-            vector<asset> get_account_balances(account_name_type id, const flat_set<std::string> &assets) const;
+            vector<asset> get_account_balances(account_name_type account_name, const flat_set<std::string> &assets) const;
 
             // Assets
             vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
+
+            vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<string> &asset_symbols) const;
 
             vector<asset_object> list_assets(const string &lower_bound_symbol, uint32_t limit) const;
 
@@ -742,6 +744,24 @@ namespace steemit {
                     [this](string id) -> optional<asset_object> {
                         if (auto o = _db.find_asset(asset::from_string(id).symbol)) {
                             subscribe_to_item(id);
+                            return *o;
+                        }
+                        return {};
+                    });
+            return result;
+        }
+
+        vector<optional<asset_bitasset_data_object>> database_api::get_bitassets_data(const vector<string> &asset_symbols) const {
+            return my->get_bitassets_data(asset_symbols);
+        }
+
+        vector<optional<asset_bitasset_data_object>> database_api_impl::get_bitassets_data(const vector<string> &asset_symbols) const {
+            vector<optional<asset_bitasset_data_object>> result;
+            result.reserve(asset_symbols.size());
+            std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
+                    [this](string symbol) -> optional<asset_bitasset_data_object> {
+                        if (auto o = _db.find_asset_bitasset_data(asset::from_string(symbol).symbol)) {
+                            subscribe_to_item(symbol);
                             return *o;
                         }
                         return {};

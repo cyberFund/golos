@@ -342,6 +342,8 @@ namespace steemit {
              */
             vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
 
+            vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<string> &asset_symbols) const;
+
             /**
              * @brief Get assets alphabetically by symbol name
              * @param lower_bound_symbol Lower bound of symbol names to retrieve
@@ -764,6 +766,7 @@ FC_API(steemit::application::database_api,
 
                 // Assets
                 (get_assets)
+                (get_bitassets_data)
                 (list_assets)
                 (lookup_asset_symbols)
 
