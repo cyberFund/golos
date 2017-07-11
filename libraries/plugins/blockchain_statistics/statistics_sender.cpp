@@ -8,7 +8,6 @@
 #include <fc/log/logger.hpp>
 #include <fc/io/json.hpp>
 
-
 #include <string>
 #include <cstdio>
 #include <iostream>
@@ -33,7 +32,6 @@ stat_client::~stat_client() {
     }
     cds::Terminate();
 }
-
 
 void stat_client::stop() {
     QUEUE_ENABLED = false;
@@ -115,12 +113,10 @@ void stat_client::add_address(const std::string & address) {
         if (ip.is_unspecified()) {
             // TODO something with exceptions and logs!
             ep = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
-            std::cout << "if" << ep << std::endl;
             recipient_endpoint_vec.push_back(ep);
         }
         else {
-            ep = boost::asio::ip::udp::endpoint(ip, port);            
-            std::cout << "else " << ep << std::endl;
+            ep = boost::asio::ip::udp::endpoint(ip, port);
             recipient_endpoint_vec.push_back(ep);
         }
     }
