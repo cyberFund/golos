@@ -12,26 +12,12 @@
 
 #include <fc/api.hpp>
 #include <fc/uint128.hpp>
+#include <boost/asio/ip/udp.hpp>
+// #include <fc/asio.hpp>
+
 using namespace steemit::chain;
 
-class stat_client {
-
-private:
-    std::atomic_bool QUEUE_ENABLED;
-    // The thread which contains data sending loop
-    std::thread sender_thread;
-    // Lock-free FCQueue (not intrusive)
-    cds::container::FCQueue<std::string,
-        std::queue<std::string>, cds::container::fcqueue::traits> stat_q;
-    // Vector of ip addersses where data will be send
-    std::vector<std::string> recipient_ip_vec;
-    // Port for asio broadcasting 
-    uint32_t port;
-    // Timeout in seconds
-    uint32_t sender_sleeping_time;
-
-    void init();
-
+class stat_client {    
 
 public:
     stat_client();
@@ -44,12 +30,28 @@ public:
     // pushes a string to the stat_q
     void push(const std::string & item);
 
-    // initializing and runs data sending loop in a new thread
-    void start();
-
     // Checks is recipient_ip_vec empty of not. 
     bool can_start();
+
+    // initializing and runs data sending loop in a new thread
+    void start();
     
     // adds address to _recipient_ip_vec.
     void add_address(const std::string & address);
+
+private:
+    // Flag which indicates is pushing data enabled or not
+    std::atomic_bool QUEUE_ENABLED;
+    // The thread which contains data sending loop
+    std::thread sender_thread;
+    // Lock-free FCQueue (not intrusive)
+    cds::container::FCQueue<std::string, std::queue<std::string>, cds::container::fcqueue::traits> stat_q;
+    // Stat sender will send data to all endpoints from recipient_endpoint_vec
+    std::vector<boost::asio::ip::udp::endpoint> recipient_endpoint_vec;
+    // Port for asio broadcasting 
+    uint32_t port;
+    // Timeout in seconds
+    uint32_t sender_sleeping_time;
+
+    void init();
 };
