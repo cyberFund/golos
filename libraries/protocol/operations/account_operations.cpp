@@ -1,6 +1,7 @@
 #include <steemit/protocol/operations/account_operations.hpp>
 
 #include <fc/utf8.hpp>
+#include <fc/io/json.hpp>
 
 namespace steemit {
     namespace protocol {

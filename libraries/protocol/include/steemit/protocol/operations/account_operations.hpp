@@ -165,9 +165,9 @@ FC_REFLECT(steemit::protocol::account_update_operation,
                 (memo_key)
                 (json_metadata))
 
-FC_REFLECT(steemit::chain::account_whitelist_operation::fee_parameters_type, (fee))
-FC_REFLECT_ENUM(steemit::chain::account_whitelist_operation::account_listing,
+FC_REFLECT(steemit::protocol::account_whitelist_operation::fee_parameters_type, (fee))
+FC_REFLECT_ENUM(steemit::protocol::account_whitelist_operation::account_listing,
         (no_listing)(white_listed)(black_listed)(white_and_black_listed));
-FC_REFLECT(steemit::chain::account_whitelist_operation, (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
+FC_REFLECT(steemit::protocol::account_whitelist_operation, (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
 
 #endif //GOLOS_ACCOUNT_OPERATIONS_HPP

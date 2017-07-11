@@ -277,10 +277,7 @@ namespace steemit {
 
         void account_whitelist_evaluator::do_apply(const protocol::account_whitelist_operation &o) {
             try {
-                listed_account = db.get_account(o.account_to_list);
-            } FC_CAPTURE_AND_RETHROW((o))
-
-            try {
+                const account_object &listed_account = db.get_account(o.account_to_list);
 
                 db.modify(listed_account, [&o](account_object &a) {
                     if (o.new_listing & o.white_listed) {

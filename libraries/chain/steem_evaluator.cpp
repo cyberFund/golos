@@ -1,5 +1,6 @@
 #include <steemit/chain/steem_evaluator.hpp>
 #include <steemit/chain/database.hpp>
+#include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/block_summary_object.hpp>

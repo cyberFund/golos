@@ -52,10 +52,6 @@ namespace steemit {
             }
 
             void do_apply(const protocol::account_whitelist_operation &o);
-
-        protected:
-
-            const account_object &listed_account;
         };
     }
 }
