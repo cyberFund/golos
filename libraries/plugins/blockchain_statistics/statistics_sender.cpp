@@ -113,13 +113,14 @@ void stat_client::add_address(const std::string & address) {
         }
         
         if (ip.is_unspecified()) {
-            ep = boost::asio::ip::udp::endpoint(ip, port);            
+            // TODO something with exceptions and logs!
+            ep = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+            std::cout << "if" << ep << std::endl;
             recipient_endpoint_vec.push_back(ep);
         }
         else {
-            // TODO something with exceptions and logs!
-            ep = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
-            std::cout << ep << "\n";
+            ep = boost::asio::ip::udp::endpoint(ip, port);            
+            std::cout << "else " << ep << std::endl;
             recipient_endpoint_vec.push_back(ep);
         }
     }
