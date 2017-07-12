@@ -398,6 +398,21 @@ namespace steemit {
                     return accounts.front();
                 }
 
+                optional<asset_object> find_asset(asset_symbol_type asset_symbol) const {
+                    // It's a symbol
+                    optional<asset_object> rec = _remote_db->lookup_asset_symbols({
+                            asset(0, asset_symbol).symbol_name()
+                    }).front();
+                    if (rec) {
+                        if (rec->symbol_name != asset(0, asset_symbol).symbol_name()) {
+                            return optional<asset_object>();
+                        }
+
+                        _asset_cache[rec->symbol] = *rec;
+                    }
+                    return rec;
+                }
+
                 optional<asset_object> find_asset(string asset_symbol) const {
                     FC_ASSERT(asset_symbol.size() > 0);
 
@@ -1137,6 +1152,10 @@ namespace steemit {
             return my->_remote_db->list_assets(lowerbound, limit);
         }
 
+        dynamic_global_property_object wallet_api::get_dynamic_global_properties() const {
+            return my->_remote_db->get_dynamic_global_properties();
+        }
+
         vector<account_name_type> wallet_api::get_miner_queue() const {
             return my->_remote_db->get_miner_queue();
         }
@@ -1185,6 +1204,15 @@ namespace steemit {
 
         account_api_obj wallet_api::get_account(string account_name) const {
             return my->get_account(account_name);
+        }
+
+        asset_object wallet_api::get_asset(asset_symbol_type asset_symbol) const {
+            auto a = my->_remote_db->lookup_asset_symbols({
+                    asset(0, asset_symbol).symbol_name()
+            }).front();
+
+            FC_ASSERT(a);
+            return *a;
         }
 
         asset_object wallet_api::get_asset(string asset_symbol) const {
@@ -1903,7 +1931,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         annotated_signed_transaction wallet_api::transfer(string from, string to, asset amount, string memo, bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
-                fc::optional<asset_object> asset_obj = get_asset(amount.symbol_name());
+                fc::optional<asset_object> asset_obj = get_asset(amount.symbol);
                 FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", amount.symbol));
 
                 transfer_operation op;
@@ -2277,25 +2305,15 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::sell_asset(string seller_account,
-                string amount_to_sell,
-                string symbol_to_sell,
-                string min_to_receive,
-                string symbol_to_receive,
-                uint32_t expiration,
-                bool fill_or_kill,
-                bool broadcast) {
+        signed_transaction wallet_api::sell_asset(string seller_account, asset amount_to_sell, asset amount_to_receive, uint32_t expiration, bool fill_or_kill, bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            auto accounts = my->_remote_db->get_accounts({seller_account});
-            FC_ASSERT(!accounts.empty(), "Unknown account");
-
-            account_object seller = accounts.front();
+            auto account = get_account(seller_account);
 
             limit_order_create_operation op;
-            op.owner = seller.name;
-            op.amount_to_sell = get_asset(symbol_to_sell).amount_from_string(amount_to_sell);
-            op.min_to_receive = get_asset(symbol_to_receive).amount_from_string(min_to_receive);
+            op.owner = account.name;
+            op.amount_to_sell = get_asset(amount_to_sell.symbol).amount(0);
+            op.min_to_receive = get_asset(amount_to_receive.symbol).amount(0);
             if (expiration) {
                 op.expiration =
                         fc::time_point::now() + fc::seconds(expiration);
@@ -2315,8 +2333,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 double rate,
                 double amount,
                 bool broadcast) {
-            return sell_asset(seller_account, std::to_string(amount), base,
-                    std::to_string(rate * amount), quote, 0, false, broadcast);
+            return sell_asset(seller_account, asset(amount, asset::from_string(base).symbol), asset(
+                    rate * amount, asset::from_string(quote).symbol), 0, false, broadcast);
         }
 
         signed_transaction wallet_api::buy(string buyer_account,
@@ -2325,22 +2343,22 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 double rate,
                 double amount,
                 bool broadcast) {
-            return sell_asset(buyer_account, std::to_string(
-                    rate * amount), quote,
-                    std::to_string(amount), base, 0, false, broadcast);
+            return sell_asset(buyer_account, asset(rate *
+                                                   amount, asset::from_string(quote).symbol), asset(amount, asset::from_string(base).symbol), 0, false, broadcast);
         }
 
-        signed_transaction wallet_api::borrow_asset(string seller_name, asset amount_to_sell, string amount_of_collateral, bool broadcast) {
+        signed_transaction wallet_api::borrow_asset(string seller_name, asset amount_to_borrow, asset amount_of_collateral, bool broadcast) {
             FC_ASSERT(!is_locked());
-            account_object seller = get_account(seller_name);
-            asset_object mia = get_asset(amount_to_sell.symbol_name());
+            auto seller = get_account(seller_name);
+            asset_object mia = get_asset(amount_to_borrow.symbol_name());
             FC_ASSERT(mia.is_market_issued());
-            asset_object collateral = get_asset(get_bitasset_data(mia.symbol_name).options.short_backing_asset);
+
+            asset_object collateral = get_asset(asset(0, get_bitasset_data(mia.symbol_name).options.short_backing_asset).symbol_name());
 
             call_order_update_operation op;
             op.funding_account = seller.name;
-            op.delta_debt = mia.amount_from_string(amount_to_borrow);
-            op.delta_collateral = collateral.amount_from_string(amount_of_collateral);
+            op.delta_debt = mia.amount(amount_to_borrow.amount);
+            op.delta_collateral = collateral.amount(amount_of_collateral.amount);
 
             signed_transaction trx;
             trx.operations = {op};
@@ -2353,25 +2371,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         signed_transaction wallet_api::issue_asset(string to_account, asset amount, string memo, bool broadcast) {
             auto asset_obj = get_asset(amount.symbol_name());
 
-            account_object to = get_account(to_account);
-            account_object issuer = get_account(asset_obj.issuer);
+            account_api_obj to = get_account(to_account);
+            account_api_obj issuer = get_account(asset_obj.issuer);
 
             asset_issue_operation issue_op;
             issue_op.issuer = asset_obj.issuer;
-            issue_op.asset_to_issue = asset_obj.amount_from_string(amount);
+            issue_op.asset_to_issue = asset_obj.amount(amount.amount);
             issue_op.issue_to_account = to.name;
-
-            if (memo.size()) {
-                issue_op.memo = memo_data();
-                issue_op.memo->from = issuer.options.memo_key;
-                issue_op.memo->to = to.options.memo_key;
-                issue_op.memo->set_message(get_private_key(issuer.options.memo_key),
-                        to.options.memo_key, memo);
-            }
+            issue_op.memo = memo;
 
             signed_transaction tx;
             tx.operations.push_back(issue_op);
-            set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
             tx.validate();
 
             return sign_transaction(tx, broadcast);
@@ -2384,19 +2394,18 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 fc::optional<bitasset_options> bitasset_opts,
                 bool broadcast) {
             try {
-                account_object issuer_account = get_account(issuer);
-                FC_ASSERT(!find_asset(symbol).valid(), "Asset with that symbol already exists!");
+                account_api_obj issuer_account = get_account(issuer);
+                FC_ASSERT(!my->find_asset(symbol).valid(), "Asset with that symbol already exists!");
 
                 asset_create_operation create_op;
-                create_op.issuer = issuer_account.id;
-                create_op.symbol = symbol;
+                create_op.issuer = issuer_account.name;
+                create_op.symbol_name = symbol;
                 create_op.precision = precision;
                 create_op.common_options = common;
                 create_op.bitasset_opts = bitasset_opts;
 
                 signed_transaction tx;
                 tx.operations.push_back(create_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2408,24 +2417,23 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 asset_options new_options,
                 bool broadcast /* = false */) {
             try {
-                optional<asset_object> asset_to_update = find_asset(symbol);
+                optional<asset_object> asset_to_update = my->find_asset(symbol);
                 if (!asset_to_update)
                     FC_THROW("No asset with that symbol exists!");
                 optional<account_name_type> new_issuer_account_id;
                 if (new_issuer) {
-                    account_object new_issuer_account = get_account(*new_issuer);
-                    new_issuer_account_id = new_issuer_account.id;
+                    account_api_obj new_issuer_account = get_account(*new_issuer);
+                    new_issuer_account_id = new_issuer_account.name;
                 }
 
                 asset_update_operation update_op;
                 update_op.issuer = asset_to_update->issuer;
-                update_op.asset_to_update = asset_to_update->id;
+                update_op.asset_to_update = asset_to_update->symbol;
                 update_op.new_issuer = new_issuer_account_id;
                 update_op.new_options = new_options;
 
                 signed_transaction tx;
                 tx.operations.push_back(update_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2436,18 +2444,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 bitasset_options new_options,
                 bool broadcast /* = false */) {
             try {
-                optional<asset_object> asset_to_update = find_asset(symbol);
+                optional<asset_object> asset_to_update = my->find_asset(symbol);
                 if (!asset_to_update)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_update_bitasset_operation update_op;
                 update_op.issuer = asset_to_update->issuer;
-                update_op.asset_to_update = asset_to_update->id;
+                update_op.asset_to_update = asset_to_update->symbol;
                 update_op.new_options = new_options;
 
                 signed_transaction tx;
                 tx.operations.push_back(update_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2458,21 +2465,22 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 flat_set<string> new_feed_producers,
                 bool broadcast /* = false */) {
             try {
-                optional<asset_object> asset_to_update = find_asset(symbol);
+                optional<asset_object> asset_to_update = my->find_asset(symbol);
                 if (!asset_to_update)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_update_feed_producers_operation update_op;
                 update_op.issuer = asset_to_update->issuer;
-                update_op.asset_to_update = asset_to_update->id;
+                update_op.asset_to_update = asset_to_update->symbol;
                 update_op.new_feed_producers.reserve(new_feed_producers.size());
                 std::transform(new_feed_producers.begin(), new_feed_producers.end(),
                         std::inserter(update_op.new_feed_producers, update_op.new_feed_producers.end()),
-                        [this](const std::string &account_name_or_id) { return get_account_id(account_name_or_id); });
+                        [this](const std::string &account_name) {
+                            return get_account(account_name).name;
+                        });
 
                 signed_transaction tx;
                 tx.operations.push_back(update_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2484,18 +2492,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 price_feed feed,
                 bool broadcast /* = false */) {
             try {
-                optional<asset_object> asset_to_update = find_asset(symbol);
+                optional<asset_object> asset_to_update = my->find_asset(symbol);
                 if (!asset_to_update)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_publish_feed_operation publish_op;
-                publish_op.publisher = get_account_id(publishing_account);
-                publish_op.asset_id = asset_to_update->id;
+                publish_op.publisher = get_account(publishing_account).name;
+                publish_op.asset_id = asset_to_update->symbol;
                 publish_op.feed = feed;
 
                 signed_transaction tx;
                 tx.operations.push_back(publish_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2507,20 +2514,19 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string amount,
                 bool broadcast /* = false */) {
             try {
-                account_object from_account = get_account(from);
-                optional<asset_object> asset_to_fund = find_asset(symbol);
+                account_api_obj from_account = get_account(from);
+                optional<asset_object> asset_to_fund = my->find_asset(symbol);
                 if (!asset_to_fund)
                     FC_THROW("No asset with that symbol exists!");
-                asset_object core_asset = get_asset(asset_id_type());
+                asset_object core_asset = get_asset(STEEM_SYMBOL);
 
                 asset_fund_fee_pool_operation fund_op;
-                fund_op.from_account = from_account.id;
-                fund_op.asset_id = asset_to_fund->id;
+                fund_op.from_account = from_account.name;
+                fund_op.symbol = asset_to_fund->symbol;
                 fund_op.amount = core_asset.amount_from_string(amount).amount;
 
                 signed_transaction tx;
                 tx.operations.push_back(fund_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2532,18 +2538,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string symbol,
                 bool broadcast /* = false */) {
             try {
-                account_object from_account = get_account(from);
-                optional<asset_object> asset_to_reserve = find_asset(symbol);
+                account_api_obj from_account = get_account(from);
+                optional<asset_object> asset_to_reserve = my->find_asset(symbol);
                 if (!asset_to_reserve)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_reserve_operation reserve_op;
-                reserve_op.payer = from_account.id;
+                reserve_op.payer = from_account.name;
                 reserve_op.amount_to_reserve = asset_to_reserve->amount_from_string(amount);
 
                 signed_transaction tx;
                 tx.operations.push_back(reserve_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2554,18 +2559,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 price settle_price,
                 bool broadcast /* = false */) {
             try {
-                optional<asset_object> asset_to_settle = find_asset(symbol);
+                optional<asset_object> asset_to_settle = my->find_asset(symbol);
                 if (!asset_to_settle)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_global_settle_operation settle_op;
                 settle_op.issuer = asset_to_settle->issuer;
-                settle_op.asset_to_settle = asset_to_settle->id;
+                settle_op.asset_to_settle = asset_to_settle->symbol;
                 settle_op.settle_price = settle_price;
 
                 signed_transaction tx;
                 tx.operations.push_back(settle_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2577,17 +2581,16 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string symbol,
                 bool broadcast /* = false */) {
             try {
-                optional<asset_object> asset_to_settle = find_asset(symbol);
+                optional<asset_object> asset_to_settle = my->find_asset(symbol);
                 if (!asset_to_settle)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_settle_operation settle_op;
-                settle_op.account = get_account_id(account_to_settle);
+                settle_op.account = get_account(account_to_settle).name;
                 settle_op.amount = asset_to_settle->amount_from_string(amount_to_settle);
 
                 signed_transaction tx;
                 tx.operations.push_back(settle_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2600,13 +2603,12 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 bool broadcast /* = false */) {
             try {
                 account_whitelist_operation whitelist_op;
-                whitelist_op.authorizing_account = get_account_id(authorizing_account);
-                whitelist_op.account_to_list = get_account_id(account_to_list);
+                whitelist_op.authorizing_account = get_account(authorizing_account).name;
+                whitelist_op.account_to_list = get_account(account_to_list).name;
                 whitelist_op.new_listing = new_listing_status;
 
                 signed_transaction tx;
                 tx.operations.push_back(whitelist_op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
