@@ -113,7 +113,7 @@ namespace steemit {
             vector<pair<account_name_type, uint32_t>> guest_bloggers;
 
             optional<map<uint32_t, extended_limit_order>> open_orders;
-            vector<account_balance_object>   balances;
+            optional<vector<account_balance_object>>  balances;
             optional<vector<string>> comments; /// permlinks for this user
             optional<vector<string>> blog; /// blog posts for this user
             optional<vector<string>> feed; /// feed posts for this user

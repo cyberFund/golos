@@ -2333,7 +2333,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 double rate,
                 double amount,
                 bool broadcast) {
-            return sell_asset(seller_account, asset(amount, asset::from_string(base).symbol), asset(rate * amount, asset::from_string(quote).symbol), 0, false, broadcast);
+            return sell_asset(seller_account, asset(amount, asset::from_string(base).symbol), asset(
+                    rate * amount, asset::from_string(quote).symbol), 0, false, broadcast);
         }
 
         signed_transaction wallet_api::buy(string buyer_account,
@@ -2342,7 +2343,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 double rate,
                 double amount,
                 bool broadcast) {
-            return sell_asset(buyer_account, asset(rate * amount, asset::from_string(quote).symbol), asset(amount, asset::from_string(base).symbol), 0, false, broadcast);
+            return sell_asset(buyer_account, asset(rate *
+                                                   amount, asset::from_string(quote).symbol), asset(amount, asset::from_string(base).symbol), 0, false, broadcast);
         }
 
         signed_transaction wallet_api::borrow_asset(string seller_name, asset amount_to_borrow, asset amount_of_collateral, bool broadcast) {
@@ -2421,7 +2423,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 optional<account_name_type> new_issuer_account_id;
                 if (new_issuer) {
                     account_api_obj new_issuer_account = get_account(*new_issuer);
-                    new_issuer_account_id = new_issuer_account.id;
+                    new_issuer_account_id = new_issuer_account.name;
                 }
 
                 asset_update_operation update_op;
@@ -2432,7 +2434,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 signed_transaction tx;
                 tx.operations.push_back(update_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2454,7 +2455,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 signed_transaction tx;
                 tx.operations.push_back(update_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2475,11 +2475,12 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 update_op.new_feed_producers.reserve(new_feed_producers.size());
                 std::transform(new_feed_producers.begin(), new_feed_producers.end(),
                         std::inserter(update_op.new_feed_producers, update_op.new_feed_producers.end()),
-                        [this](const std::string &account_name_or_id) { return get_account_id(account_name_or_id); });
+                        [this](const std::string &account_name) {
+                            return get_account(account_name).name;
+                        });
 
                 signed_transaction tx;
                 tx.operations.push_back(update_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2496,13 +2497,12 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_publish_feed_operation publish_op;
-                publish_op.publisher = get_account_id(publishing_account);
+                publish_op.publisher = get_account(publishing_account).name;
                 publish_op.asset_id = asset_to_update->symbol;
                 publish_op.feed = feed;
 
                 signed_transaction tx;
                 tx.operations.push_back(publish_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2514,20 +2514,19 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string amount,
                 bool broadcast /* = false */) {
             try {
-                account_object from_account = get_account(from);
+                account_api_obj from_account = get_account(from);
                 optional<asset_object> asset_to_fund = my->find_asset(symbol);
                 if (!asset_to_fund)
                     FC_THROW("No asset with that symbol exists!");
-                asset_object core_asset = get_asset(asset_id_type());
+                asset_object core_asset = get_asset(STEEM_SYMBOL);
 
                 asset_fund_fee_pool_operation fund_op;
-                fund_op.from_account = from_account.id;
-                fund_op.asset_id = asset_to_fund->id;
+                fund_op.from_account = from_account.name;
+                fund_op.symbol = asset_to_fund->symbol;
                 fund_op.amount = core_asset.amount_from_string(amount).amount;
 
                 signed_transaction tx;
                 tx.operations.push_back(fund_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2539,18 +2538,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string symbol,
                 bool broadcast /* = false */) {
             try {
-                account_object from_account = get_account(from);
+                account_api_obj from_account = get_account(from);
                 optional<asset_object> asset_to_reserve = my->find_asset(symbol);
                 if (!asset_to_reserve)
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_reserve_operation reserve_op;
-                reserve_op.payer = from_account.id;
+                reserve_op.payer = from_account.name;
                 reserve_op.amount_to_reserve = asset_to_reserve->amount_from_string(amount);
 
                 signed_transaction tx;
                 tx.operations.push_back(reserve_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2567,12 +2565,11 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_global_settle_operation settle_op;
                 settle_op.issuer = asset_to_settle->issuer;
-                settle_op.asset_to_settle = asset_to_settle->id;
+                settle_op.asset_to_settle = asset_to_settle->symbol;
                 settle_op.settle_price = settle_price;
 
                 signed_transaction tx;
                 tx.operations.push_back(settle_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2589,12 +2586,11 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                     FC_THROW("No asset with that symbol exists!");
 
                 asset_settle_operation settle_op;
-                settle_op.account = get_account_id(account_to_settle);
+                settle_op.account = get_account(account_to_settle).name;
                 settle_op.amount = asset_to_settle->amount_from_string(amount_to_settle);
 
                 signed_transaction tx;
                 tx.operations.push_back(settle_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
@@ -2607,13 +2603,12 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 bool broadcast /* = false */) {
             try {
                 account_whitelist_operation whitelist_op;
-                whitelist_op.authorizing_account = get_account_id(authorizing_account);
-                whitelist_op.account_to_list = get_account_id(account_to_list);
+                whitelist_op.authorizing_account = get_account(authorizing_account).name;
+                whitelist_op.account_to_list = get_account(account_to_list).name;
                 whitelist_op.new_listing = new_listing_status;
 
                 signed_transaction tx;
                 tx.operations.push_back(whitelist_op);
-                set_operation_fees(tx, my->_remote_db->get_global_properties().parameters.current_fees);
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);

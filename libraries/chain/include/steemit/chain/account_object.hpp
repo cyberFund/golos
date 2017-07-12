@@ -94,12 +94,14 @@ namespace steemit {
         class account_balance_object
                 : public object<account_balance_object_type, account_balance_object> {
         public:
-            account_balance_object() = delete;
-
             template<typename Constructor, typename Allocator>
             account_balance_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             };
+
+            account_balance_object() {
+
+            }
 
             id_type id;
 
