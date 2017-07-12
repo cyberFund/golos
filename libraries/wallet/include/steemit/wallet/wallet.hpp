@@ -232,6 +232,12 @@ namespace steemit {
              */
             asset_object get_asset(string asset_symbol) const;
 
+            /** Returns information about the given asset.
+              * @param asset_symbol the symbol of the asset in the request
+              * @returns the information about the asset stored in the block chain
+              */
+            asset_object get_asset(asset_symbol_type asset_symbol) const;
+
             /** Returns the BitAsset-specific data for a given asset.
              * Market-issued assets's behavior are determined both by their "BitAsset Data" and
              * their basic asset data, as returned by \c get_asset().
@@ -919,10 +925,8 @@ namespace steemit {
              * @param seller_account the account providing the asset being sold, and which will
              *                       receive the proceeds of the sale.
              * @param amount_to_sell the amount of the asset being sold to sell (in nominal units)
-             * @param symbol_to_sell the name or id of the asset to sell
-             * @param min_to_receive the minimum amount you are willing to receive in return for
+             * @param amount_to_receive the minimum amount you are willing to receive in return for
              *                       selling the entire amount_to_sell
-             * @param symbol_to_receive the name or id of the asset you wish to receive
              * @param timeout_sec if the order does not fill immediately, this is the length of
              *                    time the order will remain on the order books before it is
              *                    cancelled and the un-spent funds are returned to the seller's
@@ -934,14 +938,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction selling the funds
              */
-            signed_transaction sell_asset(string seller_account,
-                    string amount_to_sell,
-                    string symbol_to_sell,
-                    string min_to_receive,
-                    string symbol_to_receive,
-                    uint32_t timeout_sec = 0,
-                    bool fill_or_kill = false,
-                    bool broadcast = false);
+            signed_transaction sell_asset(string seller_account, asset amount_to_sell, asset amount_to_receive, uint32_t timeout_sec, bool fill_or_kill, bool broadcast);
 
             /** Place a limit order attempting to sell one asset for another.
              *
@@ -979,7 +976,7 @@ namespace steemit {
              * @param rate The rate in base:quote at which you want to buy.
              * @param amount the amount of base you want to buy.
              * @param broadcast true to broadcast the transaction on the network.
-             * @param The signed transaction selling the funds.
+             * @returns The signed transaction selling the funds.
              */
             signed_transaction buy(string buyer_account,
                     string base,
@@ -991,18 +988,16 @@ namespace steemit {
             /** Borrow an asset or update the debt/collateral ratio for the loan.
              *
              * This is the first step in shorting an asset.  Call \c sell_asset() to complete the short.
-             *
              * @param borrower_name the name or id of the account associated with the transaction.
-             * @param amount_to_borrow the amount of the asset being borrowed.  Make this value
-             *                         negative to pay back debt.
-             * @param asset_symbol the symbol or id of the asset being borrowed.
+             * @param amount_to_borrow the amount of the asset being borrowed.
+             * Make this value negative to pay back debt.
              * @param amount_of_collateral the amount of the backing asset to add to your collateral
              *        position.  Make this negative to claim back some of your collateral.
              *        The backing asset is defined in the \c bitasset_options for the asset being borrowed.
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction borrowing the asset
              */
-            signed_transaction borrow_asset(string borrower_name, asset amount_to_borrow, string amount_of_collateral, bool broadcast);
+            signed_transaction borrow_asset(string borrower_name, asset amount_to_borrow, asset amount_of_collateral, bool broadcast);
 
             /** Creates a new user-issued or market-issued asset.
              *
@@ -1037,7 +1032,6 @@ namespace steemit {
              *
              * @param to_account the name or id of the account to receive the new shares
              * @param amount the amount to issue, in nominal units
-             * @param symbol the ticker symbol of the asset to issue
              * @param memo a memo to include in the transaction, readable by the recipient
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction issuing the new shares

@@ -193,7 +193,6 @@ namespace steemit {
             string error;
             optional<market> market_data;
         };
-
     }
 }
 
