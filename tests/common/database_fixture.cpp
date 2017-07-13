@@ -194,11 +194,11 @@ namespace steemit {
 
         void database_fixture::verify_asset_supplies(const database &input_db) {
             //wlog("*** Begin asset supply verification ***");
-            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_objet, by_symbol>(STEEM_SYMBOL);
+            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_object, by_symbol>(STEEM_SYMBOL);
             BOOST_CHECK(core_asset_data.fee_pool == 0);
 
             const account_statistics_index &statistics_index =
-                    input_db.get_index<account_statistics_object>();
+                    input_db.get_index<account_statistics_index>().indicies();
             const auto &balance_index = input_db.get_index<account_balance_index>().indices();
             const auto &settle_index = input_db.get_index<force_settlement_index>().indices();
             map<asset_symbol_type, share_type> total_balances;
@@ -233,24 +233,24 @@ namespace steemit {
                 total_debts[o.get_debt().symbol] += o.get_debt().amount;
             }
             for (const asset_object &asset_obj : input_db.get_index<asset_index>().indices()) {
-                const auto &dasset_obj = asset_obj.dynamic_asset_data_id(input_db);
-                total_balances[asset_obj.id] += dasset_obj.accumulated_fees;
-                total_balances[asset_symbol_type()] += dasset_obj.fee_pool;
+                const auto &dasset_obj = input_db.get_asset_dynamic_data(asset_obj.symbol);
+                total_balances[asset_obj.symbol] += dasset_obj.accumulated_fees;
+                total_balances[STEEM_SYMBOL] += dasset_obj.fee_pool;
                 if (asset_obj.is_market_issued()) {
-                    const auto &bad = asset_obj.bitasset_data(input_db);
+                    const auto &bad = input_db.get_asset_bitasset_data(asset_obj.symbol);
                     total_balances[bad.options.short_backing_asset] += bad.settlement_fund;
                 }
-                total_balances[asset_obj.id] += dasset_obj.confidential_supply.value;
+                total_balances[asset_obj.symbol] += dasset_obj.confidential_supply.value;
             }
             for (const vesting_balance_object &vbo : input_db.get_index<vesting_balance_index>().indices()) {
                 total_balances[vbo.balance.symbol] += vbo.balance.amount;
             }
-            for (const fba_accumulator_object &fba : input_db.get_index < simple_index < fba_accumulator_object > >
-                                                     ()) {
-                total_balances[asset_symbol_type()] += fba.accumulated_fba_fees;
-            }
+//            for (const fba_accumulator_object &fba : input_db.get_index < simple_index < fba_accumulator_object > >
+//                                                     ()) {
+//                total_balances[asset_symbol_type()] += fba.accumulated_fba_fees;
+//            }
 
-            total_balances[asset_symbol_type()] += input_db.get_dynamic_global_properties().witness_budget;
+            total_balances[STEEM_SYMBOL] += input_db.get_dynamic_global_properties().witness_budget;
 
             for (const auto &item : total_debts) {
                 BOOST_CHECK_EQUAL(item.first(input_db).dynamic_asset_data_id(db).current_supply.value, item.second.value);
@@ -860,8 +860,101 @@ namespace steemit {
 #endif
         }
 
-        const asset &database_fixture::get_balance(const string &account_name) const {
-            return db.get_account(account_name).balance;
+        void database_fixture::print_market(const string &syma, const string &symb) const {
+            const auto &limit_idx = db.get_index<limit_order_index>();
+            const auto &price_idx = limit_idx.indices().get<by_price>();
+
+            cerr << std::fixed;
+            cerr.precision(5);
+            cerr << std::setw(10) << std::left << "NAME" << " ";
+            cerr << std::setw(16) << std::right << "FOR SALE" << " ";
+            cerr << std::setw(16) << std::right << "FOR WHAT" << " ";
+            cerr << std::setw(10) << std::right << "PRICE (S/W)" << " ";
+            cerr << std::setw(10) << std::right << "1/PRICE (W/S)" << "\n";
+            cerr << string(70, '=') << std::endl;
+            auto cur = price_idx.begin();
+            while (cur != price_idx.end()) {
+                cerr << std::setw(10) << std::left << db.get_account(cur->seller).name << " ";
+                cerr << std::setw(10) << std::right << cur->for_sale.value << " ";
+                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_for_sale().symbol).symbol << " ";
+                cerr << std::setw(10) << std::right << cur->amount_to_receive().amount.value << " ";
+                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_to_receive().symbol).symbol << " ";
+                cerr << std::setw(10) << std::right << cur->sell_price.to_real() << " ";
+                cerr << std::setw(10) << std::right << (~cur->sell_price).to_real() << " ";
+                cerr << "\n";
+                ++cur;
+            }
+        }
+
+        string database_fixture::pretty(const asset &a) const {
+            std::stringstream ss;
+            ss << a.amount.value << " ";
+            ss << a.asset_id(db).symbol;
+            return ss.str();
+        }
+
+        void database_fixture::print_limit_order(const limit_order_object &cur) const {
+            std::cout << std::setw(10) << cur.seller(db).name << " ";
+            std::cout << std::setw(10) << "LIMIT" << " ";
+            std::cout << std::setw(16) << pretty(cur.amount_for_sale()) << " ";
+            std::cout << std::setw(16) << pretty(cur.amount_to_receive()) << " ";
+            std::cout << std::setw(16) << cur.sell_price.to_real() << " ";
+        }
+
+        void database_fixture::print_call_orders() const {
+            cout << std::fixed;
+            cout.precision(5);
+            cout << std::setw(10) << std::left << "NAME" << " ";
+            cout << std::setw(10) << std::right << "TYPE" << " ";
+            cout << std::setw(16) << std::right << "DEBT" << " ";
+            cout << std::setw(16) << std::right << "COLLAT" << " ";
+            cout << std::setw(16) << std::right << "CALL PRICE(D/C)" << " ";
+            cout << std::setw(16) << std::right << "~CALL PRICE(C/D)" << " ";
+            cout << std::setw(16) << std::right << "SWAN(D/C)" << " ";
+            cout << std::setw(16) << std::right << "SWAN(C/D)" << "\n";
+            cout << string(70, '=');
+
+            for (const call_order_object &o : db.get_index<call_order_index>().indices()) {
+                std::cout << "\n";
+                cout << std::setw(10) << std::left << o.borrower(db).name << " ";
+                cout << std::setw(16) << std::right << pretty(o.get_debt()) << " ";
+                cout << std::setw(16) << std::right << pretty(o.get_collateral()) << " ";
+                cout << std::setw(16) << std::right << o.call_price.to_real() << " ";
+                cout << std::setw(16) << std::right << (~o.call_price).to_real() << " ";
+                cout << std::setw(16) << std::right << (o.get_debt() / o.get_collateral()).to_real() << " ";
+                cout << std::setw(16) << std::right << (~(o.get_debt() / o.get_collateral())).to_real() << " ";
+            }
+            std::cout << "\n";
+        }
+
+        void database_fixture::print_joint_market(const string &syma, const string &symb) const {
+            cout << std::fixed;
+            cout.precision(5);
+
+            cout << std::setw(10) << std::left << "NAME" << " ";
+            cout << std::setw(10) << std::right << "TYPE" << " ";
+            cout << std::setw(16) << std::right << "FOR SALE" << " ";
+            cout << std::setw(16) << std::right << "FOR WHAT" << " ";
+            cout << std::setw(16) << std::right << "PRICE (S/W)" << "\n";
+            cout << string(70, '=');
+
+            const auto &limit_idx = db.get_index<limit_order_index>();
+            const auto &limit_price_idx = limit_idx.indices().get<by_price>();
+
+            auto limit_itr = limit_price_idx.begin();
+            while (limit_itr != limit_price_idx.end()) {
+                std::cout << std::endl;
+                print_limit_order(*limit_itr);
+                ++limit_itr;
+            }
+        }
+
+        int64_t database_fixture::get_balance(account_id_type account, asset_id_type a) const {
+            return db.get_balance(account, a).amount.value;
+        }
+
+        int64_t database_fixture::get_balance(const account_object &account, const asset_object &a) const {
+            return db.get_balance(account.get_id(), a.get_id()).amount.value;
         }
 
         void database_fixture::sign(signed_transaction &trx, const fc::ecc::private_key &key) {

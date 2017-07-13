@@ -162,48 +162,6 @@ namespace steemit {
             }
         };
 
-
-        /**
-         * @ingroup operations
-         *
-         * @brief Transfers an amount of one asset from one account to another
-         *
-         *  Fees are paid by the "from" account
-         *
-         *  @pre amount.amount > 0
-         *  @pre fee.amount >= 0
-         *  @pre from != to
-         *  @post from account's balance will be reduced by fee and amount
-         *  @post to account's balance will be increased by amount
-         *  @return n/a
-         */
-        struct transfer_operation : public base_operation {
-            account_name_type from;
-            /// Account to transfer asset to
-            account_name_type to;
-            /// The amount of asset to transfer from @ref from to @ref to
-            asset amount;
-
-            /// The memo is plain-text, any encryption on the memo is up to
-            /// a higher level protocol.
-            string memo;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (amount.symbol != VESTS_SYMBOL) {
-                    a.insert(from);
-                }
-            }
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (amount.symbol == VESTS_SYMBOL) {
-                    a.insert(from);
-                }
-            }
-        };
-
-
         /**
          *  The purpose of this operation is to enable someone to send money contingently to
          *  another individual. The funds leave the *from* account and go into a temporary balance
@@ -315,26 +273,6 @@ namespace steemit {
                 a.insert(who);
             }
         };
-
-
-        /**
-         *  This operation converts STEEM into VFS (Vesting Fund Shares) at
-         *  the current exchange rate. With this operation it is possible to
-         *  give another account vesting shares so that faucets can
-         *  pre-fund new accounts with vesting shares.
-         */
-        struct transfer_to_vesting_operation : public base_operation {
-            account_name_type from;
-            account_name_type to; ///< if null, then same as from
-            asset amount; ///< must be STEEM
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-        };
-
 
         /**
          * At any given point in time an account can be withdrawing from their
@@ -841,48 +779,6 @@ namespace steemit {
             void validate() const;
         };
 
-
-        struct transfer_to_savings_operation : public base_operation {
-            account_name_type from;
-            account_name_type to;
-            asset amount;
-            string memo;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-
-            void validate() const;
-        };
-
-
-        struct transfer_from_savings_operation : public base_operation {
-            account_name_type from;
-            uint32_t request_id = 0;
-            account_name_type to;
-            asset amount;
-            string memo;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-
-            void validate() const;
-        };
-
-
-        struct cancel_transfer_from_savings_operation : public base_operation {
-            account_name_type from;
-            uint32_t request_id = 0;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-
-            void validate() const;
-        };
-
-
         struct decline_voting_rights_operation : public base_operation {
             account_name_type account;
             bool decline = true;
@@ -895,14 +791,14 @@ namespace steemit {
         };
 
         /**
- * Delegate vesting shares from one account to the other. The vesting shares are still owned
- * by the original account, but content voting rights and bandwidth allocation are transferred
- * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or
- * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
- *
- * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
- * of VESTS from voting on the same content twice.
- */
+         * Delegate vesting shares from one account to the other. The vesting shares are still owned
+         * by the original account, but content voting rights and bandwidth allocation are transferred
+         * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or
+         * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
+         *
+         * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
+         * of VESTS from voting on the same content twice.
+         */
 
         struct delegate_vesting_shares_operation : public base_operation {
             account_name_type delegator;        ///< The account delegating vesting shares
@@ -918,10 +814,6 @@ namespace steemit {
     }
 } // steemit::protocol
 
-
-FC_REFLECT(steemit::protocol::transfer_to_savings_operation, (from)(to)(amount)(memo))
-FC_REFLECT(steemit::protocol::transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo))
-FC_REFLECT(steemit::protocol::cancel_transfer_from_savings_operation, (from)(request_id))
 
 FC_REFLECT(steemit::protocol::reset_account_operation, (reset_account)(account_to_reset)(new_owner_authority))
 FC_REFLECT(steemit::protocol::set_reset_account_operation, (account)(current_reset_account)(reset_account))
@@ -939,8 +831,6 @@ FC_REFLECT_TYPENAME(steemit::protocol::pow2_work)
 FC_REFLECT(steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props))
 FC_REFLECT(steemit::protocol::pow2_operation, (work)(new_owner_key)(props))
 
-FC_REFLECT(steemit::protocol::transfer_operation, (from)(to)(amount)(memo))
-FC_REFLECT(steemit::protocol::transfer_to_vesting_operation, (from)(to)(amount))
 FC_REFLECT(steemit::protocol::withdraw_vesting_operation, (account)(vesting_shares))
 FC_REFLECT(steemit::protocol::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest))
 FC_REFLECT(steemit::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee))

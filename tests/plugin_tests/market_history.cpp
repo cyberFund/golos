@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             auto time_a = fc::time_point_sec(
                     (fill_order_a_time.sec_since_epoch() / 15) * 15);
 
-            limit_order_create op;
+            limit_order_create_operaion op;
             op.owner = "alice";
             op.amount_to_sell = ASSET("1.000 TBD");
             op.min_to_receive = ASSET("2.000 TESTS");

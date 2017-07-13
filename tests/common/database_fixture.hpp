@@ -294,7 +294,19 @@ namespace steemit {
 
             void set_price_feed(const price &new_price);
 
-            const asset &get_balance(const string &account_name) const;
+            void print_market(const string &syma, const string &symb) const;
+
+            string pretty(const asset &a) const;
+
+            void print_limit_order(const limit_order_object &cur) const;
+
+            void print_call_orders() const;
+
+            void print_joint_market(const string &syma, const string &symb) const;
+
+            int64_t get_balance(account_name_type account, asset_symbol_type a) const;
+
+            int64_t get_balance(const account_object &account, const asset_object &a) const;
 
             void sign(signed_transaction &trx, const fc::ecc::private_key &key);
 

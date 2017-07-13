@@ -1,4 +1,5 @@
 #include <steemit/protocol/operations/steem_operations.hpp>
+
 #include <fc/io/json.hpp>
 
 namespace steemit {
@@ -132,30 +133,6 @@ namespace steemit {
       FC_ASSERT(abs(weight) <=
                 STEEMIT_100_PERCENT, "Weight is not a STEEMIT percentage");
             validate_permlink(permlink);
-        }
-
-        void transfer_operation::validate() const {
-            try {
-                validate_account_name(from);
-                validate_account_name(to);
-                FC_ASSERT(amount.symbol !=
-                          VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
-                FC_ASSERT(amount.amount >
-                          0, "Cannot transfer a negative amount (aka: stealing)");
-                FC_ASSERT(memo.size() <
-                          STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
-                FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-            } FC_CAPTURE_AND_RETHROW((*this))
-        }
-
-        void transfer_to_vesting_operation::validate() const {
-            validate_account_name(from);
-            FC_ASSERT(is_asset_type(amount, STEEM_SYMBOL), "Amount must be STEEM");
-            if (to != account_name_type()) {
-                validate_account_name(to);
-            }
-            FC_ASSERT(amount >
-                      asset(0, STEEM_SYMBOL), "Must transfer a nonzero amount");
         }
 
         void withdraw_vesting_operation::validate() const {
@@ -440,30 +417,6 @@ namespace steemit {
         void change_recovery_account_operation::validate() const {
             validate_account_name(account_to_recover);
             validate_account_name(new_recovery_account);
-        }
-
-        void transfer_to_savings_operation::validate() const {
-            validate_account_name(from);
-            validate_account_name(to);
-            FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL ||
-                      amount.symbol == SBD_SYMBOL);
-            FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
-            FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-        }
-
-        void transfer_from_savings_operation::validate() const {
-            validate_account_name(from);
-            validate_account_name(to);
-            FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL ||
-                      amount.symbol == SBD_SYMBOL);
-            FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
-            FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-        }
-
-        void cancel_transfer_from_savings_operation::validate() const {
-            validate_account_name(from);
         }
 
         void decline_voting_rights_operation::validate() const {

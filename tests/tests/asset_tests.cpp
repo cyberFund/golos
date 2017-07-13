@@ -11,18 +11,18 @@
 
 #include "../common/database_fixture.hpp"
 
-using namespace graphene::chain;
-using namespace graphene::chain::test;
+using namespace steemit::chain;
+using namespace steemit::chain::test;
 
 BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
 
-    BOOST_AUTO_TEST_CASE(create_advanced_uia) {
+BOOST_AUTO_TEST_CASE(create_advanced_uia) {
         try {
-            asset_symbol_type test_asset_id = db.get_index<asset_object>().get_next_id();
+            asset_symbol_type test_asset_id = asset::from_string("ADVANCED").symbol;
             asset_create_operation creator;
             creator.issuer = account_name_type();
             creator.fee = asset();
-            creator.symbol = "ADVANCED";
+            creator.symbol_name = "ADVANCED";
             creator.common_options.max_supply = 100000000;
             creator.precision = 2;
             creator.common_options.market_fee_percent = STEEMIT_MAX_MARKET_FEE_PERCENT / 100; /*1%*/
@@ -36,15 +36,15 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             trx.operations.push_back(std::move(creator));
             PUSH_TX(db, trx, ~0);
 
-            const asset_object &test_asset = test_asset_id(db);
-            BOOST_CHECK(test_asset.symbol == "ADVANCED");
+            const asset_object &test_asset = db.get_asset(test_asset_id);
+            BOOST_CHECK(test_asset.symbol == test_asset_id);
             BOOST_CHECK(asset(1, test_asset_id) * test_asset.options.core_exchange_rate == asset(2));
             BOOST_CHECK(test_asset.options.flags & white_list);
             BOOST_CHECK(test_asset.options.max_supply == 100000000);
-            BOOST_CHECK(!test_asset.bitasset_data_id.valid());
+            BOOST_CHECK(!test_asset.is_market_issued());
             BOOST_CHECK(test_asset.options.market_fee_percent == STEEMIT_MAX_MARKET_FEE_PERCENT / 100);
 
-            const asset_dynamic_data_object &test_asset_dynamic_data = test_asset.dynamic_asset_data_id(db);
+            const asset_dynamic_data_object &test_asset_dynamic_data = db.get_asset_dynamic_data(test_asset_id);
             BOOST_CHECK(test_asset_dynamic_data.current_supply == 0);
             BOOST_CHECK(test_asset_dynamic_data.accumulated_fees == 0);
             BOOST_CHECK(test_asset_dynamic_data.fee_pool == 0);
@@ -52,9 +52,9 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             edump((e.to_detail_string()));
             throw;
         }
-    }
+}
 
-    BOOST_AUTO_TEST_CASE(override_transfer_test) {
+BOOST_AUTO_TEST_CASE(override_transfer_test) {
         try {
             ACTORS((dan)(eric)(sam));
             const asset_object &advanced = create_user_issued_asset("ADVANCED", sam, override_authority);
@@ -65,8 +65,8 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
 
             override_transfer_operation otrans;
             otrans.issuer = advanced.issuer;
-            otrans.from = dan.id;
-            otrans.to = eric.id;
+            otrans.from = dan.name;
+            otrans.to = eric.name;
             otrans.amount = advanced.amount(100);
             trx.operations.push_back(otrans);
 
@@ -83,9 +83,9 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             BOOST_REQUIRE_EQUAL(get_balance(dan, advanced), 900);
             BOOST_REQUIRE_EQUAL(get_balance(eric, advanced), 100);
         } FC_LOG_AND_RETHROW()
-    }
+}
 
-    BOOST_AUTO_TEST_CASE(override_transfer_test2) {
+BOOST_AUTO_TEST_CASE(override_transfer_test2) {
         try {
             ACTORS((dan)(eric)(sam));
             const asset_object &advanced = create_user_issued_asset("ADVANCED", sam, 0);
@@ -95,8 +95,8 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             trx.operations.clear();
             override_transfer_operation otrans;
             otrans.issuer = advanced.issuer;
-            otrans.from = dan.id;
-            otrans.to = eric.id;
+            otrans.from = dan.name;
+            otrans.to = eric.name;
             otrans.amount = advanced.amount(100);
             trx.operations.push_back(otrans);
 
@@ -113,33 +113,27 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             BOOST_REQUIRE_EQUAL(get_balance(dan, advanced), 1000);
             BOOST_REQUIRE_EQUAL(get_balance(eric, advanced), 0);
         } FC_LOG_AND_RETHROW()
-    }
+}
 
-    BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
+BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
         try {
-            account_name_type izzy_id = create_account("izzy").id;
+            account_name_type izzy_id = create_account("izzy").name;
             const asset_symbol_type uia_id = create_user_issued_asset(
-                    "ADVANCED", izzy_id(db), white_list).id;
-            account_name_type nathan_id = create_account("nathan").id;
-            account_name_type vikram_id = create_account("vikram").id;
+                    "ADVANCED", db.get_account(izzy_id), white_list).symbol;
+            account_name_type nathan_id = create_account("nathan").name;
+            account_name_type vikram_id = create_account("vikram").name;
             trx.clear();
 
             asset_issue_operation op;
-            op.issuer = uia_id(db).issuer;
+            op.issuer = db.get_asset(uia_id).issuer;
             op.asset_to_issue = asset(1000, uia_id);
             op.issue_to_account = nathan_id;
             trx.operations.emplace_back(op);
-            set_expiration(db, trx);
-            //Fail because nathan is not whitelisted, but only before hardfork time
-            if (db.head_block_time() <= HARDFORK_415_TIME) {
-                STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
-                generate_blocks(HARDFORK_415_TIME);
-                generate_block();
-                set_expiration(db, trx);
-            }
+            trx.set_expiration(db.head_block_time() +
+                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             PUSH_TX(db, trx, ~0);
 
-            BOOST_CHECK(is_authorized_asset(db, nathan_id(db), uia_id(db)));
+            BOOST_CHECK(db.is_authorized_asset(db.get_account(nathan_id), db.get_asset(uia_id)));
             BOOST_CHECK_EQUAL(get_balance(nathan_id, uia_id), 1000);
 
             // Make a whitelist, now it should fail
@@ -148,12 +142,12 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
                 asset_update_operation uop;
                 uop.issuer = izzy_id;
                 uop.asset_to_update = uia_id;
-                uop.new_options = uia_id(db).options;
+                uop.new_options = db.get_asset(uia_id).options;
                 uop.new_options.whitelist_authorities.insert(izzy_id);
                 trx.operations.back() = uop;
                 PUSH_TX(db, trx, ~0);
-                BOOST_CHECK(uia_id(db).options.whitelist_authorities.find(izzy_id) !=
-                            uia_id(db).options.whitelist_authorities.end());
+                BOOST_CHECK(db.get_asset(uia_id).options.whitelist_authorities.find(izzy_id) !=
+                            db.get_asset(uia_id).options.whitelist_authorities.end());
             }
 
             // Fail because there is a whitelist authority and I'm not whitelisted
@@ -168,7 +162,6 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             trx.operations.back() = wop;
             // Fail because whitelist function is restricted to members only
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
-            upgrade_to_lifetime_member(izzy_id);
             trx.operations.clear();
             trx.operations.push_back(wop);
             PUSH_TX(db, trx, ~0);
@@ -190,16 +183,15 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             edump((e.to_detail_string()));
             throw;
         }
-    }
+}
 
-    BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
+BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
         try {
             INVOKE(issue_whitelist_uia);
             const asset_object &advanced = get_asset("ADVANCED");
             const account_object &nathan = get_account("nathan");
             const account_object &dan = create_account("dan");
             account_name_type izzy_id = get_account("izzy").name;
-            upgrade_to_lifetime_member(dan);
             trx.clear();
 
             BOOST_TEST_MESSAGE("Atempting to transfer asset ADVANCED from nathan to dan when dan is not whitelisted, should fail");
@@ -207,7 +199,7 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             op.fee = advanced.amount(0);
             op.from = nathan.name;
             op.to = dan.name;
-            op.amount = advanced.amount(100); //({advanced.amount(0), nathan.id, dan.id, advanced.amount(100)});
+            op.amount = advanced.amount(100); //({advanced.amount(0), nathan.id, dan.name, advanced.amount(100)});
             trx.operations.push_back(op);
             //Fail because dan is not whitelisted.
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), transfer_to_account_not_whitelisted);
@@ -244,19 +236,13 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             wop.account_to_list = nathan.name;
             trx.operations.back() = wop;
             PUSH_TX(db, trx, ~0);
-            BOOST_CHECK(!(is_authorized_asset(db, nathan, advanced)));
+            BOOST_CHECK(!(db.is_authorized_asset(nathan, advanced)));
 
             BOOST_TEST_MESSAGE("Attempting to transfer from nathan after blacklisting, should fail");
             op.amount = advanced.amount(50);
             trx.operations.back() = op;
-            //Fail because nathan is blacklisted
-            if (db.head_block_time() <= HARDFORK_419_TIME) {
-                // before the hardfork time, it fails because the whitelist check fails
-                STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), transfer_from_account_not_whitelisted);
-            } else {
-                // after the hardfork time, it fails because the fees are not in a whitelisted asset
-                STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
-            }
+
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
 
             BOOST_TEST_MESSAGE("Attempting to burn from nathan after blacklisting, should fail");
             asset_reserve_operation burn;
@@ -300,7 +286,7 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
 
             trx.operations.back() = op;
             //Fail because nathan is blacklisted
-            BOOST_CHECK(!is_authorized_asset(db, nathan, advanced));
+            BOOST_CHECK(!db.is_authorized_asset(nathan, advanced));
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
 
             //Remove nathan from committee's whitelist, add him to dan's. This should not authorize him to hold ADVANCED.
@@ -317,7 +303,7 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
 
             trx.operations.back() = op;
             //Fail because nathan is not whitelisted
-            BOOST_CHECK(!is_authorized_asset(db, nathan, advanced));
+            BOOST_CHECK(!db.is_authorized_asset(nathan, advanced));
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
 
             burn.payer = dan.name;
@@ -329,12 +315,12 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             edump((e.to_detail_string()));
             throw;
         }
-    }
+}
 
 /**
  * verify that issuers can halt transfers
  */
-    BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
+BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
         try {
             ACTORS((sam)(alice)(bob));
 
@@ -347,7 +333,8 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
                 op.issue_to_account = recipient.name;
                 transaction tx;
                 tx.operations.push_back(op);
-                set_expiration(db, tx);
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 PUSH_TX(db, tx, database::skip_authority_check | database::skip_tapos_check |
                                 database::skip_transaction_signatures);
             };
@@ -367,7 +354,8 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
                 }
                 transaction tx;
                 tx.operations.push_back(op);
-                set_expiration(db, tx);
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 PUSH_TX(db, tx, database::skip_authority_check | database::skip_tapos_check |
                                 database::skip_transaction_signatures);
             };
@@ -380,7 +368,8 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             xfer_op.amount = uia.amount(100);
             signed_transaction xfer_tx;
             xfer_tx.operations.push_back(xfer_op);
-            set_expiration(db, xfer_tx);
+            trx.set_expiration(db.head_block_time() +
+                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             sign(xfer_tx, alice_private_key);
 
             _restrict_xfer(true);
@@ -398,9 +387,9 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             edump((e.to_detail_string()));
             throw;
         }
-    }
+}
 
-    BOOST_AUTO_TEST_CASE(asset_name_test) {
+BOOST_AUTO_TEST_CASE(asset_name_test) {
         try {
             ACTORS((alice)(bob));
 
@@ -428,18 +417,7 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             STEEMIT_REQUIRE_THROW(create_user_issued_asset("ALPHA.ONE", db.get_account(bob_id), 0), fc::exception);
             BOOST_CHECK(has_asset("ALPHA"));
             BOOST_CHECK(!has_asset("ALPHA.ONE"));
-            if (db.head_block_time() <= HARDFORK_409_TIME) {
-                // Alice can't create ALPHA.ONE before hardfork
-                STEEMIT_REQUIRE_THROW(create_user_issued_asset("ALPHA.ONE", db.get_account(alice_id), 0), fc::exception);
-                BOOST_CHECK(has_asset("ALPHA"));
-                BOOST_CHECK(!has_asset("ALPHA.ONE"));
-                generate_blocks(HARDFORK_409_TIME);
-                generate_block();
-                // Bob can't create ALPHA.ONE after hardfork
-                STEEMIT_REQUIRE_THROW(create_user_issued_asset("ALPHA.ONE", db.get_account(bob_id), 0), fc::exception);
-                BOOST_CHECK(has_asset("ALPHA"));
-                BOOST_CHECK(!has_asset("ALPHA.ONE"));
-            }
+
             // Alice can create it
             create_user_issued_asset("ALPHA.ONE", db.get_account(alice_id), 0);
             BOOST_CHECK(has_asset("ALPHA"));
@@ -449,6 +427,6 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
             edump((e.to_detail_string()));
             throw;
         }
-    }
+}
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -95,9 +95,12 @@ namespace steemit {
         FC_DECLARE_DERIVED_EXCEPTION(black_swan_exception, steemit::chain::chain_exception, 3090000, "black swan")
 
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(transfer);
-        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
-        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( to_account_not_whitelisted, transfer, 2, "owner mismatch" )
-        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( restricted_transfer_asset, transfer, 3, "restricted transfer asset" )
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(from_account_not_whitelisted, transfer, 1, "owner mismatch")
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(to_account_not_whitelisted, transfer, 2, "owner mismatch")
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(restricted_transfer_asset, transfer, 3, "restricted transfer asset")
 
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(account_create);
 
@@ -124,18 +127,9 @@ namespace steemit {
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(call_order_update);
 
         STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(unfilled_margin_call, call_order_update, 1, "Updating call order would trigger a margin call that cannot be fully filled")
-    }
-} // steemit::chain
 
+        STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(override_transfer);
 
-#pragma once
-
-#include <fc/exception/exception.hpp>
-#include <steemit/protocol/exceptions.hpp>
-
-namespace steemit {
-    namespace chain {
-
-
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(not_permitted, override_transfer, 1, "not permitted")
     }
 } // steemit::chain

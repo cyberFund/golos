@@ -8,6 +8,7 @@
 #include <steemit/protocol/operations/steem_virtual_operations.hpp>
 #include <steemit/protocol/operations/asset_virtual_operations.hpp>
 #include <steemit/protocol/operations/account_operations.hpp>
+#include <steemit/protocol/operations/transfer_operations.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -85,6 +86,8 @@ namespace steemit {
                 call_order_update_operation,
 
                 account_whitelist_operation,
+
+                override_transfer_operation,
 
                 /// virtual operations below this point
                 fill_convert_request_operation,
