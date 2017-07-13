@@ -2074,8 +2074,8 @@ namespace steemit {
 
                 });
 
-                modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](const asset_dynamic_data_object &a) {
-                    a.current_supply += asset(new_steem, STEEM_SYMBOL);
+                modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](asset_dynamic_data_object &a) {
+                    a.current_supply += new_steem;
                 });
 
                 create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
@@ -2103,8 +2103,8 @@ namespace steemit {
                             content_reward + witness_pay + vesting_reward;
                 });
 
-                modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](const asset_dynamic_data_object &a) {
-                    a.current_supply += content_reward + witness_pay + vesting_reward;
+                modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](asset_dynamic_data_object &a) {
+                    a.current_supply += content_reward.amount + witness_pay.amount + vesting_reward.amount;
                 });
             }
         }
@@ -2361,12 +2361,12 @@ namespace steemit {
                         net_sbd * get_feed_history().current_median_history;
             });
 
-            modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](const asset_dynamic_data_object &a) {
-                a.current_supply += net_steem;
+            modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](asset_dynamic_data_object &a) {
+                a.current_supply += net_steem.amount;
             });
 
-            modify(get_asset_dynamic_data(SBD_SYMBOL), [&](const asset_dynamic_data_object &a) {
-                a.current_supply -= net_steem;
+            modify(get_asset_dynamic_data(SBD_SYMBOL), [&](asset_dynamic_data_object &a) {
+                a.current_supply -= net_steem.amount;
             });
         }
 
@@ -4537,8 +4537,8 @@ namespace steemit {
                                                         get_feed_history().current_median_history;
                             });
 
-                            modify(get_asset_dynamic_data(SBD_SYMBOL), [&](const asset_dynamic_data_object &a) {
-                                a.current_supply += interest_paid;
+                            modify(get_asset_dynamic_data(SBD_SYMBOL), [&](asset_dynamic_data_object &a) {
+                                a.current_supply += interest_paid.amount;
                             });
                         }
                     }
@@ -4618,6 +4618,10 @@ namespace steemit {
                                     props.virtual_supply += interest_paid *
                                                             get_feed_history().current_median_history;
                                 });
+
+                                modify(get_asset_dynamic_data(SBD_SYMBOL), [&](asset_dynamic_data_object &a) {
+                                    a.current_supply += interest_paid.amount;
+                                });
                             }
                         }
                         acnt.savings_sbd_balance += delta;
@@ -4651,10 +4655,10 @@ namespace steemit {
                                            props.current_supply;
                     assert(props.current_sbd_supply.amount.value >= 0);
                 }
+            });
 
-                modify(get_asset_dynamic_data(delta.symbol), [delta](const asset_dynamic_data_object &a) {
-                    a.current_supply += delta;
-                });
+            modify(get_asset_dynamic_data(delta.symbol), [delta](asset_dynamic_data_object &a) {
+                a.current_supply += delta.amount;
             });
         }
 
