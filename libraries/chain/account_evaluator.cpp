@@ -70,6 +70,16 @@ namespace steemit {
 #endif
             });
 
+            auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
+            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+            if (itr == index.end()) {
+                db.create<account_balance_object>([new_account](account_balance_object &b) {
+                    b.owner = new_account.name;
+                    b.asset_type = STEEM_SYMBOL;
+                    b.balance = 0;
+                });
+            }
+
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
@@ -92,12 +102,13 @@ namespace steemit {
             FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
 
             const auto &creator = db.get_account(o.creator);
+            asset creator_balance = db.get_balance(o.creator, STEEM_SYMBOL);
             const auto &props = db.get_dynamic_global_properties();
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
-            FC_ASSERT(creator.balance >=
+            FC_ASSERT(creator_balance >=
                       o.fee, "Insufficient balance to create account.",
-                    ("creator.balance", creator.balance)
+                    ("creator.balance", creator_balance)
                             ("required", o.fee));
 
             FC_ASSERT(
@@ -165,6 +176,16 @@ namespace steemit {
                 from_string(acc.json_metadata, o.json_metadata);
 #endif
             });
+
+            auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
+            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+            if (itr == index.end()) {
+                db.create<account_balance_object>([new_account](account_balance_object &b) {
+                    b.owner = new_account.name;
+                    b.asset_type = STEEM_SYMBOL;
+                    b.balance = 0;
+                });
+            }
 
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;

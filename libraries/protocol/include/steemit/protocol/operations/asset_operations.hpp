@@ -97,9 +97,9 @@ namespace steemit {
          */
         struct asset_create_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t symbol3 = 500000;
-                uint64_t symbol4 = 300000;
-                uint64_t long_symbol = 5000;
+                uint64_t symbol3        = 500000 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t symbol4        = 300000 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t long_symbol    = 5000   * STEEMIT_BLOCKCHAIN_PRECISION;
                 uint32_t price_per_kbyte = 10; /// only required for large memos.
             };
 
@@ -144,9 +144,7 @@ namespace steemit {
          *  feed price.
          */
         struct asset_global_settle_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 500;
-            };
+            struct fee_parameters_type { uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION; };
 
             asset fee;
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
@@ -182,7 +180,7 @@ namespace steemit {
                  * Note that in the event of a black swan or prediction market close out
                  * everyone will have to pay this fee.
                  */
-                uint64_t fee = 100;
+                uint64_t fee      = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
             };
 
             asset fee;
@@ -220,7 +218,7 @@ namespace steemit {
                  * Note that in the event of a black swan or prediction market close out
                  * everyone will have to pay this fee.
                  */
-                uint64_t fee = 100;
+                uint64_t fee      = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
             };
 
             asset fee;
@@ -243,9 +241,7 @@ namespace steemit {
          */
         struct asset_fund_fee_pool_operation : public base_operation {
         public:
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
+            struct fee_parameters_type { uint64_t fee =  STEEMIT_BLOCKCHAIN_PRECISION; };
 
             asset fee; ///< core asset
             account_name_type from_account;
@@ -277,7 +273,7 @@ namespace steemit {
          */
         struct asset_update_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee = 500;
+                uint64_t fee            = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
                 uint32_t price_per_kbyte = 10;
             };
 
@@ -317,9 +313,7 @@ namespace steemit {
          * @post @ref asset_to_update will have BitAsset-specific options matching those of new_options
          */
         struct asset_update_bitasset_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 500;
-            };
+            struct fee_parameters_type { uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION; };
 
             asset fee;
             account_name_type issuer;
@@ -387,9 +381,7 @@ namespace steemit {
          * its collateral.
          */
         struct asset_publish_feed_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee;
-            };
+            struct fee_parameters_type { uint64_t fee = STEEMIT_BLOCKCHAIN_PRECISION; };
 
             asset fee; ///< paid for by publisher
             account_name_type publisher;
@@ -409,9 +401,9 @@ namespace steemit {
          */
         struct asset_issue_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee = 20;
-                uint32_t price_per_kbyte = 0;
-            };
+         uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
+         uint32_t price_per_kbyte = STEEMIT_BLOCKCHAIN_PRECISION;
+      };
 
             asset fee;
             account_name_type issuer; ///< Must be asset_to_issue->asset_id->issuer
@@ -439,9 +431,7 @@ namespace steemit {
          * @note You cannot use this operation on market-issued assets.
          */
         struct asset_reserve_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20;
-            };
+            struct fee_parameters_type { uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION; };
 
             asset fee;
             account_name_type payer;
@@ -460,8 +450,8 @@ namespace steemit {
          */
         struct asset_claim_fees_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee = 20;
-            };
+         uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
+      };
 
             asset fee;
             account_name_type issuer;

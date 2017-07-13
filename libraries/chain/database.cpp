@@ -30,6 +30,7 @@
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
 #include <steemit/chain/asset_evaluator.hpp>
+#include <steemit/chain/transfer_evaluator.hpp>
 
 namespace steemit {
     namespace chain {
@@ -1438,9 +1439,12 @@ namespace steemit {
             asset total_steem(0, STEEM_SYMBOL);
             asset total_sbd(0, SBD_SYMBOL);
 
-            if (null_account.balance.amount > 0) {
-                total_steem += null_account.balance;
-                adjust_balance(null_account, -null_account.balance);
+            asset null_account_balance = get_balance(STEEMIT_NULL_ACCOUNT, STEEM_SYMBOL);
+            asset null_account_sbd_balance = get_balance(STEEMIT_NULL_ACCOUNT, SBD_SYMBOL);
+
+            if (null_account_balance.amount > 0) {
+                total_steem += null_account_balance;
+                adjust_balance(null_account, -null_account_balance);
             }
 
             if (null_account.savings_balance.amount > 0) {
@@ -1448,9 +1452,9 @@ namespace steemit {
                 adjust_savings_balance(null_account, -null_account.savings_balance);
             }
 
-            if (null_account.sbd_balance.amount > 0) {
-                total_sbd += null_account.sbd_balance;
-                adjust_balance(null_account, -null_account.sbd_balance);
+            if (null_account_sbd_balance.amount > 0) {
+                total_sbd += null_account_sbd_balance;
+                adjust_balance(null_account, -null_account_sbd_balance);
             }
 
             if (null_account.savings_sbd_balance.amount > 0) {
@@ -2519,6 +2523,7 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<asset_claim_fees_evaluator>();
             _my->_evaluator_registry.register_evaluator<call_order_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<account_whitelist_evaluator>();
+            _my->_evaluator_registry.register_evaluator<override_transfer_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -4287,12 +4292,156 @@ namespace steemit {
         }
 
         void database::clear_expired_orders() {
-            auto now = head_block_time();
-            const auto &orders_by_exp = get_index<limit_order_index>().indices().get<by_expiration>();
-            auto itr = orders_by_exp.begin();
-            while (itr != orders_by_exp.end() && itr->expiration < now) {
-                cancel_order(*itr);
-                itr = orders_by_exp.begin();
+            if (has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
+                detail::with_skip_flags(*this, get_node_properties().skip_flags | skip_authority_check, [&]() {
+
+                    //Cancel expired limit orders
+                    auto &limit_index = get_index<limit_order_index>().indices().get<by_expiration>();
+                    while (!limit_index.empty() && limit_index.begin()->expiration <= head_block_time()) {
+                        limit_order_cancel_operation canceler;
+                        const limit_order_object &order = *limit_index.begin();
+                        canceler.owner = order.seller;
+                        canceler.order_id = order.order_id;
+                        canceler.fee = 0; //current_fee_schedule().calculate_fee(canceler);
+                        if (canceler.fee->amount > order.deferred_fee) {
+                            wlog("At block ${b}, fee for clearing expired order ${oid} was capped at deferred_fee ${fee}", ("b", head_block_num())("oid", order.id)("fee", order.deferred_fee));
+                            canceler.fee = asset(order.deferred_fee, STEEM_SYMBOL);
+                        }
+                        apply_operation(canceler);
+                    }
+                });
+
+                //Process expired force settlement orders
+                auto &settlement_index = get_index<force_settlement_index>().indices().get<by_expiration>();
+                if (!settlement_index.empty()) {
+                    asset_symbol_type current_asset = settlement_index.begin()->balance.symbol;
+                    asset max_settlement_volume;
+                    bool extra_dump = false;
+
+                    auto next_asset = [&current_asset, &settlement_index, &extra_dump] {
+                        auto bound = settlement_index.upper_bound(current_asset);
+                        if (bound == settlement_index.end()) {
+                            if (extra_dump) {
+                                ilog("next_asset() returning false");
+                            }
+                            return false;
+                        }
+                        if (extra_dump) {
+                            ilog("next_asset returning true, bound is ${b}", ("b", *bound));
+                        }
+                        current_asset = bound->balance.symbol;
+                        return true;
+                    };
+
+                    uint32_t count = 0;
+
+                    // At each iteration, we either consume the current order and remove it, or we move to the next asset
+                    for (auto itr = settlement_index.lower_bound(current_asset);
+                         itr != settlement_index.end();
+                         itr = settlement_index.lower_bound(current_asset)) {
+                        ++count;
+                        const force_settlement_object &order = *itr;
+                        auto order_id = order.settlement_id;
+                        current_asset = order.balance.symbol;
+                        const asset_object &mia_object = get_asset(current_asset);
+                        const asset_bitasset_data_object &mia = get_asset_bitasset_data(mia_object.symbol);
+
+                        extra_dump = ((count >= 1000) && (count <= 1020));
+
+                        if (extra_dump) {
+                            wlog("clear_expired_orders() dumping extra data for iteration ${c}", ("c", count));
+                            ilog("head_block_num is ${hb} current_asset is ${a}", ("hb", head_block_num())("a", current_asset));
+                        }
+
+                        if (mia.has_settlement()) {
+                            ilog("Canceling a force settlement because of black swan");
+                            cancel_order(order);
+                            continue;
+                        }
+
+                        // Has this order not reached its settlement date?
+                        if (order.settlement_date > head_block_time()) {
+                            if (next_asset()) {
+                                if (extra_dump) {
+                                    ilog("next_asset() returned true when order.settlement_date > head_block_time()");
+                                }
+                                continue;
+                            }
+                            break;
+                        }
+                        // Can we still settle in this asset?
+                        if (mia.current_feed.settlement_price.is_null()) {
+                            ilog("Canceling a force settlement in ${asset} because settlement price is null",
+                                    ("asset", mia_object.symbol));
+                            cancel_order(order);
+                            continue;
+                        }
+                        if (max_settlement_volume.symbol != current_asset) {
+                            max_settlement_volume = mia_object.amount(mia.max_force_settlement_volume(get_asset_dynamic_data(mia_object.symbol).current_supply));
+                        }
+                        if (mia.force_settled_volume >= max_settlement_volume.amount) {
+                            /*
+                            ilog("Skipping force settlement in ${asset}; settled ${settled_volume} / ${max_volume}",
+                                 ("asset", mia_object.symbol)("settlement_price_null",mia.current_feed.settlement_price.is_null())
+                                 ("settled_volume", mia.force_settled_volume)("max_volume", max_settlement_volume));
+                                 */
+                            if (next_asset()) {
+                                if (extra_dump) {
+                                    ilog("next_asset() returned true when mia.force_settled_volume >= max_settlement_volume.amount");
+                                }
+                                continue;
+                            }
+                            break;
+                        }
+
+                        auto &pays = order.balance;
+                        auto receives = (order.balance * mia.current_feed.settlement_price);
+                        receives.amount = (fc::uint128_t(receives.amount.value) *
+                                           (STEEMIT_100_PERCENT - mia.options.force_settlement_offset_percent) /
+                                           STEEMIT_100_PERCENT).to_uint64();
+                        assert(receives <= order.balance * mia.current_feed.settlement_price);
+
+                        price settlement_price = pays / receives;
+
+                        auto &call_index = get_index<call_order_index>().indices().get<by_collateral>();
+                        asset settled = mia_object.amount(mia.force_settled_volume);
+                        // Match against the least collateralized short until the settlement is finished or we reach max settlements
+                        while (settled < max_settlement_volume &&
+                               find<force_settlement_object, by_account>(boost::make_tuple(order.owner, order_id))) {
+                            auto itr = call_index.lower_bound(boost::make_tuple(price::min(get_asset_bitasset_data(mia_object.symbol).options.short_backing_asset,
+                                    mia_object.symbol)));
+                            // There should always be a call order, since asset exists!
+                            assert(itr != call_index.end() && itr->debt_type() == mia_object.symbol);
+                            asset max_settlement = max_settlement_volume - settled;
+
+                            if (order.balance.amount == 0) {
+                                wlog("0 settlement detected");
+                                cancel_order(order);
+                                break;
+                            }
+                            try {
+                                settled += match(*itr, order, settlement_price, max_settlement);
+                            } catch (const black_swan_exception &e) {
+                                wlog("black swan detected: ${e}", ("e", e.to_detail_string()));
+                                cancel_order(order);
+                                break;
+                            }
+                        }
+                        if (mia.force_settled_volume != settled.amount) {
+                            modify(mia, [settled](asset_bitasset_data_object &b) {
+                                b.force_settled_volume = settled.amount;
+                            });
+                        }
+                    }
+                }
+            } else {
+                auto now = head_block_time();
+                const auto &orders_by_exp = get_index<limit_order_index>().indices().get<by_expiration>();
+                auto itr = orders_by_exp.begin();
+                while (itr != orders_by_exp.end() && itr->expiration < now) {
+                    cancel_order(*itr);
+                    itr = orders_by_exp.begin();
+                }
             }
         }
 
@@ -4301,42 +4450,44 @@ namespace steemit {
         }
 
         void database::adjust_sbd_balance(const account_object &a) {
-            modify(a, [&](account_object &acnt) {
-                if (a.sbd_seconds_last_update !=
-                    head_block_time()) {
-                    acnt.sbd_seconds +=
-                            fc::uint128_t(get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, SBD_SYMBOL)).balance.value) *
-                            (head_block_time() -
-                             a.sbd_seconds_last_update).to_seconds();
-                    acnt.sbd_seconds_last_update = head_block_time();
+            try {
+                modify(a, [&](account_object &acnt) {
+                    if (a.sbd_seconds_last_update !=
+                        head_block_time()) {
+                        acnt.sbd_seconds +=
+                                fc::uint128_t(get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, SBD_SYMBOL)).balance.value) *
+                                (head_block_time() -
+                                 a.sbd_seconds_last_update).to_seconds();
+                        acnt.sbd_seconds_last_update = head_block_time();
 
-                    if (acnt.sbd_seconds > 0 &&
-                        (acnt.sbd_seconds_last_update -
-                         acnt.sbd_last_interest_payment).to_seconds() >
-                        STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                        auto interest = acnt.sbd_seconds /
-                                        STEEMIT_SECONDS_PER_YEAR;
-                        interest *= get_dynamic_global_properties().sbd_interest_rate;
-                        interest /= STEEMIT_100_PERCENT;
-                        asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                        if (acnt.sbd_seconds > 0 &&
+                            (acnt.sbd_seconds_last_update -
+                             acnt.sbd_last_interest_payment).to_seconds() >
+                            STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                            auto interest = acnt.sbd_seconds /
+                                            STEEMIT_SECONDS_PER_YEAR;
+                            interest *= get_dynamic_global_properties().sbd_interest_rate;
+                            interest /= STEEMIT_100_PERCENT;
+                            asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
 
-                        modify(get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, SBD_SYMBOL)), [&](account_balance_object &b) {
-                            b.adjust_balance(interest_paid);
-                        });
+                            modify(get<account_balance_object, by_account_asset>(boost::make_tuple<account_name_type, asset_symbol_type>(a.name, SBD_SYMBOL)), [&](account_balance_object &b) {
+                                b.adjust_balance(interest_paid);
+                            });
 
-                        acnt.sbd_seconds = 0;
-                        acnt.sbd_last_interest_payment = head_block_time();
+                            acnt.sbd_seconds = 0;
+                            acnt.sbd_last_interest_payment = head_block_time();
 
-                        push_virtual_operation(interest_operation(a.name, interest_paid));
+                            push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                        modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                            props.current_sbd_supply += interest_paid;
-                            props.virtual_supply += interest_paid *
-                                                    get_feed_history().current_median_history;
-                        });
+                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                props.current_sbd_supply += interest_paid;
+                                props.virtual_supply += interest_paid *
+                                                        get_feed_history().current_median_history;
+                            });
+                        }
                     }
-                }
-            });
+                });
+            } FC_CAPTURE_AND_RETHROW((a))
         }
 
         void database::adjust_balance(const account_object &a, const asset &delta) {
@@ -5150,30 +5301,27 @@ namespace steemit {
 
         bool database::_is_authorized_asset(const account_object &acct, const asset_object &asset_obj) const {
             if (acct.allowed_assets.valid()) {
-                if (acct.allowed_assets->find(asset_obj.symbol) ==
-                    acct.allowed_assets->end()) {
+                if (acct.allowed_assets->find(asset_obj.symbol) == acct.allowed_assets->end()) {
                     return false;
                 }
                 // must still pass other checks even if it is in allowed_assets
             }
 
-//            for (const auto id : acct.blacklisting_accounts) {
-//                if (asset_obj.options.blacklist_authorities.find(id) !=
-//                    asset_obj.options.blacklist_authorities.end()) {
-//                    return false;
-//                }
-//            }
+            for (const auto id : acct.blacklisting_accounts) {
+                if (asset_obj.options.blacklist_authorities.find(id) != asset_obj.options.blacklist_authorities.end()) {
+                    return false;
+                }
+            }
 
             if (asset_obj.options.whitelist_authorities.size() == 0) {
                 return true;
             }
 
-//            for (const auto id : acct.whitelisting_accounts) {
-//                if (asset_obj.options.whitelist_authorities.find(id) !=
-//                    asset_obj.options.whitelist_authorities.end()) {
-//                    return true;
-//                }
-//            }
+            for (const auto id : acct.whitelisting_accounts) {
+                if (asset_obj.options.whitelist_authorities.find(id) != asset_obj.options.whitelist_authorities.end()) {
+                    return true;
+                }
+            }
 
             return false;
         }

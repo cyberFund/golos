@@ -42,9 +42,7 @@ namespace steemit {
          */
 
         struct limit_order_create_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 5;
-            };
+            struct fee_parameters_type { uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION; };
 
             optional <asset> fee;
             account_name_type owner;
@@ -86,9 +84,7 @@ namespace steemit {
 
         struct limit_order_create2_operation
                 : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 5;
-            };
+            struct fee_parameters_type { uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION; };
 
             optional <asset> fee;
             account_name_type owner;
@@ -162,9 +158,7 @@ namespace steemit {
          */
         struct call_order_update_operation : public base_operation {
             /** this is slightly more expensive than limit orders, this pricing impacts prediction markets */
-            struct fee_parameters_type {
-                uint64_t fee = 20;
-            };
+            struct fee_parameters_type { uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION; };
 
             optional <asset> fee;
             integral_id_type order_id = 0;
