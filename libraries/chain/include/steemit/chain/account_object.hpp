@@ -442,9 +442,7 @@ namespace steemit {
         struct by_proxy;
         struct by_last_post;
         struct by_next_vesting_withdrawal;
-        struct by_steem_balance;
         struct by_smp_balance;
-        struct by_smd_balance;
         struct by_post_count;
         struct by_vote_count;
 
@@ -488,23 +486,9 @@ namespace steemit {
                                 >,
                                 composite_key_compare<std::greater<time_point_sec>, std::less<account_object::id_type>>
                         >,
-                        ordered_unique<tag<by_steem_balance>,
-                                composite_key<account_object,
-                                        member<account_object, protocol::asset, &account_object::balance>,
-                                        member<account_object, account_object::id_type, &account_object::id>
-                                >,
-                                composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>
-                        >,
                         ordered_unique<tag<by_smp_balance>,
                                 composite_key<account_object,
                                         member<account_object, protocol::asset, &account_object::vesting_shares>,
-                                        member<account_object, account_object::id_type, &account_object::id>
-                                >,
-                                composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>
-                        >,
-                        ordered_unique<tag<by_smd_balance>,
-                                composite_key<account_object,
-                                        member<account_object, protocol::asset, &account_object::sbd_balance>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
                                 composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>

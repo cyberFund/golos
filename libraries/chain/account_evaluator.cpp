@@ -92,12 +92,13 @@ namespace steemit {
             FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
 
             const auto &creator = db.get_account(o.creator);
+            asset creator_balance = db.get_balance(o.creator, STEEM_SYMBOL);
             const auto &props = db.get_dynamic_global_properties();
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
-            FC_ASSERT(creator.balance >=
+            FC_ASSERT(creator_balance.amount >=
                       o.fee, "Insufficient balance to create account.",
-                    ("creator.balance", creator.balance)
+                    ("creator.balance", creator_balance.amount)
                             ("required", o.fee));
 
             FC_ASSERT(

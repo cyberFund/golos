@@ -184,7 +184,7 @@ namespace steemit {
 
         void database_fixture::open_database() {
             if (!data_dir) {
-                data_dir = fc::temp_directory(graphene::utilities::temp_directory_path());
+                data_dir = fc::temp_directory(steemit::utilities::temp_directory_path());
                 db._log_hardforks = false;
                 db.open(data_dir->path(), data_dir->path(), INITIAL_TEST_SUPPLY,
                         1024 * 1024 *
@@ -270,8 +270,8 @@ namespace steemit {
                 return;
             }
 
-            const std::shared_ptr<graphene::account_history::account_history_plugin> pin =
-                    app.get_plugin<graphene::account_history::account_history_plugin>("account_history");
+            const std::shared_ptr<steemit::account_history::account_history_plugin> pin =
+                    app.get_plugin<steemit::account_history::account_history_plugin>("account_history");
             if (pin->tracked_accounts().size() == 0) {
                 /*
                 vector< pair< account_id_type, address > > tuples_from_db;
@@ -301,10 +301,10 @@ namespace steemit {
                 vector< pair< account_id_type, address > > tuples_from_index;
                 tuples_from_index.reserve( tuples_from_db.size() );
                 const auto& key_account_idx =
-                   db.get_index<graphene::account_history::key_account_index>()
-                   .indices().get<graphene::account_history::by_key>();
+                   db.get_index<steemit::account_history::key_account_index>()
+                   .indices().get<steemit::account_history::by_key>();
 
-                for( const graphene::account_history::key_account_object& key_account : key_account_idx )
+                for( const steemit::account_history::key_account_object& key_account : key_account_idx )
                 {
                    address addr = key_account.key;
                    for( const account_id_type& account_id : key_account.account_ids )
@@ -349,7 +349,7 @@ namespace steemit {
 
         void database_fixture::generate_block(uint32_t skip, const fc::ecc::private_key &key, int miss_blocks) {
             skip |= default_skip;
-            db_plugin->debug_generate_blocks(graphene::utilities::key_to_wif(key), 1, skip, miss_blocks);
+            db_plugin->debug_generate_blocks(steemit::utilities::key_to_wif(key), 1, skip, miss_blocks);
         }
 
         void database_fixture::generate_blocks(uint32_t block_count) {
@@ -373,9 +373,6 @@ namespace steemit {
                 sop.asset_to_settle = what.symbol;
                 sop.settle_price = p;
                 trx.operations.push_back(sop);
-                for (auto &op : trx.operations) {
-                    db.current_fee_schedule().set_fee(op);
-                }
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -392,9 +389,6 @@ namespace steemit {
                 sop.account = who.name;
                 sop.amount = what;
                 trx.operations.push_back(sop);
-                for (auto &op : trx.operations) {
-                    db.current_fee_schedule().set_fee(op);
-                }
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -412,9 +406,6 @@ namespace steemit {
                 update.delta_collateral = collateral;
                 update.delta_debt = what;
                 trx.operations.push_back(update);
-                for (auto &op : trx.operations) {
-                    db.current_fee_schedule().set_fee(op);
-                }
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -455,7 +446,7 @@ namespace steemit {
                 asset_create_operation creator;
                 creator.issuer = issuer;
                 creator.fee = asset();
-                creator.symbol = name;
+                creator.symbol_name = name;
                 creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
                 creator.precision = 2;
                 creator.common_options.market_fee_percent = market_fee_percent;
@@ -468,9 +459,10 @@ namespace steemit {
                 creator.bitasset_opts = bitasset_options();
                 trx.operations.push_back(std::move(creator));
                 trx.validate();
-                processed_transaction ptx = db.push_transaction(trx, ~0);
+                db.push_transaction(trx, ~0);
                 trx.operations.clear();
-                return db.get<asset_object>(creator.symbol);
+
+                return db.get<asset_object>(asset::from_string(creator.symbol).symbol);
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
@@ -484,7 +476,7 @@ namespace steemit {
                 asset_create_operation creator;
                 creator.issuer = issuer;
                 creator.fee = asset();
-                creator.symbol = name;
+                creator.symbol_name = name;
                 creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
                 creator.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
                 creator.common_options.market_fee_percent = market_fee_percent;
@@ -500,7 +492,8 @@ namespace steemit {
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
-                return db.get<asset_object>(creator.symbol);
+
+                return db.get<asset_object>(asset::from_string(creator.symbol_name).symbol);
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
@@ -508,7 +501,7 @@ namespace steemit {
             asset_create_operation creator;
             creator.issuer = account_name_type();
             creator.fee = asset();
-            creator.symbol = name;
+            creator.symbol_name = name;
             creator.common_options.max_supply = 0;
             creator.precision = 2;
             creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
@@ -519,14 +512,14 @@ namespace steemit {
             trx.validate();
             db.push_transaction(trx, ~0);
             trx.operations.clear();
-            return db.get<asset_object>(creator.symbol);
+            return db.get<asset_object>(asset::from_string(creator.symbol_name).symbol);
         }
 
         const asset_object &database_fixture::create_user_issued_asset(const string &name, const account_object &issuer, uint16_t flags) {
             asset_create_operation creator;
             creator.issuer = issuer.name;
             creator.fee = asset();
-            creator.symbol = name;
+            creator.symbol_name = name;
             creator.common_options.max_supply = 0;
             creator.precision = 2;
             creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
@@ -535,11 +528,13 @@ namespace steemit {
             creator.common_options.issuer_permissions = flags;
             trx.operations.clear();
             trx.operations.push_back(std::move(creator));
-            set_expiration(db, trx);
+            trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.validate();
-            processed_transaction ptx = db.push_transaction(trx, ~0);
+            db.push_transaction(trx, ~0);
             trx.operations.clear();
-            return db.get<asset_object>(ptx.operation_results[0].get<object_id_type>());
+
+            return db.get<asset_object>(asset::from_string(creator.symbol_name).symbol);
         }
 
         void database_fixture::issue_uia(const account_object &recipient, asset amount) {
@@ -559,16 +554,15 @@ namespace steemit {
 
         void database_fixture::cover(const account_object &who, asset what, asset collateral) {
             try {
-                set_expiration(db, trx);
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 call_order_update_operation update;
                 update.funding_account = who.name;
                 update.delta_collateral = -collateral;
                 update.delta_debt = -what;
                 trx.operations.push_back(update);
-                for (auto &op : trx.operations) {
-                    db.current_fee_schedule().set_fee(op);
-                }
+
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -578,7 +572,8 @@ namespace steemit {
 
         void database_fixture::update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers) {
             try {
-                set_expiration(db, trx);
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 asset_update_feed_producers_operation op;
                 op.asset_to_update = mia.symbol;
@@ -586,9 +581,6 @@ namespace steemit {
                 op.new_feed_producers = std::move(producers);
                 trx.operations = {std::move(op)};
 
-                for (auto &op : trx.operations) {
-                    db.current_fee_schedule().set_fee(op);
-                }
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -597,21 +589,19 @@ namespace steemit {
         }
 
         void database_fixture::publish_feed(const asset_object &mia, const account_object &by, const price_feed &f) {
-            set_expiration(db, trx);
+            trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.operations.clear();
 
             asset_publish_feed_operation op;
-            op.publisher = by.id;
-            op.symbol = mia.id;
+            op.publisher = by.name;
+            op.asset_id = mia.symbol;
             op.feed = f;
             if (op.feed.core_exchange_rate.is_null()) {
                 op.feed.core_exchange_rate = op.feed.settlement_price;
             }
             trx.operations.emplace_back(std::move(op));
 
-            for (auto &op : trx.operations) {
-                db.current_fee_schedule().set_fee(op);
-            }
             trx.validate();
             db.push_transaction(trx, ~0);
             trx.operations.clear();
@@ -722,13 +712,7 @@ namespace steemit {
         ) {
             try {
                 db_plugin->debug_update([=](database &db) {
-                    db.modify(db.get_account(account_name), [&](account_object &a) {
-                        if (amount.symbol == STEEM_SYMBOL) {
-                            a.balance += amount;
-                        } else if (amount.symbol == SBD_SYMBOL) {
-                            a.sbd_balance += amount;
-                        }
-                    });
+                    db.adjust_balance(db.get_account(account_name), amount);
 
                     db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &gpo) {
                         if (amount.symbol == STEEM_SYMBOL) {

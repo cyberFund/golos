@@ -1439,9 +1439,12 @@ namespace steemit {
             asset total_steem(0, STEEM_SYMBOL);
             asset total_sbd(0, SBD_SYMBOL);
 
-            if (null_account.balance.amount > 0) {
-                total_steem += null_account.balance;
-                adjust_balance(null_account, -null_account.balance);
+            asset null_account_balance = get_balance(STEEMIT_NULL_ACCOUNT, STEEM_SYMBOL);
+            asset null_account_sbd_balance = get_balance(STEEMIT_NULL_ACCOUNT, SBD_SYMBOL);
+
+            if (null_account_balance.amount > 0) {
+                total_steem += null_account_balance;
+                adjust_balance(null_account, -null_account_balance);
             }
 
             if (null_account.savings_balance.amount > 0) {
@@ -1449,9 +1452,9 @@ namespace steemit {
                 adjust_savings_balance(null_account, -null_account.savings_balance);
             }
 
-            if (null_account.sbd_balance.amount > 0) {
-                total_sbd += null_account.sbd_balance;
-                adjust_balance(null_account, -null_account.sbd_balance);
+            if (null_account_sbd_balance.amount > 0) {
+                total_sbd += null_account_sbd_balance;
+                adjust_balance(null_account, -null_account_sbd_balance);
             }
 
             if (null_account.savings_sbd_balance.amount > 0) {
