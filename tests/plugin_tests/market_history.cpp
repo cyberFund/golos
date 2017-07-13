@@ -4,7 +4,7 @@
 
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
 #include <steemit/market_history/market_history_plugin.hpp>
 

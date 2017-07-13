@@ -172,6 +172,10 @@ namespace steemit {
 
             void open_database();
 
+            static void verify_asset_supplies(const database &input_db);
+
+            void verify_account_history_plugin_index() const;
+
             void generate_block(uint32_t skip = 0,
                     const fc::ecc::private_key &key = generate_private_key(BLOCKCHAIN_NAME),
                     int miss_blocks = 0);
@@ -187,6 +191,62 @@ namespace steemit {
              * @param timestamp target time to generate blocks until
              */
             void generate_blocks(fc::time_point_sec timestamp, bool miss_intermediate_blocks = true);
+
+            void force_global_settle(const asset_object &what, const price &p);
+
+            void force_settle(account_name_type who, asset what) {
+                return force_settle(db.get_account(who), what);
+            }
+
+            void force_settle(const account_object &who, asset what);
+
+            void update_feed_producers(asset_symbol_type mia, flat_set<account_name_type> producers) {
+                update_feed_producers(db.get_asset(mia), producers);
+            }
+
+            void update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers);
+
+            void publish_feed(asset_symbol_type mia, account_name_type by, const price_feed &f) {
+                publish_feed(db.get_asset(mia), db.get_account(by), f);
+            }
+
+            void publish_feed(const asset_object &mia, const account_object &by, const price_feed &f);
+
+            const call_order_object *borrow(account_name_type who, asset what, asset collateral) {
+                return borrow(db.get_account(who), what, collateral);
+            }
+
+            const call_order_object *borrow(const account_object &who, asset what, asset collateral);
+
+            void cover(account_name_type who, asset what, asset collateral_freed) {
+                cover(db.get_account(who), what, collateral_freed);
+            }
+
+            void cover(const account_object &who, asset what, asset collateral_freed);
+
+            const asset_object &get_asset(const string &symbol) const;
+
+            const account_object &get_account(const string &name) const;
+
+            const asset_object &create_bitasset(const string &name,
+                    account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
+                    uint16_t market_fee_percent = 100 /*1%*/,
+                    uint16_t flags = charge_market_fee);
+
+            const asset_object &create_prediction_market(const string &name,
+                    account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
+                    uint16_t market_fee_percent = 100 /*1%*/,
+                    uint16_t flags = charge_market_fee);
+
+            const asset_object &create_user_issued_asset(const string &name);
+
+            const asset_object &create_user_issued_asset(const string &name,
+                    const account_object &issuer,
+                    uint16_t flags);
+
+            void issue_uia(const account_object &recipient, asset amount);
+
+            void issue_uia(account_name_type recipient_id, asset amount);
 
             const account_object &account_create(
                     const string &name,

@@ -1415,7 +1415,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             set_price_feed(price(asset::from_string("1.250 TESTS"), asset::from_string("1.000 TBD")));
 
-            convert op;
+            convert_operation op;
             comment_operation comment;
             vote_operation vote;
             signed_transaction tx;
@@ -1690,7 +1690,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Testing interest over smallest interest period");
 
-            convert op;
+            convert_operation op;
             comment_operation comment;
             vote_operation vote;
             signed_transaction tx;

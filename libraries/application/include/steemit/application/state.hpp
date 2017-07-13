@@ -114,6 +114,9 @@ namespace steemit {
 
             optional<map<uint32_t, extended_limit_order>> open_orders;
             optional<vector<account_balance_object>>  balances;
+            optional<vector<call_order_object>>        call_orders;
+            optional<vector<force_settlement_object>>  settle_orders;
+            optional<vector<asset_symbol_type>>            assets;
             optional<vector<string>> comments; /// permlinks for this user
             optional<vector<string>> blog; /// blog posts for this user
             optional<vector<string>> feed; /// feed posts for this user

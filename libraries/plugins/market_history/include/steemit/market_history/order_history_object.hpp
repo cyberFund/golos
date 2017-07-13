@@ -60,14 +60,13 @@ namespace steemit {
             chain::fill_asset_order_operation op;
         };
 
-        struct by_id;
         struct by_time;
         struct by_key;
 
         typedef multi_index_container<
                 order_history_object,
                 indexed_by<
-                        ordered_unique<tag<by_id>, member<order_history_object, order_history_object::id_type, &order_history_object::id>>,
+                        ordered_unique<tag<chain::by_id>, member<order_history_object, order_history_object::id_type, &order_history_object::id>>,
                         ordered_non_unique<tag<by_time>, member<order_history_object, time_point_sec, &order_history_object::time>>
                 >,
                 chainbase::allocator<order_history_object>
@@ -76,7 +75,7 @@ namespace steemit {
         typedef multi_index_container<
                 asset_order_history_object,
                 indexed_by<
-                        ordered_unique<tag<by_id>, member<asset_order_history_object, asset_order_history_object::id_type, &asset_order_history_object::id>>,
+                        ordered_unique<tag<chain::by_id>, member<asset_order_history_object, asset_order_history_object::id_type, &asset_order_history_object::id>>,
                         ordered_unique<tag<by_key>, member<asset_order_history_object, history_key, &asset_order_history_object::key>>
                 >, chainbase::allocator<asset_order_history_object>
         > asset_order_history_index;

@@ -3,6 +3,8 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
+#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/asset_object.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/history_object.hpp>
 #include <steemit/account_history/account_history_plugin.hpp>
@@ -190,6 +192,161 @@ namespace steemit {
             }
         }
 
+        void database_fixture::verify_asset_supplies(const database &input_db) {
+            //wlog("*** Begin asset supply verification ***");
+            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_objet, by_symbol>(STEEM_SYMBOL);
+            BOOST_CHECK(core_asset_data.fee_pool == 0);
+
+            const account_statistics_index &statistics_index =
+                    input_db.get_index<account_statistics_object>();
+            const auto &balance_index = input_db.get_index<account_balance_index>().indices();
+            const auto &settle_index = input_db.get_index<force_settlement_index>().indices();
+            map<asset_symbol_type, share_type> total_balances;
+            map<asset_symbol_type, share_type> total_debts;
+            share_type core_in_orders;
+            share_type reported_core_in_orders;
+
+            for (const account_balance_object &b : balance_index) {
+                total_balances[b.asset_type] += b.balance;
+            }
+            for (const force_settlement_object &s : settle_index) {
+                total_balances[s.balance.symbol] += s.balance.amount;
+            }
+            for (const account_statistics_object &a : statistics_index) {
+                reported_core_in_orders += a.total_core_in_orders;
+                total_balances[asset_symbol_type()] += a.pending_fees + a.pending_vested_fees;
+            }
+            for (const limit_order_object &o : input_db.get_index<limit_order_index>().indices()) {
+                asset for_sale = o.amount_for_sale();
+                if (for_sale.symbol == asset_symbol_type()) {
+                    core_in_orders += for_sale.amount;
+                }
+                total_balances[for_sale.symbol] += for_sale.amount;
+                total_balances[asset_symbol_type()] += o.deferred_fee;
+            }
+            for (const call_order_object &o : input_db.get_index<call_order_index>().indices()) {
+                asset col = o.get_collateral();
+                if (col.symbol == asset_symbol_type()) {
+                    core_in_orders += col.amount;
+                }
+                total_balances[col.symbol] += col.amount;
+                total_debts[o.get_debt().symbol] += o.get_debt().amount;
+            }
+            for (const asset_object &asset_obj : input_db.get_index<asset_index>().indices()) {
+                const auto &dasset_obj = asset_obj.dynamic_asset_data_id(input_db);
+                total_balances[asset_obj.id] += dasset_obj.accumulated_fees;
+                total_balances[asset_symbol_type()] += dasset_obj.fee_pool;
+                if (asset_obj.is_market_issued()) {
+                    const auto &bad = asset_obj.bitasset_data(input_db);
+                    total_balances[bad.options.short_backing_asset] += bad.settlement_fund;
+                }
+                total_balances[asset_obj.id] += dasset_obj.confidential_supply.value;
+            }
+            for (const vesting_balance_object &vbo : input_db.get_index<vesting_balance_index>().indices()) {
+                total_balances[vbo.balance.symbol] += vbo.balance.amount;
+            }
+            for (const fba_accumulator_object &fba : input_db.get_index < simple_index < fba_accumulator_object > >
+                                                     ()) {
+                total_balances[asset_symbol_type()] += fba.accumulated_fba_fees;
+            }
+
+            total_balances[asset_symbol_type()] += input_db.get_dynamic_global_properties().witness_budget;
+
+            for (const auto &item : total_debts) {
+                BOOST_CHECK_EQUAL(item.first(input_db).dynamic_asset_data_id(db).current_supply.value, item.second.value);
+            }
+
+            for (const asset_object &asset_obj : input_db.get_index<asset_index>().indices()) {
+                BOOST_CHECK_EQUAL(total_balances[asset_obj.id].value, asset_obj.dynamic_asset_data_id(input_db).current_supply.value);
+            }
+
+            BOOST_CHECK_EQUAL(core_in_orders.value, reported_core_in_orders.value);
+//   wlog("***  End  asset supply verification ***");
+        }
+
+        void database_fixture::verify_account_history_plugin_index() const {
+            return;
+            if (skip_key_index_test) {
+                return;
+            }
+
+            const std::shared_ptr<graphene::account_history::account_history_plugin> pin =
+                    app.get_plugin<graphene::account_history::account_history_plugin>("account_history");
+            if (pin->tracked_accounts().size() == 0) {
+                /*
+                vector< pair< account_id_type, address > > tuples_from_db;
+                const auto& primary_account_idx = db.get_index<account_index>().indices().get<by_id>();
+                flat_set< public_key_type > acct_addresses;
+                acct_addresses.reserve( 2 * GRAPHENE_DEFAULT_MAX_AUTHORITY_MEMBERSHIP + 2 );
+
+                for( const account_object& acct : primary_account_idx )
+                {
+                   account_id_type account_id = acct.id;
+                   acct_addresses.clear();
+                   for( const pair< account_id_type, weight_type >& auth : acct.owner.account_auths )
+                   {
+                      if( auth.first.type() == key_object_type )
+                         acct_addresses.insert(  auth.first );
+                   }
+                   for( const pair< object_id_type, weight_type >& auth : acct.active.auths )
+                   {
+                      if( auth.first.type() == key_object_type )
+                         acct_addresses.insert( auth.first );
+                   }
+                   acct_addresses.insert( acct.options.get_memo_key()(db).key_address() );
+                   for( const address& addr : acct_addresses )
+                      tuples_from_db.emplace_back( account_id, addr );
+                }
+
+                vector< pair< account_id_type, address > > tuples_from_index;
+                tuples_from_index.reserve( tuples_from_db.size() );
+                const auto& key_account_idx =
+                   db.get_index<graphene::account_history::key_account_index>()
+                   .indices().get<graphene::account_history::by_key>();
+
+                for( const graphene::account_history::key_account_object& key_account : key_account_idx )
+                {
+                   address addr = key_account.key;
+                   for( const account_id_type& account_id : key_account.account_ids )
+                      tuples_from_index.emplace_back( account_id, addr );
+                }
+
+                // TODO:  use function for common functionality
+                {
+                   // due to hashed index, account_id's may not be in sorted order...
+                   std::sort( tuples_from_db.begin(), tuples_from_db.end() );
+                   size_t size_before_uniq = tuples_from_db.size();
+                   auto last = std::unique( tuples_from_db.begin(), tuples_from_db.end() );
+                   tuples_from_db.erase( last, tuples_from_db.end() );
+                   // but they should be unique (multiple instances of the same
+                   //  address within an account should have been de-duplicated
+                   //  by the flat_set above)
+                   BOOST_CHECK( tuples_from_db.size() == size_before_uniq );
+                }
+
+                {
+                   // (address, account) should be de-duplicated by flat_set<>
+                   // in key_account_object
+                   std::sort( tuples_from_index.begin(), tuples_from_index.end() );
+                   auto last = std::unique( tuples_from_index.begin(), tuples_from_index.end() );
+                   size_t size_before_uniq = tuples_from_db.size();
+                   tuples_from_index.erase( last, tuples_from_index.end() );
+                   BOOST_CHECK( tuples_from_index.size() == size_before_uniq );
+                }
+
+                //BOOST_CHECK_EQUAL( tuples_from_db, tuples_from_index );
+                bool is_equal = true;
+                is_equal &= (tuples_from_db.size() == tuples_from_index.size());
+                for( size_t i=0,n=tuples_from_db.size(); i<n; i++ )
+                   is_equal &= (tuples_from_db[i] == tuples_from_index[i] );
+
+                bool account_history_plugin_index_ok = is_equal;
+                BOOST_CHECK( account_history_plugin_index_ok );
+                   */
+            }
+            return;
+        }
+
         void database_fixture::generate_block(uint32_t skip, const fc::ecc::private_key &key, int miss_blocks) {
             skip |= default_skip;
             db_plugin->debug_generate_blocks(graphene::utilities::key_to_wif(key), 1, skip, miss_blocks);
@@ -204,6 +361,261 @@ namespace steemit {
             db_plugin->debug_generate_blocks_until(debug_key, timestamp, miss_intermediate_blocks, default_skip);
             BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() <
                           STEEMIT_BLOCK_INTERVAL);
+        }
+
+        void database_fixture::force_global_settle(const asset_object &what, const price &p) {
+            try {
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.operations.clear();
+                asset_global_settle_operation sop;
+                sop.issuer = what.issuer;
+                sop.asset_to_settle = what.symbol;
+                sop.settle_price = p;
+                trx.operations.push_back(sop);
+                for (auto &op : trx.operations) {
+                    db.current_fee_schedule().set_fee(op);
+                }
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+            } FC_CAPTURE_AND_RETHROW((what)(p))
+        }
+
+        void database_fixture::force_settle(const account_object &who, asset what) {
+            try {
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.operations.clear();
+                asset_settle_operation sop;
+                sop.account = who.name;
+                sop.amount = what;
+                trx.operations.push_back(sop);
+                for (auto &op : trx.operations) {
+                    db.current_fee_schedule().set_fee(op);
+                }
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+            } FC_CAPTURE_AND_RETHROW((who)(what))
+        }
+
+        const call_order_object *database_fixture::borrow(const account_object &who, asset what, asset collateral) {
+            try {
+                trx.set_expiration(db.head_block_time() +
+                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.operations.clear();
+                call_order_update_operation update;
+                update.funding_account = who.name;
+                update.delta_collateral = collateral;
+                update.delta_debt = what;
+                trx.operations.push_back(update);
+                for (auto &op : trx.operations) {
+                    db.current_fee_schedule().set_fee(op);
+                }
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+
+                auto &call_idx = db.get_index<call_order_index>().indices().get<by_account>();
+                auto itr = call_idx.find(boost::make_tuple(who.account_name_type, what.symbol));
+                const call_order_object *call_obj = nullptr;
+
+                if (itr != call_idx.end()) {
+                    call_obj = &*itr;
+                }
+                return call_obj;
+            } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
+        }
+
+        const asset_object &database_fixture::get_asset(const string &symbol) const {
+            const auto &idx = db.get_index<asset_index>().indices().get<by_symbol>();
+            const auto itr = idx.find(symbol);
+            assert(itr != idx.end());
+            return *itr;
+        }
+
+        const account_object &database_fixture::get_account(const string &name) const {
+            const auto &idx = db.get_index<account_index>().indices().get<by_name>();
+            const auto itr = idx.find(name);
+            assert(itr != idx.end());
+            return *itr;
+        }
+
+        const asset_object &database_fixture::create_bitasset(
+                const string &name,
+                account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
+                uint16_t market_fee_percent /* = 100 */ /* 1% */,
+                uint16_t flags /* = charge_market_fee */
+        ) {
+            try {
+                asset_create_operation creator;
+                creator.issuer = issuer;
+                creator.fee = asset();
+                creator.symbol = name;
+                creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
+                creator.precision = 2;
+                creator.common_options.market_fee_percent = market_fee_percent;
+                if (issuer == STEEMIT_WITNESS_ACCOUNT) {
+                    flags |= witness_fed_asset;
+                }
+                creator.common_options.issuer_permissions = flags;
+                creator.common_options.flags = flags & ~global_settle;
+                creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+                creator.bitasset_opts = bitasset_options();
+                trx.operations.push_back(std::move(creator));
+                trx.validate();
+                processed_transaction ptx = db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                return db.get<asset_object>(creator.symbol);
+            } FC_CAPTURE_AND_RETHROW((name)(flags))
+        }
+
+        const asset_object &database_fixture::create_prediction_market(
+                const string &name,
+                account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
+                uint16_t market_fee_percent /* = 100 */ /* 1% */,
+                uint16_t flags /* = charge_market_fee */
+        ) {
+            try {
+                asset_create_operation creator;
+                creator.issuer = issuer;
+                creator.fee = asset();
+                creator.symbol = name;
+                creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
+                creator.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
+                creator.common_options.market_fee_percent = market_fee_percent;
+                creator.common_options.issuer_permissions = flags | global_settle;
+                creator.common_options.flags = flags & ~global_settle;
+                if (issuer == STEEMIT_WITNESS_ACCOUNT) {
+                    creator.common_options.flags |= witness_fed_asset;
+                }
+                creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+                creator.bitasset_opts = bitasset_options();
+                creator.is_prediction_market = true;
+                trx.operations.push_back(std::move(creator));
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                return db.get<asset_object>(creator.symbol);
+            } FC_CAPTURE_AND_RETHROW((name)(flags))
+        }
+
+        const asset_object &database_fixture::create_user_issued_asset(const string &name) {
+            asset_create_operation creator;
+            creator.issuer = account_name_type();
+            creator.fee = asset();
+            creator.symbol = name;
+            creator.common_options.max_supply = 0;
+            creator.precision = 2;
+            creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+            creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
+            creator.common_options.flags = charge_market_fee;
+            creator.common_options.issuer_permissions = charge_market_fee;
+            trx.operations.push_back(std::move(creator));
+            trx.validate();
+            db.push_transaction(trx, ~0);
+            trx.operations.clear();
+            return db.get<asset_object>(creator.symbol);
+        }
+
+        const asset_object &database_fixture::create_user_issued_asset(const string &name, const account_object &issuer, uint16_t flags) {
+            asset_create_operation creator;
+            creator.issuer = issuer.name;
+            creator.fee = asset();
+            creator.symbol = name;
+            creator.common_options.max_supply = 0;
+            creator.precision = 2;
+            creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+            creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
+            creator.common_options.flags = flags;
+            creator.common_options.issuer_permissions = flags;
+            trx.operations.clear();
+            trx.operations.push_back(std::move(creator));
+            set_expiration(db, trx);
+            trx.validate();
+            processed_transaction ptx = db.push_transaction(trx, ~0);
+            trx.operations.clear();
+            return db.get<asset_object>(ptx.operation_results[0].get<object_id_type>());
+        }
+
+        void database_fixture::issue_uia(const account_object &recipient, asset amount) {
+            BOOST_TEST_MESSAGE("Issuing UIA");
+            asset_issue_operation op;
+            op.issuer = db.get_asset(amount.symbol).issuer;
+            op.asset_to_issue = amount;
+            op.issue_to_account = recipient.name;
+            trx.operations.push_back(op);
+            db.push_transaction(trx, ~0);
+            trx.operations.clear();
+        }
+
+        void database_fixture::issue_uia(account_name_type recipient_id, asset amount) {
+            issue_uia(recipient_id(db), amount);
+        }
+
+        void database_fixture::cover(const account_object &who, asset what, asset collateral) {
+            try {
+                set_expiration(db, trx);
+                trx.operations.clear();
+                call_order_update_operation update;
+                update.funding_account = who.name;
+                update.delta_collateral = -collateral;
+                update.delta_debt = -what;
+                trx.operations.push_back(update);
+                for (auto &op : trx.operations) {
+                    db.current_fee_schedule().set_fee(op);
+                }
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+            } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
+        }
+
+        void database_fixture::update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers) {
+            try {
+                set_expiration(db, trx);
+                trx.operations.clear();
+                asset_update_feed_producers_operation op;
+                op.asset_to_update = mia.symbol;
+                op.issuer = mia.issuer;
+                op.new_feed_producers = std::move(producers);
+                trx.operations = {std::move(op)};
+
+                for (auto &op : trx.operations) {
+                    db.current_fee_schedule().set_fee(op);
+                }
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+            } FC_CAPTURE_AND_RETHROW((mia)(producers))
+        }
+
+        void database_fixture::publish_feed(const asset_object &mia, const account_object &by, const price_feed &f) {
+            set_expiration(db, trx);
+            trx.operations.clear();
+
+            asset_publish_feed_operation op;
+            op.publisher = by.id;
+            op.symbol = mia.id;
+            op.feed = f;
+            if (op.feed.core_exchange_rate.is_null()) {
+                op.feed.core_exchange_rate = op.feed.settlement_price;
+            }
+            trx.operations.emplace_back(std::move(op));
+
+            for (auto &op : trx.operations) {
+                db.current_fee_schedule().set_fee(op);
+            }
+            trx.validate();
+            db.push_transaction(trx, ~0);
+            trx.operations.clear();
+            verify_asset_supplies(db);
         }
 
         const account_object &database_fixture::account_create(
