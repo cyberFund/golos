@@ -170,7 +170,7 @@ namespace steemit {
                                 }
                             });
 
-                            auto &index = db.get_index<chain::account_balance_index>().indices().get<by_account_asset>();
+                            auto &index = db.get_index<chain::account_balance_index>().indices().get<chain::by_account_asset>();
                             auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
                             if (itr == index.end()) {
                                 db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
