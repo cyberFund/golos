@@ -156,7 +156,7 @@ namespace steemit {
                     snapshot_state snapshot = fc::json::from_file(fc::path(iterator)).as<snapshot_state>();
                     for (account_summary &account : snapshot.accounts) {
                         if (!db.find_account(account.name)) {
-                            db.create<chain::account_object>([&](chain::account_object &a) {
+                            const chain::account_object &new_account = db.create<chain::account_object>([&](chain::account_object &a) {
                                 a.name = account.name;
                                 a.memo_key = account.keys.memo_key;
 
@@ -169,6 +169,25 @@ namespace steemit {
                                     a.recovery_account = account.recovery_account;
                                 }
                             });
+
+                            auto &index = db.get_index<chain::account_balance_index>().indices().get<by_account_asset>();
+                            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+                            if (itr == index.end()) {
+                                db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
+                                    b.owner = new_account.name;
+                                    b.asset_type = STEEM_SYMBOL;
+                                    b.balance = 0;
+                                });
+                            }
+
+                            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL));
+                            if (itr == index.end()) {
+                                db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
+                                    b.owner = new_account.name;
+                                    b.asset_type = SBD_SYMBOL;
+                                    b.balance = 0;
+                                });
+                            }
 
                             impl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
                                 auth.account = account.name;

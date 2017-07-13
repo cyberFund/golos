@@ -10,7 +10,12 @@ if(NOT Boost_USE_STATIC_LIBS)
     add_definitions(-DBOOST_TEST_DYN_LINK)
 endif()
 
-add_library(database_fixture STATIC ${COMMON_SOURCES})
+if(BUILD_SHARED_LIBRARIES)
+    add_library(database_fixture SHARED ${COMMON_SOURCES})
+else()
+    add_library(database_fixture STATIC ${COMMON_SOURCES})
+endif()
+
 target_link_libraries(database_fixture chainbase golos_chain golos_protocol golos::application golos_account_history golos_market_history golos_debug_node fc ${PLATFORM_SPECIFIC_LIBS})
 
 file(GLOB UNIT_TESTS "tests/*.cpp")

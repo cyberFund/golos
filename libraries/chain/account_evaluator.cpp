@@ -80,6 +80,15 @@ namespace steemit {
                 });
             }
 
+            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL));
+            if (itr == index.end()) {
+                db.create<account_balance_object>([new_account](account_balance_object &b) {
+                    b.owner = new_account.name;
+                    b.asset_type = SBD_SYMBOL;
+                    b.balance = 0;
+                });
+            }
+
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
@@ -183,6 +192,15 @@ namespace steemit {
                 db.create<account_balance_object>([new_account](account_balance_object &b) {
                     b.owner = new_account.name;
                     b.asset_type = STEEM_SYMBOL;
+                    b.balance = 0;
+                });
+            }
+
+            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL));
+            if (itr == index.end()) {
+                db.create<account_balance_object>([new_account](account_balance_object &b) {
+                    b.owner = new_account.name;
+                    b.asset_type = SBD_SYMBOL;
                     b.balance = 0;
                 });
             }
