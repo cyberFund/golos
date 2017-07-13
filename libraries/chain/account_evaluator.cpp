@@ -96,9 +96,9 @@ namespace steemit {
             const auto &props = db.get_dynamic_global_properties();
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
-            FC_ASSERT(creator_balance.amount >=
+            FC_ASSERT(creator_balance >=
                       o.fee, "Insufficient balance to create account.",
-                    ("creator.balance", creator_balance.amount)
+                    ("creator.balance", creator_balance)
                             ("required", o.fee));
 
             FC_ASSERT(
