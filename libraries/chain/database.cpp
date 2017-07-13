@@ -2074,6 +2074,10 @@ namespace steemit {
 
                 });
 
+                modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](const asset_dynamic_data_object &a) {
+                    a.current_supply += asset(new_steem, STEEM_SYMBOL);
+                });
+
                 create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
             } else {
                 auto content_reward = get_content_reward();
@@ -2097,6 +2101,10 @@ namespace steemit {
                             content_reward + witness_pay + vesting_reward;
                     p.virtual_supply +=
                             content_reward + witness_pay + vesting_reward;
+                });
+
+                modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](const asset_dynamic_data_object &a) {
+                    a.current_supply += content_reward + witness_pay + vesting_reward;
                 });
             }
         }
@@ -2223,10 +2231,8 @@ namespace steemit {
         }
 
         asset database::get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const {
-            FC_ASSERT(
-                    (input_time - fc::time_point::now()).to_seconds() /
-                    (3600 * 24) >
-                    0, "Extension time should be equal or greater than a day");
+            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() >
+                      STEEMIT_CASHOUT_WINDOW_SECONDS / 7, "Extension time should be equal or greater than a day");
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() <
                       STEEMIT_CASHOUT_WINDOW_SECONDS, "Extension time should be less or equal than a week");
 
@@ -2354,6 +2360,14 @@ namespace steemit {
                 p.virtual_supply += net_steem;
                 p.virtual_supply -=
                         net_sbd * get_feed_history().current_median_history;
+            });
+
+            modify(get_asset_dynamic_data(STEEM_SYMBOL), [&](const asset_dynamic_data_object &a) {
+                a.current_supply += net_steem;
+            });
+
+            modify(get_asset_dynamic_data(SBD_SYMBOL), [&](const asset_dynamic_data_object &a) {
+                a.current_supply -= net_steem;
             });
         }
 
@@ -2694,6 +2708,42 @@ namespace steemit {
                     auth.account = STEEMIT_TEMP_ACCOUNT;
                     auth.owner.weight_threshold = 0;
                     auth.active.weight_threshold = 0;
+                });
+
+                const asset_object &steem_asset = create<asset_object>([&](asset_object &a) {
+                    a.symbol = STEEM_SYMBOL;
+                    a.options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
+                    a.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
+                    a.options.flags = 0;
+                    a.options.issuer_permissions = 0;
+                    a.issuer = STEEMIT_NULL_ACCOUNT;
+                    a.options.core_exchange_rate.base.amount = 1;
+                    a.options.core_exchange_rate.base.symbol = STEEM_SYMBOL;
+                    a.options.core_exchange_rate.quote.amount = 1;
+                    a.options.core_exchange_rate.quote.symbol = STEEM_SYMBOL;
+                });
+
+                create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
+                    a.symbol = steem_asset.symbol;
+                    a.current_supply = init_supply;
+                });
+
+                const asset_object &sbd_asset = create<asset_object>([&](asset_object &a) {
+                    a.symbol = SBD_SYMBOL;
+                    a.options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
+                    a.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
+                    a.options.flags = 0;
+                    a.options.issuer_permissions = 0;
+                    a.issuer = STEEMIT_NULL_ACCOUNT;
+                    a.options.core_exchange_rate.base.amount = 1;
+                    a.options.core_exchange_rate.base.symbol = SBD_SYMBOL;
+                    a.options.core_exchange_rate.quote.amount = 1;
+                    a.options.core_exchange_rate.quote.symbol = SBD_SYMBOL;
+                });
+
+                create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
+                    a.symbol = sbd_asset.symbol;
+                    a.current_supply = 0;
                 });
 
                 for (int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i) {
@@ -4487,6 +4537,10 @@ namespace steemit {
                                 props.virtual_supply += interest_paid *
                                                         get_feed_history().current_median_history;
                             });
+
+                            modify(get_asset_dynamic_data(SBD_SYMBOL), [&](const asset_dynamic_data_object &a) {
+                                a.current_supply += interest_paid;
+                            });
                         }
                     }
                 });
@@ -4584,26 +4638,24 @@ namespace steemit {
             }
 
             modify(props, [&](dynamic_global_property_object &props) {
-                switch (delta.symbol) {
-                    case STEEM_SYMBOL: {
-                        asset new_vesting((adjust_vesting && delta.amount > 0) ?
-                                          delta.amount * 9 : 0, STEEM_SYMBOL);
-                        props.current_supply += delta + new_vesting;
-                        props.virtual_supply += delta + new_vesting;
-                        props.total_vesting_fund_steem += new_vesting;
-                        assert(props.current_supply.amount.value >= 0);
-                        break;
-                    }
-                    case SBD_SYMBOL:
-                        props.current_sbd_supply += delta;
-                        props.virtual_supply = props.current_sbd_supply *
-                                               get_feed_history().current_median_history +
-                                               props.current_supply;
-                        assert(props.current_sbd_supply.amount.value >= 0);
-                        break;
-                    default:
-                        FC_ASSERT(false, "invalid symbol");
+                if (delta.symbol == STEEM_SYMBOL) {
+                    asset new_vesting((adjust_vesting && delta.amount > 0) ?
+                                      delta.amount * 9 : 0, STEEM_SYMBOL);
+                    props.current_supply += delta + new_vesting;
+                    props.virtual_supply += delta + new_vesting;
+                    props.total_vesting_fund_steem += new_vesting;
+                    assert(props.current_supply.amount.value >= 0);
+                } else if (delta.symbol == SBD_SYMBOL) {
+                    props.current_sbd_supply += delta;
+                    props.virtual_supply = props.current_sbd_supply *
+                                           get_feed_history().current_median_history +
+                                           props.current_supply;
+                    assert(props.current_sbd_supply.amount.value >= 0);
                 }
+
+                modify(get_asset_dynamic_data(delta.symbol), [delta](const asset_dynamic_data_object &a) {
+                    a.current_supply += delta;
+                });
             });
         }
 
