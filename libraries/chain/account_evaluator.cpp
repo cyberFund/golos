@@ -70,6 +70,16 @@ namespace steemit {
 #endif
             });
 
+            auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
+            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+            if (itr == index.end()) {
+                db.create<account_balance_object>([new_account](account_balance_object &b) {
+                    b.owner = new_account.name;
+                    b.asset_type = STEEM_SYMBOL;
+                    b.balance = 0;
+                });
+            }
+
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
@@ -166,6 +176,16 @@ namespace steemit {
                 from_string(acc.json_metadata, o.json_metadata);
 #endif
             });
+
+            auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
+            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+            if (itr == index.end()) {
+                db.create<account_balance_object>([new_account](account_balance_object &b) {
+                    b.owner = new_account.name;
+                    b.asset_type = STEEM_SYMBOL;
+                    b.balance = 0;
+                });
+            }
 
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
