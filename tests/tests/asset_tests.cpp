@@ -117,11 +117,11 @@ BOOST_AUTO_TEST_CASE(override_transfer_test2) {
 
 BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
         try {
-            account_name_type izzy_id = create_account("izzy").name;
+            account_name_type izzy_id = account_create("izzy").name;
             const asset_symbol_type uia_id = create_user_issued_asset(
                     "ADVANCED", db.get_account(izzy_id), white_list).symbol;
-            account_name_type nathan_id = create_account("nathan").name;
-            account_name_type vikram_id = create_account("vikram").name;
+            account_name_type nathan_id = account_create("nathan").name;
+            account_name_type vikram_id = account_create("vikram").name;
             trx.clear();
 
             asset_issue_operation op;
@@ -190,13 +190,12 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             INVOKE(issue_whitelist_uia);
             const asset_object &advanced = get_asset("ADVANCED");
             const account_object &nathan = get_account("nathan");
-            const account_object &dan = create_account("dan");
+            const account_object &dan = account_create("dan");
             account_name_type izzy_id = get_account("izzy").name;
             trx.clear();
 
             BOOST_TEST_MESSAGE("Atempting to transfer asset ADVANCED from nathan to dan when dan is not whitelisted, should fail");
             transfer_operation op;
-            op.fee = advanced.amount(0);
             op.from = nathan.name;
             op.to = dan.name;
             op.amount = advanced.amount(100); //({advanced.amount(0), nathan.id, dan.name, advanced.amount(100)});
@@ -328,7 +327,7 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
 
             auto _issue_uia = [&](const account_object &recipient, asset amount) {
                 asset_issue_operation op;
-                op.issuer = db.get_asset(amount.asset_symbol).issuer;
+                op.issuer = db.get_asset(amount.symbol).issuer;
                 op.asset_to_issue = amount;
                 op.issue_to_account = recipient.name;
                 transaction tx;
@@ -394,8 +393,8 @@ BOOST_AUTO_TEST_CASE(asset_name_test) {
             ACTORS((alice)(bob));
 
             auto has_asset = [&](std::string symbol) -> bool {
-                const auto &assets_by_symbol = db.get_index_type<asset_index>().indices().get<by_symbol>();
-                return assets_by_symbol.find(symbol) != assets_by_symbol.end();
+                const auto &assets_by_symbol = db.get_index<asset_index>().indices().get<by_symbol>();
+                return assets_by_symbol.find(asset::from_string(symbol).symbol) != assets_by_symbol.end();
             };
 
             // Alice creates asset "ALPHA"

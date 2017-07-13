@@ -114,10 +114,10 @@ extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
    fc::ecc::private_key name ## _post_key = generate_private_key(std::string( BOOST_PP_STRINGIZE(name) ) + "_post" ); \
    public_key_type name ## _public_key = name ## _private_key.get_public_key();
 
-#define ACTOR(name) \
-   PREP_ACTOR(name) \
-   const auto& name = account_create(BOOST_PP_STRINGIZE(name), name ## _public_key, name ## _post_key.get_public_key()); \
-   account_object::id_type name ## _id = name.id; (void)name ## _id;
+#define ACTOR(account_name) \
+   PREP_ACTOR(account_name) \
+   const auto& account_name = account_create(BOOST_PP_STRINGIZE(account_name), account_name ## _public_key, account_name ## _post_key.get_public_key()); \
+   account_name_type account_name ## _id = account_name.name; (void)account_name ## _id;
 
 #define GET_ACTOR(name) \
    fc::ecc::private_key name ## _private_key = generate_private_key(BOOST_PP_STRINGIZE(name)); \
@@ -266,7 +266,7 @@ namespace steemit {
 
             const account_object &account_create(
                     const string &name,
-                    const public_key_type &key
+                    const public_key_type& key = public_key_type()
             );
 
 
