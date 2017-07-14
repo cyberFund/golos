@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             generate_blocks(db.get_comment("alice", std::string("test")).cashout_time);
 
             const auto &bucket_idx = db.get_index<bucket_index>().indices().get<by_bucket>();
-            const auto &order_hist_idx = db.get_index<order_history_index>().indices().get<by_id>();
+            const auto &order_hist_idx = db.get_index<order_history_index>().indices().get<steemit::chain::by_id>();
 
             BOOST_REQUIRE(bucket_idx.begin() == bucket_idx.end());
             BOOST_REQUIRE(order_hist_idx.begin() == order_hist_idx.end());
@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             auto time_a = fc::time_point_sec(
                     (fill_order_a_time.sec_since_epoch() / 15) * 15);
 
-            limit_order_create_operaion op;
+            limit_order_create_operation op;
             op.owner = "alice";
             op.amount_to_sell = ASSET("1.000 TBD");
             op.min_to_receive = ASSET("2.000 TESTS");

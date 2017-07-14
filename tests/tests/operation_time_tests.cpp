@@ -1487,7 +1487,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(alice_3.sbd_balance.amount.value ==
                           (start_balance - op.amount).amount.value);
             BOOST_REQUIRE(vop.owner == "alice");
-            BOOST_REQUIRE(vop.request_id == 2);
+            BOOST_REQUIRE(vop.requestid == 2);
             BOOST_REQUIRE(vop.amount_in.amount.value ==
                           ASSET("2.000 TBD").amount.value);
             BOOST_REQUIRE(vop.amount_out.amount.value ==
@@ -1875,7 +1875,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Creating Limit Order for STEEM that will stay on the books for 30 minutes exactly.");
 
-            limit_order_create op;
+            limit_order_create_operation op;
             op.owner = "alice";
             op.amount_to_sell = asset(alice_sbd.amount.value / 20, SBD_SYMBOL);
             op.min_to_receive = op.amount_to_sell * exchange_rate;
