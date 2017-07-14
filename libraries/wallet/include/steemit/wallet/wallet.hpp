@@ -232,12 +232,6 @@ namespace steemit {
              */
             asset_object get_asset(string asset_symbol) const;
 
-            /** Returns information about the given asset.
-              * @param asset_symbol the symbol of the asset in the request
-              * @returns the information about the asset stored in the block chain
-              */
-            asset_object get_asset(asset_symbol_type asset_symbol) const;
-
             /** Returns the BitAsset-specific data for a given asset.
              * Market-issued assets's behavior are determined both by their "BitAsset Data" and
              * their basic asset data, as returned by \c get_asset().
@@ -1508,8 +1502,6 @@ FC_API(steemit::wallet::wallet_api,
                 (global_settle_asset)
                 (settle_asset)
                 (whitelist_account)
-
-
 )
 
 FC_REFLECT(steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted))
