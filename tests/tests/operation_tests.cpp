@@ -2442,7 +2442,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-            convert_operation("alice", ASSET("2.500 TESTS"));
+            convert("alice", ASSET("2.500 TESTS"));
 
             validate_database();
 
@@ -2500,8 +2500,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
-            convert_operation("alice", ASSET("2.500 TESTS"));
-            convert_operation("bob", ASSET("7.000 TESTS"));
+            convert("alice", ASSET("2.500 TESTS"));
+            convert("bob", ASSET("7.000 TESTS"));
 
             const auto &new_alice = db.get_account("alice");
             const auto &new_bob = db.get_account("bob");
@@ -2561,7 +2561,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             auto convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.request_id));
             BOOST_REQUIRE(convert_request != convert_request_idx.end());
             BOOST_REQUIRE(convert_request->owner == op.owner);
-            BOOST_REQUIRE(convert_request->request_id == op.request_id);
+            BOOST_REQUIRE(convert_request->requestid == op.request_id);
             BOOST_REQUIRE(convert_request->amount.amount.value ==
                           op.amount.amount.value);
             //BOOST_REQUIRE( convert_request->premium == 100000 );
@@ -2584,7 +2584,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.request_id));
             BOOST_REQUIRE(convert_request != convert_request_idx.end());
             BOOST_REQUIRE(convert_request->owner == op.owner);
-            BOOST_REQUIRE(convert_request->request_id == op.request_id);
+            BOOST_REQUIRE(convert_request->requestid == op.request_id);
             BOOST_REQUIRE(convert_request->amount.amount.value ==
                           ASSET("3.000 TBD").amount.value);
             //BOOST_REQUIRE( convert_request->premium == 100000 );
@@ -2609,7 +2609,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            limit_order_create op;
+            limit_order_create_operation op;
             op.owner = "alice";
             op.amount_to_sell = ASSET("1.000 TESTS");
             op.min_to_receive = ASSET("1.000 TBD");
@@ -2655,12 +2655,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert_operation("bob", ASSET("1000.000 TESTS"));
+            convert("bob", ASSET("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
             BOOST_TEST_MESSAGE("--- Test failure when account does not have required funds");
-            limit_order_create op;
+            limit_order_create_operation op;
             signed_transaction tx;
 
             op.owner = "bob";
@@ -2937,7 +2937,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                           ASSET("965.500 TBD").amount.value);
             validate_database();
 
-            limit_order_cancel can;
+            limit_order_cancel_operation can;
             can.owner = "bob";
             can.order_id = 4;
             tx.operations.clear();
@@ -3048,7 +3048,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert_operation("bob", ASSET("1000.000 TESTS"));
+            convert("bob", ASSET("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
@@ -3327,7 +3327,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                           ASSET("965.500 TBD").amount.value);
             validate_database();
 
-            limit_order_cancel can;
+            limit_order_cancel_operation can;
             can.owner = "bob";
             can.order_id = 4;
             tx.operations.clear();
@@ -3399,7 +3399,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            limit_order_create c;
+            limit_order_create_operation c;
             c.owner = "alice";
             c.order_id = 1;
             c.amount_to_sell = ASSET("1.000 TESTS");
@@ -3412,7 +3412,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            limit_order_cancel op;
+            limit_order_cancel_operation op;
             op.owner = "alice";
             op.order_id = 1;
 
@@ -3458,7 +3458,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test cancel non-existent order");
 
-            limit_order_cancel op;
+            limit_order_cancel_operation op;
             signed_transaction tx;
 
             op.owner = "alice";
@@ -3471,7 +3471,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test cancel order");
 
-            limit_order_create create;
+            limit_order_create_operation create;
             create.owner = "alice";
             create.order_id = 5;
             create.amount_to_sell = ASSET("5.000 TESTS");
