@@ -1487,6 +1487,30 @@ FC_API(steemit::wallet::wallet_api,
                 (get_active_witnesses)
                 (get_miner_queue)
                 (get_transaction)
+
+                (list_account_balances)
+                (list_assets)
+                (sell_asset)
+                (sell)
+                (buy)
+                (borrow_asset)
+                (cancel_order)
+
+                (create_asset)
+                (update_asset)
+                (update_bitasset)
+                (update_asset_feed_producers)
+                (publish_asset_feed)
+                (issue_asset)
+                (get_asset)
+                (get_bitasset_data)
+                (fund_asset_fee_pool)
+                (reserve_asset)
+                (global_settle_asset)
+                (settle_asset)
+                (whitelist_account)
+
+
 )
 
 FC_REFLECT(steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted))
