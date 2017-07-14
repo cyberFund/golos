@@ -65,13 +65,15 @@ namespace steemit {
                 auto space_pos = s.find(" ");
                 auto dot_pos = s.find(".");
 
-                FC_ASSERT(space_pos != std::string::npos);
-
                 asset result;
                 result.symbol = uint64_t(0);
                 auto sy = (char *)&result.symbol;
 
-                if (dot_pos != std::string::npos) {
+                if (space_pos == std::string::npos && dot_pos == std::string::npos && std::find_if(from.begin(), from.end(), [&](std::string::value_type &c) -> bool {
+                    return std::isdigit(c);
+                }) == from.end()) {
+                    result.amount = 0;
+                } else if (dot_pos != std::string::npos) {
                     FC_ASSERT(space_pos > dot_pos);
 
                     auto intpart = s.substr(0, dot_pos);

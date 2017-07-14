@@ -733,8 +733,8 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        vector<optional<asset_object>> database_api::get_assets(const vector<string> &asset_ids) const {
-            return my->get_assets(asset_ids);
+        vector<optional<asset_object>> database_api::get_assets(const vector<string> &asset_symbols) const {
+            return my->get_assets(asset_symbols);
         }
 
         vector<optional<asset_object>> database_api_impl::get_assets(const vector<string> &asset_ids) const {

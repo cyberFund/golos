@@ -335,12 +335,12 @@ namespace steemit {
 
             /**
              * @brief Get a list of assets by ID
-             * @param asset_ids IDs of the assets to retrieve
+             * @param asset_symbols IDs of the assets to retrieve
              * @return The assets corresponding to the provided IDs
              *
              * This function has semantics identical to @ref get_objects
              */
-            vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
+            vector<optional<asset_object>> get_assets(const vector<string> &asset_symbols) const;
 
             vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<string> &asset_symbols) const;
 
