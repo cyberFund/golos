@@ -1494,7 +1494,6 @@ FC_API(steemit::wallet::wallet_api,
                 (sell)
                 (buy)
                 (borrow_asset)
-                (cancel_order)
 
                 (create_asset)
                 (update_asset)
