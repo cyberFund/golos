@@ -1206,15 +1206,6 @@ namespace steemit {
             return my->get_account(account_name);
         }
 
-        asset_object wallet_api::get_asset(asset_symbol_type asset_symbol) const {
-            auto a = my->_remote_db->lookup_asset_symbols({
-                    asset(0, asset_symbol).symbol_name()
-            }).front();
-
-            FC_ASSERT(a);
-            return *a;
-        }
-
         asset_object wallet_api::get_asset(string asset_symbol) const {
             auto a = my->_remote_db->lookup_asset_symbols({asset_symbol
             }).front();
@@ -1931,7 +1922,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         annotated_signed_transaction wallet_api::transfer(string from, string to, asset amount, string memo, bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
-                fc::optional<asset_object> asset_obj = get_asset(amount.symbol);
+                fc::optional<asset_object> asset_obj = get_asset(amount.symbol_name());
                 FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", amount.symbol));
 
                 transfer_operation op;
@@ -2312,8 +2303,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             limit_order_create_operation op;
             op.owner = account.name;
-            op.amount_to_sell = get_asset(amount_to_sell.symbol).amount(0);
-            op.min_to_receive = get_asset(amount_to_receive.symbol).amount(0);
+            op.amount_to_sell = get_asset(amount_to_sell.symbol_name()).amount(amount_to_sell.amount);
+            op.min_to_receive = get_asset(amount_to_receive.symbol_name()).amount(amount_to_receive.amount);
             if (expiration) {
                 op.expiration =
                         fc::time_point::now() + fc::seconds(expiration);
@@ -2518,7 +2509,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 optional<asset_object> asset_to_fund = my->find_asset(symbol);
                 if (!asset_to_fund)
                     FC_THROW("No asset with that symbol exists!");
-                asset_object core_asset = get_asset(STEEM_SYMBOL);
+                asset_object core_asset = get_asset(asset(0, STEEM_SYMBOL).symbol_name());
 
                 asset_fund_fee_pool_operation fund_op;
                 fund_op.from_account = from_account.name;
