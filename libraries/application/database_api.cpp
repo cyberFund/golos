@@ -75,7 +75,7 @@ namespace steemit {
             vector<asset> get_account_balances(account_name_type account_name, const flat_set<std::string> &assets) const;
 
             // Assets
-            vector<optional<asset_object>> get_assets(const vector<string> &asset_ids) const;
+            vector<optional<asset_object>> get_assets(const vector<string> &asset_symbols) const;
 
             vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<string> &asset_symbols) const;
 
@@ -737,10 +737,10 @@ namespace steemit {
             return my->get_assets(asset_symbols);
         }
 
-        vector<optional<asset_object>> database_api_impl::get_assets(const vector<string> &asset_ids) const {
+        vector<optional<asset_object>> database_api_impl::get_assets(const vector<string> &asset_symbols) const {
             vector<optional<asset_object>> result;
-            result.reserve(asset_ids.size());
-            std::transform(asset_ids.begin(), asset_ids.end(), std::back_inserter(result),
+            result.reserve(asset_symbols.size());
+            std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this](string id) -> optional<asset_object> {
                         if (auto o = _db.find_asset(asset::from_string(id).symbol)) {
                             subscribe_to_item(id);

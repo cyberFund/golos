@@ -66,7 +66,7 @@ namespace steemit {
                 auto dot_pos = s.find(".");
 
                 asset result;
-                result.symbol = uint64_t(0);
+                result.symbol = uint64_t(3);
                 auto sy = (char *)&result.symbol;
 
                 if (space_pos == std::string::npos && dot_pos == std::string::npos && std::find_if(from.begin(), from.end(), [&](const std::string::value_type &c) -> bool {
