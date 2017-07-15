@@ -1,10 +1,8 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- */
 #pragma once
 
 #include <steemit/chain/global_property_object.hpp>
 #include <steemit/chain/hardfork.hpp>
+#include <steemit/chain/proposal_object.hpp>
 #include <steemit/chain/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
@@ -141,6 +139,9 @@ namespace steemit {
 
             chain_id_type get_chain_id() const;
 
+            const proposal_object &get_proposal(const account_name_type &name, protocol::integral_id_type id) const;
+
+            const proposal_object *find_proposal(const account_name_type &name, protocol::integral_id_type id) const;
 
             const witness_object &get_witness(const account_name_type &name) const;
 
@@ -223,6 +224,9 @@ namespace steemit {
             bool _push_block(const signed_block &b);
 
             void _push_transaction(const signed_transaction &trx);
+
+            ///@throws fc::exception if the proposed transaction fails to apply.
+            void push_proposal(const proposal_object &proposal);
 
             signed_block generate_block(
                     const fc::time_point_sec when,
@@ -510,6 +514,13 @@ namespace steemit {
             bool skip_transaction_delta_check = true;
 #endif
 
+            template<typename MultiIndexType>
+            void add_plugin_index() {
+                _plugin_index_signal.connect([&]() {
+                    add_index<MultiIndexType>();
+                });
+            }
+
         protected:
             //Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead
             //void pop_undo() { object_database::pop_undo(); }
@@ -548,6 +559,8 @@ namespace steemit {
 
             void clear_expired_transactions();
 
+            void clear_expired_proposals();
+
             void clear_expired_delegations();
 
             void clear_expired_orders();
@@ -573,10 +586,6 @@ namespace steemit {
                     STEEMIT_NUM_HARDFORKS + 1];
 
             block_log _block_log;
-
-            // this function needs access to _plugin_index_signal
-            template<typename MultiIndexType>
-            friend void add_plugin_index(database &db);
 
             fc::signal<void()> _plugin_index_signal;
 

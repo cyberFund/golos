@@ -9,8 +9,8 @@
 namespace steemit {
     namespace protocol {
         void proposal_create_operation::validate() const {
-            FC_ASSERT(!proposed_ops.empty());
-            for (const auto &op : proposed_ops) {
+            FC_ASSERT(!proposed_operations.empty());
+            for (const auto &op : proposed_operations) {
                 operation_validate(op.op);
             }
         }
@@ -21,6 +21,8 @@ namespace steemit {
                         active_approvals_to_remove.empty() &&
                         owner_approvals_to_add.empty() &&
                         owner_approvals_to_remove.empty() &&
+                        posting_approvals_to_add.empty() &&
+                        posting_approvals_to_remove.empty() &&
                         key_approvals_to_add.empty() &&
                         key_approvals_to_remove.empty()));
             for (auto a : active_approvals_to_add) {
@@ -31,6 +33,11 @@ namespace steemit {
             for (auto a : owner_approvals_to_add) {
                 FC_ASSERT(owner_approvals_to_remove.find(a) ==
                           owner_approvals_to_remove.end(),
+                        "Cannot add and remove approval at the same time.");
+            }
+            for (auto a : posting_approvals_to_add) {
+                FC_ASSERT(posting_approvals_to_remove.find(a) ==
+                          posting_approvals_to_remove.end(),
                         "Cannot add and remove approval at the same time.");
             }
             for (auto a : key_approvals_to_add) {

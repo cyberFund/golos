@@ -1,6 +1,5 @@
 #include <steemit/market_history/market_history_api.hpp>
 
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 namespace steemit {

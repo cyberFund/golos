@@ -1,12 +1,11 @@
 #pragma once
 
 #include <steemit/protocol/operations.hpp>
+#include <steemit/protocol/transaction.hpp>
 
 namespace steemit {
     namespace chain {
         class database;
-
-        struct signed_transaction;
 
         /**
          *  Place holder for state tracked while processing a transaction. This class provides helper methods that are
@@ -24,9 +23,7 @@ namespace steemit {
                 return *_db;
             }
 
-            vector <operation_result> operation_results;
-
-            const signed_transaction *_trx = nullptr;
+            const protocol::signed_transaction *_trx = nullptr;
             database *_db = nullptr;
             bool _is_proposed_trx = false;
             bool skip_fee = false;

@@ -5,7 +5,6 @@
 #include <steemit/chain/comment_object.hpp>
 #include <steemit/chain/history_object.hpp>
 
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 namespace steemit {

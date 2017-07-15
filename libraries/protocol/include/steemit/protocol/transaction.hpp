@@ -125,24 +125,22 @@ namespace steemit {
         };
 
         /**
-    *  @brief captures the result of evaluating the operations contained in the transaction
-    *
-    *  When processing a transaction some operations generate
-    *  new object IDs and these IDs cannot be known until the
-    *  transaction is actually included into a block.  When a
-    *  block is produced these new ids are captured and included
-    *  with every transaction.  The index in operation_results should
-    *  correspond to the same index in operations.
-    *
-    *  If an operation did not create any new object IDs then 0
-    *  should be returned.
-    */
+         *  @brief captures the result of evaluating the operations contained in the transaction
+         *
+         *  When processing a transaction some operations generate
+         *  new object IDs and these IDs cannot be known until the
+         *  transaction is actually included into a block.  When a
+         *  block is produced these new ids are captured and included
+         *  with every transaction.  The index in operation_results should
+         *  correspond to the same index in operations.
+         *
+         *  If an operation did not create any new object IDs then 0
+         *  should be returned.
+         */
         struct processed_transaction : public signed_transaction {
             processed_transaction(const signed_transaction &trx = signed_transaction())
                     : signed_transaction(trx) {
             }
-
-            vector<operation_result> operation_results;
 
             digest_type merkle_digest() const;
         };
@@ -156,3 +154,4 @@ namespace steemit {
 FC_REFLECT(steemit::protocol::transaction, (ref_block_num)(ref_block_prefix)(expiration)(operations)(extensions))
 FC_REFLECT_DERIVED(steemit::protocol::signed_transaction, (steemit::protocol::transaction), (signatures))
 FC_REFLECT_DERIVED(steemit::protocol::annotated_signed_transaction, (steemit::protocol::signed_transaction), (transaction_id)(block_num)(transaction_num));
+FC_REFLECT_DERIVED(steemit::protocol::processed_transaction, (steemit::protocol::signed_transaction),);

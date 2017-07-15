@@ -36,9 +36,9 @@ namespace steemit {
           * @{
           */
         /**
-         * op_wrapper is used to get around the circular definition of operation and proposals that contain them.
+         * operaion_wrapper is used to get around the circular definition of operation and proposals that contain them.
          */
-        struct op_wrapper;
+        struct operation_wrapper;
 
         /**
          * @brief The proposal_create_operation creates a transaction proposal, for use in multi-sig scenarios
@@ -50,9 +50,17 @@ namespace steemit {
          * object.
          */
         struct proposal_create_operation : public base_operation {
-            vector<op_wrapper> proposed_ops;
+            struct fee_parameters_type {
+                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint32_t price_per_kbyte = 10;
+            };
+
+            asset fee;
+            account_name_type owner;
+            integral_id_type proposal_id;
+            vector <operation_wrapper> proposed_operations;
             time_point_sec expiration_time;
-            optional<uint32_t> review_period_seconds;
+            optional <uint32_t> review_period_seconds;
             extensions_type extensions;
 
             void validate() const;
@@ -78,26 +86,30 @@ namespace steemit {
          */
         struct proposal_update_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee = 20;
+                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
                 uint32_t price_per_kbyte = 10;
             };
 
-            proposal_object::id_type proposal;
-            flat_set<account_name_type> active_approvals_to_add;
-            flat_set<account_name_type> active_approvals_to_remove;
-            flat_set<account_name_type> owner_approvals_to_add;
-            flat_set<account_name_type> owner_approvals_to_remove;
-            flat_set<public_key_type> key_approvals_to_add;
-            flat_set<public_key_type> key_approvals_to_remove;
+            account_name_type owner;
+            asset fee;
+            integral_id_type proposal_id;
+            flat_set <account_name_type> active_approvals_to_add;
+            flat_set <account_name_type> active_approvals_to_remove;
+            flat_set <account_name_type> owner_approvals_to_add;
+            flat_set <account_name_type> owner_approvals_to_remove;
+            flat_set <account_name_type> posting_approvals_to_add;
+            flat_set <account_name_type> posting_approvals_to_remove;
+            flat_set <public_key_type> key_approvals_to_add;
+            flat_set <public_key_type> key_approvals_to_remove;
             extensions_type extensions;
 
             void validate() const;
 
-            void get_required_authorities(vector<authority> &) const;
+            void get_required_authorities(vector <authority> &) const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &) const;
+            void get_required_active_authorities(flat_set <account_name_type> &) const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &) const;
+            void get_required_owner_authorities(flat_set <account_name_type> &) const;
         };
 
         /**
@@ -116,8 +128,10 @@ namespace steemit {
                 uint64_t fee = 0;
             };
 
+            account_name_type owner;
             bool using_owner_authority = false;
-            proposal_object::id_type proposal;
+            asset fee;
+            integral_id_type proposal_id;
             extensions_type extensions;
 
             void validate() const;
@@ -127,9 +141,12 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::protocol::proposal_create_operation, (expiration_time)
-        (proposed_ops)(review_period_seconds)(extensions))
-FC_REFLECT(steemit::protocol::proposal_update_operation, (proposal)
-        (active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)(owner_approvals_to_remove)
-        (key_approvals_to_add)(key_approvals_to_remove)(extensions))
-FC_REFLECT(steemit::protocol::proposal_delete_operation, (using_owner_authority)(proposal)(extensions))
+FC_REFLECT(steemit::protocol::proposal_create_operation::fee_parameters_type, (fee)(price_per_kbyte))
+FC_REFLECT(steemit::protocol::proposal_update_operation::fee_parameters_type, (fee)(price_per_kbyte))
+FC_REFLECT(steemit::protocol::proposal_delete_operation::fee_parameters_type, (fee))
+
+FC_REFLECT(steemit::protocol::proposal_create_operation, (owner)(fee)(proposal_id)(expiration_time)
+        (proposed_operations)(review_period_seconds)(extensions))
+FC_REFLECT(steemit::protocol::proposal_update_operation, (owner)(fee)(proposal_id)
+        (active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)(owner_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)(key_approvals_to_add)(key_approvals_to_remove)(extensions))
+FC_REFLECT(steemit::protocol::proposal_delete_operation, (owner)(fee)(using_owner_authority)(proposal_id)(extensions))

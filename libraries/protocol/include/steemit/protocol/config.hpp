@@ -70,6 +70,8 @@
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
 #define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
+#define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
+
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
@@ -136,7 +138,9 @@
 
 #define STEEMIT_POST_REWARD_FUND_NAME           ("post")
 #define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
-#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
+
+#define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
+#define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
 
 // 5ccc e802 de5f
 // int(expm1( log1p( 1 ) / BLOCKS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK / 100000 + 0.5)
@@ -353,7 +357,6 @@
 
 #define STEEMIT_POST_REWARD_FUND_NAME           ("post")
 #define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
-#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
 
 #define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
 #define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
@@ -451,6 +454,10 @@
  *  Reserved Account IDs with special meaning
  */
 ///@{
+/// Represents the current committee members, two-week review period
+#define STEEMIT_COMMITTEE_ACCOUNT "committee"
+/// Represents the current witnesses
+#define STEEMIT_WITNESS_ACCOUNT "witness"
 /// Represents the current witnesses
 #define STEEMIT_MINER_ACCOUNT                   "miners"
 /// Represents the canonical account with NO authority (nobody can access funds in null account)

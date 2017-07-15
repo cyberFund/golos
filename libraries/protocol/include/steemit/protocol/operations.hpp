@@ -69,6 +69,10 @@ namespace steemit {
                 account_create_with_delegation_operation,
                 comment_payout_extension_operation,
 
+                proposal_create_operation,
+                proposal_update_operation,
+                proposal_delete_operation,
+
                 /// virtual operations below this point
                 fill_convert_request_operation,
                 author_reward_operation,
@@ -97,6 +101,13 @@ namespace steemit {
 
         bool is_virtual_operation(const operation &op);
 
+        struct operation_wrapper {
+        public:
+            operation_wrapper(const operation &op = operation()) : op(op) {
+            }
+
+            operation op;
+        };
     }
 } // steemit::protocol
 
@@ -105,5 +116,7 @@ namespace steemit {
     void from_variant( const fc::variant& var,  steemit::protocol::operation& vo );
 }*/
 
-STEEMIT_DECLARE_OPERATION_TYPE(steemit::protocol::operation)
-FC_REFLECT_TYPENAME(steemit::protocol::operation)
+STEEMIT_DECLARE_OPERATION_TYPE(steemit::protocol::operation);
+FC_REFLECT_TYPENAME(steemit::protocol::operation);
+
+FC_REFLECT(steemit::protocol::operation_wrapper, (op));

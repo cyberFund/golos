@@ -35,7 +35,7 @@ namespace steemit {
         }
 
 
-        void required_approval_index::object_inserted(const index_type &obj) {
+        void required_approval_index::object_inserted(const value_type &obj) {
             for (const auto &a : obj.required_active_approvals) {
                 account_to_proposals[a].insert(obj.id);
             }
@@ -66,7 +66,7 @@ namespace steemit {
             }
         }
 
-        void required_approval_index::object_removed(const index_type &obj) {
+        void required_approval_index::object_removed(const value_type &obj) {
             for (const auto &a : obj.required_active_approvals) {
                 remove(a, obj.id);
             }

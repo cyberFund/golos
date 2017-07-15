@@ -30,7 +30,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/global_property_object.hpp
         include/steemit/chain/history_object.hpp
         include/steemit/chain/immutable_chain_parameters.hpp
-        include/steemit/chain/index.hpp
         include/steemit/chain/node_property_object.hpp
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/proposal_evaluator.hpp
