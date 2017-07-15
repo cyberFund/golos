@@ -39,7 +39,6 @@ namespace steemit {
 
         protected:
             const proposal_object *_proposal = nullptr;
-            processed_transaction processed_transaction;
             bool executed_proposal = false;
             bool proposal_failed = false;
         };
