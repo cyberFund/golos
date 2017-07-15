@@ -1029,7 +1029,7 @@ namespace steemit {
                     asset total_fee = fee_asset_obj.amount(0);
 
                     auto gprops = _remote_db->get_global_properties().parameters;
-                    if (fee_asset_obj.get_id() != asset_id_type()) {
+                    if (fee_asset_obj.symbol != STEEM_SYMBOL) {
                         for (auto &op : _builder_transactions[handle].operations) {
                             total_fee += gprops.current_fees->set_fee(op, fee_asset_obj.options.core_exchange_rate);
                         }
@@ -1088,7 +1088,7 @@ namespace steemit {
                     op.owner = get_account(account_name_or_id).name;
                     op.expiration_time = expiration;
                     signed_transaction &trx = _builder_transactions[handle];
-                    std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_ops),
+                    std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_operaions),
                             [](const operation &op) -> operation_wrapper { return op; });
                     if (review_period_seconds) {
                         op.review_period_seconds = review_period_seconds;
