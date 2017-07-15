@@ -4,6 +4,7 @@
 #include <steemit/application/state.hpp>
 
 #include <steemit/chain/database.hpp>
+#include <steemit/chain/proposal_object.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/steem_object_types.hpp>
 #include <steemit/chain/history_object.hpp>
@@ -325,7 +326,7 @@ namespace steemit {
             std::vector<liquidity_balance> get_liquidity_queue(std::string start_account, uint32_t limit = 1000) const;
 
             ////////////////////////////
-            // Authority / validation //
+            // Authority / Validation //
             ////////////////////////////
 
             /// @brief Get a hexdump of the serialized binary form of a transaction
@@ -508,6 +509,15 @@ namespace steemit {
 
             fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset cost) const;
 
+            ///////////////////////////
+            // Proposed transactions //
+            ///////////////////////////
+
+            /**
+             *  @return the set of proposed transactions relevant to the specified account id.
+             */
+            vector<proposal_object> get_proposed_transactions( account_name_type name )const;
+
             ////////////////////////////
             // Handlers - not exposed //
             ////////////////////////////
@@ -568,7 +578,7 @@ FC_API(steemit::app::database_api,
                 (set_block_applied_callback)
                 (cancel_all_subscriptions)
 
-                // tags
+                // Tags
                 (get_trending_tags)
                 (get_tags_used_by_author)
                 (get_discussions_by_trending)
@@ -639,11 +649,11 @@ FC_API(steemit::app::database_api,
                 (verify_authority)
                 (verify_account_authority)
 
-                // votes
+                // Votes
                 (get_active_votes)
                 (get_account_votes)
 
-                // content
+                // Content
                 (get_content)
                 (get_content_replies)
                 (get_discussions_by_author_before_date)
@@ -659,4 +669,7 @@ FC_API(steemit::app::database_api,
                 (get_witness_count)
                 (get_active_witnesses)
                 (get_miner_queue)
+
+                // Proposed transactions
+                (get_proposed_transactions)
 )

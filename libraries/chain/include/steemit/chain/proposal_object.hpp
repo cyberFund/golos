@@ -13,8 +13,6 @@ namespace steemit {
          */
         class proposal_object : public object<proposal_object_type, proposal_object> {
         public:
-        proposal_object() = delete;
-
             template<typename Constructor, typename Allocator>
             proposal_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
@@ -29,6 +27,8 @@ namespace steemit {
             flat_set<account_name_type> available_active_approvals;
             flat_set<account_name_type> required_owner_approvals;
             flat_set<account_name_type> available_owner_approvals;
+            flat_set<account_name_type> required_posting_approvals;
+            flat_set<account_name_type> available_posting_approvals;
             flat_set<public_key_type> available_key_approvals;
 
             bool is_authorized_to_execute(database &db) const;
@@ -45,16 +45,16 @@ namespace steemit {
          *
          *  @note the set of required approvals is constant
          */
-        class required_approval_index : public chainbase::secondary_index {
+        class required_approval_index : public chainbase::secondary_index<proposal_object> {
         public:
-            virtual void object_inserted(const object &obj) override;
+            virtual void object_inserted(const index_type &obj) override;
 
-            virtual void object_removed(const object &obj) override;
+            virtual void object_removed(const index_type &obj) override;
 
-            virtual void about_to_modify(const object &before) override {
+            virtual void about_to_modify(const index_type &before) override {
             };
 
-            virtual void object_modified(const object &after) override {
+            virtual void object_modified(const index_type &after) override {
             };
 
             void remove(account_name_type a, proposal_object::id_type p);
@@ -66,14 +66,14 @@ namespace steemit {
 
         typedef boost::multi_index_container<
                 proposal_object,
-                indexed_by <
-                ordered_unique < tag <
-                by_id>, member<proposal_object, proposal_object::id_type, &proposal_object::id> >,
-        ordered_non_unique <tag<by_expiration>, member<proposal_object, time_point_sec, &proposal_object::expiration_time>>
-        >, allocator<proposal_object>
-        >
-        proposal_index;
+                indexed_by<
+                        ordered_unique<tag<
+                                by_id>, member<proposal_object, proposal_object::id_type, &proposal_object::id>>,
+                        ordered_non_unique<tag<by_expiration>, member<proposal_object, time_point_sec, &proposal_object::expiration_time>>
+                >, allocator<proposal_object>
+        > proposal_index;
     }
 }
 
-FC_REFLECT(steemit::chain::proposal_object, (expiration_time)(review_period_time)(proposed_transaction)(required_active_approvals) (available_active_approvals)(required_owner_approvals)(available_owner_approvals) (available_key_approvals));
+FC_REFLECT(steemit::chain::proposal_object, (expiration_time)(review_period_time)(proposed_transaction)(required_active_approvals)(available_active_approvals)(required_owner_approvals)(available_owner_approvals)(available_key_approvals));
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::proposal_object, steemit::chain::proposal_index);

@@ -89,6 +89,9 @@ namespace steemit {
 
             bool verify_account_authority(const std::string &name_or_id, const flat_set<public_key_type> &signers) const;
 
+            // Proposed transactions
+            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
+
             // signal handlers
             void on_applied_block(const chain::signed_block &b);
 
@@ -831,9 +834,15 @@ namespace steemit {
 //   wdump((trx)(available_keys));
             auto result = trx.get_required_signatures(STEEMIT_CHAIN_ID,
                     available_keys,
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).active); },
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).owner); },
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).posting); },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).active);
+                    },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+                    },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).posting);
+                    },
                     STEEMIT_MAX_SIG_CHECK_DEPTH);
 //   wdump((result));
             return result;
@@ -2709,6 +2718,33 @@ namespace steemit {
                 }
                 FC_ASSERT(false, "Unknown Transaction ${t}", ("t", id));
             });
+        }
+
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// Proposed transactions                                            //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
+        vector<proposal_object> database_api::get_proposed_transactions(account_name_type name) const {
+            return my->get_proposed_transactions(name);
+        }
+
+/** TODO: add secondary index that will accelerate this process */
+        vector<proposal_object> database_api_impl::get_proposed_transactions(account_name_type name) const {
+            const auto &idx = _db.get_index<proposal_index>();
+            vector<proposal_object> result;
+
+            idx.inspect_objects([&](const proposal_object &p) {
+                if (p.required_active_approvals.find(name) != p.required_active_approvals.end()) {
+                    result.push_back(p);
+                } else if (p.required_owner_approvals.find(name) != p.required_owner_approvals.end()) {
+                    result.push_back(p);
+                } else if (p.available_active_approvals.find(name) != p.available_active_approvals.end()) {
+                    result.push_back(p);
+                }
+            });
+            return result;
         }
     }
 } // steemit::app

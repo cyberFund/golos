@@ -11,12 +11,20 @@ namespace steemit {
             try {
                 verify_authority(proposed_transaction.operations,
                         available_key_approvals,
-                        [&](account_name_type id) { return &id(db).active; },
-                        [&](account_name_type id) { return &id(db).owner; },
-                        db.get_global_properties().parameters.max_authority_depth,
+                        [&](std::string account_name) {
+                            return authority(db.get<account_authority_object, by_account>(account_name).active);
+                        },
+                        [&](std::string account_name) {
+                            return authority(db.get<account_authority_object, by_account>(account_name).owner);
+                        },
+                        [&](std::string account_name) {
+                            return authority(db.get<account_authority_object, by_account>(account_name).posting);
+                        },
+                        STEEMIT_MAX_SIG_CHECK_DEPTH,
                         true, /* allow committeee */
                         available_active_approvals,
-                        available_owner_approvals);
+                        available_owner_approvals,
+                        available_posting_approvals);
             }
             catch (const fc::exception &e) {
                 //idump((available_active_approvals));
@@ -27,21 +35,24 @@ namespace steemit {
         }
 
 
-        void required_approval_index::object_inserted(const object &obj) {
-            assert(dynamic_cast<const proposal_object *>(&obj));
-            const proposal_object &p = static_cast<const proposal_object &>(obj);
-
-            for (const auto &a : p.required_active_approvals) {
-                account_to_proposals[a].insert(p.id);
+        void required_approval_index::object_inserted(const index_type &obj) {
+            for (const auto &a : obj.required_active_approvals) {
+                account_to_proposals[a].insert(obj.id);
             }
-            for (const auto &a : p.required_owner_approvals) {
-                account_to_proposals[a].insert(p.id);
+            for (const auto &a : obj.required_owner_approvals) {
+                account_to_proposals[a].insert(obj.id);
             }
-            for (const auto &a : p.available_active_approvals) {
-                account_to_proposals[a].insert(p.id);
+            for (const auto &a : obj.required_posting_approvals) {
+                account_to_proposals[a].insert(obj.id);
             }
-            for (const auto &a : p.available_owner_approvals) {
-                account_to_proposals[a].insert(p.id);
+            for (const auto &a : obj.available_active_approvals) {
+                account_to_proposals[a].insert(obj.id);
+            }
+            for (const auto &a : obj.available_owner_approvals) {
+                account_to_proposals[a].insert(obj.id);
+            }
+            for (const auto &a : obj.available_posting_approvals) {
+                account_to_proposals[a].insert(obj.id);
             }
         }
 
@@ -55,21 +66,24 @@ namespace steemit {
             }
         }
 
-        void required_approval_index::object_removed(const object &obj) {
-            assert(dynamic_cast<const proposal_object *>(&obj));
-            const proposal_object &p = static_cast<const proposal_object &>(obj);
-
-            for (const auto &a : p.required_active_approvals) {
-                remove(a, p.id);
+        void required_approval_index::object_removed(const index_type &obj) {
+            for (const auto &a : obj.required_active_approvals) {
+                remove(a, obj.id);
             }
-            for (const auto &a : p.required_owner_approvals) {
-                remove(a, p.id);
+            for (const auto &a : obj.required_owner_approvals) {
+                remove(a, obj.id);
             }
-            for (const auto &a : p.available_active_approvals) {
-                remove(a, p.id);
+            for (const auto &a : obj.required_posting_approvals) {
+                remove(a, obj.id);
             }
-            for (const auto &a : p.available_owner_approvals) {
-                remove(a, p.id);
+            for (const auto &a : obj.available_active_approvals) {
+                remove(a, obj.id);
+            }
+            for (const auto &a : obj.available_owner_approvals) {
+                remove(a, obj.id);
+            }
+            for (const auto &a : obj.available_posting_approvals) {
+                remove(a, obj.id);
             }
         }
     }
