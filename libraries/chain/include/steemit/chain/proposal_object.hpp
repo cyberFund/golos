@@ -13,8 +13,8 @@ namespace steemit {
          */
         class proposal_object : public object<proposal_object_type, proposal_object> {
         public:
-        proposal_object() {
-            
+            proposal_object() {
+
             };
 
             template<typename Constructor, typename Allocator>
