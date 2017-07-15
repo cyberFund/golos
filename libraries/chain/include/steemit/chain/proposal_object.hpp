@@ -13,6 +13,10 @@ namespace steemit {
          */
         class proposal_object : public object<proposal_object_type, proposal_object> {
         public:
+        proposal_object() {
+            
+            };
+
             template<typename Constructor, typename Allocator>
             proposal_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
