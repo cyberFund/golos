@@ -176,8 +176,8 @@ namespace steemit {
                 chain::database &db = database();
 
                 db.post_apply_operation.connect([&](const operation_notification &o) { _my->update_market_histories(o); });
-                add_plugin_index<bucket_index>(db);
-                add_plugin_index<order_history_index>(db);
+                db.add_plugin_index<bucket_index>();
+                db.add_plugin_index<order_history_index>();
 
                 if (options.count("bucket-size")) {
                     std::string buckets = options["bucket-size"].as<string>();
