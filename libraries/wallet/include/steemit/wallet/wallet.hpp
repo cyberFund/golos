@@ -1013,7 +1013,7 @@ namespace steemit {
             /**
              * @ingroup Transaction Builder API
              */
-            asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset = asset::from_string(STEEM_SYMBOL).symbol_name());
+            asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset);
 
             /**
              * @ingroup Transaction Builder API

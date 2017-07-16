@@ -1022,7 +1022,7 @@ namespace steemit {
                     trx.operations[operation_index] = new_op;
                 }
 
-                asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset = asset(0, STEEM_SYMBOL).symbol_name()) {
+                asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset) {
                     FC_ASSERT(_builder_transactions.count(handle));
 
                     auto fee_asset_obj = get_asset(fee_asset);
@@ -1066,7 +1066,7 @@ namespace steemit {
                     proposal_create_operation op;
                     op.expiration_time = expiration;
                     signed_transaction &trx = _builder_transactions[handle];
-                    std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_operaions),
+                    std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_operations),
                             [](const operation &op) -> operaion_wrapper {
                                 return op;
                             });
@@ -1088,7 +1088,7 @@ namespace steemit {
                     op.owner = get_account(account_name_or_id).name;
                     op.expiration_time = expiration;
                     signed_transaction &trx = _builder_transactions[handle];
-                    std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_operaions),
+                    std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_operations),
                             [](const operation &op) -> operation_wrapper { return op; });
                     if (review_period_seconds) {
                         op.review_period_seconds = review_period_seconds;
