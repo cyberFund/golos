@@ -2,6 +2,7 @@
 
 #include <fc/fixed_string.hpp>
 
+#include <steemit/protocol/address.hpp>
 #include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
@@ -679,7 +680,7 @@ namespace steemit {
          *  @brief This secondary index will allow a reverse lookup of all accounts that a particular key or account
          *  is an potential signing authority.
          */
-        class account_member_index : public chainbase::secondary_index<account_index> {
+        class account_member_index : public chainbase::secondary_index<account_authority_index> {
         public:
             virtual void object_inserted(const value_type &obj) override;
 
@@ -694,19 +695,19 @@ namespace steemit {
             map<account_name_type, set<account_name_type>> account_to_account_memberships;
             map<public_key_type, set<account_name_type>> account_to_key_memberships;
             /** some accounts use address authorities in the genesis block */
-            map<address, set<account_name_type>> account_to_address_memberships;
+            map<protocol::address, set<account_name_type>> account_to_address_memberships;
 
 
         protected:
-            set<account_name_type> get_account_members(const account_object &a) const;
+            set<account_name_type> get_account_members(const value_type &a) const;
 
-            set<public_key_type> get_key_members(const account_object &a) const;
+            set<public_key_type> get_key_members(const value_type &a) const;
 
-            set<address> get_address_members(const account_object &a) const;
+            set<protocol::address> get_address_members(const value_type &a) const;
 
             set<account_name_type> before_account_members;
             set<public_key_type> before_key_members;
-            set<address> before_address_members;
+            set<protocol::address> before_address_members;
         };
 
 
