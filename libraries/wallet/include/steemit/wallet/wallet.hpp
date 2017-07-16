@@ -1358,8 +1358,10 @@ namespace steemit {
 
             /**
              *  Marks one account as following another account.  Requires the posting authority of the follower.
-             *
+             *  @param follower account name to follow with
+             *  @param following account name to follow for
              *  @param what - a set of things to follow: posts, comments, votes, ignore
+             *  @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction follow(string follower, string following, set<string> what, bool broadcast);
 
@@ -1390,7 +1392,7 @@ namespace steemit {
              * @param delta Members contain approvals to create or remove.  In JSON you can leave empty members undefi      ned.
              * @param broadcast true if you wish to broadcast the transaction
              * @return the signed version of the transaction
-       */
+             */
             signed_transaction approve_proposal(
                     const string &owner,
                     integral_id_type proposal_id,
