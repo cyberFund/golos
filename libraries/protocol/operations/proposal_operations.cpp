@@ -1,5 +1,5 @@
-#include <steemit/protocol/proposal_operations.hpp>
-#include <steemit/protocol/operations.hpp>
+#include <steemit/protocol/operations/proposal_operations.hpp>
+#include <steemit/protocol/operations/operations.hpp>
 #include <steemit/protocol/types.hpp>
 
 #include <fc/smart_ref_impl.hpp>

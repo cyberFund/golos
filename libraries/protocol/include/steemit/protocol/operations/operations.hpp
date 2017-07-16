@@ -9,7 +9,7 @@
 #include <steemit/protocol/operations/asset_virtual_operations.hpp>
 #include <steemit/protocol/operations/account_operations.hpp>
 #include <steemit/protocol/operations/transfer_operations.hpp>
-#include <steemit/protocol/proposal_operations.hpp>
+#include <steemit/protocol/operations/proposal_operations.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -93,7 +93,7 @@ namespace steemit {
                 account_whitelist_operation,
 
                 override_transfer_operation,
-                
+
                 proposal_create_operation,
                 proposal_update_operation,
                 proposal_delete_operation,
