@@ -1,13 +1,13 @@
-#include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/pts_address.hpp>
+#include <steemit/protocol/pts_address.hpp>
 
 #include <fc/crypto/base58.hpp>
 #include <fc/crypto/elliptic.hpp>
 #include <fc/crypto/ripemd160.hpp>
+
 #include <algorithm>
 
 namespace steemit {
-    namespace chain {
+    namespace protocol {
 
         pts_address::pts_address() {
             memset(addr.data, 0, sizeof(addr.data));
@@ -19,9 +19,7 @@ namespace steemit {
                 memcpy(addr.data, v.data(), std::min<size_t>(v.size(), sizeof(addr)));
             }
 
-            if (!is_valid()) {
-                FC_THROW_EXCEPTION(invalid_pts_address, "invalid pts_address ${a}", ("a", base58str));
-            }
+            FC_ASSERT(is_valid(), "invalid pts_address ${a}", ("a", base58str));
         }
 
         pts_address::pts_address(const fc::ecc::public_key &pub, bool compressed, uint8_t version) {
@@ -59,11 +57,11 @@ namespace steemit {
 } // namespace graphene
 
 namespace fc {
-    void to_variant(const steemit::chain::pts_address &var, variant &vo) {
+    void to_variant(const steemit::protocol::pts_address &var, variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const variant &var, graphene::chain::pts_address &vo) {
-        vo = steemit::chain::pts_address(var.as_string());
+    void from_variant(const variant &var, steemit::protocol::pts_address &vo) {
+        vo = steemit::protocol::pts_address(var.as_string());
     }
 }

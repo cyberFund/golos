@@ -10,7 +10,7 @@ namespace fc {
 }
 
 namespace steemit {
-    namespace chain {
+    namespace protocol {
 
         /**
          *  Implements address stringification and validation from PTS
@@ -48,9 +48,9 @@ namespace steemit {
 
 namespace std {
     template<>
-    struct hash<graphene::chain::pts_address> {
+    struct hash<steemit::protocol::pts_address> {
     public:
-        size_t operator()(const graphene::chain::pts_address &a) const {
+        size_t operator()(const steemit::protocol::pts_address &a) const {
             size_t s;
             memcpy((char *)&s, &a.addr.data[sizeof(a) - sizeof(s)], sizeof(s));
             return s;
@@ -60,10 +60,10 @@ namespace std {
 
 #include <fc/reflect/reflect.hpp>
 
-FC_REFLECT(steemit::chain::pts_address, (addr))
+FC_REFLECT(steemit::protocol::pts_address, (addr))
 
 namespace fc {
-    void to_variant(const steemit::chain::pts_address &var, fc::variant &vo);
+    void to_variant(const steemit::protocol::pts_address &var, fc::variant &vo);
 
-    void from_variant(const fc::variant &var, steemit::chain::pts_address &vo);
+    void from_variant(const fc::variant &var, steemit::protocol::pts_address &vo);
 }

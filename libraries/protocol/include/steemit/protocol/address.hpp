@@ -1,5 +1,5 @@
-#include <steemit/chain/config.hpp>
-#include <steemit/chain/pts_address.hpp>
+#include <steemit/protocol/config.hpp>
+#include <steemit/protocol/pts_address.hpp>
 
 #include <fc/array.hpp>
 #include <fc/crypto/ripemd160.hpp>
@@ -13,7 +13,7 @@ namespace fc {
 } // fc::ecc
 
 namespace steemit {
-    namespace chain {
+    namespace protocol {
 
         struct public_key_type;
 
@@ -66,16 +66,16 @@ namespace steemit {
 } // namespace graphene::chain
 
 namespace fc {
-    void to_variant(const steemit::chain::address &var, fc::variant &vo);
+    void to_variant(const steemit::protocol::address &var, fc::variant &vo);
 
-    void from_variant(const fc::variant &var, steemit::chain::address &vo);
+    void from_variant(const fc::variant &var, steemit::protocol::address &vo);
 }
 
 namespace std {
     template<>
-    struct hash<steemit::chain::address> {
+    struct hash<steemit::protocol::address> {
     public:
-        size_t operator()(const steemit::chain::address &a) const {
+        size_t operator()(const steemit::protocol::address &a) const {
             return (uint64_t(a.addr._hash[0]) << 32) | uint64_t(a.addr._hash[0]);
         }
     };
@@ -83,4 +83,4 @@ namespace std {
 
 #include <fc/reflect/reflect.hpp>
 
-FC_REFLECT(steemit::chain::address, (addr))
+FC_REFLECT(steemit::protocol::address, (addr))

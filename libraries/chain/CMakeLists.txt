@@ -40,7 +40,6 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/proposal_evaluator.hpp
         include/steemit/chain/proposal_object.hpp
-        include/steemit/chain/pts_address.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp
         include/steemit/chain/steem_evaluator.hpp
@@ -69,7 +68,6 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         shared_authority.cpp
         steem_evaluator.cpp
         proposal_evaluator.cpp
-        pts_address.cpp
         steem_objects.cpp
         transfer_evaluator.cpp
         proposal_object.cpp

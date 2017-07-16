@@ -7,7 +7,7 @@
 #include <algorithm>
 
 namespace steemit {
-    namespace chain {
+    namespace protocol {
         address::address() {
         }
 
@@ -60,7 +60,7 @@ namespace steemit {
             addr = fc::ripemd160::hash(fc::sha512::hash(pub.data, sizeof(pub)));
         }
 
-        address::address(const steemit::chain::public_key_type &pub) {
+        address::address(const protocol::public_key_type &pub) {
             addr = fc::ripemd160::hash(fc::sha512::hash(pub.key_data.data, sizeof(pub.key_data)));
         }
 
@@ -76,11 +76,11 @@ namespace steemit {
 } // namespace steemit::chain
 
 namespace fc {
-    void to_variant(const steemit::chain::address &var, variant &vo) {
+    void to_variant(const steemit::protocol::address &var, variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const variant &var, steemit::chain::address &vo) {
-        vo = steemit::chain::address(var.as_string());
+    void from_variant(const variant &var, steemit::protocol::address &vo) {
+        vo = steemit::protocol::address(var.as_string());
     }
 }
