@@ -649,7 +649,7 @@ namespace steemit {
             /**
              *  @return the set of proposed transactions relevant to the specified account id.
              */
-            vector<proposal_object> get_proposed_transactions( account_name_type name )const;
+            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
 
             ////////////////////////////
             // Handlers - not exposed //

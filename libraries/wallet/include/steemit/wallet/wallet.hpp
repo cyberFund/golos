@@ -1389,7 +1389,7 @@ namespace steemit {
              *
              * @param owner The account paying the fee for the op.
              * @param proposal_id The proposal to modify.
-             * @param delta Members contain approvals to create or remove.  In JSON you can leave empty members undefi      ned.
+             * @param delta Members contain approvals to create or remove. In JSON you can leave empty members undefi      ned.
              * @param broadcast true if you wish to broadcast the transaction
              * @return the signed version of the transaction
              */
