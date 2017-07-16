@@ -117,6 +117,9 @@ namespace steemit {
 
             bool verify_account_authority(const std::string &name_or_id, const flat_set<public_key_type> &signers) const;
 
+            // Proposed transactions
+            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
+
             template<typename T>
             void subscribe_to_item(const T &i) const {
                 auto vec = fc::raw::pack(i);
@@ -3267,6 +3270,33 @@ namespace steemit {
 
                 return *fund;
             });
+        }
+
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// Proposed transactions                                            //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
+        vector<proposal_object> database_api::get_proposed_transactions(account_name_type name) const {
+            return my->get_proposed_transactions(name);
+        }
+
+/** TODO: add secondary index that will accelerate this process */
+        vector<proposal_object> database_api_impl::get_proposed_transactions(account_name_type name) const {
+            const auto &idx = _db.get_index<proposal_index>();
+            vector<proposal_object> result;
+
+            idx.inspect_objects([&](const proposal_object &p) {
+                if (p.required_active_approvals.find(name) != p.required_active_approvals.end()) {
+                    result.push_back(p);
+                } else if (p.required_owner_approvals.find(name) != p.required_owner_approvals.end()) {
+                    result.push_back(p);
+                } else if (p.available_active_approvals.find(name) != p.available_active_approvals.end()) {
+                    result.push_back(p);
+                }
+            });
+            return result;
         }
     }
 } // steemit::application

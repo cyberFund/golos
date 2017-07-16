@@ -120,6 +120,12 @@ namespace steemit {
 
         STEEMIT_DECLARE_INTERNAL_EXCEPTION(verify_auth_account_not_found, 2, "Auth account not found")
 
+        STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(proposal_create);
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(review_period_required, proposal_create, 1, "review_period required")
+
+        STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(review_period_insufficient, proposal_create, 2, "review_period insufficient")
+
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(asset_reserve);
 
         STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION(invalid_on_mia, asset_reserve, 1, "invalid on mia")

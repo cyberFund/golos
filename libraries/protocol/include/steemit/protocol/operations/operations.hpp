@@ -9,6 +9,7 @@
 #include <steemit/protocol/operations/asset_virtual_operations.hpp>
 #include <steemit/protocol/operations/account_operations.hpp>
 #include <steemit/protocol/operations/transfer_operations.hpp>
+#include <steemit/protocol/proposal_operations.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -53,14 +54,18 @@ namespace steemit {
                 request_account_recovery_operation,
                 recover_account_operation,
                 change_recovery_account_operation,
+
                 escrow_transfer_operation,
                 escrow_dispute_operation,
                 escrow_release_operation,
+
                 pow2_operation,
                 escrow_approve_operation,
+
                 transfer_to_savings_operation,
                 transfer_from_savings_operation,
                 cancel_transfer_from_savings_operation,
+
                 custom_binary_operation,
                 decline_voting_rights_operation,
                 reset_account_operation,
@@ -88,6 +93,10 @@ namespace steemit {
                 account_whitelist_operation,
 
                 override_transfer_operation,
+                
+                proposal_create_operation,
+                proposal_update_operation,
+                proposal_delete_operation,
 
                 /// virtual operations below this point
                 fill_convert_request_operation,
@@ -119,6 +128,13 @@ namespace steemit {
 
         bool is_virtual_operation(const operation &op);
 
+        struct operation_wrapper {
+        public:
+            operation_wrapper(const operation &op = operation()) : op(op) {
+            }
+
+            operation op;
+        };
     }
 } // steemit::protocol
 
@@ -127,5 +143,7 @@ namespace steemit {
     void from_variant( const fc::variant& var,  steemit::protocol::operation& vo );
 }*/
 
-STEEMIT_DECLARE_OPERATION_TYPE(steemit::protocol::operation)
-FC_REFLECT_TYPENAME(steemit::protocol::operation)
+STEEMIT_DECLARE_OPERATION_TYPE(steemit::protocol::operation);
+FC_REFLECT_TYPENAME(steemit::protocol::operation);
+
+FC_REFLECT(steemit::protocol::operation_wrapper, (op));

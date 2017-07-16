@@ -66,6 +66,17 @@ namespace steemit {
             string ws_password;
         };
 
+        struct approval_delta {
+            vector<string> active_approvals_to_add;
+            vector<string> active_approvals_to_remove;
+            vector<string> owner_approvals_to_add;
+            vector<string> owner_approvals_to_remove;
+            vector<string> posting_approvals_to_add;
+            vector<string> posting_approvals_to_remove;
+            vector<string> key_approvals_to_add;
+            vector<string> key_approvals_to_remove;
+        };
+
         struct signed_block_with_info : public signed_block {
             signed_block_with_info(const signed_block &block);
 
@@ -1364,6 +1375,76 @@ namespace steemit {
             string decrypt_memo(string memo);
 
             annotated_signed_transaction decline_voting_rights(string account, bool decline, bool broadcast);
+
+            /** Approve or disapprove a proposal.
+             *
+             * @param fee_paying_account The account paying the fee for the op.
+             * @param proposal_id The proposal to modify.
+             * @param delta Members contain approvals to create or remove.  In JSON you can leave empty members undefi      ned.
+             * @param broadcast true if you wish to broadcast the transaction
+             * @return the signed version of the transaction
+       */
+            signed_transaction approve_proposal(
+                    const string &fee_paying_account,
+                    const string &proposal_id,
+                    const approval_delta &delta,
+                    bool broadcast /* = false */
+            );
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            transaction_handle_type begin_builder_transaction();
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            void add_operation_to_builder_transaction(transaction_handle_type transaction_handle, const operation &op);
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            void replace_operation_in_builder_transaction(transaction_handle_type handle,
+                    unsigned operation_index,
+                    const operation &new_op);
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset);
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            transaction preview_builder_transaction(transaction_handle_type handle);
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            signed_transaction sign_builder_transaction(transaction_handle_type transaction_handle, bool broadcast = true);
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            signed_transaction propose_builder_transaction(
+                    transaction_handle_type handle,
+                    time_point_sec expiration = time_point::now() + fc::minutes(1),
+                    uint32_t review_period_seconds = 0,
+                    bool broadcast = true
+            );
+
+            signed_transaction propose_builder_transaction2(
+                    transaction_handle_type handle,
+                    string account_name_or_id,
+                    time_point_sec expiration = time_point::now() + fc::minutes(1),
+                    uint32_t review_period_seconds = 0,
+                    bool broadcast = true
+            );
+
+            /**
+             * @ingroup Transaction Builder API
+             */
+            void remove_builder_transaction(transaction_handle_type handle);
         };
 
         struct plain_keys {
@@ -1389,6 +1470,17 @@ FC_REFLECT_DERIVED(steemit::wallet::signed_block_with_info, (steemit::chain::sig
 FC_REFLECT(steemit::wallet::plain_keys, (checksum)(keys))
 
 FC_REFLECT_ENUM(steemit::wallet::authority_type, (owner)(active)(posting))
+
+FC_REFLECT(steemit::wallet::approval_delta,
+        (active_approvals_to_add)
+                (active_approvals_to_remove)
+                (owner_approvals_to_add)
+                (owner_approvals_to_remove)
+                (posting_approvals_to_add)
+                (posting_approvals_to_remove)
+                (key_approvals_to_add)
+                (key_approvals_to_remove)
+)
 
 FC_API(steemit::wallet::wallet_api,
 /// wallet api
@@ -1465,7 +1557,7 @@ FC_API(steemit::wallet::wallet_api,
                 (decrypt_memo)
                 (decline_voting_rights)
 
-                // private message api
+                /// private message api
                 (send_private_message)
                 (get_inbox)
                 (get_outbox)
@@ -1502,6 +1594,19 @@ FC_API(steemit::wallet::wallet_api,
                 (global_settle_asset)
                 (settle_asset)
                 (whitelist_account)
+                
+                (approve_proposal)
+
+                /// transaction builder api
+                (begin_builder_transaction)
+                (add_operation_to_builder_transaction)
+                (replace_operation_in_builder_transaction)
+                (set_fees_on_builder_transaction)
+                (preview_builder_transaction)
+                (sign_builder_transaction)
+                (propose_builder_transaction)
+                (propose_builder_transaction2)
+                (remove_builder_transaction)
 )
 
 FC_REFLECT(steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted))

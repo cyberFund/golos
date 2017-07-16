@@ -1,7 +1,6 @@
 #include <steemit/snapshot/snapshot_plugin.hpp>
 #include <steemit/snapshot/snapshot_state.hpp>
 
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
 

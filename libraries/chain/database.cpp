@@ -8,10 +8,10 @@
 #include <steemit/chain/db_with.hpp>
 #include <steemit/chain/evaluator_registry.hpp>
 #include <steemit/chain/history_object.hpp>
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/market_object.hpp>
 #include <steemit/chain/account_evaluator.hpp>
 #include <steemit/chain/market_evaluator.hpp>
+#include <steemit/chain/proposal_object.hpp>
 #include <steemit/chain/steem_evaluator.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/transaction_object.hpp>
@@ -29,8 +29,10 @@
 
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
+
 #include <steemit/chain/asset_evaluator.hpp>
 #include <steemit/chain/transfer_evaluator.hpp>
+#include <steemit/chain/proposal_evaluator.hpp>
 
 namespace steemit {
     namespace chain {
@@ -428,6 +430,16 @@ namespace steemit {
 
         const asset_dynamic_data_object *database::find_asset_dynamic_data(const asset_symbol_type &name) const {
             return find<asset_dynamic_data_object, by_symbol>(name);
+        }
+        
+            const proposal_object &database::get_proposal(const account_name_type &name, protocol::integral_id_type id) const {
+            try {
+                return get<proposal_object, by_account>(boost::make_tuple(name, id));
+            } FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const proposal_object *database::find_proposal(const account_name_type &name, protocol::integral_id_type id) const {
+            return find<proposal_object, by_account>(boost::make_tuple(name, id));
         }
 
         const witness_object &database::get_witness(const account_name_type &name) const {
@@ -910,6 +922,15 @@ namespace steemit {
 
             // notify anyone listening to pending transactions
             notify_on_pending_transaction(trx);
+        }
+
+        void database::push_proposal(const proposal_object &proposal) {
+            try {
+                for (auto &op : proposal.proposed_transaction.operations) {
+                    apply_operation(op);
+                }
+                remove(proposal);
+            } FC_CAPTURE_AND_RETHROW((proposal))
         }
 
         signed_block database::generate_block(
@@ -1910,8 +1931,7 @@ namespace steemit {
                 modify(*itr, [&](reward_fund_object &rfo) {
                     rfo.recent_rshares2 -= (rfo.recent_rshares2 *
                                             (head_block_time() -
-                                             rfo.last_update).to_seconds()) /
-                                           STEEMIT_RECENT_RSHARES_DECAY_RATE.to_seconds();
+                                             rfo.last_update).to_seconds());
                     rfo.last_update = head_block_time();
                 });
 
@@ -2244,9 +2264,8 @@ namespace steemit {
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
             FC_ASSERT(input_cost.symbol ==
                       SBD_SYMBOL, "Extension payment should be in SBD");
-            FC_ASSERT(
-                    input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY >
-                    0, "Extension payment should cover more than a day");
+            FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY >
+                      0, "Extension payment should cover more than a day");
             return fc::time_point::now() +
                    fc::seconds(((input_cost.amount.value * 60 * 60 * 24 *
                                  input_comment.net_rshares.value) /
@@ -2540,6 +2559,9 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<call_order_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<account_whitelist_evaluator>();
             _my->_evaluator_registry.register_evaluator<override_transfer_evaluator>();
+            _my->_evaluator_registry.register_evaluator<proposal_create_evaluator>();
+            _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
+            _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2557,42 +2579,44 @@ namespace steemit {
         }
 
         void database::initialize_indexes() {
-            add_core_index<dynamic_global_property_index>(*this);
-            add_core_index<account_index>(*this);
-            add_core_index<account_authority_index>(*this);
-            add_core_index<account_bandwidth_index>(*this);
-            add_core_index<witness_index>(*this);
-            add_core_index<transaction_index>(*this);
-            add_core_index<block_summary_index>(*this);
-            add_core_index<witness_schedule_index>(*this);
-            add_core_index<comment_index>(*this);
-            add_core_index<comment_vote_index>(*this);
-            add_core_index<witness_vote_index>(*this);
-            add_core_index<limit_order_index>(*this);
-            add_core_index<feed_history_index>(*this);
-            add_core_index<convert_request_index>(*this);
-            add_core_index<liquidity_reward_balance_index>(*this);
-            add_core_index<operation_index>(*this);
-            add_core_index<account_history_index>(*this);
-            add_core_index<category_index>(*this);
-            add_core_index<hardfork_property_index>(*this);
-            add_core_index<withdraw_vesting_route_index>(*this);
-            add_core_index<owner_authority_history_index>(*this);
-            add_core_index<account_recovery_request_index>(*this);
-            add_core_index<change_recovery_account_request_index>(*this);
-            add_core_index<escrow_index>(*this);
-            add_core_index<savings_withdraw_index>(*this);
-            add_core_index<decline_voting_rights_request_index>(*this);
-            add_core_index<vesting_delegation_index>(*this);
-            add_core_index<vesting_delegation_expiration_index>(*this);
-            add_core_index<reward_fund_index>(*this);
-            add_core_index<asset_index>(*this);
-            add_core_index<asset_bitasset_data_index>(*this);
-            add_core_index<asset_dynamic_data_index>(*this);
-            add_core_index<account_balance_index>(*this);
-            add_core_index<account_statistics_index>(*this);
-            add_core_index<call_order_index>(*this);
-            add_core_index<force_settlement_index>(*this);
+            add_index<asset_index>();
+            add_index<asset_bitasset_data_index>();
+            add_index<asset_dynamic_data_index>();
+            add_index<account_balance_index>();
+            add_index<account_statistics_index>();
+            add_index<call_order_index>();
+            add_index<force_settlement_index>();
+
+            add_index<dynamic_global_property_index>();
+            add_index<account_index>();
+            add_index<account_authority_index>();
+            add_index<account_bandwidth_index>();
+            add_index<witness_index>();
+            add_index<transaction_index>();
+            add_index<block_summary_index>();
+            add_index<witness_schedule_index>();
+            add_index<comment_index>();
+            add_index<comment_vote_index>();
+            add_index<witness_vote_index>();
+            add_index<limit_order_index>();
+            add_index<feed_history_index>();
+            add_index<convert_request_index>();
+            add_index<liquidity_reward_balance_index>();
+            add_index<operation_index>();
+            add_index<account_history_index>();
+            add_index<category_index>();
+            add_index<hardfork_property_index>();
+            add_index<withdraw_vesting_route_index>();
+            add_index<owner_authority_history_index>();
+            add_index<account_recovery_request_index>();
+            add_index<change_recovery_account_request_index>();
+            add_index<escrow_index>();
+            add_index<savings_withdraw_index>();
+            add_index<decline_voting_rights_request_index>();
+            add_index<vesting_delegation_index>();
+            add_index<vesting_delegation_expiration_index>();
+            add_index<reward_fund_index>();
+            add_index<proposal_index>()->add_secondary_index<required_approval_index>();
 
             _plugin_index_signal();
         }
@@ -2994,6 +3018,7 @@ namespace steemit {
 
                 create_block_summary(next_block);
                 clear_expired_transactions();
+                clear_expired_proposals();
                 clear_expired_orders();
                 clear_expired_delegations();
                 update_expired_feeds();
@@ -4327,6 +4352,25 @@ namespace steemit {
             return false;
         }
 
+        void database::clear_expired_proposals() {
+            const auto &proposal_expiration_index = get_index<proposal_index>().indices().get<by_expiration>();
+            while (!proposal_expiration_index.empty() &&
+                   proposal_expiration_index.begin()->expiration_time <= head_block_time()) {
+                const proposal_object &proposal = *proposal_expiration_index.begin();
+                processed_transaction result;
+                try {
+                    if (proposal.is_authorized_to_execute(*this)) {
+                        push_proposal(proposal);
+                        continue;
+                    }
+                } catch (const fc::exception &e) {
+                    elog("Failed to apply proposed transaction on its expiration. Deleting it.\n${proposal}\n${error}",
+                            ("proposal", proposal)("error", e.to_detail_string()));
+                }
+                remove(proposal);
+            }
+        }
+
         void database::clear_expired_delegations() {
             auto now = head_block_time();
             const auto &delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
@@ -4839,17 +4883,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:

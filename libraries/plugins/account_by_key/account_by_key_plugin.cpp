@@ -1,7 +1,6 @@
 #include <steemit/account_by_key/account_by_key_plugin.hpp>
 
 #include <steemit/chain/account_object.hpp>
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 namespace steemit {
@@ -198,7 +197,7 @@ namespace steemit {
                 db.pre_apply_operation.connect([&](const operation_notification &o) { my->pre_operation(o); });
                 db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
 
-                add_plugin_index<key_lookup_index>(db);
+                db.add_plugin_index<key_lookup_index>();
             }
             FC_CAPTURE_AND_RETHROW()
         }

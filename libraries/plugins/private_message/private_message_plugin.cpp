@@ -2,7 +2,6 @@
 
 #include <steemit/application/impacted.hpp>
 
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/generic_custom_operation_interpreter.hpp>
 
 #include <fc/smart_ref_impl.hpp>
@@ -99,7 +98,7 @@ namespace steemit {
         void private_message_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
             ilog("Intializing private message plugin");
             chain::database &db = database();
-            add_plugin_index<message_index>(db);
+            db.add_plugin_index<message_index>();
 
             app().register_api_factory<private_message_api>("private_message_api");
 

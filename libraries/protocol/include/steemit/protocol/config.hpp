@@ -86,6 +86,8 @@
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
 #define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
+#define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
+
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
@@ -161,7 +163,9 @@
 
 #define STEEMIT_POST_REWARD_FUND_NAME           ("post")
 #define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
-#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
+
+#define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
+#define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
 
 #define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
 #define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
@@ -331,6 +335,8 @@
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
 #define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
+#define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
+
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
@@ -406,7 +412,6 @@
 
 #define STEEMIT_POST_REWARD_FUND_NAME           ("post")
 #define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
-#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
 
 #define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
 #define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)

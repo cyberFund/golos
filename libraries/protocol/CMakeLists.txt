@@ -18,6 +18,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/protocol/operations/operation_utilities_impl.hpp
         include/steemit/protocol/operations/operations.hpp
         include/steemit/protocol/protocol.hpp
+        include/steemit/protocol/operations/proposal_operations.hpp
         include/steemit/protocol/sign_state.hpp
         include/steemit/protocol/operations/steem_operations.hpp
         include/steemit/protocol/operations/steem_virtual_operations.hpp
@@ -38,6 +39,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         operations/market_operations.cpp
         operations/operation_utilities_impl.cpp
         operations/operations.cpp
+        operations/proposal_operations.cpp
         sign_state.cpp
         operations/steem_operations.cpp
         transaction.cpp
