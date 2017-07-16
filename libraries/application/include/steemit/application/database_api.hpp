@@ -265,6 +265,9 @@ namespace steemit {
              */
             vector<asset> get_account_balances(account_name_type name, const flat_set<std::string> &assets) const;
 
+            /** @return all unclaimed balance objects for a set of addresses */
+            vector<balance_object> get_balance_objects(const vector<address> &addrs) const;
+
             /**
              * @brief Get the total number of accounts registered with the blockchain
              */
@@ -649,7 +652,7 @@ namespace steemit {
             /**
              *  @return the set of proposed transactions relevant to the specified account id.
              */
-            vector<proposal_object> get_proposed_transactions( account_name_type name )const;
+            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
 
             ////////////////////////////
             // Handlers - not exposed //

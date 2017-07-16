@@ -1,6 +1,7 @@
 set(CURRENT_TARGET protocol)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
+        include/steemit/protocol/address.hpp
         include/steemit/protocol/asset.hpp
         include/steemit/protocol/operations/account_operations.hpp
         include/steemit/protocol/operations/asset_operations.hpp
@@ -29,6 +30,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
+        address.cpp
         asset.cpp
         operations/account_operations.cpp
         operations/asset_operations.cpp

@@ -78,6 +78,8 @@ namespace steemit {
 
         FC_DECLARE_DERIVED_EXCEPTION(utility_exception, steemit::chain::chain_exception, 4060000, "utility method exception")
 
+        FC_DECLARE_DERIVED_EXCEPTION(invalid_pts_address, steemit::chain::utility_exception, 3060001, "invalid pts address")
+
         FC_DECLARE_DERIVED_EXCEPTION(undo_database_exception, steemit::chain::chain_exception, 4070000, "undo database exception")
 
         FC_DECLARE_DERIVED_EXCEPTION(unlinkable_block_exception, steemit::chain::chain_exception, 4080000, "unlinkable block")

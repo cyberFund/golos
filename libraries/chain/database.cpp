@@ -431,7 +431,7 @@ namespace steemit {
         const asset_dynamic_data_object *database::find_asset_dynamic_data(const asset_symbol_type &name) const {
             return find<asset_dynamic_data_object, by_symbol>(name);
         }
-        
+
             const proposal_object &database::get_proposal(const account_name_type &name, protocol::integral_id_type id) const {
             try {
                 return get<proposal_object, by_account>(boost::make_tuple(name, id));
@@ -2588,7 +2588,11 @@ namespace steemit {
             add_index<force_settlement_index>();
 
             add_index<dynamic_global_property_index>();
-            add_index<account_index>();
+
+            chainbase::generic_index<account_index> *account_idx = add_index<account_index>();
+            account_idx->add_secondary_index<account_member_index>();
+            account_idx->add_secondary_index<account_referrer_index>();
+
             add_index<account_authority_index>();
             add_index<account_bandwidth_index>();
             add_index<witness_index>();
