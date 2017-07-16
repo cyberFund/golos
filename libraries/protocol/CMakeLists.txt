@@ -1,7 +1,6 @@
 set(CURRENT_TARGET protocol)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-        include/steemit/protocol/address.hpp
         include/steemit/protocol/asset.hpp
         include/steemit/protocol/operations/account_operations.hpp
         include/steemit/protocol/operations/asset_operations.hpp
@@ -18,7 +17,6 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/protocol/operations/operation_utilities.hpp
         include/steemit/protocol/operations/operation_utilities_impl.hpp
         include/steemit/protocol/operations/operations.hpp
-        include/steemit/protocol/pts_address.hpp
         include/steemit/protocol/protocol.hpp
         include/steemit/protocol/operations/proposal_operations.hpp
         include/steemit/protocol/sign_state.hpp
@@ -31,7 +29,6 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
-        address.cpp
         asset.cpp
         operations/account_operations.cpp
         operations/asset_operations.cpp
@@ -43,7 +40,6 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         operations/operation_utilities_impl.cpp
         operations/operations.cpp
         operations/proposal_operations.cpp
-        pts_address.cpp
         sign_state.cpp
         operations/steem_operations.cpp
         transaction.cpp

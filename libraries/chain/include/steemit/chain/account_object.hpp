@@ -2,7 +2,6 @@
 
 #include <fc/fixed_string.hpp>
 
-#include <steemit/protocol/address.hpp>
 #include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>

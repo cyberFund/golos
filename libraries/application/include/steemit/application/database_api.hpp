@@ -265,9 +265,6 @@ namespace steemit {
              */
             vector<asset> get_account_balances(account_name_type name, const flat_set<std::string> &assets) const;
 
-            /** @return all unclaimed balance objects for a set of addresses */
-            vector<balance_object> get_balance_objects(const vector<address> &addrs) const;
-
             /**
              * @brief Get the total number of accounts registered with the blockchain
              */
