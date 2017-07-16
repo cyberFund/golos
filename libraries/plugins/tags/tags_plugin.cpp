@@ -244,13 +244,15 @@ namespace steemit {
 
 
                 /** finds tags that have been added or removed or updated */
-                void update_tags(const comment_object &c) const {
+                   void update_tags( const comment_object& c, bool parse_tags = false )const {
                     try {
 
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        auto meta = filter_tags(c);
                         const auto &comment_idx = _db.get_index<tag_index>().indices().get<by_comment>();
+
+                        if (parse_tags) {
+                        auto meta = filter_tags(c);
                         auto citr = comment_idx.lower_bound(c.id);
 
                         map<string, const tag_object *> existing_tags;
@@ -276,6 +278,14 @@ namespace steemit {
 
                         for (const auto &item : remove_queue) {
                             remove_tag(*item);
+                        }
+                        } else {
+                                 auto citr = comment_idx.lower_bound( c.id );
+                                          while( citr != comment_idx.end() && citr->comment == c.id )
+         {
+            update_tag( *citr, c, hot, trending );
+            ++citr;
+         }
                         }
 
                         if (c.parent_author.size()) {
@@ -339,7 +349,7 @@ namespace steemit {
                 }
 
                 void operator()(const comment_operation &op) const {
-                    update_tags(_db.get_comment(op.author, op.permlink));
+                          update_tags( _db.get_comment( op.author, op.permlink ), true );
                 }
 
                 void operator()(const transfer_operation &op) const {
