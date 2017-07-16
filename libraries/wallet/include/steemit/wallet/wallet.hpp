@@ -243,6 +243,13 @@ namespace steemit {
              */
             asset_object get_asset(string asset_symbol) const;
 
+            /** Returns information about the given proposed_transaction.
+             * @param account_name the proposal author name
+             * @param id the proposal identification number unique for the account given
+             * @returns the information about the asset stored in the block chain
+             */
+            proposal_object get_proposal(string account_name, integral_id_type id) const;
+
             /** Returns the BitAsset-specific data for a given asset.
              * Market-issued assets's behavior are determined both by their "BitAsset Data" and
              * their basic asset data, as returned by \c get_asset().
@@ -1385,8 +1392,8 @@ namespace steemit {
              * @return the signed version of the transaction
        */
             signed_transaction approve_proposal(
-                    const string &fee_paying_account,
-                    const string &proposal_id,
+                    const string &owner,
+                    integral_id_type proposal_id,
                     const approval_delta &delta,
                     bool broadcast /* = false */
             );
@@ -1407,11 +1414,6 @@ namespace steemit {
             void replace_operation_in_builder_transaction(transaction_handle_type handle,
                     unsigned operation_index,
                     const operation &new_op);
-
-            /**
-             * @ingroup Transaction Builder API
-             */
-            asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset);
 
             /**
              * @ingroup Transaction Builder API
@@ -1594,14 +1596,14 @@ FC_API(steemit::wallet::wallet_api,
                 (global_settle_asset)
                 (settle_asset)
                 (whitelist_account)
-                
+
+                (get_proposal)
                 (approve_proposal)
 
                 /// transaction builder api
                 (begin_builder_transaction)
                 (add_operation_to_builder_transaction)
                 (replace_operation_in_builder_transaction)
-                (set_fees_on_builder_transaction)
                 (preview_builder_transaction)
                 (sign_builder_transaction)
                 (propose_builder_transaction)

@@ -398,6 +398,14 @@ namespace steemit {
                     return accounts.front();
                 }
 
+                proposal_object get_proposal(string account_name, integral_id_type id) const {
+                    auto proposed_transactions = _remote_db->get_proposed_transactions(account_name);
+                    FC_ASSERT(!proposed_transactions.empty(), "No proposed transactions referred to this account");
+                    return *std::find_if(proposed_transactions.begin(), proposed_transactions.end(), [&](const vector<proposal_object>::value_type &iterator) -> bool {
+                        return iterator.proposal_id == id;
+                    });
+                }
+
                 optional<asset_object> find_asset(asset_symbol_type asset_symbol) const {
                     // It's a symbol
                     optional<asset_object> rec = _remote_db->lookup_asset_symbols({
@@ -1061,31 +1069,6 @@ namespace steemit {
                     trx.operations[operation_index] = new_op;
                 }
 
-                asset set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset) {
-                    FC_ASSERT(_builder_transactions.count(handle));
-
-                    auto fee_asset_obj = get_asset(fee_asset);
-                    asset total_fee = fee_asset_obj.amount(0);
-
-                    auto gprops = _remote_db->get_global_properties().parameters;
-                    if (fee_asset_obj.symbol != STEEM_SYMBOL) {
-                        for (auto &op : _builder_transactions[handle].operations) {
-                            total_fee += gprops.current_fees->set_fee(op, fee_asset_obj.options.core_exchange_rate);
-                        }
-
-                        FC_ASSERT((total_fee * fee_asset_obj.options.core_exchange_rate).amount <=
-                                  get_object<asset_dynamic_data_object>(fee_asset_obj.dynamic_asset_data_id).fee_pool,
-                                "Cannot pay fees in ${asset}, as this asset's fee pool is insufficiently funded.",
-                                ("asset", fee_asset_obj.symbol));
-                    } else {
-                        for (auto &op : _builder_transactions[handle].operations) {
-                            total_fee += gprops.current_fees->set_fee(op);
-                        }
-                    }
-
-                    return total_fee;
-                }
-
                 transaction preview_builder_transaction(transaction_handle_type handle) {
                     FC_ASSERT(_builder_transactions.count(handle));
                     return _builder_transactions[handle];
@@ -1106,7 +1089,7 @@ namespace steemit {
                     op.expiration_time = expiration;
                     signed_transaction &trx = _builder_transactions[handle];
                     std::transform(trx.operations.begin(), trx.operations.end(), std::back_inserter(op.proposed_operations),
-                            [](const operation &op) -> operaion_wrapper {
+                            [](const operation &op) -> operation_wrapper {
                                 return op;
                             });
                     if (review_period_seconds) {
@@ -1133,8 +1116,6 @@ namespace steemit {
                         op.review_period_seconds = review_period_seconds;
                     }
                     trx.operations = {op};
-                    _remote_db->get_global_properties().parameters.current_fees->set_fee(trx.operations.front());
-
                     return trx = sign_transaction(trx, broadcast);
                 }
 
@@ -1317,10 +1298,6 @@ namespace steemit {
             my->replace_operation_in_builder_transaction(handle, operation_index, new_op);
         }
 
-        asset wallet_api::set_fees_on_builder_transaction(transaction_handle_type handle, string fee_asset) {
-            return my->set_fees_on_builder_transaction(handle, fee_asset);
-        }
-
         transaction wallet_api::preview_builder_transaction(transaction_handle_type handle) {
             return my->preview_builder_transaction(handle);
         }
@@ -1371,6 +1348,10 @@ namespace steemit {
 
             FC_ASSERT(b);
             return *b;
+        }
+
+        proposal_object wallet_api::get_proposal(string account_name, integral_id_type id) const {
+            return my->get_proposal(account_name, id);
         }
 
         bool wallet_api::import_key(string wif_key) {
@@ -3003,17 +2984,19 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return result;
         }
 
-        signed_transaction approve_proposal(
+        signed_transaction wallet_api::approve_proposal(
                 const string &owner,
-                const string &proposal_id,
+                integral_id_type proposal_id,
                 const approval_delta &delta,
-                bool broadcast = false) {
+                bool broadcast /* = false */
+        ) {
             proposal_update_operation update_op;
 
             update_op.owner = get_account(owner).name;
-            update_op.proposal = fc::variant(proposal_id).as<proposal_id_type>();
+            update_op.proposal_id = proposal_id;
             // make sure the proposal exists
-            get_object(update_op.proposal);
+
+            get_proposal(update_op.owner, proposal_id);
 
             for (const std::string &name : delta.active_approvals_to_add) {
                 update_op.active_approvals_to_add.insert(get_account(name).name);
@@ -3042,10 +3025,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             signed_transaction tx;
             tx.operations.push_back(update_op);
-            set_operation_fees(tx, get_global_properties().parameters.current_fees);
             tx.validate();
             return sign_transaction(tx, broadcast);
         }
     }
 } // steemit::wallet
-

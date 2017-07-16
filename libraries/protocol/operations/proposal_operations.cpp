@@ -15,7 +15,6 @@ namespace steemit {
             }
         }
 
-
         void proposal_update_operation::validate() const {
             FC_ASSERT(!(active_approvals_to_add.empty() &&
                         active_approvals_to_remove.empty() &&
