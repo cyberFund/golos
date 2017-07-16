@@ -56,56 +56,31 @@ namespace steemit {
             for (auto auth : a.posting.key_auths) {
                 result.insert(auth.first);
             }
-            result.insert(a.options.memo_key);
-            return result;
-        }
-
-        set<protocol::address> account_member_index::get_address_members(const value_type &a) const {
-            set<protocol::address> result;
-            for (auto auth : a.owner.address_auths) {
-                result.insert(auth.first);
-            }
-            for (auto auth : a.active.address_auths) {
-                result.insert(auth.first);
-            }
-            for (auto auth : a.posting.address_auths) {
-                result.insert(auth.first);
-            }
-            result.insert(a.options.memo_key);
+//            result.insert(a.options.memo_key);
             return result;
         }
 
         void account_member_index::object_inserted(const value_type &obj) {
             auto account_members = get_account_members(obj);
             for (auto item : account_members) {
-                account_to_account_memberships[item].insert(obj.name);
+                account_to_account_memberships[item].insert(obj.account);
             }
 
             auto key_members = get_key_members(obj);
             for (auto item : key_members) {
-                account_to_key_memberships[item].insert(obj.name);
-            }
-
-            auto address_members = get_address_members(obj);
-            for (auto item : address_members) {
-                account_to_address_memberships[item].insert(obj.name);
+                account_to_key_memberships[item].insert(obj.account);
             }
         }
 
         void account_member_index::object_removed(const value_type &obj) {
             auto key_members = get_key_members(obj);
             for (auto item : key_members) {
-                account_to_key_memberships[item].erase(obj.id);
-            }
-
-            auto address_members = get_address_members(obj);
-            for (auto item : address_members) {
-                account_to_address_memberships[item].erase(obj.id);
+                account_to_key_memberships[item].erase(obj.account);
             }
 
             auto account_members = get_account_members(obj);
             for (auto item : account_members) {
-                account_to_account_memberships[item].erase(obj.id);
+                account_to_account_memberships[item].erase(obj.account);
             }
         }
 
@@ -113,7 +88,6 @@ namespace steemit {
             before_key_members.clear();
             before_account_members.clear();
             before_key_members = get_key_members(before);
-            before_address_members = get_address_members(before);
             before_account_members = get_account_members(before);
         }
 
@@ -127,17 +101,17 @@ namespace steemit {
                         std::inserter(removed, removed.end()));
 
                 for (auto itr = removed.begin(); itr != removed.end(); ++itr) {
-                    account_to_account_memberships[*itr].erase(after.id);
+                    account_to_account_memberships[*itr].erase(after.account);
                 }
 
-                vector<object_id_type> added;
+                vector<account_name_type> added;
                 added.reserve(after_account_members.size());
                 std::set_difference(after_account_members.begin(), after_account_members.end(),
                         before_account_members.begin(), before_account_members.end(),
                         std::inserter(added, added.end()));
 
                 for (auto itr = added.begin(); itr != added.end(); ++itr) {
-                    account_to_account_memberships[*itr].insert(after.id);
+                    account_to_account_memberships[*itr].insert(after.account);
                 }
             }
 
@@ -152,7 +126,7 @@ namespace steemit {
                         std::inserter(removed, removed.end()));
 
                 for (auto itr = removed.begin(); itr != removed.end(); ++itr) {
-                    account_to_key_memberships[*itr].erase(after.id);
+                    account_to_key_memberships[*itr].erase(after.account);
                 }
 
                 vector<public_key_type> added;
@@ -162,34 +136,9 @@ namespace steemit {
                         std::inserter(added, added.end()));
 
                 for (auto itr = added.begin(); itr != added.end(); ++itr) {
-                    account_to_key_memberships[*itr].insert(after.id);
+                    account_to_key_memberships[*itr].insert(after.account);
                 }
             }
-
-            {
-                set<protocol::address> after_address_members = get_address_members(after);
-
-                vector<protocol::address> removed;
-                removed.reserve(before_address_members.size());
-                std::set_difference(before_address_members.begin(), before_address_members.end(),
-                        after_address_members.begin(), after_address_members.end(),
-                        std::inserter(removed, removed.end()));
-
-                for (auto itr = removed.begin(); itr != removed.end(); ++itr) {
-                    account_to_address_memberships[*itr].erase(after.id);
-                }
-
-                vector<protocol::address> added;
-                added.reserve(after_address_members.size());
-                std::set_difference(after_address_members.begin(), after_address_members.end(),
-                        before_address_members.begin(), before_address_members.end(),
-                        std::inserter(added, added.end()));
-
-                for (auto itr = added.begin(); itr != added.end(); ++itr) {
-                    account_to_address_memberships[*itr].insert(after.id);
-                }
-            }
-
         }
 
         void account_referrer_index::object_inserted(const value_type &obj) {

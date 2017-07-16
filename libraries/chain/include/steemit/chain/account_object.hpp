@@ -694,22 +694,15 @@ namespace steemit {
             /** given an account or key, map it to the set of accounts that reference it in an active or owner authority */
             map<account_name_type, set<account_name_type>> account_to_account_memberships;
             map<public_key_type, set<account_name_type>> account_to_key_memberships;
-            /** some accounts use address authorities in the genesis block */
-            map<protocol::address, set<account_name_type>> account_to_address_memberships;
-
 
         protected:
             set<account_name_type> get_account_members(const value_type &a) const;
 
             set<public_key_type> get_key_members(const value_type &a) const;
 
-            set<protocol::address> get_address_members(const value_type &a) const;
-
             set<account_name_type> before_account_members;
             set<public_key_type> before_key_members;
-            set<protocol::address> before_address_members;
         };
-
 
         /**
          *  @brief This secondary index will allow a reverse lookup of all accounts that have been referred by
