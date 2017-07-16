@@ -246,13 +246,13 @@ namespace steemit {
         typedef multi_index_container<
                 tag_object,
                 indexed_by<
-                        ordered_unique<tag<by_id>, member<tag_object, tag_id_type, &tag_object::id>>,
+                        ordered_unique<tag<by_id>, member<tag_object, tag_object::id_type, &tag_object::id>>,
                         ordered_unique<tag<by_comment>,
                                 composite_key<tag_object,
-                                        member<tag_object, comment_id_type, &tag_object::comment>,
-                                        member<tag_object, tag_id_type, &tag_object::id>
+                                        member<tag_object, comment_object::id_type, &tag_object::comment>,
+                                        member<tag_object, tag_object::id_type, &tag_object::id>
                                 >,
-                                composite_key_compare<std::less<comment_id_type>, std::less<tag_id_type>>
+                                composite_key_compare<std::less<comment_object::id_type>, std::less<tag_id_type>>
                         >,
                         ordered_unique<tag<by_author_comment>,
                                 composite_key<tag_object,
