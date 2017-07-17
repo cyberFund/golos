@@ -2,6 +2,7 @@
 #define GOLOS_ACCOUNT_POLICE_HPP
 
 #include "generic_policy.hpp"
+#include "../dynamic_extension/worker.hpp"
 
 namespace steemit {
 namespace chain {
@@ -58,9 +59,9 @@ public:
                     acnt.balance += delta;
                     break;
                 case SBD_SYMBOL:
-                    if (a.sbd_seconds_last_update != head_block_time()) {
-                        acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
-                        acnt.sbd_seconds_last_update = head_block_time();
+                    if (a.sbd_seconds_last_update != references.head_block_time()) {
+                        acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (references.head_block_time() - a.sbd_seconds_last_update).to_seconds();
+                        acnt.sbd_seconds_last_update = references.head_block_time();
 
                         if (acnt.sbd_seconds > 0 &&
                             (acnt.sbd_seconds_last_update -
@@ -68,19 +69,18 @@ public:
                             STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
                             auto interest = acnt.sbd_seconds /
                                             STEEMIT_SECONDS_PER_YEAR;
-                            interest *= get_dynamic_global_properties().sbd_interest_rate;
+                            interest *= references.get_dynamic_global_properties().sbd_interest_rate;
                             interest /= STEEMIT_100_PERCENT;
                             asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
                             acnt.sbd_balance += interest_paid;
                             acnt.sbd_seconds = 0;
-                            acnt.sbd_last_interest_payment = head_block_time();
+                            acnt.sbd_last_interest_payment = references.head_block_time();
 
                             references.push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                            references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
                                 props.current_sbd_supply += interest_paid;
-                                props.virtual_supply += interest_paid *
-                                                        get_feed_history().current_median_history;
+                                props.virtual_supply += interest_paid * references.get_feed_history().current_median_history;
                             });
                         }
                     }
@@ -101,12 +101,12 @@ public:
                     break;
                 case SBD_SYMBOL:
                     if (a.savings_sbd_seconds_last_update !=
-                        head_block_time()) {
+                            references.head_block_time()) {
                         acnt.savings_sbd_seconds +=
                                 fc::uint128_t(a.savings_sbd_balance.amount.value) *
-                                (head_block_time() -
+                                (references.head_block_time() -
                                  a.savings_sbd_seconds_last_update).to_seconds();
-                        acnt.savings_sbd_seconds_last_update = head_block_time();
+                        acnt.savings_sbd_seconds_last_update = references.head_block_time();
 
                         if (acnt.savings_sbd_seconds > 0 &&
                             (acnt.savings_sbd_seconds_last_update -
@@ -114,19 +114,18 @@ public:
                             STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
                             auto interest = acnt.savings_sbd_seconds /
                                             STEEMIT_SECONDS_PER_YEAR;
-                            interest *= get_dynamic_global_properties().sbd_interest_rate;
+                            interest *= references.get_dynamic_global_properties().sbd_interest_rate;
                             interest /= STEEMIT_100_PERCENT;
                             asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
                             acnt.savings_sbd_balance += interest_paid;
                             acnt.savings_sbd_seconds = 0;
-                            acnt.savings_sbd_last_interest_payment = head_block_time();
+                            acnt.savings_sbd_last_interest_payment = references.head_block_time();
 
                             references.push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                            references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
                                 props.current_sbd_supply += interest_paid;
-                                props.virtual_supply += interest_paid *
-                                                        get_feed_history().current_median_history;
+                                props.virtual_supply += interest_paid * references.get_feed_history().current_median_history;
                             });
                         }
                     }
@@ -140,38 +139,26 @@ public:
 
 
     void update_owner_authority(const account_object &account, const authority &owner_authority) {
-        if (head_block_num() >=
-            STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
+        if (references.head_block_num() >= STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
             references.create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
                 hist.account = account.name;
                 hist.previous_owner_authority = get<account_authority_object, by_account>(account.name).owner;
-                hist.last_valid_time = head_block_time();
+                hist.last_valid_time = references.head_block_time();
             });
         }
 
         references.modify(get<account_authority_object, by_account>(account.name), [&](account_authority_object &auth) {
             auth.owner = owner_authority;
-            auth.last_owner_update = head_block_time();
+            auth.last_owner_update = references.head_block_time();
         });
     }
 
-    const account_object &get_account(const account_name_type &name) const {
-        try {
-            return references.get<account_object, by_name>(name);
-        } FC_CAPTURE_AND_RETHROW((name))
-    }
-
-    const account_object *find_account(const account_name_type &name) const {
-        return references.find<account_object, by_name>(name);
-    }
-
-
     void clear_null_account_balance() {
-        if (!has_hardfork(STEEMIT_HARDFORK_0_14__327)) {
+        if (!references.has_hardfork(STEEMIT_HARDFORK_0_14__327)) {
             return;
         }
 
-        const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
+        const auto &null_account = references.get_account(STEEMIT_NULL_ACCOUNT);
         asset total_steem(0, STEEM_SYMBOL);
         asset total_sbd(0, SBD_SYMBOL);
 
@@ -235,7 +222,7 @@ public:
 
     void old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
         try {
-            const auto &props = get_dynamic_global_properties();
+            const auto &props = references.get_dynamic_global_properties();
             if (props.total_vesting_shares.amount > 0) {
                 FC_ASSERT(a.vesting_shares.amount >
                           0, "Only accounts with a postive vesting balance may transact.");
@@ -243,7 +230,7 @@ public:
                 auto band = find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
 
                 if (band == nullptr) {
-                    band = &create<account_bandwidth_object>([&](account_bandwidth_object &b) {
+                    band = &references.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
                         b.account = a.name;
                         b.type = type;
                     });
@@ -253,7 +240,7 @@ public:
                     b.lifetime_bandwidth +=
                             trx_size * STEEMIT_BANDWIDTH_PRECISION;
 
-                    auto now = head_block_time();
+                    auto now = references.head_block_time();
                     auto delta_time = (now -
                                        b.last_bandwidth_update).to_seconds();
                     uint64_t N = trx_size * STEEMIT_BANDWIDTH_PRECISION;
@@ -290,14 +277,14 @@ public:
     }
 
     bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
-        const auto &props = get_dynamic_global_properties();
+        const auto &props = references.get_dynamic_global_properties();
         bool has_bandwidth = true;
 
         if (props.total_vesting_shares.amount > 0) {
             auto band = find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
 
             if (band == nullptr) {
-                band = &create<account_bandwidth_object>([&](account_bandwidth_object &b) {
+                band = &references.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
                     b.account = a.name;
                     b.type = type;
                 });
@@ -306,15 +293,13 @@ public:
             share_type new_bandwidth;
             share_type trx_bandwidth =
                     trx_size * STEEMIT_BANDWIDTH_PRECISION;
-            auto delta_time = (head_block_time() -
-                               band->last_bandwidth_update).to_seconds();
+            auto delta_time = (references.head_block_time() - band->last_bandwidth_update).to_seconds();
 
             if (delta_time > STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
                 new_bandwidth = 0;
             } else {
                 new_bandwidth = (
-                        ((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS -
-                          delta_time) *
+                        ((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) *
                          fc::uint128(band->average_bandwidth.value))
                         /
                         STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
@@ -325,7 +310,7 @@ public:
             references.modify(*band, [&](account_bandwidth_object &b) {
                 b.average_bandwidth = new_bandwidth;
                 b.lifetime_bandwidth += trx_bandwidth;
-                b.last_bandwidth_update = head_block_time();
+                b.last_bandwidth_update = references.head_block_time();
             });
 
             fc::uint128 account_vshares(a.vesting_shares.amount.value);
@@ -349,6 +334,23 @@ public:
     }
 
 
+    void expire_escrow_ratification() {
+        const auto &escrow_idx = references.get_index<escrow_index>().indices().get<by_ratification_deadline>();
+        auto escrow_itr = escrow_idx.lower_bound(false);
+
+        while (escrow_itr != escrow_idx.end() && !escrow_itr->is_approved() && escrow_itr->ratification_deadline <= references.head_block_time()) {
+            const auto &old_escrow = *escrow_itr;
+            ++escrow_itr;
+
+            const auto &from_account = references.get_account(old_escrow.from);
+            adjust_balance(from_account, old_escrow.steem_balance);
+            adjust_balance(from_account, old_escrow.sbd_balance);
+            adjust_balance(from_account, old_escrow.pending_fee);
+            references.remove(old_escrow);
+        }
+    }
+
+
     /** this updates the votes for all witnesses as a result of account VESTS changing */
     void adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth = 0) {
         if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
@@ -357,7 +359,7 @@ public:
                 return;
             }
 
-            const auto &proxy = get_account(a.proxy);
+            const auto &proxy = references.get_account(a.proxy);
 
             references.modify(proxy, [&](account_object &a) {
                 a.proxied_vsf_votes[depth] += delta;
@@ -372,8 +374,7 @@ public:
     /** this updates the votes for witnesses as a result of account voting proxy changing */
     void adjust_proxied_witness_votes(
             const account_object &a,
-            const std::array<share_type,
-                    STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
+            const std::array<share_type,STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
             int depth = 0) {
         if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
             /// nested proxies are not supported, vote will not propagate
@@ -381,7 +382,7 @@ public:
                 return;
             }
 
-            const auto &proxy = get_account(a.proxy);
+            const auto &proxy = references.get_account(a.proxy);
 
             references.modify(proxy, [&](account_object &a) {
                 for (int i = STEEMIT_MAX_PROXY_RECURSION_DEPTH - depth - 1;
@@ -402,7 +403,7 @@ public:
     }
 
     asset get_balance(const string &aname, asset_symbol_type symbol) const {
-        return get_balance(get_account(aname), symbol);
+        return get_balance(references.get_account(aname), symbol);
     }
 
 
@@ -419,17 +420,17 @@ public:
  *  This method does not pay out witnesses.
  */
     void process_funds() {
-        const auto &props = get_dynamic_global_properties();
-        const auto &wso = get_witness_schedule_object();
+        const auto &props = references.get_dynamic_global_properties();
+        const auto &wso = references.get_witness_schedule_object();
 
-        if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+        if (references.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
             /**
    * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
    * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
    */
             int64_t start_inflation_rate = int64_t(STEEMIT_INFLATION_RATE_START_PERCENT);
             int64_t inflation_rate_adjustment = int64_t(
-                    head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD);
+                    references.head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD);
             int64_t inflation_rate_floor = int64_t(STEEMIT_INFLATION_RATE_STOP_PERCENT);
 
             // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
@@ -443,7 +444,7 @@ public:
             auto content_reward =
                     (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) /
                     STEEMIT_100_PERCENT;
-            if (has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+            if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                 content_reward = pay_reward_funds(content_reward);
             } /// 75% to content creator
             auto vesting_reward =
@@ -470,7 +471,7 @@ public:
 
             references.modify(props, [&](dynamic_global_property_object &p) {
                 p.total_vesting_fund_steem += asset(vesting_reward, STEEM_SYMBOL);
-                if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                if (!references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                     p.total_reward_fund_steem += asset(content_reward, STEEM_SYMBOL);
                 }
                 p.current_supply += asset(new_steem, STEEM_SYMBOL);
@@ -478,10 +479,10 @@ public:
 
             });
 
-            create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
+            create_vesting(references.get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
         } else {
-            auto content_reward = get_content_reward();
-            auto curate_reward = get_curation_reward();
+            auto content_reward = references.get_content_reward();
+            auto curate_reward = references.get_curation_reward();
             auto witness_pay = get_producer_reward();
             auto vesting_reward =
                     content_reward + curate_reward + witness_pay;
@@ -506,17 +507,17 @@ public:
     }
 
     void process_savings_withdraws() {
-        const auto &idx = get_index<savings_withdraw_index>().indices().get<by_complete_from_rid>();
+        const auto &idx = references.get_index<savings_withdraw_index>().indices().get<by_complete_from_rid>();
         auto itr = idx.begin();
         while (itr != idx.end()) {
 
-            if (itr->complete > head_block_time()) {
+            if (itr->complete > references.head_block_time()) {
                 break;
             }
 
-            adjust_balance(get_account(itr->to), itr->amount);
+            adjust_balance(references.get_account(itr->to), itr->amount);
 
-            references.modify(get_account(itr->from), [&](account_object &a) {
+            references.modify(references.get_account(itr->from), [&](account_object &a) {
                 a.savings_withdraw_requests--;
             });
 
@@ -529,13 +530,13 @@ public:
 
 
     asset get_producer_reward() {
-        const auto &props = get_dynamic_global_properties();
+        const auto &props = references.get_dynamic_global_properties();
         static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
         asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
 
-        const auto &witness_account = get_account(props.current_witness);
+        const auto &witness_account = references.get_account(props.current_witness);
 
-        if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
+        if (references.has_hardfork(STEEMIT_HARDFORK_0_16)) {
             auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
 
             /// pay witness in vesting shares
@@ -545,7 +546,7 @@ public:
                 // const auto& witness_obj = get_witness( props.current_witness );
                 create_vesting(witness_account, pay);
             } else {
-                references.modify(get_account(witness_account.name), [&](account_object &a) {
+                references.modify(references.get_account(witness_account.name), [&](account_object &a) {
                     a.balance += pay;
                 });
             }
@@ -561,7 +562,7 @@ public:
                 // const auto& witness_obj = get_witness( props.current_witness );
                 create_vesting(witness_account, pay);
             } else {
-                references.modify(get_account(witness_account.name), [&](account_object &a) {
+                references.modify(references.get_account(witness_account.name), [&](account_object &a) {
                     a.balance += pay;
                 });
             }
@@ -570,15 +571,13 @@ public:
         }
     }
 
-
-
     void account_recovery_processing() {
         // Clear expired recovery requests
         const auto &rec_req_idx = references.get_index<account_recovery_request_index>().indices().get<by_expiration>();
         auto rec_req = rec_req_idx.begin();
 
         while (rec_req != rec_req_idx.end() &&
-               rec_req->expires <= head_block_time()) {
+               rec_req->expires <= references.head_block_time()) {
             remove(*rec_req);
             rec_req = rec_req_idx.begin();
         }
@@ -587,10 +586,8 @@ public:
         const auto &hist_idx = references.get_index<owner_authority_history_index>().indices(); //by id
         auto hist = hist_idx.begin();
 
-        while (hist != hist_idx.end() && time_point_sec(
-                hist->last_valid_time +
-                STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) < head_block_time()) {
-            remove(*hist);
+        while (hist != hist_idx.end() && time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) < references.head_block_time()) {
+            references.remove(*hist);
             hist = hist_idx.begin();
         }
 
@@ -598,9 +595,8 @@ public:
         const auto &change_req_idx = references.get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
         auto change_req = change_req_idx.begin();
 
-        while (change_req != change_req_idx.end() &&
-               change_req->effective_on <= head_block_time()) {
-            references.modify(get_account(change_req->account_to_recover), [&](account_object &a) {
+        while (change_req != change_req_idx.end() && change_req->effective_on <= references.head_block_time()) {
+            references.modify(references.get_account(change_req->account_to_recover), [&](account_object &a) {
                 a.recovery_account = change_req->recovery_account;
             });
 
@@ -610,11 +606,11 @@ public:
     }
 
     void clear_expired_delegations() {
-        auto now = head_block_time();
+        auto now = references.head_block_time();
         const auto &delegations_by_exp = references.get_index<vesting_delegation_expiration_index, by_expiration>();
         auto itr = delegations_by_exp.begin();
         while (itr != delegations_by_exp.end() && itr->expiration < now) {
-            references.modify(get_account(itr->delegator), [&](account_object &a) {
+            references.modify(references.get_account(itr->delegator), [&](account_object &a) {
                 a.delegated_vesting_shares -= itr->vesting_shares;
             });
 

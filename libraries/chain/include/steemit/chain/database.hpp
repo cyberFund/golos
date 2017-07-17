@@ -14,8 +14,8 @@
 
 #include <fc/log/logger.hpp>
 
-#include <steemit/chain/policies/hardfork_property_policy.hpp>
-#include <steemit/chain/policies/dynamic_global_property_policy.hpp>
+
+#include <steemit/chain/transformer.hpp>
 
 namespace steemit {
     namespace chain {
@@ -39,14 +39,12 @@ namespace steemit {
          *   @class database
          *   @brief tracks the blockchain state in an extensible manner
          */
-        class database_basic : public chainbase::database {
+        class database_basic : public transformer<chainbase::database> {
         public:
 
             database_basic();
 
             virtual ~database_basic();
-
-            database_basic(hardfork_property_policy& hardfork_property, dynamic_global_property_policy&dynamic_global_property_);
 
             bool is_producing() const {
                 return _is_producing;
@@ -60,7 +58,7 @@ namespace steemit {
 
             bool _log_hardforks = true;
 
-            enum validation_steps {
+            enum class validation_steps: uint8_t {
                 skip_nothing = 0,
                 skip_witness_signature = 1 << 0,  ///< used while reindexing
                 skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
@@ -94,8 +92,7 @@ namespace steemit {
              * This method may be called after or instead of @ref database::open, and will rebuild the object graph by
              * replaying blockchain history. When this method exits successfully, the database will be open.
              */
-            void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size = (
-                    1024l * 1024l * 1024l * 8l));
+            void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size = (1024l * 1024l * 1024l * 8l));
 
             /**
              * @brief wipe Delete database from disk, and potentially the raw chain as well.
@@ -132,6 +129,26 @@ namespace steemit {
             chain_id_type get_chain_id() const;
 
             const node_property_object &get_node_properties() const;
+
+////Todo Nex Refactoring
+            const hardfork_property_object &get_hardfork_property_object() const;
+            const dynamic_global_property_object &get_dynamic_global_properties() const;
+
+            void process_hardforks();
+            bool has_hardfork(uint32_t hardfork) const;
+            void set_hardfork(uint32_t hardfork, bool apply_now);
+            void apply_hardfork(uint32_t hardfork);
+            void init_hardforks();
+
+
+            time_point_sec head_block_time() const;
+            void update_global_dynamic_data(const signed_block &b);
+            void update_virtual_supply();
+            void validate_invariants() const;
+            uint32_t head_block_num() const;
+            block_id_type database_basic::head_block_id() const;
+            uint32_t last_non_undoable_block_num() const;
+////Todo Nex Refactoring
 
             /**
              *  Deducts fee from the account and the share supply
@@ -400,8 +417,6 @@ namespace steemit {
                with id N, applies all hardforks with id <= N */
             //void set_hardfork(uint32_t hardfork, bool process_now = true);
 
-            void validate_invariants() const;
-
             /**
              * @}
              */
@@ -426,9 +441,9 @@ namespace steemit {
         private:
             optional<chainbase::database::session> _pending_tx_session;
 
-            void apply_block(const signed_block &next_block, uint32_t skip = skip_nothing);
+            void apply_block(const signed_block &next_block, uint32_t skip = validation_steps::skip_nothing);
 
-            void apply_transaction(const signed_transaction &trx, uint32_t skip = skip_nothing);
+            void apply_transaction(const signed_transaction &trx, uint32_t skip = validation_steps::skip_nothing);
 
             void _apply_block(const signed_block &next_block);
 
@@ -454,13 +469,10 @@ namespace steemit {
             ///@}
 
 
-            hardfork_property_policy& hardfork_property_;
-            dynamic_global_property_policy& dynamic_global_property_;
-
             vector<signed_transaction> _pending_tx;
             fork_database _fork_db;
-            fc::time_point_sec _hardfork_times[STEEMIT_NUM_HARDFORKS + 1];
-            protocol::hardfork_version _hardfork_versions[STEEMIT_NUM_HARDFORKS + 1];
+            std::array<fc::time_point_sec, STEEMIT_NUM_HARDFORKS + 1>_hardfork_times;
+            std::array<protocol::hardfork_version, STEEMIT_NUM_HARDFORKS + 1>_hardfork_versions;
 
             block_log _block_log;
 

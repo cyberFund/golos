@@ -27,9 +27,7 @@ namespace steemit {
         using fc::uint128_t;
 
         inline void validate_permlink_0_1(const string &permlink) {
-            FC_ASSERT(permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH &&
-                      permlink.size() <
-                      STEEMIT_MAX_PERMLINK_LENGTH, "Permlink is not a valid size.");
+            FC_ASSERT(permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH && permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "Permlink is not a valid size.");
 
             for (auto c : permlink) {
                 switch (c) {
@@ -2441,8 +2439,7 @@ namespace steemit {
             } else {
                 auto delta = delegation->vesting_shares - op.vesting_shares;
 
-                FC_ASSERT(delta >=
-                          min_update, "Steem Power increase is not enough of a different. min_update: ${min}", ("min", min_update));
+                FC_ASSERT(delta >= min_update, "Steem Power increase is not enough of a different. min_update: ${min}", ("min", min_update));
                 FC_ASSERT(op.vesting_shares >= min_delegation ||
                           op.vesting_shares.amount ==
                           0, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation));

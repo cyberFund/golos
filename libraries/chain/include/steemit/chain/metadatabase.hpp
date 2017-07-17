@@ -13,15 +13,14 @@
 #include <steemit/chain/policies/asset_policy.hpp>
 #include <steemit/chain/policies/behaviour_based_policy.hpp>
 #include <steemit/chain/policies/comment_policy.hpp>
-#include <steemit/chain/policies/dynamic_global_property_policy.hpp>
-#include <steemit/chain/policies/escrow_policy.hpp>
-#include <steemit/chain/policies/feed_history_policy.hpp>
-#include <steemit/chain/policies/hardfork_property_policy.hpp>
 #include <steemit/chain/policies/order_policy.hpp>
 #include <steemit/chain/policies/reward_policy.hpp>
 #include <steemit/chain/policies/withdrawal_policy.hpp>
 #include <steemit/chain/policies/witness_policy.hpp>
 #include <steemit/chain/policies/witness_schedule_policy.hpp>
+
+
+#include "dynamic_extension/worker_storage.hpp"
 
 namespace steemit {
 namespace chain {
@@ -31,7 +30,12 @@ namespace chain {
 template<typename... Policies>
 class database_police final : public database_basic, public Policies ... {
 public:
-    database_police(): _evaluator_registry(*this), Policies(*this,_evaluator_registry)...{}
+    database_police(): _evaluator_registry(*this), Policies(*this,_evaluator_registry)...{
+
+
+    }
+
+
 
     ~database_police() = default;
     void initialize_indexes(){
@@ -107,6 +111,7 @@ public:
     }
 
 protected:
+    worker_storage storage;
     evaluator_registry<operation> _evaluator_registry;
 
 };
@@ -116,10 +121,6 @@ using database = database_police<
         asset_symbol_type ,
         behaviour_based_policy,
         comment_policy,
-        dynamic_global_property_policy,
-        escrow_policy,
-        feed_history_policy,
-        hardfork_property_policy,
         order_policy,
         reward_policy,
         withdrawal_policy,

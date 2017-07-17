@@ -27,7 +27,7 @@ struct order_policy: public generic_policy {
 
 
     void clear_expired_orders() {
-        auto now = head_block_time();
+        auto now = references.head_block_time();
         const auto &orders_by_exp = references.get_index<limit_order_index>().indices().get<by_expiration>();
         auto itr = orders_by_exp.begin();
         while (itr != orders_by_exp.end() && itr->expiration < now) {
@@ -56,32 +56,14 @@ struct order_policy: public generic_policy {
         return references.find<limit_order_object>(order_id) == nullptr;
     }
 
-    const limit_order_object &get_limit_order(const account_name_type &name, uint32_t orderid) const {
-        try {
-            if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
-                orderid = orderid & 0x0000FFFF;
-            }
-
-            return references.get<limit_order_object, by_account>(boost::make_tuple(name, orderid));
-        } FC_CAPTURE_AND_RETHROW((name)(orderid))
-    }
-
-    const limit_order_object *find_limit_order(const account_name_type &name, uint32_t orderid) const {
-        if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
-            orderid = orderid & 0x0000FFFF;
-        }
-
-        return references.find<limit_order_object, by_account>(boost::make_tuple(name, orderid));
-    }
-
     bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
         try {
             FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
             FC_ASSERT(pays.symbol != receives.symbol);
 
-            const account_object &seller = get_account(order.seller);
+            const account_object &seller = references.get_account(order.seller);
 
-            references.adjust_balance(seller, receives);
+                adjust_balance(seller, receives);
 
             if (pays == order.amount_for_sale()) {
                 references.remove(order);
@@ -107,19 +89,16 @@ struct order_policy: public generic_policy {
     }
 
     void cancel_order(const limit_order_object &order) {
-        adjust_balance(get_account(order.seller), order.amount_for_sale());
+        adjust_balance(references.get_account(order.seller), order.amount_for_sale());
         references.remove(order);
     }
 
 
     int match(const limit_order_object &new_order, const limit_order_object &old_order, const price &match_price) {
-        assert(new_order.sell_price.quote.symbol ==
-               old_order.sell_price.base.symbol);
-        assert(new_order.sell_price.base.symbol ==
-               old_order.sell_price.quote.symbol);
+        assert(new_order.sell_price.quote.symbol == old_order.sell_price.base.symbol);
+        assert(new_order.sell_price.base.symbol == old_order.sell_price.quote.symbol);
         assert(new_order.for_sale > 0 && old_order.for_sale > 0);
-        assert(match_price.quote.symbol ==
-               new_order.sell_price.base.symbol);
+        assert(match_price.quote.symbol == new_order.sell_price.base.symbol);
         assert(match_price.base.symbol == old_order.sell_price.base.symbol);
 
         auto new_order_for_sale = new_order.amount_for_sale();
@@ -142,21 +121,20 @@ struct order_policy: public generic_policy {
         old_order_pays = new_order_receives;
         new_order_pays = old_order_receives;
 
-        assert(new_order_pays == new_order.amount_for_sale() ||
-               old_order_pays == old_order.amount_for_sale());
+        assert(new_order_pays == new_order.amount_for_sale() || old_order_pays == old_order.amount_for_sale());
 
-        auto age = head_block_time() - old_order.created;
-        if (!has_hardfork(STEEMIT_HARDFORK_0_12__178) &&
+        auto age = references.head_block_time() - old_order.created;
+        if (!references.has_hardfork(STEEMIT_HARDFORK_0_12__178) &&
             ((age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC &&
-              !has_hardfork(STEEMIT_HARDFORK_0_10__149)) ||
+              !references.has_hardfork(STEEMIT_HARDFORK_0_10__149)) ||
              (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 &&
-              has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
+                     references.has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
             if (old_order_receives.symbol == STEEM_SYMBOL) {
-                references.adjust_liquidity_reward(get_account(old_order.seller), old_order_receives, false);
-                references.adjust_liquidity_reward(get_account(new_order.seller), -old_order_receives, false);
+                adjust_liquidity_reward(references.get_account(old_order.seller), old_order_receives, false);
+                adjust_liquidity_reward(references.get_account(new_order.seller), -old_order_receives, false);
             } else {
-                references.adjust_liquidity_reward(get_account(old_order.seller), new_order_receives, true);
-                references.adjust_liquidity_reward(get_account(new_order.seller), -new_order_receives, true);
+                adjust_liquidity_reward(references.get_account(old_order.seller), new_order_receives, true);
+                adjust_liquidity_reward(references.get_account(new_order.seller), -new_order_receives, true);
             }
         }
 

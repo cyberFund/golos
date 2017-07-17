@@ -5,6 +5,7 @@
 
 namespace steemit {
 namespace chain {
+
 struct behaviour_based_policy: public generic_policy {
 public:
     behaviour_based_policy() = default;
@@ -23,14 +24,13 @@ public:
     }
 
     share_type pay_reward_funds(share_type reward) {
-        const auto &reward_idx = get_index<reward_fund_index, by_id>();
+        const auto &reward_idx = references.get_index<reward_fund_index, by_id>();
         share_type used_rewards = 0;
 
         for (auto itr = reward_idx.begin();
              itr != reward_idx.end(); ++itr) {
             // reward is a per block reward and the percents are 16-bit. This should never overflow
-            auto r = (reward * itr->percent_content_rewards) /
-                     STEEMIT_100_PERCENT;
+            auto r = (reward * itr->percent_content_rewards) / STEEMIT_100_PERCENT;
 
             references.modify(*itr, [&](reward_fund_object &rfo) {
                 rfo.reward_balance += asset(r, STEEM_SYMBOL);
@@ -56,8 +56,8 @@ public:
                 return assets;
             }
 
-            const auto &median_price = get_feed_history().current_median_history;
-            const auto &gpo = get_dynamic_global_properties();
+            const auto &median_price = references.get_feed_history().current_median_history;
+            const auto &gpo = references.get_dynamic_global_properties();
 
             if (!median_price.is_null()) {
                 auto to_sbd = (gpo.sbd_print_rate * steem.amount) /
@@ -90,23 +90,20 @@ public:
         FC_ASSERT((input_time - fc::time_point::now()).to_seconds() <
                   STEEMIT_CASHOUT_WINDOW_SECONDS, "Extension time should be less or equal than a week");
 
-        return asset(((input_time - fc::time_point::now()).to_seconds() *
-                      STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
-                      (input_comment.net_rshares * 60 * 60 *
-                       24), SBD_SYMBOL));
+        return asset(((input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY / (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL));
     }
 
 
     asset to_sbd(const asset &steem) const {
-        return utilities::to_sbd(get_feed_history().current_median_history, steem);
+        return utilities::to_sbd(references.get_feed_history().current_median_history, steem);
     }
 
     asset to_steem(const asset &sbd) const {
-        return utilities::to_steem(get_feed_history().current_median_history, sbd);
+        return utilities::to_steem(references.get_feed_history().current_median_history, sbd);
     }
 
     fc::sha256 get_pow_target() const {
-        const auto &dgp = get_dynamic_global_properties();
+        const auto &dgp = references.get_dynamic_global_properties();
         fc::sha256 target;
         target._hash[0] = -1;
         target._hash[1] = -1;
@@ -118,16 +115,16 @@ public:
 
     void update_median_feed() {
             try {
-                if ((head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0) {
+                if ((references.head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0) {
                     return;
                 }
 
-                auto now = head_block_time();
-                const witness_schedule_object &wso = get_witness_schedule_object();
+                auto now = references.head_block_time();
+                const witness_schedule_object &wso = references.get_witness_schedule_object();
                 vector<price> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-                    const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
+                    const auto &wit = references.get_witness(wso.current_shuffled_witnesses[i]);
                     if (wit.last_sbd_exchange_update <
                         now + STEEMIT_MAX_FEED_AGE &&
                         !wit.sbd_exchange_rate.is_null()) {
@@ -139,10 +136,10 @@ public:
                     std::sort(feeds.begin(), feeds.end());
                     auto median_feed = feeds[feeds.size() / 2];
 
-                    modify(get_feed_history(), [&](feed_history_object &fho) {
+                    references.modify(references.get_feed_history(), [&](feed_history_object &fho) {
                         fho.price_history.push_back(median_feed);
                         size_t steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF16;
-                        if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                        if (references.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                             steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
                         }
 
@@ -165,8 +162,8 @@ public:
                                 return;
                             }
 #endif
-                            if (has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
-                                const auto &gpo = get_dynamic_global_properties();
+                            if (references.has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
+                                const auto &gpo = references.get_dynamic_global_properties();
                                 price min_price(asset(9 *
                                                       gpo.current_sbd_supply.amount, SBD_SYMBOL), gpo.current_supply); // This price limits SBD to 10% market cap
 
@@ -181,12 +178,12 @@ public:
         }
 
     uint32_t get_pow_summary_target() const {
-        const dynamic_global_property_object &dgp = get_dynamic_global_properties();
+        const dynamic_global_property_object &dgp = references.get_dynamic_global_properties();
         if (dgp.num_pow_witnesses >= 1004) {
             return 0;
         }
 
-        if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+        if (references.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
             return (0xFE00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;
         } else {
             return (0xFC00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;

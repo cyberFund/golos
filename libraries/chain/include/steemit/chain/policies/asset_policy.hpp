@@ -2,6 +2,7 @@
 #define GOLOS_ASSET_OBJECT_POLICY_HPP
 
 #include "generic_policy.hpp"
+#include "../dynamic_extension/worker.hpp"
 
 namespace steemit {
 namespace chain {
@@ -25,7 +26,7 @@ public:
 
     void adjust_supply(const asset &delta, bool adjust_vesting) {
 
-        const auto &props = get_dynamic_global_properties();
+        const auto &props = references.get_dynamic_global_properties();
         if (props.head_block_number < STEEMIT_BLOCKS_PER_DAY * 7) {
             adjust_vesting = false;
         }
@@ -43,9 +44,7 @@ public:
                 }
                 case SBD_SYMBOL:
                     props.current_sbd_supply += delta;
-                    props.virtual_supply = props.current_sbd_supply *
-                                           get_feed_history().current_median_history +
-                                           props.current_supply;
+                    props.virtual_supply = props.current_sbd_supply * references.get_feed_history().current_median_history + props.current_supply;
                     assert(props.current_sbd_supply.amount.value >= 0);
                     break;
                 default:
@@ -61,45 +60,55 @@ public:
 *  current median price feed history price times the premium
 */
     void process_conversions() {
-        auto now = head_block_time();
-        const auto &request_by_date = get_index<convert_request_index>().indices().get<by_conversion_date>();
-        auto itr = request_by_date.begin();
 
-        const auto &fhistory = references.get_feed_history();
-        if (fhistory.current_median_history.is_null()) {
-            return;
-        }
-
-        asset net_sbd(0, SBD_SYMBOL);
-        asset net_steem(0, STEEM_SYMBOL);
-
-        while (itr != request_by_date.end() &&
-               itr->conversion_date <= now) {
-            const auto &user = get_account(itr->owner);
-            auto amount_to_issue =
-                    itr->amount * fhistory.current_median_history;
-
-            adjust_balance(user, amount_to_issue);
-
-            net_sbd += itr->amount;
-            net_steem += amount_to_issue;
-
-            references.push_virtual_operation(fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
-
-            references.remove(*itr);
-            itr = request_by_date.begin();
-        }
-
-        const auto &props = references.get_dynamic_global_properties();
-        references.modify(props, [&](dynamic_global_property_object &p) {
-            p.current_supply += net_steem;
-            p.current_sbd_supply -= net_sbd;
-            p.virtual_supply += net_steem;
-            p.virtual_supply -=
-                    net_sbd * references.get_feed_history().current_median_history;
-        });
     }
 
 };
+
+class  asset_worker final :public worker_t {
+public:
+    asset_worker():worker_t("asset"){
+        add("process_conversions",[&](){
+
+            auto now = references.head_block_time();
+            const auto &request_by_date = references.get_index<convert_request_index>().indices().get<by_conversion_date>();
+            auto itr = request_by_date.begin();
+
+            const auto &fhistory = references.get_feed_history();
+            if (fhistory.current_median_history.is_null()) {
+                return;
+            }
+
+            asset net_sbd(0, SBD_SYMBOL);
+            asset net_steem(0, STEEM_SYMBOL);
+
+            while (itr != request_by_date.end() && itr->conversion_date <= now) {
+                const auto &user = references.get_account(itr->owner);
+                auto amount_to_issue = itr->amount * fhistory.current_median_history;
+
+                adjust_balance(user, amount_to_issue);
+
+                net_sbd += itr->amount;
+                net_steem += amount_to_issue;
+
+                references.push_virtual_operation(fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
+
+                references.remove(*itr);
+                itr = request_by_date.begin();
+            }
+
+            const auto &props = references.get_dynamic_global_properties();
+            references.modify(props, [&](dynamic_global_property_object &p) {
+                p.current_supply += net_steem;
+                p.current_sbd_supply -= net_sbd;
+                p.virtual_supply += net_steem;
+                p.virtual_supply -= net_sbd * references.get_feed_history().current_median_history;
+            });
+        });
+
+    }
+};
+
+
 }}
 #endif //GOLOS_ASSET_OBJECT_POLICY_HPP

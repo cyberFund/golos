@@ -7,6 +7,7 @@
 
 namespace steemit {
 namespace chain {
+
 struct witness_schedule_policy: public generic_policy {
 
     witness_schedule_policy() = default;
@@ -24,37 +25,31 @@ struct witness_schedule_policy: public generic_policy {
     witness_schedule_policy(database_basic &ref, evaluator_registry <operation> &evaluator_registry_) : generic_policy(ref) {
     }
 
-    const witness_schedule_object &get_witness_schedule_object() const {
-        try {
-            return references.get<witness_schedule_object>();
-        } FC_CAPTURE_AND_RETHROW()
-    }
 
     void reset_virtual_schedule_time() {
-        const witness_schedule_object &wso = db.get_witness_schedule_object();
+        const witness_schedule_object &wso = references.get_witness_schedule_object();
         references.modify(wso, [&](witness_schedule_object &o) {
             o.current_virtual_time = fc::uint128(); // reset it 0
         });
 
-        const auto &idx = db.get_index<witness_index>().indices();
+        const auto &idx = references.get_index<witness_index>().indices();
         for (const auto &witness : idx) {
             references.modify(witness, [&](witness_object &wobj) {
                 wobj.virtual_position = fc::uint128();
                 wobj.virtual_last_update = wso.current_virtual_time;
-                wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 /
-                                              (wobj.votes.value + 1);
+                wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 / (wobj.votes.value + 1);
             });
         }
     }
 
     void update_median_witness_props() {
-        const witness_schedule_object &wso = db.get_witness_schedule_object();
+        const witness_schedule_object &wso = references.get_witness_schedule_object();
 
         /// fetch all witness objects
         vector<const witness_object *> active;
         active.reserve(wso.num_scheduled_witnesses);
         for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-            active.push_back(&db.get_witness(wso.current_shuffled_witnesses[i]));
+            active.push_back(&references.get_witness(wso.current_shuffled_witnesses[i]));
         }
 
         /// sort them by account_creation_fee
@@ -62,8 +57,7 @@ struct witness_schedule_policy: public generic_policy {
             return a->props.account_creation_fee.amount <
                    b->props.account_creation_fee.amount;
         });
-        asset median_account_creation_fee = active[active.size() /
-                                                   2]->props.account_creation_fee;
+        asset median_account_creation_fee = active[active.size() / 2]->props.account_creation_fee;
 
         /// sort them by maximum_block_size
         std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
@@ -86,14 +80,14 @@ struct witness_schedule_policy: public generic_policy {
             _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
         });
 
-        references.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
+        references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
             _dgpo.maximum_block_size = median_maximum_block_size;
             _dgpo.sbd_interest_rate = median_sbd_interest_rate;
         });
     }
 
     void update_witness_schedule4() {
-        const witness_schedule_object &wso = db.get_witness_schedule_object();
+        const witness_schedule_object &wso = references.get_witness_schedule_object();
         vector<account_name_type> active_witnesses;
         active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
@@ -106,8 +100,7 @@ struct witness_schedule_policy: public generic_policy {
              itr != widx.end() &&
              selected_voted.size() < wso.max_voted_witnesses;
              ++itr) {
-            if (db.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
-                (itr->signing_key == public_key_type())) {
+            if (references.has_hardfork(STEEMIT_HARDFORK_0_14__278) && (itr->signing_key == public_key_type())) {
                 continue;
             }
             selected_voted.insert(itr->id);
@@ -120,7 +113,7 @@ struct witness_schedule_policy: public generic_policy {
         /// Add miners from the top of the mining queue
         flat_set<witness_id_type> selected_miners;
         selected_miners.reserve(wso.max_miner_witnesses);
-        const auto &gprops = db.get_dynamic_global_properties();
+        const auto &gprops = references.get_dynamic_global_properties();
         const auto &pow_idx = references.get_index<witness_index>().indices().get<by_pow>();
         auto mitr = pow_idx.upper_bound(0);
         while (mitr != pow_idx.end() &&
@@ -128,12 +121,11 @@ struct witness_schedule_policy: public generic_policy {
             // Only consider a miner who is not a top voted witness
             if (selected_voted.find(mitr->id) == selected_voted.end()) {
                 // Only consider a miner who has a valid block signing key
-                if (!(db.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
-                      db.get_witness(mitr->owner).signing_key ==
+                if (!(references.has_hardfork(STEEMIT_HARDFORK_0_14__278) && references.get_witness(mitr->owner).signing_key ==
                       public_key_type())) {
                     selected_miners.insert(mitr->id);
                     active_witnesses.push_back(mitr->owner);
-                    db.modify(*mitr, [&](witness_object &wo) { wo.schedule = witness_object::miner; });
+                    references.modify(*mitr, [&](witness_object &wo) { wo.schedule = witness_object::miner; });
                 }
             }
             // Remove processed miner from the queue
@@ -162,7 +154,7 @@ struct witness_schedule_policy: public generic_policy {
             new_virtual_time = sitr->virtual_scheduled_time; /// everyone advances to at least this time
             processed_witnesses.push_back(sitr);
 
-            if (db.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
+            if (references.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
                 sitr->signing_key == public_key_type()) {
                 continue;
             } /// skip witnesses without a valid block signing key
@@ -170,7 +162,7 @@ struct witness_schedule_policy: public generic_policy {
             if (selected_miners.find(sitr->id) == selected_miners.end()
                 && selected_voted.find(sitr->id) == selected_voted.end()) {
                 active_witnesses.push_back(sitr->owner);
-                db.modify(*sitr, [&](witness_object &wo) { wo.schedule = witness_object::timeshare; });
+                references.modify(*sitr, [&](witness_object &wo) { wo.schedule = witness_object::timeshare; });
                 ++witness_count;
             }
         }
@@ -181,9 +173,7 @@ struct witness_schedule_policy: public generic_policy {
         bool reset_virtual_time = false;
         for (auto itr = processed_witnesses.begin();
              itr != processed_witnesses.end(); ++itr) {
-            auto new_virtual_scheduled_time = new_virtual_time +
-                                              VIRTUAL_SCHEDULE_LAP_LENGTH2 /
-                                              ((*itr)->votes.value + 1);
+            auto new_virtual_scheduled_time = new_virtual_time + VIRTUAL_SCHEDULE_LAP_LENGTH2 / ((*itr)->votes.value + 1);
             if (new_virtual_scheduled_time < new_virtual_time) {
                 reset_virtual_time = true; /// overflow
                 break;
@@ -206,12 +196,12 @@ struct witness_schedule_policy: public generic_policy {
 
         auto majority_version = wso.majority_version;
 
-        if (db.has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
+        if (references.has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
             flat_map<version, uint32_t, std::greater<version>> witness_versions;
             flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
 
             for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i++) {
-                auto witness = db.get_witness(wso.current_shuffled_witnesses[i]);
+                auto witness = references.get_witness(wso.current_shuffled_witnesses[i]);
                 if (witness_versions.find(witness.running_version) ==
                     witness_versions.end()) {
                     witness_versions[witness.running_version] = 1;
@@ -248,12 +238,12 @@ struct witness_schedule_policy: public generic_policy {
 
             while (hf_itr != hardfork_version_votes.end()) {
                 if (hf_itr->second >= wso.hardfork_required_witnesses) {
-                    const auto &hfp = db.get_hardfork_property_object();
+                    const auto &hfp = references.get_hardfork_property_object();
                     if (hfp.next_hardfork != std::get<0>(hf_itr->first) ||
                         hfp.next_hardfork_time !=
                         std::get<1>(hf_itr->first)) {
 
-                        db.modify(hfp, [&](hardfork_property_object &hpo) {
+                        references.modify(hfp, [&](hardfork_property_object &hpo) {
                             hpo.next_hardfork = std::get<0>(hf_itr->first);
                             hpo.next_hardfork_time = std::get<1>(hf_itr->first);
                         });
@@ -266,7 +256,7 @@ struct witness_schedule_policy: public generic_policy {
 
             // We no longer have a majority
             if (hf_itr == hardfork_version_votes.end()) {
-                references.modify(db.get_hardfork_property_object(), [&](hardfork_property_object &hpo) {
+                references.modify(references.get_hardfork_property_object(), [&](hardfork_property_object &hpo) {
                     hpo.next_hardfork = hpo.current_hardfork_version;
                 });
             }
@@ -287,14 +277,11 @@ struct witness_schedule_policy: public generic_policy {
             }
 
             _wso.num_scheduled_witnesses = std::max<uint8_t>(active_witnesses.size(), 1);
-            _wso.witness_pay_normalization_factor =
-                    _wso.top19_weight * num_elected
-                    + _wso.miner_weight * num_miners
-                    + _wso.timeshare_weight * num_timeshare;
+            _wso.witness_pay_normalization_factor = _wso.top19_weight * num_elected + _wso.miner_weight * num_miners + _wso.timeshare_weight * num_timeshare;
 
             /// shuffle current shuffled witnesses
             auto now_hi =
-                    uint64_t(db.head_block_time().sec_since_epoch()) << 32;
+                    uint64_t(references.head_block_time().sec_since_epoch()) << 32;
             for (uint32_t i = 0; i < _wso.num_scheduled_witnesses; ++i) {
                 /// High performance random generator
                 /// http://xorshift.di.unimi.it/
@@ -312,7 +299,7 @@ struct witness_schedule_policy: public generic_policy {
 
             _wso.current_virtual_time = new_virtual_time;
             _wso.next_shuffle_block_num =
-                    db.head_block_num() + _wso.num_scheduled_witnesses;
+                    references.head_block_num() + _wso.num_scheduled_witnesses;
             _wso.majority_version = majority_version;
         });
 
@@ -325,16 +312,15 @@ struct witness_schedule_policy: public generic_policy {
  *  See @ref witness_object::virtual_last_update
  */
     void update_witness_schedule() {
-        if ((db.head_block_num() % STEEMIT_MAX_WITNESSES) ==
-            0) //wso.next_shuffle_block_num )
+        if ((references.head_block_num() % STEEMIT_MAX_WITNESSES) == 0) //wso.next_shuffle_block_num )
         {
-            if (db.has_hardfork(STEEMIT_HARDFORK_0_4)) {
+            if (references.has_hardfork(STEEMIT_HARDFORK_0_4)) {
                 update_witness_schedule4(db);
                 return;
             }
 
-            const auto &props = db.get_dynamic_global_properties();
-            const witness_schedule_object &wso = db.get_witness_schedule_object();
+            const auto &props = references.get_dynamic_global_properties();
+            const witness_schedule_object &wso = references.get_witness_schedule_object();
 
 
             vector<account_name_type> active_witnesses;
@@ -343,9 +329,8 @@ struct witness_schedule_policy: public generic_policy {
             fc::uint128 new_virtual_time;
 
             /// only use vote based scheduling after the first 1M STEEM is created or if there is no POW queued
-            if (props.num_pow_witnesses == 0 ||
-                db.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK) {
-                const auto &widx = db.get_index<witness_index>().indices().get<by_vote_name>();
+            if (props.num_pow_witnesses == 0 || references.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK) {
+                const auto &widx = references.get_index<witness_index>().indices().get<by_vote_name>();
 
                 for (auto itr = widx.begin(); itr != widx.end() &&
                                               (active_witnesses.size() <
@@ -365,7 +350,7 @@ struct witness_schedule_policy: public generic_policy {
 
                 /// add the virtual scheduled witness, reseeting their position to 0 and their time to completion
 
-                const auto &schedule_idx = db.get_index<witness_index>().indices().get<by_schedule_time>();
+                const auto &schedule_idx = references.get_index<witness_index>().indices().get<by_schedule_time>();
                 auto sitr = schedule_idx.begin();
                 while (sitr != schedule_idx.end() && sitr->pow_worker) {
                     ++sitr;
@@ -385,7 +370,7 @@ struct witness_schedule_policy: public generic_policy {
                         }
 
                         /// this witness will produce again here
-                        if (db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
+                        if (references.has_hardfork(STEEMIT_HARDFORK_0_2)) {
                             wo.virtual_scheduled_time +=
                                     VIRTUAL_SCHEDULE_LAP_LENGTH2 /
                                     (wo.votes.value + 1);
@@ -408,7 +393,7 @@ struct witness_schedule_policy: public generic_policy {
                     references.modify(*itr, [&](witness_object &wit) {
                         wit.pow_worker = 0;
                     });
-                    references.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &obj) {
+                    references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &obj) {
                         obj.num_pow_witnesses--;
                     });
                 }
@@ -419,7 +404,7 @@ struct witness_schedule_policy: public generic_policy {
             while (itr != pow_idx.end()) {
                 active_witnesses.push_back(itr->owner);
 
-                if (db.head_block_num() >
+                if (references.head_block_num() >
                     STEEMIT_START_MINER_VOTING_BLOCK ||
                     active_witnesses.size() >= STEEMIT_MAX_WITNESSES) {
                     break;
@@ -440,8 +425,7 @@ struct witness_schedule_policy: public generic_policy {
                     _wso.current_shuffled_witnesses[i] = active_witnesses[i];
                 }
 
-                for (size_t i = active_witnesses.size();
-                     i < STEEMIT_MAX_WITNESSES; i++) {
+                for (size_t i = active_witnesses.size(); i < STEEMIT_MAX_WITNESSES; i++) {
                     _wso.current_shuffled_witnesses[i] = account_name_type();
                 }
 
@@ -449,15 +433,11 @@ struct witness_schedule_policy: public generic_policy {
 
                 //idump( (_wso.current_shuffled_witnesses)(active_witnesses.size()) );
 
-                auto now_hi =
-                        uint64_t(db.head_block_time().sec_since_epoch())
-                                << 32;
-                for (uint32_t i = 0;
-                     i < _wso.num_scheduled_witnesses; ++i) {
+                auto now_hi = uint64_t(references.head_block_time().sec_since_epoch()) << 32;
+                for (uint32_t i = 0; i < _wso.num_scheduled_witnesses; ++i) {
                     /// High performance random generator
                     /// http://xorshift.di.unimi.it/
-                    uint64_t k =
-                            now_hi + uint64_t(i) * 2685821657736338717ULL;
+                    uint64_t k = now_hi + uint64_t(i) * 2685821657736338717ULL;
                     k ^= (k >> 12);
                     k ^= (k << 25);
                     k ^= (k >> 27);
@@ -469,14 +449,11 @@ struct witness_schedule_policy: public generic_policy {
                               _wso.current_shuffled_witnesses[j]);
                 }
 
-                if (props.num_pow_witnesses == 0 ||
-                    db.head_block_num() >
-                    STEEMIT_START_MINER_VOTING_BLOCK) {
+                if (props.num_pow_witnesses == 0 || references.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK) {
                     _wso.current_virtual_time = new_virtual_time;
                 }
 
-                _wso.next_shuffle_block_num =
-                        db.head_block_num() + _wso.num_scheduled_witnesses;
+                _wso.next_shuffle_block_num = references.head_block_num() + _wso.num_scheduled_witnesses;
             });
             update_median_witness_props(db);
         }

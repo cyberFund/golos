@@ -1,6 +1,7 @@
 #ifndef GOLOS_COMMENT_OBJECT_POLICY_HPP
 #define GOLOS_COMMENT_OBJECT_POLICY_HPP
 
+#include <steemit/chain/utilities/reward.hpp>
 #include "generic_policy.hpp"
 
 namespace steemit {
@@ -35,11 +36,11 @@ public:
     }
 
     const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const {
-        if (has_hardfork(STEEMIT_HARDFORK_0_17__91) ||
+        if (references.has_hardfork(STEEMIT_HARDFORK_0_17__91) ||
             comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
             return comment.cashout_time;
         } else {
-            return get<comment_object>(comment.root_comment).cashout_time;
+            return references.get<comment_object>(comment.root_comment).cashout_time;
         }
     }
 
@@ -141,15 +142,15 @@ public:
     void adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
         update_children_rshares2(*this, c, old_rshares2, new_rshares2);
 
-        const auto &dgpo = get_dynamic_global_properties();
-        modify(dgpo, [&](dynamic_global_property_object &p) {
+        const auto &dgpo = references.get_dynamic_global_properties();
+        references.modify(dgpo, [&](dynamic_global_property_object &p) {
             p.total_reward_shares2 -= old_rshares2;
             p.total_reward_shares2 += new_rshares2;
         });
     }
 
     void retally_comment_children() {
-            const auto &cidx = get_index<comment_index>().indices();
+            const auto &cidx = references.get_index<comment_index>().indices();
 
             // Clear children counts
             for (auto itr = cidx.begin(); itr != cidx.end(); ++itr) {
@@ -166,14 +167,14 @@ public:
                         c.children++;
                     });
 #else
-                            const comment_object *parent = &get_comment(itr->parent_author, itr->parent_permlink);
+                            const comment_object *parent = &references.get_comment(itr->parent_author, itr->parent_permlink);
                             while (parent) {
                                     references.modify(*parent, [&](comment_object &c) {
                                         c.children++;
                                     });
 
                                     if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
-                                            parent = &get_comment(parent->parent_author, parent->parent_permlink);
+                                            parent = &references.get_comment(parent->parent_author, parent->parent_permlink);
                                     } else {
                                             parent = nullptr;
                                     }
@@ -191,28 +192,28 @@ public:
 //                return;
 //            }
 
-            if (head_block_time() <= STEEMIT_FIRST_CASHOUT_TIME) {
+            if (references.head_block_time() <= STEEMIT_FIRST_CASHOUT_TIME) {
                     return;
             }
 
-            const auto &gpo = get_dynamic_global_properties();
+            const auto &gpo = references.get_dynamic_global_properties();
             utilities::comment_reward_context ctx;
 
-            ctx.current_steem_price = get_feed_history().current_median_history;
+            ctx.current_steem_price = references.get_feed_history().current_median_history;
 
             vector<reward_fund_context> funds;
             vector<share_type> steem_awarded;
-            const auto &reward_idx = get_index<reward_fund_index, by_id>();
+            const auto &reward_idx = references.get_index<reward_fund_index, by_id>();
 
             for (auto itr = reward_idx.begin();
                  itr != reward_idx.end(); ++itr) {
                     // Add all reward funds to the local cache and decay their recent rshares
                     references.modify(*itr, [&](reward_fund_object &rfo) {
                         rfo.recent_rshares2 -= (rfo.recent_rshares2 *
-                                                (head_block_time() -
+                                                (references.head_block_time() -
                                                  rfo.last_update).to_seconds()) /
                                                STEEMIT_RECENT_RSHARES_DECAY_RATE.to_seconds();
-                        rfo.last_update = head_block_time();
+                        rfo.last_update = references.head_block_time();
                     });
 
                     reward_fund_context rf_ctx;
@@ -222,14 +223,14 @@ public:
                     funds.push_back(rf_ctx);
             }
 
-            const auto &cidx = get_index<comment_index>().indices().get<by_cashout_time>();
-            const auto &com_by_root = get_index<comment_index>().indices().get<by_root>();
+            const auto &cidx = references.get_index<comment_index>().indices().get<by_cashout_time>();
+            const auto &com_by_root = references.get_index<comment_index>().indices().get<by_root>();
 
             auto current = cidx.begin();
             //  add all rshares about to be cashed out to the reward funds
-            if (has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
+            if (references.has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
                     while (current != cidx.end() &&
-                           current->cashout_time <= head_block_time()) {
+                           current->cashout_time <= references.head_block_time()) {
                             if (current->net_rshares > 0) {
                                     const auto &rf = get_reward_fund(*current);
                                     funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
@@ -257,9 +258,8 @@ public:
              * against a reward fund state that is snapshotted before all payouts in the block.
              */
 
-            while (current != cidx.end() &&
-                   current->cashout_time <= head_block_time()) {
-                    if (has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
+            while (current != cidx.end() && current->cashout_time <= references.head_block_time()) {
+                    if (references.has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
                             auto fund_id = get_reward_fund(*current).id._id;
                             ctx.total_reward_shares2 = funds[fund_id].recent_rshares2;
                             ctx.total_reward_fund_steem = funds[fund_id].reward_balance;
@@ -284,7 +284,7 @@ public:
                                     auto reward = cashout_comment_helper(ctx, comment);
 
                                     if (reward > 0) {
-                                            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &p) {
+                                            references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &p) {
                                                 p.total_reward_fund_steem.amount -= reward;
                                             });
                                     }
@@ -303,26 +303,6 @@ public:
             }
     }
 
-    const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const {
-            try {
-                    return references.get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-            } FC_CAPTURE_AND_RETHROW((author)(permlink))
-    }
-
-    const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const {
-            return references.find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-    }
-
-    const comment_object &get_comment(const account_name_type &author, const string &permlink) const {
-            try {
-                    return references.get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-            } FC_CAPTURE_AND_RETHROW((author)(permlink))
-    }
-
-    const comment_object *find_comment(const account_name_type &author, const string &permlink) const {
-            return references.find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-    }
-
 
     share_type cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
             try {
@@ -331,7 +311,7 @@ public:
                     if (comment.net_rshares > 0) {
                             fill_comment_reward_context_local_state(ctx, comment);
 
-                            const share_type reward = has_hardfork(STEEMIT_HARDFORK_0_17__86)
+                            const share_type reward = references.has_hardfork(STEEMIT_HARDFORK_0_17__86)
                                                       ? utilities::get_rshare_reward(ctx, get_reward_fund(comment))
                                                       : utilities::get_rshare_reward(ctx);
                             uint128_t reward_tokens = uint128_t(reward.value);
@@ -351,7 +331,7 @@ public:
                                             auto benefactor_tokens =
                                                     (author_tokens * b.weight) /
                                                     STEEMIT_100_PERCENT;
-                                            auto vest_created = create_vesting(get_account(b.account),
+                                            auto vest_created = create_vesting(references.get_account(b.account),
                                                                                benefactor_tokens);
                                             references.push_virtual_operation(
                                                     comment_benefactor_reward_operation(b.account, comment.author,
@@ -367,11 +347,11 @@ public:
                                                      (2 * STEEMIT_100_PERCENT);
                                     auto vesting_steem = author_tokens - sbd_steem;
 
-                                    const auto &author = get_account(comment.author);
-                                    auto vest_created = create_vesting(author, vesting_steem);
+                                    const auto &author = references.get_account(comment.author);
+                                    auto vest_created = references.create_vesting(author, vesting_steem);
                                     auto sbd_payout = create_sbd(author, sbd_steem);
 
-                                    references.adjust_total_payout(comment, sbd_payout.first +
+                                    adjust_total_payout(comment, sbd_payout.first +
                                                                             to_sbd(sbd_payout.second +
                                                                                    asset(vesting_steem, STEEM_SYMBOL)),
                                                                    to_sbd(asset(curation_tokens, STEEM_SYMBOL)),
@@ -397,17 +377,15 @@ public:
                                         c.author_rewards += author_tokens;
                                     });
 
-                                    references.modify(get_account(comment.author), [&](account_object &a) {
+                                    references.modify(references.get_account(comment.author), [&](account_object &a) {
                                         a.posting_rewards += author_tokens;
                                     });
 #endif
 
                             }
 
-                            if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                                    adjust_rshares2(comment,
-                                                               utilities::calculate_vshares(comment.net_rshares.value),
-                                                               0);
+                            if (!references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                                    adjust_rshares2(comment, utilities::calculate_vshares(comment.net_rshares.value), 0);
                             }
 
                             references.modify(references.get_dynamic_global_properties(),
@@ -433,30 +411,30 @@ public:
                         c.total_vote_weight = 0;
                         c.max_cashout_time = fc::time_point_sec::maximum();
 
-                        if (has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        if (references.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                                 c.cashout_time = fc::time_point_sec::maximum();
                         } else if (c.parent_author == STEEMIT_ROOT_POST_PARENT) {
-                                if (has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
+                                if (references.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                                     c.last_payout == fc::time_point_sec::min()) {
-                                        c.cashout_time = head_block_time() +
+                                        c.cashout_time = references.head_block_time() +
                                                          STEEMIT_SECOND_CASHOUT_WINDOW;
                                 } else {
                                         c.cashout_time = fc::time_point_sec::maximum();
                                 }
                         }
 
-                        c.last_payout = head_block_time();
+                        c.last_payout = references.head_block_time();
                     });
 
                     references.push_virtual_operation(comment_payout_update_operation(comment.author, to_string(comment.permlink)));
 
-                    const auto &vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
+                    const auto &vote_idx = references.get_index<comment_vote_index>().indices().get<by_comment_voter>();
                     auto vote_itr = vote_idx.lower_bound(comment.id);
                     while (vote_itr != vote_idx.end() &&
                            vote_itr->comment == comment.id) {
                             const auto &cur_vote = *vote_itr;
                             ++vote_itr;
-                            if (!has_hardfork(STEEMIT_HARDFORK_0_12__177) ||
+                            if (!references.has_hardfork(STEEMIT_HARDFORK_0_12__177) ||
                                 calculate_discussion_payout_time(comment) !=
                                 fc::time_point_sec::maximum()) {
                                     references.modify(cur_vote, [&](comment_vote_object &cvo) {
@@ -475,23 +453,17 @@ public:
 
 
     time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
-        FC_ASSERT(input_cost.symbol ==
-                  SBD_SYMBOL, "Extension payment should be in SBD");
-        FC_ASSERT(
-                input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY >
-                0, "Extension payment should cover more than a day");
-        return fc::time_point::now() +
-               fc::seconds(((input_cost.amount.value * 60 * 60 * 24 *
-                             input_comment.net_rshares.value) /
-                            STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
+        FC_ASSERT(input_cost.symbol == SBD_SYMBOL, "Extension payment should be in SBD");
+        FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY > 0, "Extension payment should cover more than a day");
+        return fc::time_point::now() + fc::seconds(((input_cost.amount.value * 60 * 60 * 24 * input_comment.net_rshares.value) / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
     }
 
 
     uint16_t get_curation_rewards_percent(const comment_object &c) const {
-        if (has_hardfork(STEEMIT_HARDFORK_0_17__86) &&
+        if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86) &&
             c.parent_author != STEEMIT_ROOT_POST_PARENT) {
             return 0;
-        } else if (has_hardfork(STEEMIT_HARDFORK_0_8__116)) {
+        } else if (references.has_hardfork(STEEMIT_HARDFORK_0_8__116)) {
             return STEEMIT_1_PERCENT * 25;
         } else {
             return STEEMIT_1_PERCENT * 50;
@@ -500,19 +472,18 @@ public:
 
     void perform_vesting_share_split(uint32_t magnitude) {
         try {
-            references.modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &d) {
+            references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &d) {
                 d.total_vesting_shares.amount *= magnitude;
                 d.total_reward_shares2 = 0;
             });
 
             // Need to update all VESTS in accounts and the total VESTS in the dgpo
-            for (const auto &account : get_index<account_index>().indices()) {
+            for (const auto &account : references.get_index<account_index>().indices()) {
                 references.modify(account, [&](account_object &a) {
                     a.vesting_shares.amount *= magnitude;
                     a.withdrawn *= magnitude;
                     a.to_withdraw *= magnitude;
-                    a.vesting_withdraw_rate = asset(a.to_withdraw /
-                                                    STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16, VESTS_SYMBOL);
+                    a.vesting_withdraw_rate = asset(a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16, VESTS_SYMBOL);
                     if (a.vesting_withdraw_rate.amount == 0) {
                         a.vesting_withdraw_rate.amount = 1;
                     }
@@ -524,7 +495,7 @@ public:
                 });
             }
 
-            const auto &comments = get_index<comment_index>().indices();
+            const auto &comments = references.get_index<comment_index>().indices();
             for (const auto &comment : comments) {
                 references.modify(comment, [&](comment_object &c) {
                     c.net_rshares *= magnitude;

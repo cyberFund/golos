@@ -25,25 +25,16 @@ struct withdrawal_policy: public generic_policy {
         evaluator_registry_.register_evaluator<limit_order_cancel_evaluator>();
     }
 
-    const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
-        try {
-            return references.get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
-        } FC_CAPTURE_AND_RETHROW((owner)(request_id))
-    }
 
-    const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
-        return references.find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
-    }
 
     void process_vesting_withdrawals() {
-        const auto &widx = get_index<account_index>().indices().get<by_next_vesting_withdrawal>();
-        const auto &didx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+        const auto &widx = references.get_index<account_index>().indices().get<by_next_vesting_withdrawal>();
+        const auto &didx = references.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
         auto current = widx.begin();
 
-        const auto &cprops = get_dynamic_global_properties();
+        const auto &cprops = references.get_dynamic_global_properties();
 
-        while (current != widx.end() &&
-               current->next_vesting_withdrawal <= head_block_time()) {
+        while (current != widx.end() && current->next_vesting_withdrawal <= references.head_block_time()) {
             const auto &from_account = *current;
             ++current;
 
@@ -57,9 +48,7 @@ struct withdrawal_policy: public generic_policy {
             share_type to_withdraw;
             if (from_account.to_withdraw - from_account.withdrawn <
                 from_account.vesting_withdraw_rate.amount) {
-                to_withdraw = std::min(from_account.vesting_shares.amount,
-                                       from_account.to_withdraw %
-                                       from_account.vesting_withdraw_rate.amount).value;
+                to_withdraw = std::min(from_account.vesting_shares.amount, from_account.to_withdraw % from_account.vesting_withdraw_rate.amount).value;
             } else {
                 to_withdraw = std::min(from_account.vesting_shares.amount, from_account.vesting_withdraw_rate.amount).value;
             }
@@ -70,8 +59,7 @@ struct withdrawal_policy: public generic_policy {
 
             // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
             for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
-                 itr != didx.end() && itr->from_account == from_account.id;
-                 ++itr) {
+                 itr != didx.end() && itr->from_account == from_account.id; ++itr) {
                 if (itr->auto_vest) {
                     share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) / STEEMIT_100_PERCENT).to_uint64();
                     vests_deposited_as_vests += to_deposit;
@@ -96,10 +84,7 @@ struct withdrawal_policy: public generic_policy {
                 if (!itr->auto_vest) {
                     const auto &to_account = get(itr->to_account);
 
-                    share_type to_deposit = (
-                            (fc::uint128_t(to_withdraw.value) *
-                             itr->percent) /
-                            STEEMIT_100_PERCENT).to_uint64();
+                    share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) / STEEMIT_100_PERCENT).to_uint64();
                     vests_deposited_as_steem += to_deposit;
                     auto converted_steem = asset(to_deposit, VESTS_SYMBOL) *
                                            cprops.get_vesting_share_price();
@@ -122,11 +107,9 @@ struct withdrawal_policy: public generic_policy {
 
             share_type to_convert = to_withdraw - vests_deposited_as_steem -
                                     vests_deposited_as_vests;
-            FC_ASSERT(to_convert >=
-                      0, "Deposited more vests than were supposed to be withdrawn");
+            FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
 
-            auto converted_steem = asset(to_convert, VESTS_SYMBOL) *
-                                   cprops.get_vesting_share_price();
+            auto converted_steem = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
 
             references.modify(from_account, [&](account_object &a) {
                 a.vesting_shares.amount -= to_withdraw;

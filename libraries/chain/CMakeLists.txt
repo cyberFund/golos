@@ -41,6 +41,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/steem_object_types.hpp
         include/steemit/chain/steem_objects.hpp
         include/steemit/chain/transaction_object.hpp
+        include/steemit/chain/transformer.hpp
         include/steemit/chain/witness_objects.hpp
 
         include/steemit/chain/utilities/asset.hpp
@@ -51,16 +52,17 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/policies/asset_policy.hpp
         include/steemit/chain/policies/behaviour_based_policy.hpp
         include/steemit/chain/policies/comment_policy.hpp
-        include/steemit/chain/policies/dynamic_global_property_policy.hpp
-        include/steemit/chain/policies/escrow_policy.hpp
-        include/steemit/chain/policies/feed_history_policy.hpp
         include/steemit/chain/policies/generic_policy.hpp
-        include/steemit/chain/policies/hardfork_property_policy.hpp
         include/steemit/chain/policies/order_policy.hpp
         include/steemit/chain/policies/reward_policy.hpp
         include/steemit/chain/policies/withdrawal_policy.hpp
         include/steemit/chain/policies/witness_policy.hpp
         include/steemit/chain/policies/witness_schedule_policy.hpp
+
+        include/steemit/chain/dynamic_extension/hard_fork_transformer.hpp
+        include/steemit/chain/dynamic_extension/worker_storage.hpp
+        include/steemit/chain/dynamic_extension/view.hpp
+        include/steemit/chain/dynamic_extension/worker.hpp
 
         )
 
@@ -75,6 +77,8 @@ list(APPEND CURRENT_TARGET_SOURCES
         utilities/reward.cpp
 
         policies/generic_policy.cpp
+
+        dynamic_extension/worker_storage.cpp
 
 )
 
