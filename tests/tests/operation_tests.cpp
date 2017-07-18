@@ -2739,7 +2739,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(op.amount_to_sell / op.min_to_receive));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
@@ -2763,14 +2763,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("10.000 TESTS"), op.min_to_receive));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                    std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
                           ASSET("0.000 TBD").amount.value);
             validate_database();
 
-            BOOST_TEST_MESSAGE("--- Test sucess killing an order that will not be filled");
+            BOOST_TEST_MESSAGE("--- Test success killing an order that will not be filled");
 
             op.order_id = 2;
             op.fill_or_kill = true;
@@ -2815,7 +2815,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("10.000 TESTS"), ASSET("15.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(
                     limit_order_idx.find(std::make_tuple("bob", op.order_id)) ==
                     limit_order_idx.end());
@@ -2855,7 +2855,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("15.000 TBD"), ASSET("10.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 1)) ==
                           limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -2926,7 +2926,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("12.000 TBD"), ASSET("10.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("975.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
@@ -2981,7 +2981,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("20.000 TESTS"), ASSET("22.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("955.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
@@ -3131,7 +3131,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->for_sale == op.amount_to_sell.amount);
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
@@ -3154,7 +3154,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->for_sale == 10000);
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("990.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
@@ -3206,7 +3206,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("2.000 TESTS"), ASSET("3.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(
                     limit_order_idx.find(std::make_tuple("bob", op.order_id)) ==
                     limit_order_idx.end());
@@ -3246,7 +3246,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("3.000 TBD"), ASSET("2.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 1)) ==
                           limit_order_idx.end());
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -3316,7 +3316,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->for_sale.value == 1000);
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("975.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==
@@ -3371,7 +3371,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price ==
                           price(ASSET("1.000 TESTS"), ASSET("1.100 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
-                          std::make_pair(SBD_SYMBOL, STEEM_SYMBOL));
+                          std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("955.000 TESTS").amount.value);
             BOOST_REQUIRE(alice.sbd_balance.amount.value ==

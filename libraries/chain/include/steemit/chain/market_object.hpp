@@ -35,11 +35,12 @@ namespace steemit {
             protocol::price sell_price;
             share_type deferred_fee;
 
-            pair <protocol::asset_name_type, protocol::asset_name_type> get_market() const {
-                return sell_price.base.symbol_name() < sell_price.quote.symbol_name() ?
-                       std::make_pair(sell_price.base.symbol_name(), sell_price.quote.symbol_name())
-                                                                                      :
-                       std::make_pair(sell_price.quote.symbol_name(), sell_price.base.symbol_name());
+            pair<protocol::asset_name_type, protocol::asset_name_type> get_market() const {
+                auto tmp = std::make_pair(sell_price.base.symbol_name(), sell_price.quote.symbol_name());
+                if (tmp.first > tmp.second) {
+                    std::swap(tmp.first, tmp.second);
+                }
+                return tmp;
             }
 
             protocol::asset amount_for_sale() const {
