@@ -83,7 +83,7 @@ namespace steemit {
             uint16_t maximum_force_settlement_volume = STEEMIT_DEFAULT_FORCE_SETTLEMENT_MAX_VOLUME;
             /// This speicifies which asset type is used to collateralize short sales
             /// This field may only be updated if the current supply of the asset is zero.
-            asset_symbol_type short_backing_asset;
+            asset_name_type short_backing_asset;
             extensions_type extensions;
 
             /// Perform internal consistency checks.
@@ -107,7 +107,7 @@ namespace steemit {
             /// This account must sign and pay the fee for this operation. Later, this account may update the asset
             account_name_type issuer;
             /// The ticker symbol of this asset
-            string symbol_name;
+            asset_name_type asset_name;
             /// Number of digits to the right of decimal point, must be less than or equal to 12
             uint8_t precision = 0;
 
@@ -148,7 +148,7 @@ namespace steemit {
 
             asset fee;
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
-            asset_symbol_type asset_to_settle;
+            asset_name_type asset_to_settle;
             price settle_price;
             extensions_type extensions;
 
@@ -245,7 +245,7 @@ namespace steemit {
 
             asset fee; ///< core asset
             account_name_type from_account;
-            asset_symbol_type symbol;
+            asset_name_type asset_name;
             share_type amount; ///< core asset
             extensions_type extensions;
 
@@ -283,7 +283,7 @@ namespace steemit {
 
             asset fee;
             account_name_type issuer;
-            asset_symbol_type asset_to_update;
+            asset_name_type asset_to_update;
 
             /// If the asset is to be given a new issuer, specify his ID here.
             optional <account_name_type> new_issuer;
@@ -317,7 +317,7 @@ namespace steemit {
 
             asset fee;
             account_name_type issuer;
-            asset_symbol_type asset_to_update;
+            asset_name_type asset_to_update;
 
             bitasset_options new_options;
             extensions_type extensions;
@@ -352,7 +352,7 @@ namespace steemit {
 
             asset fee;
             account_name_type issuer;
-            asset_symbol_type asset_to_update;
+            asset_name_type asset_to_update;
 
             flat_set <account_name_type> new_feed_producers;
             extensions_type extensions;
@@ -385,7 +385,7 @@ namespace steemit {
 
             asset fee; ///< paid for by publisher
             account_name_type publisher;
-            asset_symbol_type asset_id; ///< asset for which the feed is published
+            asset_name_type asset_name; ///< asset for which the feed is published
             price_feed feed;
             extensions_type extensions;
 
@@ -513,7 +513,7 @@ FC_REFLECT(steemit::protocol::asset_reserve_operation::fee_parameters_type, (fee
 FC_REFLECT(steemit::protocol::asset_create_operation,
         (fee)
                 (issuer)
-                (symbol_name)
+                (asset_name)
                 (precision)
                 (common_options)
                 (bitasset_opts)
@@ -539,7 +539,7 @@ FC_REFLECT(steemit::protocol::asset_update_feed_producers_operation,
         (fee)(issuer)(asset_to_update)(new_feed_producers)(extensions)
 )
 FC_REFLECT(steemit::protocol::asset_publish_feed_operation,
-        (fee)(publisher)(asset_id)(feed)(extensions))
+        (fee)(publisher)(asset_name)(feed)(extensions))
 FC_REFLECT(steemit::protocol::asset_settle_operation, (fee)(account)(amount)(extensions))
 FC_REFLECT(steemit::protocol::asset_force_settle_operation, (fee)(account)(amount)(settlement_id)(extensions))
 FC_REFLECT(steemit::protocol::asset_global_settle_operation, (fee)(issuer)(asset_to_settle)(settle_price)(extensions))
@@ -548,4 +548,4 @@ FC_REFLECT(steemit::protocol::asset_issue_operation,
 FC_REFLECT(steemit::protocol::asset_reserve_operation,
         (fee)(payer)(amount_to_reserve)(extensions))
 
-FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (fee)(from_account)(symbol)(amount)(extensions));
+FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (fee)(from_account)(asset_name)(amount)(extensions));

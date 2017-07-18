@@ -155,17 +155,17 @@ namespace steemit {
 
             chain_id_type get_chain_id() const;
 
-            const asset_object &get_asset(const asset_symbol_type &name) const;
+            const asset_object &get_asset(const asset_name_type &name) const;
 
-            const asset_object *find_asset(const asset_symbol_type &name) const;
+            const asset_object *find_asset(const asset_name_type &name) const;
 
-            const asset_dynamic_data_object &get_asset_dynamic_data(const asset_symbol_type &name) const;
+            const asset_dynamic_data_object &get_asset_dynamic_data(const asset_name_type &name) const;
 
-            const asset_dynamic_data_object *find_asset_dynamic_data(const asset_symbol_type &name) const;
+            const asset_dynamic_data_object *find_asset_dynamic_data(const asset_name_type &name) const;
 
-            const asset_bitasset_data_object &get_asset_bitasset_data(const asset_symbol_type &name) const;
+            const asset_bitasset_data_object &get_asset_bitasset_data(const asset_name_type &name) const;
 
-            const asset_bitasset_data_object *find_asset_bitasset_data(const asset_symbol_type &name) const;
+            const asset_bitasset_data_object *find_asset_bitasset_data(const asset_name_type &name) const;
 
             const witness_object &get_witness(const account_name_type &name) const;
 

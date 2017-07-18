@@ -14,6 +14,35 @@ namespace steemit {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
+        asset::asset() : amount(0), symbol(STEEM_SYMBOL) {
+
+        }
+
+        asset::asset(share_type a, asset_symbol_type id)
+                : amount(a), symbol(id) {
+        }
+
+        asset::asset(share_type a, asset_name_type id)
+                : amount(a) {
+            string s = fc::trim(id);
+
+            symbol = uint64_t(3);
+            char *sy = (char *)&symbol;
+
+            size_t symbol_size = id.size();
+
+            if (symbol_size > 0) {
+                FC_ASSERT(symbol_size <= 6);
+
+                std::string symbol_string(id);
+
+                FC_ASSERT(std::find_if(symbol_string.begin(), symbol_string.end(), [&](const char &c) -> bool {
+                    return std::isdigit(c);
+                }) == symbol_string.end());
+                memcpy(sy + 1, symbol_string.c_str(), symbol_size);
+            }
+        }
+
         uint8_t asset::decimals() const {
             auto a = (const char *)&symbol;
             uint8_t result = uint8_t(a[0]);
@@ -27,7 +56,7 @@ namespace steemit {
             a[0] = d;
         }
 
-        std::string asset::symbol_name() const {
+        asset_name_type asset::symbol_name() const {
             auto a = (const char *)&symbol;
             FC_ASSERT(a[7] == 0);
             return &a[1];
@@ -69,9 +98,10 @@ namespace steemit {
                 result.symbol = uint64_t(3);
                 auto sy = (char *)&result.symbol;
 
-                if (space_pos == std::string::npos && dot_pos == std::string::npos && std::find_if(from.begin(), from.end(), [&](const std::string::value_type &c) -> bool {
-                    return std::isdigit(c);
-                }) == from.end()) {
+                if (space_pos == std::string::npos && dot_pos == std::string::npos &&
+                    std::find_if(from.begin(), from.end(), [&](const std::string::value_type &c) -> bool {
+                        return std::isdigit(c);
+                    }) == from.end()) {
                     result.amount = 0;
                 } else if (dot_pos != std::string::npos) {
                     FC_ASSERT(space_pos > dot_pos);
@@ -232,24 +262,24 @@ namespace steemit {
                 FC_ASSERT(maximum_short_squeeze_ratio >=
                           STEEMIT_MIN_COLLATERAL_RATIO);
                 FC_ASSERT(maximum_short_squeeze_ratio <=
-                          GRAPHENE_MAX_COLLATERAL_RATIO);
+                          STEEMIT_MAX_COLLATERAL_RATIO);
                 FC_ASSERT(maintenance_collateral_ratio >=
                           STEEMIT_MIN_COLLATERAL_RATIO);
                 FC_ASSERT(maintenance_collateral_ratio <=
-                          GRAPHENE_MAX_COLLATERAL_RATIO);
+                          STEEMIT_MAX_COLLATERAL_RATIO);
                 max_short_squeeze_price(); // make sure that it doesn't overflow
 
                 //FC_ASSERT( maintenance_collateral_ratio >= maximum_short_squeeze_ratio );
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
-        bool price_feed::is_for(asset_symbol_type asset_id) const {
+        bool price_feed::is_for(asset_name_type asset_name) const {
             try {
                 if (!settlement_price.is_null()) {
-                    return (settlement_price.base.symbol == asset_id);
+                    return (settlement_price.base.symbol == asset(0, asset_name).symbol);
                 }
                 if (!core_exchange_rate.is_null()) {
-                    return (core_exchange_rate.base.symbol == asset_id);
+                    return (core_exchange_rate.base.symbol == asset(0, asset_name).symbol);
                 }
                 // (null, null) is valid for any feed
                 return true;

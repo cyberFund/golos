@@ -347,9 +347,9 @@ namespace steemit {
 
             vector<asset_symbol_type> total_assets;
             for (const asset_object &asset_obj : _db.get_index<asset_index>().indices()) {
-                const auto &dasset_obj = _db.get_asset_dynamic_data(asset_obj.symbol);
+                const auto &dasset_obj = _db.get_asset_dynamic_data(asset_obj.asset_name);
 
-                asset_symbol_type asset_id = dasset_obj.symbol;
+                asset_symbol_type asset_id = dasset_obj.asset_name;
 
                 const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
                 auto range = bal_idx.equal_range(boost::make_tuple(asset_id));

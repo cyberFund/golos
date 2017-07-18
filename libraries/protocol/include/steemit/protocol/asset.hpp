@@ -11,9 +11,11 @@ namespace steemit {
         extern const int64_t scaled_precision_lut[];
 
         struct asset {
-            asset(share_type a = 0, asset_symbol_type id = STEEM_SYMBOL)
-                    : amount(a), symbol(id) {
-            }
+            asset();
+
+            asset(share_type a, asset_symbol_type id);
+
+            asset(share_type a, asset_name_type name);
 
             share_type amount;
             asset_symbol_type symbol;
@@ -24,7 +26,7 @@ namespace steemit {
 
             uint8_t decimals() const;
 
-            std::string symbol_name() const;
+            asset_name_type symbol_name() const;
 
             int64_t precision() const;
 
@@ -94,7 +96,7 @@ namespace steemit {
         };
 
         struct price {
-            price(const asset &base = asset(), const asset &quote = asset())
+            price(const asset &base = asset(0, STEEM_SYMBOL), const asset &quote = asset(0, STEEM_SYMBOL))
                     : base(base), quote(quote) {
             }
 
@@ -234,7 +236,7 @@ namespace steemit {
 
             void validate() const;
 
-            bool is_for(asset_symbol_type asset_id) const;
+            bool is_for(asset_name_type asset_name) const;
         };
     }
 } // steemit::protocol

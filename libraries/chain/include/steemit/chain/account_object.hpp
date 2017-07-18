@@ -107,7 +107,7 @@ namespace steemit {
 
             account_name_type owner;
             protocol::asset_symbol_type asset_type;
-            share_type balance = 0;
+            share_type balance = 0; ///< total liquid shares held by this account
 
             protocol::asset get_balance() const {
                 return protocol::asset(balance, asset_type);

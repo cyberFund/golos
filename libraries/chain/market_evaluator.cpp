@@ -45,12 +45,12 @@ namespace steemit {
 
                     if (sell_asset->options.whitelist_markets.size()) {
                         FC_ASSERT(
-                                sell_asset->options.whitelist_markets.find(receive_asset->symbol) !=
+                                sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
                                 sell_asset->options.whitelist_markets.end());
                     }
                     if (sell_asset->options.blacklist_markets.size()) {
                         FC_ASSERT(
-                                sell_asset->options.blacklist_markets.find(receive_asset->symbol) ==
+                                sell_asset->options.blacklist_markets.find(receive_asset->asset_name) ==
                                 sell_asset->options.blacklist_markets.end());
                     }
 
@@ -135,12 +135,12 @@ namespace steemit {
 
                     if (sell_asset->options.whitelist_markets.size()) {
                         FC_ASSERT(
-                                sell_asset->options.whitelist_markets.find(receive_asset->symbol) !=
+                                sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
                                 sell_asset->options.whitelist_markets.end());
                     }
                     if (sell_asset->options.blacklist_markets.size()) {
                         FC_ASSERT(
-                                sell_asset->options.blacklist_markets.find(receive_asset->symbol) ==
+                                sell_asset->options.blacklist_markets.find(receive_asset->asset_name) ==
                                 sell_asset->options.blacklist_markets.end());
                     }
 
@@ -248,9 +248,9 @@ namespace steemit {
                 _debt_asset = d.find_asset(op.delta_debt.symbol);
 
                 FC_ASSERT(_debt_asset->is_market_issued(), "Unable to cover ${sym} as it is not a collateralized asset.",
-                        ("sym", _debt_asset->symbol));
+                        ("sym", _debt_asset->asset_name));
 
-                _bitasset_data = d.find_asset_bitasset_data(_debt_asset->symbol);
+                _bitasset_data = d.find_asset_bitasset_data(_debt_asset->asset_name);
 
                 /// if there is a settlement for this asset, then no further margin positions may be taken and
                 /// all existing margin positions should have been closed va database::globally_settle_asset
@@ -290,7 +290,7 @@ namespace steemit {
                     d.adjust_balance(d.get_account(op.funding_account), op.delta_debt);
 
                     // Deduct the debt paid from the total supply of the debt asset.
-                    d.modify(d.get_asset_dynamic_data(_debt_asset->symbol), [&](asset_dynamic_data_object &dynamic_asset) {
+                    d.modify(d.get_asset_dynamic_data(_debt_asset->asset_name), [&](asset_dynamic_data_object &dynamic_asset) {
                         dynamic_asset.current_supply += op.delta_debt.amount;
                         assert(dynamic_asset.current_supply >= 0);
                     });

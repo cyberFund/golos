@@ -340,9 +340,9 @@ namespace steemit {
              *
              * This function has semantics identical to @ref get_objects
              */
-            vector<optional<asset_object>> get_assets(const vector<string> &asset_symbols) const;
+            vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
-            vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<string> &asset_symbols) const;
+            vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<asset_name_type> &asset_symbols) const;
 
             /**
              * @brief Get assets alphabetically by symbol name
@@ -350,7 +350,7 @@ namespace steemit {
              * @param limit Maximum number of assets to fetch (must not exceed 100)
              * @return The assets found
              */
-            vector<asset_object> list_assets(const string &lower_bound_symbol, uint32_t limit) const;
+            vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
 
             /**
              * @brief Get a list of assets by symbol
@@ -359,7 +359,7 @@ namespace steemit {
              *
              * This function has semantics identical to @ref get_objects
              */
-            vector<optional<asset_object>> lookup_asset_symbols(const vector<string> &asset_symbols) const;
+            vector<optional<asset_object>> lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const;
 
             /////////////////////
             // Markets / feeds //

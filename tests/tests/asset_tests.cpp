@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
             asset_create_operation creator;
             creator.issuer = account_name_type();
             creator.fee = asset();
-            creator.symbol_name = "ADVANCED";
+            creator.asset_name = "ADVANCED";
             creator.common_options.max_supply = 100000000;
             creator.precision = 2;
             creator.common_options.market_fee_percent = STEEMIT_MAX_MARKET_FEE_PERCENT / 100; /*1%*/
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
             PUSH_TX(db, trx, ~0);
 
             const asset_object &test_asset = db.get_asset(test_asset_id);
-            BOOST_CHECK(test_asset.symbol == test_asset_id);
+            BOOST_CHECK(test_asset.asset_name == test_asset_id);
             BOOST_CHECK(asset(1, test_asset_id) * test_asset.options.core_exchange_rate == asset(2));
             BOOST_CHECK(test_asset.options.flags & white_list);
             BOOST_CHECK(test_asset.options.max_supply == 100000000);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
         try {
             account_name_type izzy_id = account_create("izzy").name;
             const asset_symbol_type uia_id = create_user_issued_asset(
-                    "ADVANCED", db.get_account(izzy_id), white_list).symbol;
+                    "ADVANCED", db.get_account(izzy_id), white_list).asset_name;
             account_name_type nathan_id = account_create("nathan").name;
             account_name_type vikram_id = account_create("vikram").name;
             trx.clear();
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
                 BOOST_TEST_MESSAGE("Changing the blacklist authority");
                 asset_update_operation uop;
                 uop.issuer = izzy_id;
-                uop.asset_to_update = advanced.symbol;
+                uop.asset_to_update = advanced.asset_name;
                 uop.new_options = advanced.options;
                 uop.new_options.blacklist_authorities.insert(izzy_id);
                 trx.operations.back() = uop;
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
                 BOOST_TEST_MESSAGE("Changing the blacklist authority to dan");
                 asset_update_operation op;
                 op.issuer = izzy_id;
-                op.asset_to_update = advanced.symbol;
+                op.asset_to_update = advanced.asset_name;
                 op.new_options = advanced.options;
                 op.new_options.blacklist_authorities.clear();
                 op.new_options.blacklist_authorities.insert(dan.name);
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
             auto _restrict_xfer = [&](bool xfer_flag) {
                 asset_update_operation op;
                 op.issuer = sam_id;
-                op.asset_to_update = uia.symbol;
+                op.asset_to_update = uia.asset_name;
                 op.new_options = uia.options;
                 if (xfer_flag) {
                     op.new_options.flags |= transfer_restricted;
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(asset_name_test) {
             ACTORS((alice)(bob));
 
             auto has_asset = [&](std::string symbol) -> bool {
-                const auto &assets_by_symbol = db.get_index<asset_index>().indices().get<by_symbol>();
+                const auto &assets_by_symbol = db.get_index<asset_index>().indices().get<by_asset_name>();
                 return assets_by_symbol.find(asset::from_string(symbol).symbol) != assets_by_symbol.end();
             };
 

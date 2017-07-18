@@ -27,14 +27,16 @@
 ///@{
 #define STEEMIT_COLLATERAL_RATIO_DENOM                 1000
 #define STEEMIT_MIN_COLLATERAL_RATIO                   1001  ///< lower than this could result in divide by 0
-#define GRAPHENE_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
+#define STEEMIT_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
 #define GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
 #define GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
 ///@}
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
+#define STEEM_SYMBOL_NAME ("GOLOS")
 #define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< Test Backed Dollars with 3 digits of precision
+#define SBD_SYMBOL_NAME ("GBG")
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
@@ -260,8 +262,10 @@
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< GESTS with 6 digits of precision
-#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< GOLOS with 3 digits of precision
-#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< STEEM Backed Dollars with 3 digits of precision
+#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
+#define STEEM_SYMBOL_NAME ("GOLOS")
+#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< Test Backed Dollars with 3 digits of precision
+#define SBD_SYMBOL_NAME ("GBG")
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< STEEM Dollars with 3 digits of precision
 #define STEEMIT_SYMBOL                          "GOLOS"
 #define STEEMIT_ADDRESS_PREFIX                  "GLS"
@@ -277,7 +281,7 @@
 ///@{
 #define STEEMIT_COLLATERAL_RATIO_DENOM                 1000
 #define STEEMIT_MIN_COLLATERAL_RATIO                   1001  ///< lower than this could result in divide by 0
-#define GRAPHENE_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
+#define STEEMIT_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
 #define GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
 #define GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
 ///@}
