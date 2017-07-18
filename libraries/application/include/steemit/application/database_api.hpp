@@ -380,7 +380,7 @@ namespace steemit {
              * @param limit Maximum number of orders to retrieve
              * @return The call orders, ordered from earliest to be called to latest
              */
-            vector<call_order_object> get_call_orders(string a, uint32_t limit) const;
+            vector<call_order_object> get_call_orders(const asset_name_type &a, uint32_t limit) const;
 
             /**
              * @brief Get forced settlement orders in a given asset
@@ -388,7 +388,7 @@ namespace steemit {
              * @param limit Maximum number of orders to retrieve
              * @return The settle orders, ordered from earliest settlement date to latest
              */
-            vector<force_settlement_object> get_settle_orders(string a, uint32_t limit) const;
+            vector<force_settlement_object> get_settle_orders(const asset_name_type &a, uint32_t limit) const;
 
             /**
              *  @return all open margin positions for a given account id.

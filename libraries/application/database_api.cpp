@@ -86,9 +86,9 @@ namespace steemit {
             // Markets / feeds
             vector<limit_order_object> get_limit_orders(string a, string b, uint32_t limit) const;
 
-            vector<call_order_object> get_call_orders(string a, uint32_t limit) const;
+            vector<call_order_object> get_call_orders(const asset_name_type &a, uint32_t limit) const;
 
-            vector<force_settlement_object> get_settle_orders(string a, uint32_t limit) const;
+            vector<force_settlement_object> get_settle_orders(const asset_name_type &a, uint32_t limit) const;
 
             vector<call_order_object> get_margin_positions(const account_name_type &name) const;
 
@@ -737,12 +737,12 @@ namespace steemit {
             return my->get_assets(asset_symbols);
         }
 
-        vector<optional<asset_object>> database_api_impl::get_assets(const vector<string> &asset_symbols) const {
+        vector<optional<asset_object>> database_api_impl::get_assets(const vector<asset_name_type> &asset_symbols) const {
             vector<optional<asset_object>> result;
             result.reserve(asset_symbols.size());
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this](asset_name_type id) -> optional<asset_object> {
-                        if (auto o = _db.find_asset(id) {
+                        if (auto o = _db.find_asset(id)) {
                             subscribe_to_item(id);
                             return *o;
                         }
@@ -760,7 +760,7 @@ namespace steemit {
             result.reserve(asset_symbols.size());
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this](string symbol) -> optional<asset_bitasset_data_object> {
-                        if (auto o = _db.find_asset_bitasset_data(asset::from_string(symbol).symbol)) {
+                        if (auto o = _db.find_asset_bitasset_data(symbol)) {
                             subscribe_to_item(symbol);
                             return *o;
                         }
@@ -779,7 +779,7 @@ namespace steemit {
             vector<asset_object> result;
             result.reserve(limit);
 
-            auto itr = assets_by_symbol.lower_bound(asset::from_string(lower_bound_symbol).symbol);
+            auto itr = assets_by_symbol.lower_bound(lower_bound_symbol);
 
             if (lower_bound_symbol == "") {
                 itr = assets_by_symbol.begin();
@@ -802,7 +802,7 @@ namespace steemit {
             result.reserve(asset_symbols.size());
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this, &assets_by_symbol](const string &symbol_or_id) -> optional<asset_object> {
-                        auto ptr = _db.find_asset(protocol::asset::from_string(symbol_or_id).symbol);
+                        auto ptr = _db.find_asset(symbol_or_id);
                         return ptr == nullptr ? optional<asset_object>()
                                               : *ptr;
                     });
@@ -851,26 +851,26 @@ namespace steemit {
             return result;
         }
 
-        vector<call_order_object> database_api::get_call_orders(string a, uint32_t limit) const {
+        vector<call_order_object> database_api::get_call_orders(const asset_name_type &a, uint32_t limit) const {
             return my->get_call_orders(a, limit);
         }
 
-        vector<call_order_object> database_api_impl::get_call_orders(string a, uint32_t limit) const {
+        vector<call_order_object> database_api_impl::get_call_orders(const asset_name_type &a, uint32_t limit) const {
             const auto &call_index = _db.get_index<call_order_index>().indices().get<by_price>();
-            const asset_object &mia = _db.get_asset(asset::from_string(a).symbol);
+            const asset_object &mia = _db.get_asset(a);
             price index_price = price::min(_db.get_asset_bitasset_data(mia.asset_name).options.short_backing_asset, mia.asset_name);
 
             return vector<call_order_object>(call_index.lower_bound(index_price.min()),
                     call_index.lower_bound(index_price.max()));
         }
 
-        vector<force_settlement_object> database_api::get_settle_orders(string a, uint32_t limit) const {
+        vector<force_settlement_object> database_api::get_settle_orders(const asset_name_type &a, uint32_t limit) const {
             return my->get_settle_orders(a, limit);
         }
 
-        vector<force_settlement_object> database_api_impl::get_settle_orders(string a, uint32_t limit) const {
+        vector<force_settlement_object> database_api_impl::get_settle_orders(const asset_name_type &a, uint32_t limit) const {
             const auto &settle_index = _db.get_index<force_settlement_index>().indices().get<by_expiration>();
-            const asset_object &mia = _db.get_asset(asset::from_string(a).symbol);
+            const asset_object &mia = _db.get_asset(a);
             return vector<force_settlement_object>(settle_index.lower_bound(mia.asset_name),
                     settle_index.upper_bound(mia.asset_name));
         }
@@ -883,8 +883,8 @@ namespace steemit {
             try {
                 const auto &idx = _db.get_index<call_order_index>();
                 const auto &aidx = idx.indices().get<by_account>();
-                auto start = aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL));
-                auto end = ++aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL));
+                auto start = aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL_NAME));
+                auto end = ++aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL_NAME));
                 vector<call_order_object> result;
                 while (start != end) {
                     result.push_back(*start);
@@ -1015,7 +1015,7 @@ namespace steemit {
             FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", base));
             FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", quote));
 
-            asset_symbol_type base_id = assets[0]->asset_name;
+            asset_name_type base_id = assets[0]->asset_name;
             auto orders = get_limit_orders(assets[0]->asset_name, assets[1]->asset_name, limit);
 
 
@@ -1024,7 +1024,7 @@ namespace steemit {
             };
 
             std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
-                if (p.base.symbol == base_id) {
+                if (p.base.symbol_name() == base_id) {
                     return asset_to_real(p.base, assets[0]->precision) /
                            asset_to_real(p.quote, assets[1]->precision);
                 } else {
@@ -1034,7 +1034,7 @@ namespace steemit {
             };
 
             for (const auto &o : orders) {
-                if (o.sell_price.base.symbol == base_id) {
+                if (o.sell_price.base.symbol_name() == base_id) {
                     order ord;
                     ord.real_price = price_to_real(o.sell_price);
                     ord.order_price.quote = asset(share_type(
@@ -1108,7 +1108,7 @@ namespace steemit {
                 if (itr->time < start) {
                     market_trade trade;
 
-                    if (assets[0]->asset_name == itr->op.receives.symbol) {
+                    if (assets[0]->asset_name == itr->op.receives.symbol_name()) {
                         trade.amount = price_to_real(itr->op.pays.amount, assets[1]->precision);
                         trade.value = price_to_real(itr->op.receives.amount, assets[0]->precision);
                     } else {

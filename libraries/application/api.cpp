@@ -301,7 +301,7 @@ namespace steemit {
             FC_ASSERT(limit <= 100);
 
             const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
-            auto range = bal_idx.equal_range(boost::make_tuple(protocol::asset::from_string(asset_symbol).symbol));
+            auto range = bal_idx.equal_range(boost::make_tuple(asset_symbol));
 
             vector<account_asset_balance> result;
 
@@ -335,7 +335,7 @@ namespace steemit {
         int asset_api::get_asset_holders_count(std::string asset_symbol) const {
 
             const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
-            auto range = bal_idx.equal_range(boost::make_tuple(protocol::asset::from_string(asset_symbol).symbol));
+            auto range = bal_idx.equal_range(boost::make_tuple(asset_symbol));
 
             return (boost::distance(range) - 1);
         }
@@ -349,7 +349,7 @@ namespace steemit {
             for (const asset_object &asset_obj : _db.get_index<asset_index>().indices()) {
                 const auto &dasset_obj = _db.get_asset_dynamic_data(asset_obj.asset_name);
 
-                asset_symbol_type asset_id = dasset_obj.asset_name;
+                asset_name_type asset_id = dasset_obj.asset_name;
 
                 const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
                 auto range = bal_idx.equal_range(boost::make_tuple(asset_id));

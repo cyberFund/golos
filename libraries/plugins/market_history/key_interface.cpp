@@ -6,7 +6,7 @@ namespace steemit {
 
         }
 
-        key_interface::key_interface(protocol::asset_symbol_type base, protocol::asset_symbol_type quote)
+        key_interface::key_interface(protocol::asset_name_type base, protocol::asset_name_type quote)
                 : base(base), quote(quote) {
         }
     }
