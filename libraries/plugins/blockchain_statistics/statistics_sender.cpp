@@ -23,6 +23,7 @@ stat_client::stat_client() {
 }
 
 stat_client::stat_client(uint32_t default_port, uint32_t timeout) : default_port(default_port), sender_sleeping_time(timeout) {
+    QUEUE_ENABLED = false;
 }
 
 stat_client::~stat_client() {
@@ -79,6 +80,7 @@ void stat_client::start() {
             sender_thread = std::move(sending_thr);
         }
     }
+    // TODO add logs
     catch (const std::exception &ex)
     {
          std::cerr << ex.what() << std::endl;

@@ -10,9 +10,9 @@
 
 #include "include/statistics_sender.hpp"
 
-std::string get_value_string(uint32_t val);
-std::string get_value_string(share_type val);
-std::string get_value_string(fc::uint128_t val);
+std::string increment_gauge(std::string name, uint32_t val);
+std::string increment_gauge(std::string name, fc::uint128_t val);
+std::string increment_gauge(std::string name, share_type val);
 
 namespace steemit {
     namespace blockchain_statistics {
@@ -40,8 +40,7 @@ namespace steemit {
             };
             flat_set<bucket_id_type> _current_buckets;
             uint32_t _maximum_history_per_bucket_size = 100;
-            std::vector <std::string> _recipient_ip_vec;
-            // Statistics sender
+
             std::shared_ptr<stat_client> stat_sender;
         };
 
@@ -59,7 +58,7 @@ namespace steemit {
             typedef void result_type;
 
             template<typename T>
-            void operator()(const T &) const {
+            void operator()(const T &op) const {
             }
 
             void operator()(const transfer_operation &op) const {
@@ -69,16 +68,12 @@ namespace steemit {
                     if (op.amount.symbol == STEEM_SYMBOL) {
                         b.steem_transferred += op.amount.amount;
 
-                        std::string tmp_s = "steem_transferred:" +
-                            get_value_string(op.amount.amount);
-
+                        std::string tmp_s = increment_gauge("steem_transferred", op.amount.amount);
                         stat_sender->push(tmp_s);
                     } else {
                         b.sbd_transferred += op.amount.amount;
 
-                        std::string tmp_s = "sbd_transferred:" +
-                            get_value_string(op.amount.amount);
-
+                        std::string tmp_s = increment_gauge("sbd_transferred", op.amount.amount);
                         stat_sender->push(tmp_s);
                     }
                 });
@@ -89,9 +84,7 @@ namespace steemit {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.sbd_paid_as_interest += op.interest.amount;
 
-                    std::string tmp_s = "sbd_paid_as_interest:" +
-                        get_value_string(op.interest.amount);
-
+                    std::string tmp_s = increment_gauge("sbd_paid_as_interest", op.interest.amount);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -100,7 +93,8 @@ namespace steemit {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.paid_accounts_created++;
 
-                    stat_sender->push("paid_accounts_created:+1|g");
+                    std::string tmp_s = increment_gauge("paid_accounts_created", 1);
+                    stat_sender->push(tmp_s);
                 });
             }
 
@@ -110,12 +104,15 @@ namespace steemit {
 
                     if (worker.created == _db.head_block_time()) {
                         b.mined_accounts_created++;
-                        stat_sender->push("mined_accounts_created:+1|g");
+
+                        std::string tmp_s = increment_gauge("mined_accounts_created", 1);
+                        stat_sender->push(tmp_s);
                     }
 
                     b.total_pow++;
 
-                    stat_sender->push("mined_accounts_created:+1|g");
+                    std::string tmp_s = increment_gauge("total_pow", 1);
+                    stat_sender->push(tmp_s);
 
                     uint64_t bits =
                             (_db.get_dynamic_global_properties().num_pow_witnesses /
@@ -134,9 +131,7 @@ namespace steemit {
                             (b.estimated_hashpower * delta_t +
                              estimated_hashes) / delta_t;
 
-                    std::string tmp_s = "estimated_hashpower:" +
-                        get_value_string(b.estimated_hashpower);
-
+                    tmp_s = increment_gauge("estimated_hashpower", b.estimated_hashpower);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -148,18 +143,26 @@ namespace steemit {
                     if (comment.created == _db.head_block_time()) {
                         if (comment.parent_author.length()) {
                             b.replies++;
-                            stat_sender->push("replies:+1|g");
+
+                            std::string tmp_s = increment_gauge("replies", 1);
+                            stat_sender->push(tmp_s);
                         } else {
                             b.root_comments++;
-                            stat_sender->push("root_comments:+1|g");
+
+                            std::string tmp_s = increment_gauge("root_comments", 1);
+                            stat_sender->push(tmp_s);
                         }
                     } else {
                         if (comment.parent_author.length()) {
                             b.reply_edits++;
-                            stat_sender->push("reply_edits:+1|g");
+
+                            std::string tmp_s = increment_gauge("reply_edits", 1);
+                            stat_sender->push(tmp_s);
                         } else {
                             b.root_comment_edits++;
-                            stat_sender->push("root_comment_edits:+1|g");
+
+                            std::string tmp_s = increment_gauge("root_comment_edits", 1);
+                            stat_sender->push(tmp_s);
                         }
                     }
                 });
@@ -175,18 +178,26 @@ namespace steemit {
                     if (itr->num_changes) {
                         if (comment.parent_author.size()) {
                             b.new_reply_votes++;
-                            stat_sender->push("new_reply_votes:+1|g");
+
+                            std::string tmp_s = increment_gauge("new_reply_votes", 1);
+                            stat_sender->push(tmp_s);
                         } else {
                             b.new_root_votes++;
-                            stat_sender->push("new_root_votes:+1|g");
+
+                            std::string tmp_s = increment_gauge("new_root_votes", 1);
+                            stat_sender->push(tmp_s);
                         }
                     } else {
                         if (comment.parent_author.size()) {
                             b.changed_reply_votes++;
-                            stat_sender->push("changed_reply_votes:+1|g");
+
+                            std::string tmp_s = increment_gauge("changed_reply_votes", 1);
+                            stat_sender->push(tmp_s);
                         } else {
                             b.changed_root_votes++;
-                            stat_sender->push("changed_root_votes:+1|g");
+
+                            std::string tmp_s = increment_gauge("changed_root_votes", 1);
+                            stat_sender->push(tmp_s);
                         }
                     }
                 });
@@ -198,16 +209,13 @@ namespace steemit {
                     b.sbd_paid_to_authors += op.sbd_payout.amount;
                     b.vests_paid_to_authors += op.vesting_payout.amount;
 
-                    stat_sender->push("payouts:+1|g");
-
-                    std::string tmp_s = "sbd_paid_to_authors:" +
-                        get_value_string(op.sbd_payout.amount);
-
+                    std::string tmp_s = increment_gauge("payouts", 1);
                     stat_sender->push(tmp_s);
 
-                    tmp_s = "vests_paid_to_authors:" +
-                        get_value_string(op.vesting_payout.amount);
+                    tmp_s = increment_gauge("sbd_paid_to_authors", op.sbd_payout.amount);
+                    stat_sender->push(tmp_s);
 
+                    tmp_s = increment_gauge("vests_paid_to_authors", op.vesting_payout.amount);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -216,9 +224,7 @@ namespace steemit {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.vests_paid_to_curators += op.reward.amount;
 
-                    std::string tmp_s = "vests_paid_to_curators:" +
-                        get_value_string(op.reward.amount);
-                        
+                    std::string tmp_s = increment_gauge("vests_paid_to_curators", op.reward.amount);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -227,9 +233,7 @@ namespace steemit {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.liquidity_rewards_paid += op.payout.amount;
 
-                    std::string tmp_s = "liquidity_rewards_paid:" +
-                        get_value_string(op.payout.amount);
-                        
+                    std::string tmp_s = increment_gauge("liquidity_rewards_paid", op.payout.amount);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -239,10 +243,10 @@ namespace steemit {
                     b.transfers_to_vesting++;
                     b.steem_vested += op.amount.amount;
 
-                    stat_sender->push(std::string("transfers_to_vesting:+1|g"));
-                    std::string tmp_s = "steem_vested:" +
-                        get_value_string(op.amount.amount);
-                        
+                    std::string tmp_s = increment_gauge("transfers_to_vesting", 1);
+                    stat_sender->push(tmp_s);
+
+                    tmp_s = increment_gauge("steem_vested", op.amount.amount);                    
                     stat_sender->push(tmp_s);
                 });
             }
@@ -252,27 +256,27 @@ namespace steemit {
 
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.vesting_withdrawals_processed++;
-                    stat_sender->push(std::string("vesting_withdrawals_processed:+1|g"));
+
+                    std::string tmp_s = increment_gauge("vesting_withdrawals_processed", 1);
+                    stat_sender->push(tmp_s);
 
                     if (op.deposited.symbol == STEEM_SYMBOL) {
                         b.vests_withdrawn += op.withdrawn.amount;
 
-                        std::string tmp_s = "vests_withdrawn:" +
-                            get_value_string(op.withdrawn.amount);
-                        
+                        tmp_s = increment_gauge("vests_withdrawn", op.withdrawn.amount);
                         stat_sender->push(tmp_s);
                     } else {
                         b.vests_transferred += op.withdrawn.amount;
 
-                        std::string tmp_s = "vests_transferred:" +
-                            get_value_string(op.withdrawn.amount);
-                        
+                        tmp_s = increment_gauge("vests_transferred", op.withdrawn.amount);
                         stat_sender->push(tmp_s);
                     }
 
                     if (account.vesting_withdraw_rate.amount == 0) {
                         b.finished_vesting_withdrawals++;
-                        stat_sender->push("finished_vesting_withdrawals:+1|g");
+
+                        tmp_s = increment_gauge("finished_vesting_withdrawals", 1);
+                        stat_sender->push(tmp_s);
                     }
                 });
             }
@@ -280,34 +284,40 @@ namespace steemit {
             void operator()(const limit_order_create_operation &op) const {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.limit_orders_created++;
-                    stat_sender->push("limit_orders_created:+1|g");
+
+                    std::string tmp_s = increment_gauge("limit_orders_created", 1);
+                    stat_sender->push(tmp_s);
                 });
             }
 
             void operator()(const fill_order_operation &op) const {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.limit_orders_filled += 2;
-                    stat_sender->push("limit_orders_filled:+2|g");
+
+                    std::string tmp_s = increment_gauge("limit_orders_filled", 2);
+                    stat_sender->push(tmp_s);
                 });
             }
 
             void operator()(const limit_order_cancel_operation &op) const {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.limit_orders_cancelled++;
-                    stat_sender->push("limit_orders_cancelled:+1|g");
+
+                    std::string tmp_s = increment_gauge("limit_orders_cancelled", 1);
+                    stat_sender->push(tmp_s);
                 });
             }
 
             void operator()(const convert_operation &op) const {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.sbd_conversion_requests_created++;
+
+                    std::string tmp_s = increment_gauge("sbd_conversion_requests_created", 1);
+                    stat_sender->push(tmp_s);
+
                     b.sbd_to_be_converted += op.amount.amount;
 
-                    stat_sender->push("sbd_conversion_requests_created:+1|g");
-
-                    std::string tmp_s = "sbd_to_be_converted:" +
-                        get_value_string(op.amount.amount);
-                        
+                    tmp_s = increment_gauge("sbd_to_be_converted", op.amount.amount);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -315,15 +325,14 @@ namespace steemit {
             void operator()(const fill_convert_request_operation &op) const {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.sbd_conversion_requests_filled++;
-                    b.steem_converted += op.amount_out.amount;
                     
-                    stat_sender->push("sbd_conversion_requests_filled:|g");
-
-                    std::string tmp_s = "steem_converted:" +
-                        get_value_string(op.amount_out.amount);
-                        
+                    std::string tmp_s = increment_gauge("sbd_conversion_requests_filled", 1);
                     stat_sender->push(tmp_s);
 
+                    b.steem_converted += op.amount_out.amount;
+
+                    tmp_s = increment_gauge("steem_converted", op.amount_out.amount);
+                    stat_sender->push(tmp_s);
                 });
             }
         };
@@ -570,18 +579,27 @@ namespace steemit {
 
 STEEMIT_DEFINE_PLUGIN(blockchain_statistics, steemit::blockchain_statistics::blockchain_statistics_plugin);
 
-std::string get_value_string(uint32_t val) {
-    std::string tmp_s = val > 0 ? "+" : "-";
-    tmp_s += std::to_string(val) + "|g";
-    return tmp_s;
+std::string increment_gauge(std::string name, uint32_t val) {
+    std::string res = name + ":";
+    std::string sign = val > 0 ? "+" : "-";
+    std::string num = std::to_string(val);
+    res += "+" + num + "|g";
+
+    return res;
 }
-std::string get_value_string(share_type val) {
-    std::string tmp_s = val > 0 ? "+" : "-";
-    tmp_s = std::string(val) + "|g";
-    return tmp_s;
+std::string increment_gauge(std::string name, fc::uint128_t val) {
+    std::string res = name + ":";
+    std::string sign = val > 0 ? "+" : "-";
+    std::string num = std::string(val);
+    res += "+" + num + "|g";
+
+    return res;
 }
-std::string get_value_string(fc::uint128_t val) {
-    std::string tmp_s = val > 0 ? "+" : "-";
-    tmp_s = std::string(val) + "|g";
-    return tmp_s;
+std::string increment_gauge(std::string name, share_type val) {
+    std::string res = name + ":";
+    std::string sign = val > 0 ? "+" : "-";
+    std::string num = std::string(val);
+
+    res += sign + num + "|g";
+    return res;
 }
