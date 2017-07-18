@@ -1063,7 +1063,7 @@ namespace steemit {
 #endif
                 const string _wallet_filename_extension = ".wallet";
 
-                mutable map<asset_symbol_type, asset_object> _asset_cache;
+                mutable map<asset_name_type, asset_object> _asset_cache;
             };
         }
     }

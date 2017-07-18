@@ -194,15 +194,15 @@ namespace steemit {
 
         void database_fixture::verify_asset_supplies(const database &input_db) {
             //wlog("*** Begin asset supply verification ***");
-            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_object, by_asset_name>(STEEM_SYMBOL);
+            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_object, by_asset_name>(STEEM_SYMBOL_NAME);
             BOOST_CHECK(core_asset_data.fee_pool == 0);
 
             const account_statistics_index &statistics_index =
                     input_db.get_index<account_statistics_index>().indicies();
             const auto &balance_index = input_db.get_index<account_balance_index>().indices();
             const auto &settle_index = input_db.get_index<force_settlement_index>().indices();
-            map<asset_symbol_type, share_type> total_balances;
-            map<asset_symbol_type, share_type> total_debts;
+            map<asset_name_type, share_type> total_balances;
+            map<asset_name_type, share_type> total_debts;
             share_type core_in_orders;
             share_type reported_core_in_orders;
 
@@ -210,32 +210,32 @@ namespace steemit {
                 total_balances[b.asset_name] += b.balance;
             }
             for (const force_settlement_object &s : settle_index) {
-                total_balances[s.balance.symbol] += s.balance.amount;
+                total_balances[s.balance.symbol_name()] += s.balance.amount;
             }
             for (const account_statistics_object &a : statistics_index) {
                 reported_core_in_orders += a.total_core_in_orders;
-                total_balances[asset_symbol_type()] += a.pending_fees + a.pending_vested_fees;
+                total_balances[STEEM_SYMBOL_NAME] += a.pending_fees + a.pending_vested_fees;
             }
             for (const limit_order_object &o : input_db.get_index<limit_order_index>().indices()) {
                 asset for_sale = o.amount_for_sale();
-                if (for_sale.symbol == asset_symbol_type()) {
+                if (for_sale.symbol == STEEM_SYMBOL) {
                     core_in_orders += for_sale.amount;
                 }
-                total_balances[for_sale.symbol] += for_sale.amount;
-                total_balances[asset_symbol_type()] += o.deferred_fee;
+                total_balances[for_sale.symbol_name()] += for_sale.amount;
+                total_balances[STEEM_SYMBOL_NAME] += o.deferred_fee;
             }
             for (const call_order_object &o : input_db.get_index<call_order_index>().indices()) {
                 asset col = o.get_collateral();
-                if (col.symbol == asset_symbol_type()) {
+                if (col.symbol == STEEM_SYMBOL) {
                     core_in_orders += col.amount;
                 }
-                total_balances[col.symbol] += col.amount;
-                total_debts[o.get_debt().symbol] += o.get_debt().amount;
+                total_balances[col.symbol_name()] += col.amount;
+                total_debts[o.get_debt().symbol_name()] += o.get_debt().amount;
             }
             for (const asset_object &asset_obj : input_db.get_index<asset_index>().indices()) {
                 const auto &dasset_obj = input_db.get_asset_dynamic_data(asset_obj.asset_name);
                 total_balances[asset_obj.asset_name] += dasset_obj.accumulated_fees;
-                total_balances[STEEM_SYMBOL] += dasset_obj.fee_pool;
+                total_balances[STEEM_SYMBOL_NAME] += dasset_obj.fee_pool;
                 if (asset_obj.is_market_issued()) {
                     const auto &bad = input_db.get_asset_bitasset_data(asset_obj.asset_name);
                     total_balances[bad.options.short_backing_asset] += bad.settlement_fund;
@@ -412,7 +412,7 @@ namespace steemit {
                 verify_asset_supplies(db);
 
                 auto &call_idx = db.get_index<call_order_index>().indices().get<by_account>();
-                auto itr = call_idx.find(boost::make_tuple(who.name, what.symbol));
+                auto itr = call_idx.find(boost::make_tuple(who.name, what.symbol_name()));
                 const call_order_object *call_obj = nullptr;
 
                 if (itr != call_idx.end()) {
@@ -422,9 +422,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
         }
 
-        const asset_object &database_fixture::get_asset(const string &symbol) const {
+        const asset_object &database_fixture::get_asset(const asset_name_type &symbol) const {
             const auto &idx = db.get_index<asset_index>().indices().get<by_asset_name>();
-            const auto itr = idx.find(asset::from_string(symbol).symbol);
+            const auto itr = idx.find(symbol);
             assert(itr != idx.end());
             return *itr;
         }
@@ -515,7 +515,7 @@ namespace steemit {
             return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
         }
 
-        const asset_object &database_fixture::create_user_issued_asset(const string &name, const account_object &issuer, uint16_t flags) {
+        const asset_object &database_fixture::create_user_issued_asset(const asset_name_type &name, const account_object &issuer, uint16_t flags) {
             asset_create_operation creator;
             creator.issuer = issuer.name;
             creator.fee = asset();
@@ -540,7 +540,7 @@ namespace steemit {
         void database_fixture::issue_uia(const account_object &recipient, asset amount) {
             BOOST_TEST_MESSAGE("Issuing UIA");
             asset_issue_operation op;
-            op.issuer = db.get_asset(amount.symbol).issuer;
+            op.issuer = db.get_asset(amount.symbol_name()).issuer;
             op.asset_to_issue = amount;
             op.issue_to_account = recipient.name;
             trx.operations.push_back(op);
@@ -857,9 +857,9 @@ namespace steemit {
             while (cur != price_idx.end()) {
                 cerr << std::setw(10) << std::left << db.get_account(cur->seller).name.operator std::string() << " ";
                 cerr << std::setw(10) << std::right << cur->for_sale.   value << " ";
-                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_for_sale().symbol).asset_name << " ";
+                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_for_sale().symbol_name()).asset_name.operator std::string() << " ";
                 cerr << std::setw(10) << std::right << cur->amount_to_receive().amount.value << " ";
-                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_to_receive().symbol).asset_name << " ";
+                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_to_receive().symbol_name()).asset_name.operator std::string() << " ";
                 cerr << std::setw(10) << std::right << cur->sell_price.to_real() << " ";
                 cerr << std::setw(10) << std::right << (~cur->sell_price).to_real() << " ";
                 cerr << "\n";
@@ -870,7 +870,7 @@ namespace steemit {
         string database_fixture::pretty(const asset &a) const {
             std::stringstream ss;
             ss << a.amount.value << " ";
-            ss << db.get_asset(a.symbol).asset_name;
+            ss << db.get_asset(a.symbol_name()).asset_name.operator std::string();
             return ss.str();
         }
 
