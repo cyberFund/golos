@@ -23,8 +23,7 @@ namespace steemit {
                 FC_ASSERT(o.fee >=
                           asset(wso.median_props.account_creation_fee.amount *
                                 STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
-                        ("f", wso.median_props.account_creation_fee *
-                              asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
+                        ("f", asset(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
                                 ("p", o.fee));
             } else if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
