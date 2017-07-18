@@ -412,11 +412,11 @@ namespace steemit {
                             asset(0, asset_symbol).symbol_name()
                     }).front();
                     if (rec) {
-                        if (rec->symbol_name != asset(0, asset_symbol).symbol_name()) {
+                        if (rec->asset_name != asset(0, asset_symbol).symbol_name()) {
                             return optional<asset_object>();
                         }
 
-                        _asset_cache[rec->symbol] = *rec;
+                        _asset_cache[rec->asset_name] = *rec;
                     }
                     return rec;
                 }
@@ -429,11 +429,11 @@ namespace steemit {
                             asset_symbol
                     }).front();
                     if (rec) {
-                        if (rec->symbol_name != asset_symbol) {
+                        if (rec->asset_name != asset_symbol) {
                             return optional<asset_object>();
                         }
 
-                        _asset_cache[rec->symbol] = *rec;
+                        _asset_cache[rec->asset_name] = *rec;
                     }
                     return rec;
                 }
@@ -1148,7 +1148,7 @@ namespace steemit {
 #endif
                 const string _wallet_filename_extension = ".wallet";
 
-                mutable map<asset_symbol_type, asset_object> _asset_cache;
+                mutable map<asset_name_type, asset_object> _asset_cache;
             };
         }
     }
@@ -2469,7 +2469,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             asset_object mia = get_asset(amount_to_borrow.symbol_name());
             FC_ASSERT(mia.is_market_issued());
 
-            asset_object collateral = get_asset(asset(0, get_bitasset_data(mia.symbol_name).options.short_backing_asset).symbol_name());
+            asset_object collateral = get_asset(asset(0, get_bitasset_data(mia.asset_name).options.short_backing_asset).symbol_name());
 
             call_order_update_operation op;
             op.funding_account = seller.name;
@@ -2515,7 +2515,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_create_operation create_op;
                 create_op.issuer = issuer_account.name;
-                create_op.symbol_name = symbol;
+                create_op.asset_name = symbol;
                 create_op.precision = precision;
                 create_op.common_options = common;
                 create_op.bitasset_opts = bitasset_opts;
@@ -2544,7 +2544,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_update_operation update_op;
                 update_op.issuer = asset_to_update->issuer;
-                update_op.asset_to_update = asset_to_update->symbol;
+                update_op.asset_to_update = asset_to_update->asset_name;
                 update_op.new_issuer = new_issuer_account_id;
                 update_op.new_options = new_options;
 
@@ -2566,7 +2566,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_update_bitasset_operation update_op;
                 update_op.issuer = asset_to_update->issuer;
-                update_op.asset_to_update = asset_to_update->symbol;
+                update_op.asset_to_update = asset_to_update->asset_name;
                 update_op.new_options = new_options;
 
                 signed_transaction tx;
@@ -2587,7 +2587,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_update_feed_producers_operation update_op;
                 update_op.issuer = asset_to_update->issuer;
-                update_op.asset_to_update = asset_to_update->symbol;
+                update_op.asset_to_update = asset_to_update->asset_name;
                 update_op.new_feed_producers.reserve(new_feed_producers.size());
                 std::transform(new_feed_producers.begin(), new_feed_producers.end(),
                         std::inserter(update_op.new_feed_producers, update_op.new_feed_producers.end()),
@@ -2614,7 +2614,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_publish_feed_operation publish_op;
                 publish_op.publisher = get_account(publishing_account).name;
-                publish_op.asset_id = asset_to_update->symbol;
+                publish_op.asset_name = asset_to_update->asset_name;
                 publish_op.feed = feed;
 
                 signed_transaction tx;
@@ -2638,7 +2638,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_fund_fee_pool_operation fund_op;
                 fund_op.from_account = from_account.name;
-                fund_op.symbol = asset_to_fund->symbol;
+                fund_op.asset_name = asset_to_fund->asset_name;
                 fund_op.amount = core_asset.amount_from_string(amount).amount;
 
                 signed_transaction tx;
@@ -2681,7 +2681,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 asset_global_settle_operation settle_op;
                 settle_op.issuer = asset_to_settle->issuer;
-                settle_op.asset_to_settle = asset_to_settle->symbol;
+                settle_op.asset_to_settle = asset_to_settle->asset_name;
                 settle_op.settle_price = settle_price;
 
                 signed_transaction tx;

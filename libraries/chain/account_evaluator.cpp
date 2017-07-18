@@ -15,8 +15,8 @@ namespace steemit {
 
             const auto &props = db.get_dynamic_global_properties();
 
-            FC_ASSERT(db.get_balance(creator.name, STEEM_SYMBOL) >=
-                      o.fee, "Insufficient balance to create account.", ("creator.balance", db.get_balance(creator.name, STEEM_SYMBOL))("required", o.fee));
+            FC_ASSERT(db.get_balance(creator.name, STEEM_SYMBOL_NAME) >=
+                      o.fee, "Insufficient balance to create account.", ("creator.balance", db.get_balance(creator.name, STEEM_SYMBOL_NAME))("required", o.fee));
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
@@ -71,20 +71,20 @@ namespace steemit {
             });
 
             auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
-            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL_NAME));
             if (itr == index.end()) {
                 db.create<account_balance_object>([new_account](account_balance_object &b) {
                     b.owner = new_account.name;
-                    b.asset_type = STEEM_SYMBOL;
+                    b.asset_name = STEEM_SYMBOL_NAME;
                     b.balance = 0;
                 });
             }
 
-            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL));
+            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL_NAME));
             if (itr == index.end()) {
                 db.create<account_balance_object>([new_account](account_balance_object &b) {
                     b.owner = new_account.name;
-                    b.asset_type = SBD_SYMBOL;
+                    b.asset_name = SBD_SYMBOL_NAME;
                     b.balance = 0;
                 });
             }
@@ -111,7 +111,7 @@ namespace steemit {
             FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
 
             const auto &creator = db.get_account(o.creator);
-            asset creator_balance = db.get_balance(o.creator, STEEM_SYMBOL);
+            asset creator_balance = db.get_balance(o.creator, STEEM_SYMBOL_NAME);
             const auto &props = db.get_dynamic_global_properties();
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
@@ -187,20 +187,20 @@ namespace steemit {
             });
 
             auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
-            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL_NAME));
             if (itr == index.end()) {
                 db.create<account_balance_object>([new_account](account_balance_object &b) {
                     b.owner = new_account.name;
-                    b.asset_type = STEEM_SYMBOL;
+                    b.asset_name = STEEM_SYMBOL_NAME;
                     b.balance = 0;
                 });
             }
 
-            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL));
+            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL_NAME));
             if (itr == index.end()) {
                 db.create<account_balance_object>([new_account](account_balance_object &b) {
                     b.owner = new_account.name;
-                    b.asset_type = SBD_SYMBOL;
+                    b.asset_name = SBD_SYMBOL_NAME;
                     b.balance = 0;
                 });
             }

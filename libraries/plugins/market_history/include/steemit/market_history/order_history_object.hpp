@@ -16,7 +16,7 @@ namespace steemit {
         public:
             history_key();
 
-            history_key(protocol::asset_symbol_type base, protocol::asset_symbol_type quote, int64_t sequence)
+            history_key(protocol::asset_name_type base, protocol::asset_name_type quote, int64_t sequence)
                     : key_interface(base, quote), sequence(sequence) {
             }
 
