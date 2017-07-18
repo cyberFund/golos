@@ -1566,8 +1566,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.posting = authority(1, posting, 1);
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
-                op.fee =
-                        asset(my->_remote_db->get_chain_properties().account_creation_fee.amount *
+                op.fee = asset(my->_remote_db->get_chain_properties().account_creation_fee.amount *
                         STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL);
 
                 signed_transaction tx;
