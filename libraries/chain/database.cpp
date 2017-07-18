@@ -432,7 +432,7 @@ namespace steemit {
             return find<asset_dynamic_data_object, by_asset_name>(name);
         }
 
-            const proposal_object &database::get_proposal(const account_name_type &name, protocol::integral_id_type id) const {
+        const proposal_object &database::get_proposal(const account_name_type &name, protocol::integral_id_type id) const {
             try {
                 return get<proposal_object, by_account>(boost::make_tuple(name, id));
             } FC_CAPTURE_AND_RETHROW((name))
@@ -2251,7 +2251,8 @@ namespace steemit {
         }
 
         asset database::get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const {
-            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() > STEEMIT_CASHOUT_WINDOW_SECONDS / 7, "Extension time should be equal or greater than a day");
+            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() >
+                      STEEMIT_CASHOUT_WINDOW_SECONDS / 7, "Extension time should be equal or greater than a day");
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() <
                       STEEMIT_CASHOUT_WINDOW_SECONDS, "Extension time should be less or equal than a week");
 
@@ -3502,8 +3503,7 @@ namespace steemit {
                 if (head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
                     modify(dpo, [&](dynamic_global_property_object &_dpo) {
                         if (head_block_num() > STEEMIT_MAX_WITNESSES) {
-                            _dpo.last_irreversible_block_num =
-                                    head_block_num() - STEEMIT_MAX_WITNESSES;
+                            _dpo.last_irreversible_block_num = head_block_num() - STEEMIT_MAX_WITNESSES;
                         }
                     });
                 } else {
@@ -3515,28 +3515,23 @@ namespace steemit {
                         wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
                     }
 
-                    static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD >
-                                  0, "irreversible threshold must be nonzero");
+                    static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero");
 
                     // 1 1 1 2 2 2 2 2 2 2 -> 2     .7*10 = 7
                     // 1 1 1 1 1 1 1 2 2 2 -> 1
                     // 3 3 3 3 3 3 3 3 3 3 -> 3
 
-                    size_t offset = ((STEEMIT_100_PERCENT -
-                                      STEEMIT_IRREVERSIBLE_THRESHOLD) *
-                                     wit_objs.size() / STEEMIT_100_PERCENT);
+                    size_t offset = ((STEEMIT_100_PERCENT - STEEMIT_IRREVERSIBLE_THRESHOLD) * wit_objs.size() /
+                                     STEEMIT_100_PERCENT);
 
-                    std::nth_element(wit_objs.begin(),
-                            wit_objs.begin() + offset, wit_objs.end(),
+                    std::nth_element(wit_objs.begin(), wit_objs.begin() + offset, wit_objs.end(),
                             [](const witness_object *a, const witness_object *b) {
-                                return a->last_confirmed_block_num <
-                                       b->last_confirmed_block_num;
+                                return a->last_confirmed_block_num < b->last_confirmed_block_num;
                             });
 
                     uint32_t new_last_irreversible_block_num = wit_objs[offset]->last_confirmed_block_num;
 
-                    if (new_last_irreversible_block_num >
-                        dpo.last_irreversible_block_num) {
+                    if (new_last_irreversible_block_num > dpo.last_irreversible_block_num) {
                         modify(dpo, [&](dynamic_global_property_object &_dpo) {
                             _dpo.last_irreversible_block_num = new_last_irreversible_block_num;
                         });
@@ -3556,7 +3551,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block, "Current fork in the fork database does not contain the last_irreversible_block");
                             _block_log.append(block->data);
@@ -3567,10 +3562,8 @@ namespace steemit {
                     }
                 }
 
-                _fork_db.set_max_size(dpo.head_block_number -
-                                      dpo.last_irreversible_block_num + 1);
-            }
-            FC_CAPTURE_AND_RETHROW()
+                _fork_db.set_max_size(dpo.head_block_number - dpo.last_irreversible_block_num + 1);
+            } FC_CAPTURE_AND_RETHROW()
         }
 
 
@@ -3860,7 +3853,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional <asset> collateral_freed;
+                optional<asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -4884,17 +4877,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                    {
-                        custom_operation test_op;
-                        string op_msg = "Testnet: Hardfork applied";
-                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                        operation op = test_op;   // we need the operation object to live to the end of this scope
-                        operation_notification note(op);
-                        notify_pre_apply_operation(note);
-                        notify_post_apply_operation(note);
-                    }
-                    break;
+                {
+                    custom_operation test_op;
+                    string op_msg = "Testnet: Hardfork applied";
+                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                    operation op = test_op;   // we need the operation object to live to the end of this scope
+                    operation_notification note(op);
+                    notify_pre_apply_operation(note);
+                    notify_post_apply_operation(note);
+                }
+                break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
