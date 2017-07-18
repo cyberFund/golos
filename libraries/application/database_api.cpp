@@ -719,8 +719,8 @@ namespace steemit {
                 result.reserve(assets.size());
 
                 std::transform(assets.begin(), assets.end(), std::back_inserter(result),
-                        [this, acnt](std::string id) {
-                            return _db.get_balance(acnt, asset::from_string(id).symbol);
+                        [this, acnt](asset_name_type id) {
+                            return _db.get_balance(acnt, id);
                         });
             }
 
@@ -741,8 +741,8 @@ namespace steemit {
             vector<optional<asset_object>> result;
             result.reserve(asset_symbols.size());
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                    [this](string id) -> optional<asset_object> {
-                        if (auto o = _db.find_asset(asset::from_string(id).symbol)) {
+                    [this](asset_name_type id) -> optional<asset_object> {
+                        if (auto o = _db.find_asset(id) {
                             subscribe_to_item(id);
                             return *o;
                         }

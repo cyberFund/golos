@@ -13,7 +13,7 @@ namespace steemit {
         struct asset {
             asset();
 
-            asset(share_type a, asset_symbol_type id);
+            asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
 
             asset(share_type a, asset_name_type name);
 
@@ -106,6 +106,10 @@ namespace steemit {
             static price max(asset_symbol_type base, asset_symbol_type quote);
 
             static price min(asset_symbol_type base, asset_symbol_type quote);
+
+            static price max(asset_name_type base, asset_name_type quote);
+
+            static price min(asset_name_type base, asset_name_type quote);
 
             price max() const {
                 return price::max(base.symbol, quote.symbol);

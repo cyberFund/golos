@@ -271,7 +271,7 @@ namespace steemit {
                 FC_ASSERT(a.is_market_issued(), "Cannot update BitAsset-specific settings on a non-BitAsset.");
 
                 const asset_bitasset_data_object &b = d.get_asset_bitasset_data(a.asset_name);
-                FC_ASSERT(!b.has_settlement(), "Cannot update a bitasset after a settlement has executed");
+                FC_ASSERT(!b.has_settlement(), "Cannot update a BitAsset after a settlement has executed");
                 if (o.new_options.short_backing_asset !=
                     b.options.short_backing_asset) {
                     FC_ASSERT(
@@ -400,7 +400,7 @@ namespace steemit {
         void asset_settle_evaluator::do_apply(const asset_settle_evaluator::operation_type &op) {
             try {
                 const database &d = get_database();
-                asset_to_settle = d.find_asset(op.amount.symbol);
+                asset_to_settle = d.find_asset(op.amount.symbol_name());
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 const auto &bitasset = d.get_asset_bitasset_data(asset_to_settle->asset_name);
                 FC_ASSERT(asset_to_settle->can_force_settle() ||
@@ -443,7 +443,7 @@ namespace steemit {
         void asset_force_settle_evaluator::do_apply(const asset_force_settle_evaluator::operation_type &op) {
             try {
                 const database &d = get_database();
-                asset_to_settle = d.find_asset(op.amount.symbol);
+                asset_to_settle = d.find_asset(op.amount.symbol_name());
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 const auto &bitasset = d.get_asset_bitasset_data(asset_to_settle->asset_name);
                 FC_ASSERT(asset_to_settle->can_force_settle() ||
@@ -502,7 +502,7 @@ namespace steemit {
                           bitasset.options.short_backing_asset);
                 if (!o.feed.core_exchange_rate.is_null()) {
                     FC_ASSERT(o.feed.core_exchange_rate.quote.symbol_name() ==
-                              STEEM_SYMBOL);
+                              STEEM_SYMBOL_NAME);
                 }
 
 

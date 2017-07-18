@@ -14,7 +14,8 @@ namespace steemit {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
-        asset::asset() : amount(0), symbol(STEEM_SYMBOL) {
+        asset::asset()
+                : amount(0), symbol(STEEM_SYMBOL) {
 
         }
 
@@ -218,6 +219,15 @@ namespace steemit {
         }
 
         price price::min(asset_symbol_type base, asset_symbol_type quote) {
+            return asset(1, base) / asset(STEEMIT_MAX_SHARE_SUPPLY, quote);
+        }
+
+        price price::max(asset_name_type base, asset_name_type quote) {
+            return asset(share_type(STEEMIT_MAX_SHARE_SUPPLY), base) /
+                   asset(share_type(1), quote);
+        }
+
+        price price::min(asset_name_type base, asset_name_type quote) {
             return asset(1, base) / asset(STEEMIT_MAX_SHARE_SUPPLY, quote);
         }
 

@@ -207,7 +207,7 @@ namespace steemit {
             share_type reported_core_in_orders;
 
             for (const account_balance_object &b : balance_index) {
-                total_balances[b.asset_type] += b.balance;
+                total_balances[b.asset_name] += b.balance;
             }
             for (const force_settlement_object &s : settle_index) {
                 total_balances[s.balance.symbol] += s.balance.amount;
@@ -930,7 +930,7 @@ namespace steemit {
             }
         }
 
-        int64_t database_fixture::get_balance(account_name_type account, asset_symbol_type a) const {
+        int64_t database_fixture::get_balance(account_name_type account, const asset_name_type &a) const {
             return db.get_balance(account, a).amount.value;
         }
 

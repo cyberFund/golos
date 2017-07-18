@@ -45,9 +45,9 @@ namespace steemit {
             flat_set <account_name_type> blacklist_authorities;
 
             /** defines the assets that this asset may be traded against in the market */
-            flat_set <asset_symbol_type> whitelist_markets;
+            flat_set <asset_name_type> whitelist_markets;
             /** defines the assets that this asset may not be traded against in the market, must not overlap whitelist */
-            flat_set <asset_symbol_type> blacklist_markets;
+            flat_set <asset_name_type> blacklist_markets;
 
             /**
              * data that describes the meaning/purpose of this asset, fee will be charged proportional to
@@ -163,7 +163,7 @@ namespace steemit {
          * @brief Schedules a market-issued asset for automatic settlement
          * @ingroup operations
          *
-         * Holders of market-issued assests may request a forced settlement for some amount of their asset. This means that
+         * Holders of market-issued assets may request a forced settlement for some amount of their asset. This means that
          * the specified sum will be locked by the chain and held for the settlement period, after which time the chain will
          * choose a margin posision holder and buy the settled asset using the margin's collateral. The price of this sale
          * will be based on the feed price for the market-issued asset being settled. The exact settlement price will be the

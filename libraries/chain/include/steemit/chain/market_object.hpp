@@ -35,11 +35,11 @@ namespace steemit {
             protocol::price sell_price;
             share_type deferred_fee;
 
-            pair <protocol::asset_symbol_type, protocol::asset_symbol_type> get_market() const {
-                return sell_price.base.symbol < sell_price.quote.symbol ?
-                       std::make_pair(sell_price.base.symbol, sell_price.quote.symbol)
-                                                                        :
-                       std::make_pair(sell_price.quote.symbol, sell_price.base.symbol);
+            pair <protocol::asset_name_type, protocol::asset_name_type> get_market() const {
+                return sell_price.base.symbol_name() < sell_price.quote.symbol_name() ?
+                       std::make_pair(sell_price.base.symbol_name(), sell_price.quote.symbol_name())
+                                                                                      :
+                       std::make_pair(sell_price.quote.symbol_name(), sell_price.base.symbol_name());
             }
 
             protocol::asset amount_for_sale() const {
@@ -84,8 +84,8 @@ namespace steemit {
                 return get_debt();
             }
 
-            protocol::asset_symbol_type debt_type() const {
-                return call_price.quote.symbol;
+            protocol::asset_name_type debt_type() const {
+                return call_price.quote.symbol_name();
             }
 
             protocol::price collateralization() const {
@@ -98,8 +98,8 @@ namespace steemit {
             share_type debt;        ///< call_price.quote.asset_id, access via get_collateral
             protocol::price call_price;  ///< Debt / Collateral
 
-            pair <protocol::asset_symbol_type, protocol::asset_symbol_type> get_market() const {
-                auto tmp = std::make_pair(call_price.base.symbol, call_price.quote.symbol);
+            pair <protocol::asset_name_type, protocol::asset_name_type> get_market() const {
+                auto tmp = std::make_pair(call_price.base.symbol_name(), call_price.quote.symbol_name());
                 if (tmp.first > tmp.second) {
                     std::swap(tmp.first, tmp.second);
                 }
@@ -132,8 +132,8 @@ namespace steemit {
             protocol::asset balance;
             time_point_sec settlement_date;
 
-            protocol::asset_symbol_type settlement_asset_symbol() const {
-                return balance.symbol;
+            protocol::asset_name_type settlement_asset_symbol() const {
+                return balance.symbol_name();
             }
         };
 
@@ -186,7 +186,7 @@ namespace steemit {
         composite_key<call_order_object,
                 member <
                 call_order_object, account_name_type, &call_order_object::borrower>,
-        const_mem_fun<call_order_object, protocol::asset_symbol_type, &call_order_object::debt_type>
+        const_mem_fun<call_order_object, protocol::asset_name_type, &call_order_object::debt_type>
         >
         >,
         ordered_unique <tag<by_collateral>,
@@ -216,7 +216,7 @@ namespace steemit {
         ordered_unique <tag<by_expiration>,
         composite_key<force_settlement_object,
                 const_mem_fun <
-                force_settlement_object, protocol::asset_symbol_type, &force_settlement_object::settlement_asset_symbol>,
+                force_settlement_object, protocol::asset_name_type, &force_settlement_object::settlement_asset_symbol>,
         member<force_settlement_object, time_point_sec, &force_settlement_object::settlement_date>,
         member<force_settlement_object, protocol::integral_id_type, &force_settlement_object::settlement_id>
         >

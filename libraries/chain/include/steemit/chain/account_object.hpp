@@ -106,11 +106,11 @@ namespace steemit {
             id_type id;
 
             account_name_type owner;
-            protocol::asset_symbol_type asset_type;
+            protocol::asset_name_type asset_name;
             share_type balance = 0; ///< total liquid shares held by this account
 
             protocol::asset get_balance() const {
-                return protocol::asset(balance, asset_type);
+                return protocol::asset(balance, asset_name);
             }
 
             void adjust_balance(const protocol::asset &delta);
@@ -217,7 +217,7 @@ namespace steemit {
              * This is utilized to restrict buyback accounts to the assets that trade in their markets.
              * In the future we may expand this to allow accounts to e.g. voluntarily restrict incoming transfers.
              */
-            optional<flat_set<protocol::asset_symbol_type>> allowed_assets;
+            optional<flat_set<protocol::asset_name_type>> allowed_assets;
 
             /**
           * This is a set of all accounts which have 'whitelisted' this account. Whitelisting is only used in core
@@ -419,18 +419,18 @@ namespace steemit {
                                 composite_key<
                                         account_balance_object,
                                         member<account_balance_object, account_name_type, &account_balance_object::owner>,
-                                        member<account_balance_object, protocol::asset_symbol_type, &account_balance_object::asset_type>
+                                        member<account_balance_object, protocol::asset_name_type, &account_balance_object::asset_name>
                                 >
                         >,
                         ordered_unique<tag<by_asset_balance>,
                                 composite_key<
                                         account_balance_object,
-                                        member<account_balance_object, protocol::asset_symbol_type, &account_balance_object::asset_type>,
+                                        member<account_balance_object, protocol::asset_name_type, &account_balance_object::asset_name>,
                                         member<account_balance_object, share_type, &account_balance_object::balance>,
                                         member<account_balance_object, account_name_type, &account_balance_object::owner>
                                 >,
                                 composite_key_compare<
-                                        std::less<protocol::asset_symbol_type>,
+                                        std::less<protocol::asset_name_type>,
                                         std::greater<share_type>,
                                         std::less<account_name_type>
                                 >
@@ -727,7 +727,7 @@ FC_REFLECT(steemit::chain::change_recovery_account_request_object,
         (id)(account_to_recover)(recovery_account)(effective_on))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::change_recovery_account_request_object, steemit::chain::change_recovery_account_request_index)
 
-FC_REFLECT(steemit::chain::account_balance_object, (id)(owner)(asset_type)(balance))
+FC_REFLECT(steemit::chain::account_balance_object, (id)(owner)(asset_name)(balance))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_balance_object, steemit::chain::account_balance_index)
 
 FC_REFLECT(steemit::chain::account_statistics_object,
