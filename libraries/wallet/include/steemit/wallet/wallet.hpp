@@ -794,13 +794,18 @@ namespace steemit {
             annotated_signed_transaction transfer_to_savings(string from, string to, asset amount, string memo, bool broadcast = false);
 
             /**
+             * @param from The account the STEEM is coming from
+             * @param to The account getting the VESTS
+             * @param amount The amount of STEEM to vest i.e. "100.00 STEEM"
              * @param request_id - an unique ID assigned by from account, the id is used to cancel the operation and can be reused after the transfer completes
+             * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction transfer_from_savings(string from, uint32_t request_id, string to, asset amount, string memo, bool broadcast = false);
 
             /**
              *  @param request_id the id used in transfer_from_savings
              *  @param from the account that initiated the transfer
+             * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction cancel_transfer_from_savings(string from, uint32_t request_id, bool broadcast = false);
 

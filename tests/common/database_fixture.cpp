@@ -529,7 +529,7 @@ namespace steemit {
             trx.operations.clear();
             trx.operations.push_back(std::move(creator));
             trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.validate();
             db.push_transaction(trx, ~0);
             trx.operations.clear();
@@ -590,7 +590,7 @@ namespace steemit {
 
         void database_fixture::publish_feed(const asset_object &mia, const account_object &by, const price_feed &f) {
             trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.operations.clear();
 
             asset_publish_feed_operation op;
@@ -856,10 +856,12 @@ namespace steemit {
             auto cur = price_idx.begin();
             while (cur != price_idx.end()) {
                 cerr << std::setw(10) << std::left << db.get_account(cur->seller).name.operator std::string() << " ";
-                cerr << std::setw(10) << std::right << cur->for_sale.   value << " ";
-                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_for_sale().symbol_name()).asset_name.operator std::string() << " ";
+                cerr << std::setw(10) << std::right << cur->for_sale.value << " ";
+                cerr << std::setw(5) << std::left
+                     << db.get_asset(cur->amount_for_sale().symbol_name()).asset_name.operator std::string() << " ";
                 cerr << std::setw(10) << std::right << cur->amount_to_receive().amount.value << " ";
-                cerr << std::setw(5) << std::left << db.get_asset(cur->amount_to_receive().symbol_name()).asset_name.operator std::string() << " ";
+                cerr << std::setw(5) << std::left
+                     << db.get_asset(cur->amount_to_receive().symbol_name()).asset_name.operator std::string() << " ";
                 cerr << std::setw(10) << std::right << cur->sell_price.to_real() << " ";
                 cerr << std::setw(10) << std::right << (~cur->sell_price).to_real() << " ";
                 cerr << "\n";
