@@ -10,10 +10,11 @@
 
 #include "include/statistics_sender.hpp"
 
+
 std::string increment_gauge(std::string name);
-std::string increment_gauge(std::string name, uint32_t val);
-std::string increment_gauge(std::string name, fc::uint128_t val);
-std::string increment_gauge(std::string name, share_type val);
+std::string increment_gauge(std::string name, uint32_t value);
+std::string increment_gauge(std::string name, fc::uint128_t value);
+std::string increment_gauge(std::string name, share_type value);
 
 namespace steemit {
     namespace blockchain_statistics {
@@ -295,7 +296,7 @@ namespace steemit {
                 _db.modify(_bucket, [&](bucket_object &b) {
                     b.limit_orders_filled += 2;
 
-                    std::string tmp_s = increment_gauge("limit_orders_filled", (uint32_t)2);
+                    std::string tmp_s = increment_gauge("limit_orders_filled", boost::numeric_cast<uint32_t>(2));
                     stat_sender->push(tmp_s);
                 });
             }
@@ -587,24 +588,24 @@ std::string increment_gauge(std::string name) {
     return res;
 }
 
-std::string increment_gauge(std::string name, uint32_t val) {
+std::string increment_gauge(std::string name, uint32_t value) {
     std::string res = name + ":";
-    std::string num = std::to_string(val);
+    std::string num = std::to_string(value);
     res += "+" + num + "|g";
 
     return res;
 }
-std::string increment_gauge(std::string name, fc::uint128_t val) {
+std::string increment_gauge(std::string name, fc::uint128_t value) {
     std::string res = name + ":";
-    std::string num = std::string(val);
+    std::string num = std::string(value);
     res += "+" + num + "|g";
 
     return res;
 }
-std::string increment_gauge(std::string name, share_type val) {
+std::string increment_gauge(std::string name, share_type value) {
     std::string res = name + ":";
-    std::string sign = val > 0 ? "+" : "-";
-    std::string num = std::string(val);
+    std::string sign = value > 0 ? "+" : "-";
+    std::string num = std::string(value);
 
     res += sign + num + "|g";
     return res;
