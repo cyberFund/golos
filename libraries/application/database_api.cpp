@@ -77,6 +77,8 @@ namespace steemit {
             // Assets
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
+            vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
+
             vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<asset_name_type> &asset_symbols) const;
 
             vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
@@ -747,6 +749,24 @@ namespace steemit {
                     [this](asset_name_type id) -> optional<asset_object> {
                         if (auto o = _db.find_asset(id)) {
                             subscribe_to_item(id);
+                            return *o;
+                        }
+                        return {};
+                    });
+            return result;
+        }
+
+        vector<optional<asset_dynamic_data_object>> database_api::get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const {
+            return my->get_assets_dynamic_data(asset_symbols);
+        }
+
+        vector<optional<asset_dynamic_data_object>> database_api_impl::get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const {
+            vector<optional<asset_dynamic_data_object>> result;
+            result.reserve(asset_symbols.size());
+            std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
+                    [this](string symbol) -> optional<asset_dynamic_data_object> {
+                        if (auto o = _db.find_asset_dynamic_data(symbol)) {
+                            subscribe_to_item(symbol);
                             return *o;
                         }
                         return {};

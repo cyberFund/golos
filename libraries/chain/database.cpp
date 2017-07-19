@@ -3541,7 +3541,7 @@ namespace steemit {
                 commit(dpo.last_irreversible_block_num);
 
                 if (!(get_node_properties().skip_flags & skip_block_log)) {
-                    // output to block log based on new last irreverisible block num
+                    // output to block log based on new last irreversible block num
                     const auto &tmp_head = _block_log.head();
                     uint64_t log_head_num = 0;
 
