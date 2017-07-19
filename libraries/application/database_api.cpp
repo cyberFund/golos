@@ -1299,9 +1299,15 @@ namespace steemit {
 
         bool database_api_impl::verify_authority(const signed_transaction &trx) const {
             trx.verify_authority(STEEMIT_CHAIN_ID,
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).active); },
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).owner); },
-                    [&](std::string account_name) { return authority(_db.get<account_authority_object, by_account>(account_name).posting); },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).active);
+                    },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+                    },
+                    [&](std::string account_name) {
+                        return authority(_db.get<account_authority_object, by_account>(account_name).posting);
+                    },
                     STEEMIT_MAX_SIG_CHECK_DEPTH);
             return true;
         }
