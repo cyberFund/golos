@@ -14,7 +14,7 @@ namespace steemit {
     namespace market_history {
         class bucket_key : public key_interface {
         public:
-            bucket_key(protocol::asset_symbol_type a, protocol::asset_symbol_type b, uint32_t s, fc::time_point_sec o)
+            bucket_key(protocol::asset_name_type a, protocol::asset_name_type b, uint32_t s, fc::time_point_sec o)
                     : key_interface(a, b), seconds(s), open(o) {
             }
 

@@ -13,7 +13,7 @@ namespace steemit {
             const auto &from_account = db.get_account(o.from);
             const auto &to_account = db.get_account(o.to);
 
-            const asset_object &asset_type = db.get_asset(o.amount.symbol);
+            const asset_object &asset_type = db.get_asset(o.amount.symbol_name());
 
             STEEMIT_ASSERT(
                     db.is_authorized_asset(from_account, asset_type),
@@ -47,7 +47,7 @@ namespace steemit {
                 });
             }
 
-            FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol) >=
+            FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol_name()) >=
                       o.amount, "Account does not have sufficient funds for transfer.");
 
             this->db.adjust_balance(from_account, -o.amount);
@@ -61,8 +61,8 @@ namespace steemit {
             const auto &to_account = o.to.size() ? this->db.get_account(o.to)
                                                  : from_account;
 
-            FC_ASSERT(this->db.get_balance(from_account, STEEM_SYMBOL) >=
-                      o.amount, "Account does not have sufficient GOLOS for transfer.");
+            FC_ASSERT(this->db.get_balance(from_account, STEEM_SYMBOL_NAME) >=
+                      o.amount, "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
             this->db.adjust_balance(from_account, -o.amount);
             this->db.create_vesting(to_account, o.amount);
         }
@@ -71,7 +71,7 @@ namespace steemit {
 
             const auto &from = this->db.get_account(op.from);
             const auto &to = this->db.get_account(op.to);
-            FC_ASSERT(this->db.get_balance(from, op.amount.symbol) >=
+            FC_ASSERT(this->db.get_balance(from, op.amount.symbol_name()) >=
                       op.amount, "Account does not have sufficient funds to transfer to savings.");
 
             this->db.adjust_balance(from, -op.amount);
@@ -86,7 +86,7 @@ namespace steemit {
             FC_ASSERT(from.savings_withdraw_requests <
                       STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests.");
 
-            FC_ASSERT(this->db.get_savings_balance(from, op.amount.symbol) >=
+            FC_ASSERT(this->db.get_savings_balance(from, op.amount.symbol_name()) >=
                       op.amount);
             this->db.adjust_savings_balance(from, -op.amount);
             this->db.create<savings_withdraw_object>([&](savings_withdraw_object &s) {
@@ -121,7 +121,7 @@ namespace steemit {
 
         void override_transfer_evaluator::do_apply(const protocol::override_transfer_operation &o) {
             try {
-                const asset_object &asset_type = db.get_asset(o.amount.symbol);
+                const asset_object &asset_type = db.get_asset(o.amount.symbol_name());
                 STEEMIT_ASSERT(
                         asset_type.can_override(),
                         override_transfer_not_permitted,

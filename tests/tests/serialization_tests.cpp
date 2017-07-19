@@ -1,26 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #ifdef STEEMIT_BUILD_TESTNET
 
 #include <boost/test/unit_test.hpp>
@@ -113,7 +90,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
     BOOST_AUTO_TEST_CASE(asset_test) {
         try {
             BOOST_CHECK_EQUAL(asset().decimals(), 3);
-            BOOST_CHECK_EQUAL(asset().symbol_name(), "TESTS");
+            BOOST_CHECK_EQUAL(asset().symbol_name().operator std::string(), "TESTS");
             BOOST_CHECK_EQUAL(asset().to_string(), "0.000 TESTS");
 
             BOOST_TEST_MESSAGE("Asset Test");
@@ -127,7 +104,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
             BOOST_CHECK(std::abs(steem.to_real() - 123.456) < 0.0005);
             BOOST_CHECK_EQUAL(steem.amount.value, 123456);
             BOOST_CHECK_EQUAL(steem.decimals(), 3);
-            BOOST_CHECK_EQUAL(steem.symbol_name(), "TESTS");
+            BOOST_CHECK_EQUAL(steem.symbol_name().operator std::string(), "TESTS");
             BOOST_CHECK_EQUAL(steem.to_string(), "123.456 TESTS");
             BOOST_CHECK_EQUAL(steem.symbol, STEEM_SYMBOL);
             BOOST_CHECK_EQUAL(asset(50, STEEM_SYMBOL).to_string(), "0.050 TESTS");
@@ -136,7 +113,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
             BOOST_CHECK(std::abs(sbd.to_real() - 654.321) < 0.0005);
             BOOST_CHECK_EQUAL(sbd.amount.value, 654321);
             BOOST_CHECK_EQUAL(sbd.decimals(), 3);
-            BOOST_CHECK_EQUAL(sbd.symbol_name(), "TBD");
+            BOOST_CHECK_EQUAL(sbd.symbol_name().operator std::string(), "TBD");
             BOOST_CHECK_EQUAL(sbd.to_string(), "654.321 TBD");
             BOOST_CHECK_EQUAL(sbd.symbol, SBD_SYMBOL);
             BOOST_CHECK_EQUAL(asset(50, SBD_SYMBOL).to_string(), "0.050 TBD");

@@ -63,7 +63,7 @@ namespace steemit {
         share_type asset_create_operation::calculate_fee(const asset_create_operation::fee_parameters_type &param) const {
             auto core_fee_required = param.long_symbol;
 
-            switch (symbol_name.size()) {
+            switch (asset_name.size()) {
                 case 3:
                     core_fee_required = param.symbol3;
                     break;
@@ -82,7 +82,7 @@ namespace steemit {
 
         void asset_create_operation::validate() const {
             FC_ASSERT(fee.amount >= 0);
-            FC_ASSERT(is_valid_symbol(symbol_name));
+            FC_ASSERT(is_valid_symbol(asset_name));
             common_options.validate();
             if (common_options.issuer_permissions &
                 (disable_force_settle | global_settle)) {
@@ -96,7 +96,7 @@ namespace steemit {
                 bitasset_opts->validate();
             }
 
-            asset dummy = asset(1) * common_options.core_exchange_rate;
+            asset dummy = asset(1, STEEM_SYMBOL) * common_options.core_exchange_rate;
             FC_ASSERT(dummy.symbol == STEEM_SYMBOL);
             FC_ASSERT(precision <= 12);
         }
@@ -135,7 +135,7 @@ namespace steemit {
 
             FC_ASSERT(!feed.settlement_price.is_null());
             FC_ASSERT(!feed.core_exchange_rate.is_null());
-            FC_ASSERT(feed.is_for(asset_id));
+            FC_ASSERT(feed.is_for(asset_name));
         }
 
         void asset_reserve_operation::validate() const {
@@ -179,7 +179,7 @@ namespace steemit {
 
         void asset_global_settle_operation::validate() const {
             FC_ASSERT(fee.amount >= 0);
-            FC_ASSERT(asset_to_settle == settle_price.base.symbol);
+            FC_ASSERT(asset_to_settle == asset(0, settle_price.base.symbol).symbol_name());
         }
 
         void bitasset_options::validate() const {
