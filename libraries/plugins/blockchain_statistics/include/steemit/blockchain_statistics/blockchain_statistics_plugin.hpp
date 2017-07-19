@@ -34,9 +34,7 @@ namespace steemit {
             bucket_object_type = (BLOCKCHAIN_STATISTICS_SPACE_ID << 8)
         };
 
-        namespace detail {
-            class blockchain_statistics_plugin_impl;
-        }
+
 
         class blockchain_statistics_plugin : public steemit::application::plugin {
         public:
@@ -61,9 +59,9 @@ namespace steemit {
             uint32_t get_max_history_per_bucket() const;
 
         private:
-            friend class detail::blockchain_statistics_plugin_impl;
+            struct blockchain_statistics_plugin_impl;
 
-            std::unique_ptr<detail::blockchain_statistics_plugin_impl> _my;
+            std::unique_ptr<blockchain_statistics_plugin_impl> _my;
         };
 
         struct bucket_object
