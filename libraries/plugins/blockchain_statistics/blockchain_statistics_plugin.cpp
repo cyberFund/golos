@@ -247,7 +247,7 @@ namespace steemit {
                     std::string tmp_s = increment_gauge("transfers_to_vesting");
                     stat_sender->push(tmp_s);
 
-                    tmp_s = increment_gauge("steem_vested", op.amount.amount);                    
+                    tmp_s = increment_gauge("steem_vested", op.amount.amount);
                     stat_sender->push(tmp_s);
                 });
             }
@@ -487,7 +487,7 @@ namespace steemit {
 
         blockchain_statistics_plugin::~blockchain_statistics_plugin() {
             _my->stat_sender.reset();
-            wlog("blockchain stats plugin: stat_sender was shoutdowned");
+            wlog("chain_stats plugin: stat_sender was shoutdowned");
         }
 
         void blockchain_statistics_plugin::plugin_set_program_options(
@@ -521,7 +521,7 @@ namespace steemit {
 
                 _my->stat_sender = std::shared_ptr<stat_client>(new stat_client(data_recipient_default_port, stat_sender_sleeping_time));
 
-                wlog("blockchain stats plugin: stat_sender was initialized");
+                wlog("chain_stats plugin: stat_sender was initialized");
 
                 chain::database &db = database();
 
@@ -558,7 +558,9 @@ namespace steemit {
 
             if (_my->stat_sender->can_start()) {
                 _my->stat_sender->start();
-                wlog("blockchain stats plugin: stat_sender was started");
+                wlog("chain_stats plugin: stat_sender was started");
+                wlog("recipients endpoints:");
+                _my->stat_sender->print_all_endpoints();
             }
             else {
                 wlog("chain_stats plugin: stat_sender was not started: no recipient's IPs were provided");

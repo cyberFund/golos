@@ -39,6 +39,9 @@ public:
     // adds address to _recipient_ip_vec.
     void add_address(const std::string & address);
 
+    /// prints all storing endoints 
+    void print_all_endpoints();
+
 private:
     // Flag which indicates is pushing data enabled or not
     std::atomic_bool QUEUE_ENABLED;
@@ -46,8 +49,8 @@ private:
     std::thread sender_thread;
     // Lock-free FCQueue (not intrusive)
     cds::container::FCQueue<std::string, std::queue<std::string>, cds::container::fcqueue::traits> stat_q;
-    // Stat sender will send data to all endpoints from recipient_endpoint_vec
-    std::vector<boost::asio::ip::udp::endpoint> recipient_endpoint_vec;
+    // Stat sender will send data to all endpoints from recipient_endpoint_set
+    std::set<boost::asio::ip::udp::endpoint> recipient_endpoint_set;
     // Port for asio broadcasting 
     uint32_t default_port;
     // Timeout in seconds

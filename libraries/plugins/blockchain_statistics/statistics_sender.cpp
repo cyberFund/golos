@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <queue>
+#include <set>
 
 #include "include/statistics_sender.hpp"
 
@@ -28,7 +29,7 @@ stat_client::stat_client(uint32_t default_port, uint32_t timeout) : default_port
 
 stat_client::~stat_client() {
     QUEUE_ENABLED = false;
-    if (!recipient_endpoint_vec.empty()) {
+    if (!recipient_endpoint_set.empty()) {
         sender_thread.join();
     }
     cds::Terminate();
@@ -43,7 +44,7 @@ void stat_client::push(const std::string & item) {
 }
 
 bool stat_client::can_start() {
-    return !recipient_endpoint_vec.empty();
+    return !recipient_endpoint_set.empty();
 }
 
 void stat_client::start() {
@@ -64,7 +65,7 @@ void stat_client::start() {
 
                 stat_q.dequeue(tmp_s);
 
-                for (auto endpoint : recipient_endpoint_vec) {
+                for (auto endpoint : recipient_endpoint_set) {
                     socket.send_to(boost::asio::buffer(tmp_s), endpoint);
                 }
             }
@@ -115,12 +116,18 @@ void stat_client::add_address(const std::string & address) {
         if (ip.is_unspecified()) {
             // TODO something with exceptions and logs!
             ep = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
-            recipient_endpoint_vec.push_back(ep);
+            recipient_endpoint_set.insert(ep);
         }
         else {
             ep = boost::asio::ip::udp::endpoint(ip, port);
-            recipient_endpoint_vec.push_back(ep);
+            recipient_endpoint_set.insert(ep);
         }
     }
     FC_CAPTURE_AND_LOG(())
+}
+
+void stat_client::print_all_endpoints() {
+    for (auto x : recipient_endpoint_set) {
+        std::cout << x << std::endl;
+    }
 }
