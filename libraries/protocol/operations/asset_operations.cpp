@@ -96,8 +96,6 @@ namespace steemit {
                 bitasset_opts->validate();
             }
 
-            asset dummy = asset(1, STEEM_SYMBOL) * common_options.core_exchange_rate;
-            FC_ASSERT(dummy.symbol == STEEM_SYMBOL);
             FC_ASSERT(precision <= 12);
         }
 
@@ -107,10 +105,6 @@ namespace steemit {
                 FC_ASSERT(issuer != *new_issuer);
             }
             new_options.validate();
-
-            asset dummy =
-                    asset(1, asset_to_update) * new_options.core_exchange_rate;
-            FC_ASSERT(dummy.symbol == STEEM_SYMBOL);
         }
 
         share_type asset_update_operation::calculate_fee(const asset_update_operation::fee_parameters_type &k) const {
