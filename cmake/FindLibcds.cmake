@@ -6,9 +6,10 @@ function(locate_libcds)
 
     find_path(libcds_INCLUDE_DIRS NAMES cds PATH_SUFFIXES ${ARGN})
 
-    find_path(libcds_SO_FILE_PATH NAMES libcds_d.so
+    find_path(libcds_SO_FILE_PATH NAMES libcds_d.so libcds.so.2.3.0
         HINTS   ${libcds_INCLUDE_DIRS}/libcds/bin/
                 /usr/local/lib64/
+                /usr/local/lib/
         PATH_SUFFIXES ${ARGN} NO_DEFAULT_PATH
         )
 
