@@ -64,6 +64,10 @@ namespace steemit {
             extensions_type extensions;
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+                a.insert(owner);
+            }
         };
 
         /**
@@ -135,6 +139,10 @@ namespace steemit {
             extensions_type extensions;
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+                a.insert(owner);
+            }
         };
         ///@}
 

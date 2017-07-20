@@ -37,17 +37,17 @@ namespace steemit {
 
             /// A set of accounts which maintain whitelists to consult for this asset. If whitelist_authorities
             /// is non-empty, then only accounts in whitelist_authorities are allowed to hold, use, or transfer the asset.
-            flat_set <account_name_type> whitelist_authorities;
+            flat_set<account_name_type> whitelist_authorities;
             /// A set of accounts which maintain blacklists to consult for this asset. If flags & white_list is set,
             /// an account may only send, receive, trade, etc. in this asset if none of these accounts appears in
             /// its account_object::blacklisting_accounts field. If the account is blacklisted, it may not transact in
             /// this asset even if it is also whitelisted.
-            flat_set <account_name_type> blacklist_authorities;
+            flat_set<account_name_type> blacklist_authorities;
 
             /** defines the assets that this asset may be traded against in the market */
-            flat_set <asset_name_type> whitelist_markets;
+            flat_set<asset_name_type> whitelist_markets;
             /** defines the assets that this asset may not be traded against in the market, must not overlap whitelist */
-            flat_set <asset_name_type> blacklist_markets;
+            flat_set<asset_name_type> blacklist_markets;
 
             /**
              * data that describes the meaning/purpose of this asset, fee will be charged proportional to
@@ -97,9 +97,9 @@ namespace steemit {
          */
         struct asset_create_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t symbol3        = 500000 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint64_t symbol4        = 300000 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint64_t long_symbol    = 5000   * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t symbol3 = 500000 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t symbol4 = 300000 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t long_symbol = 5000 * STEEMIT_BLOCKCHAIN_PRECISION;
                 uint32_t price_per_kbyte = 10; /// only required for large memos.
             };
 
@@ -119,7 +119,7 @@ namespace steemit {
             asset_options common_options;
             /// Options only available for BitAssets. MUST be non-null if and only if the @ref market_issued flag is set in
             /// common_options.flags
-            optional <bitasset_options> bitasset_opts;
+            optional<bitasset_options> bitasset_opts;
             /// For BitAssets, set this to true if the asset implements a @ref prediction_market; false otherwise
             bool is_prediction_market = false;
             extensions_type extensions;
@@ -129,6 +129,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
+            }
 
             share_type calculate_fee(const fee_parameters_type &k) const;
         };
@@ -144,7 +148,9 @@ namespace steemit {
          *  feed price.
          */
         struct asset_global_settle_operation : public base_operation {
-            struct fee_parameters_type { uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee;
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
@@ -157,6 +163,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
+            }
         };
 
         /**
@@ -180,7 +190,7 @@ namespace steemit {
                  * Note that in the event of a black swan or prediction market close out
                  * everyone will have to pay this fee.
                  */
-                uint64_t fee      = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t fee = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
             };
 
             asset fee;
@@ -195,6 +205,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(account);
+            }
         };
 
         /**
@@ -218,7 +232,7 @@ namespace steemit {
                  * Note that in the event of a black swan or prediction market close out
                  * everyone will have to pay this fee.
                  */
-                uint64_t fee      = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t fee = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
             };
 
             asset fee;
@@ -234,6 +248,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(account);
+            }
         };
 
         /**
@@ -241,7 +259,9 @@ namespace steemit {
          */
         struct asset_fund_fee_pool_operation : public base_operation {
         public:
-            struct fee_parameters_type { uint64_t fee =  STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee; ///< core asset
             account_name_type from_account;
@@ -254,6 +274,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(from_account);
+            }
         };
 
         /**
@@ -273,7 +297,7 @@ namespace steemit {
          */
         struct asset_update_operation : public base_operation {
             struct fee_parameters_type {
-                uint64_t fee            = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
                 uint32_t price_per_kbyte = 10;
             };
 
@@ -286,7 +310,7 @@ namespace steemit {
             asset_name_type asset_to_update;
 
             /// If the asset is to be given a new issuer, specify his ID here.
-            optional <account_name_type> new_issuer;
+            optional<account_name_type> new_issuer;
             asset_options new_options;
             extensions_type extensions;
 
@@ -295,6 +319,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
+            }
 
             share_type calculate_fee(const fee_parameters_type &k) const;
         };
@@ -313,7 +341,9 @@ namespace steemit {
          * @post @ref asset_to_update will have BitAsset-specific options matching those of new_options
          */
         struct asset_update_bitasset_operation : public base_operation {
-            struct fee_parameters_type { uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee;
             account_name_type issuer;
@@ -327,6 +357,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
+            }
         };
 
         /**
@@ -354,7 +388,7 @@ namespace steemit {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
-            flat_set <account_name_type> new_feed_producers;
+            flat_set<account_name_type> new_feed_producers;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -362,6 +396,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
+            }
         };
 
         /**
@@ -381,7 +419,9 @@ namespace steemit {
          * its collateral.
          */
         struct asset_publish_feed_operation : public base_operation {
-            struct fee_parameters_type { uint64_t fee = STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee; ///< paid for by publisher
             account_name_type publisher;
@@ -394,6 +434,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(publisher);
+            }
         };
 
         /**
@@ -401,9 +445,9 @@ namespace steemit {
          */
         struct asset_issue_operation : public base_operation {
             struct fee_parameters_type {
-         uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-         uint32_t price_per_kbyte = STEEMIT_BLOCKCHAIN_PRECISION;
-      };
+                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
+                uint32_t price_per_kbyte = STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee;
             account_name_type issuer; ///< Must be asset_to_issue->asset_id->issuer
@@ -412,7 +456,7 @@ namespace steemit {
 
 
             /** user provided data encrypted to the memo key of the "to" account */
-            optional <std::string> memo;
+            optional<std::string> memo;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -420,6 +464,10 @@ namespace steemit {
             }
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
+            }
 
             share_type calculate_fee(const fee_parameters_type &k) const;
         };
@@ -431,7 +479,9 @@ namespace steemit {
          * @note You cannot use this operation on market-issued assets.
          */
         struct asset_reserve_operation : public base_operation {
-            struct fee_parameters_type { uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee;
             account_name_type payer;
@@ -442,6 +492,10 @@ namespace steemit {
                 return payer;
             }
 
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(payer);
+            }
+
             void validate() const;
         };
 
@@ -450,8 +504,8 @@ namespace steemit {
          */
         struct asset_claim_fees_operation : public base_operation {
             struct fee_parameters_type {
-         uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-      };
+                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
             asset fee;
             account_name_type issuer;
@@ -460,6 +514,10 @@ namespace steemit {
 
             account_name_type fee_payer() const {
                 return issuer;
+            }
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(issuer);
             }
 
             void validate() const;
