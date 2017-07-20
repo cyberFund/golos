@@ -71,8 +71,7 @@ namespace steemit {
                 }
                 if (op.is_prediction_market) {
                     FC_ASSERT(op.bitasset_opts);
-                    FC_ASSERT(op.precision ==
-                              d.get_asset(op.bitasset_opts->short_backing_asset).precision);
+                    FC_ASSERT(op.precision == d.get_asset(op.bitasset_opts->short_backing_asset).precision);
                 }
 
             }
@@ -80,12 +79,14 @@ namespace steemit {
 
             try {
                 db.create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
+                    a.asset_name = op.asset_name;
                     a.current_supply = 0;
                     a.fee_pool = 0; //op.calculate_fee(get_database().current_fee_schedule()).value / 2;
                 });
 
                 if (op.bitasset_opts.valid()) {
                     db.create<asset_bitasset_data_object>([&](asset_bitasset_data_object &a) {
+                        a.asset_name = op.asset_name;
                         a.options = *op.bitasset_opts;
                         a.is_prediction_market = op.is_prediction_market;
                     });
@@ -98,11 +99,9 @@ namespace steemit {
                         db.create<asset_object>([&](asset_object &a) {
                             a.issuer = op.issuer;
                             a.asset_name = op.asset_name;
-                            a.asset_name = op.asset_name;
                             a.precision = op.precision;
                             a.options = op.common_options;
-                            if (a.options.core_exchange_rate.base.symbol ==
-                                STEEM_SYMBOL) {
+                            if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
                                 a.options.core_exchange_rate.quote.symbol = asset(0, (next_asset_id++)->asset_name).symbol;
                             } else {
                                 a.options.core_exchange_rate.base.symbol = asset(0, (next_asset_id++)->asset_name).symbol;

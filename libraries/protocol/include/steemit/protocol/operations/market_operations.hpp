@@ -17,7 +17,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -42,9 +42,11 @@ namespace steemit {
          */
 
         struct limit_order_create_operation : public base_operation {
-            struct fee_parameters_type { uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
-            optional <asset> fee;
+            optional<asset> fee;
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
@@ -59,7 +61,7 @@ namespace steemit {
 
             extensions_type extensions;
 
-            pair <asset_name_type, asset_name_type> get_market() const {
+            pair<asset_name_type, asset_name_type> get_market() const {
                 return amount_to_sell.symbol < min_to_receive.symbol ?
                        std::make_pair(amount_to_sell.symbol_name(), min_to_receive.symbol_name())
                                                                      :
@@ -72,7 +74,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
 
@@ -88,9 +90,11 @@ namespace steemit {
 
         struct limit_order_create2_operation
                 : public base_operation {
-            struct fee_parameters_type { uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION; };
+            struct fee_parameters_type {
+                uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION;
+            };
 
-            optional <asset> fee;
+            optional<asset> fee;
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
@@ -102,7 +106,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
 
@@ -110,7 +114,7 @@ namespace steemit {
                 return exchange_rate;
             }
 
-            pair <asset_name_type, asset_name_type> get_market() const {
+            pair<asset_name_type, asset_name_type> get_market() const {
                 return exchange_rate.base.symbol <
                        exchange_rate.quote.symbol ?
                        std::make_pair(exchange_rate.base.symbol_name(), exchange_rate.quote
@@ -134,7 +138,7 @@ namespace steemit {
                 uint64_t fee = 0;
             };
 
-            optional <asset> fee;
+            optional<asset> fee;
             integral_id_type order_id = 0;
             account_name_type owner;
             extensions_type extensions;
@@ -145,7 +149,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -168,7 +172,7 @@ namespace steemit {
                 uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
             };
 
-            optional <asset> fee;
+            optional<asset> fee;
             integral_id_type order_id = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset delta_collateral; ///< the amount of collateral to add to the margin position
@@ -181,7 +185,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(funding_account);
             }
         };
