@@ -17,7 +17,6 @@
 
 namespace steemit {
     namespace market_history {
-        namespace bip = chainbase::bip;
         using namespace boost::multi_index;
 
         using boost::multi_index_container;

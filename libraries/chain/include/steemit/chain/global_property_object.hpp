@@ -144,10 +144,8 @@ namespace steemit {
                 indexed_by<
                         ordered_unique<tag<by_id>,
                                 member<dynamic_global_property_object, dynamic_global_property_object::id_type, &dynamic_global_property_object::id>>
-                >,
-                allocator<dynamic_global_property_object>
-        >
-                dynamic_global_property_index;
+                >, allocator<dynamic_global_property_object>
+        > dynamic_global_property_index;
 
     }
 } // steemit::chain

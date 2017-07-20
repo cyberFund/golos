@@ -14,7 +14,6 @@
 namespace steemit {
     namespace chain {
 
-        namespace bip = chainbase::bip;
         using namespace boost::multi_index;
 
         using boost::multi_index_container;
@@ -29,7 +28,7 @@ namespace steemit {
         using steemit::protocol::account_name_type;
         using steemit::protocol::share_type;
 
-        typedef bip::basic_string<char, std::char_traits<char>, allocator<char>> shared_string;
+        typedef boost::interprocess::basic_string<char, std::char_traits<char>, allocator<char>> shared_string;
 
         inline std::string to_string(const shared_string &str) {
             return std::string(str.begin(), str.end());
@@ -39,7 +38,7 @@ namespace steemit {
             out.assign(in.begin(), in.end());
         }
 
-        typedef bip::vector<char, allocator<char>> buffer_type;
+        typedef boost::interprocess::vector<char, allocator<char>> buffer_type;
 
         struct by_id;
 
@@ -190,7 +189,6 @@ namespace fc {
     }
 
     namespace raw {
-        namespace bip = chainbase::bip;
         using chainbase::allocator;
 
         template<typename T>
