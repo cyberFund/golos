@@ -798,6 +798,7 @@ namespace steemit {
              * @param to The account getting the VESTS
              * @param amount The amount of STEEM to vest i.e. "100.00 STEEM"
              * @param request_id - an unique ID assigned by from account, the id is used to cancel the operation and can be reused after the transfer completes
+             * @param memo a memo to include in the transaction, readable by the recipient
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction transfer_from_savings(string from, uint32_t request_id, string to, asset amount, string memo, bool broadcast = false);
