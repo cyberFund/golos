@@ -453,7 +453,7 @@ namespace steemit {
              *  that is paid by the creator. The current account creation fee can be found with the
              *  'info' wallet command.
              *
-             *  These accounts are created with combination of GOLOS and delegated SP
+             *  These accounts are created with combination of GOLOS and delegated GP
              *
              *  @param creator The account creating the new account
              *  @param steem_fee The amount of the fee to be paid with GOLOS
@@ -470,7 +470,7 @@ namespace steemit {
              * wallet. There is a fee associated with account creation that is paid by the creator.
              * The current account creation fee can be found with the 'info' wallet command.
              *
-             * These accounts are created with combination of GOLOS and delegated SP
+             * These accounts are created with combination of GOLOS and delegated GP
              *
              * @param creator The account creating the new account
              * @param steem_fee The amount of the fee to be paid with GOLOS
