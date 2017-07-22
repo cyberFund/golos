@@ -2590,8 +2590,11 @@ namespace steemit {
 
             add_index<dynamic_global_property_index>();
 
-            add_index<account_index>()->add_secondary_index<account_referrer_index>();
-            add_index<account_authority_index>()->add_secondary_index<account_member_index>();
+            add_index<account_index>();
+            add_index<account_authority_index>();
+
+//            add_index<account_index>()->add_secondary_index<account_referrer_index>();
+//            add_index<account_authority_index>()->add_secondary_index<account_member_index>();
 
             add_index<account_bandwidth_index>();
             add_index<witness_index>();
