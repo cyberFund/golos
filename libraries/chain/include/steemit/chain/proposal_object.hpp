@@ -60,33 +60,33 @@ namespace steemit {
                 >, allocator<proposal_object>
         > proposal_index;
 
-        /**
-         *  @brief tracks all of the proposal objects that requrie approval of
-         *  an individual account.
-         *
-         *  @ingroup object
-         *  @ingroup protocol
-         *
-         *  This is a secondary index on the proposal_index
-         *
-         *  @note the set of required approvals is constant
-         */
-        class required_approval_index : public chainbase::secondary_index<proposal_index> {
-        public:
-            virtual void object_inserted(const value_type &obj) override;
-
-            virtual void object_removed(const value_type &obj) override;
-
-            virtual void about_to_modify(const value_type &before) override {
-            };
-
-            virtual void object_modified(const value_type &after) override {
-            };
-
-            void remove(account_name_type a, proposal_object::id_type p);
-
-            map<account_name_type, set<proposal_object::id_type>> account_to_proposals;
-        };
+//        /**
+//         *  @brief tracks all of the proposal objects that requrie approval of
+//         *  an individual account.
+//         *
+//         *  @ingroup object
+//         *  @ingroup protocol
+//         *
+//         *  This is a secondary index on the proposal_index
+//         *
+//         *  @note the set of required approvals is constant
+//         */
+//        class required_approval_index : public chainbase::secondary_index<proposal_index> {
+//        public:
+//            virtual void object_inserted(const value_type &obj) override;
+//
+//            virtual void object_removed(const value_type &obj) override;
+//
+//            virtual void about_to_modify(const value_type &before) override {
+//            };
+//
+//            virtual void object_modified(const value_type &after) override {
+//            };
+//
+//            void remove(account_name_type a, proposal_object::id_type p);
+//
+//            map<account_name_type, set<proposal_object::id_type>> account_to_proposals;
+//        };
     }
 }
 

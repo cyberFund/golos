@@ -2619,7 +2619,8 @@ namespace steemit {
             add_index<vesting_delegation_index>();
             add_index<vesting_delegation_expiration_index>();
             add_index<reward_fund_index>();
-            add_index<proposal_index>()->add_secondary_index<required_approval_index>();
+//            add_index<proposal_index>()->add_secondary_index<required_approval_index>();
+            add_index<proposal_index>();
 
             _plugin_index_signal();
         }

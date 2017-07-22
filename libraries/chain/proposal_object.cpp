@@ -35,56 +35,56 @@ namespace steemit {
         }
 
 
-        void required_approval_index::object_inserted(const value_type &obj) {
-            for (const auto &a : obj.required_active_approvals) {
-                account_to_proposals[a].insert(obj.id);
-            }
-            for (const auto &a : obj.required_owner_approvals) {
-                account_to_proposals[a].insert(obj.id);
-            }
-            for (const auto &a : obj.required_posting_approvals) {
-                account_to_proposals[a].insert(obj.id);
-            }
-            for (const auto &a : obj.available_active_approvals) {
-                account_to_proposals[a].insert(obj.id);
-            }
-            for (const auto &a : obj.available_owner_approvals) {
-                account_to_proposals[a].insert(obj.id);
-            }
-            for (const auto &a : obj.available_posting_approvals) {
-                account_to_proposals[a].insert(obj.id);
-            }
-        }
-
-        void required_approval_index::remove(account_name_type a, proposal_object::id_type p) {
-            auto itr = account_to_proposals.find(a);
-            if (itr != account_to_proposals.end()) {
-                itr->second.erase(p);
-                if (itr->second.empty()) {
-                    account_to_proposals.erase(itr->first);
-                }
-            }
-        }
-
-        void required_approval_index::object_removed(const value_type &obj) {
-            for (const auto &a : obj.required_active_approvals) {
-                remove(a, obj.id);
-            }
-            for (const auto &a : obj.required_owner_approvals) {
-                remove(a, obj.id);
-            }
-            for (const auto &a : obj.required_posting_approvals) {
-                remove(a, obj.id);
-            }
-            for (const auto &a : obj.available_active_approvals) {
-                remove(a, obj.id);
-            }
-            for (const auto &a : obj.available_owner_approvals) {
-                remove(a, obj.id);
-            }
-            for (const auto &a : obj.available_posting_approvals) {
-                remove(a, obj.id);
-            }
-        }
+//        void required_approval_index::object_inserted(const value_type &obj) {
+//            for (const auto &a : obj.required_active_approvals) {
+//                account_to_proposals[a].insert(obj.id);
+//            }
+//            for (const auto &a : obj.required_owner_approvals) {
+//                account_to_proposals[a].insert(obj.id);
+//            }
+//            for (const auto &a : obj.required_posting_approvals) {
+//                account_to_proposals[a].insert(obj.id);
+//            }
+//            for (const auto &a : obj.available_active_approvals) {
+//                account_to_proposals[a].insert(obj.id);
+//            }
+//            for (const auto &a : obj.available_owner_approvals) {
+//                account_to_proposals[a].insert(obj.id);
+//            }
+//            for (const auto &a : obj.available_posting_approvals) {
+//                account_to_proposals[a].insert(obj.id);
+//            }
+//        }
+//
+//        void required_approval_index::remove(account_name_type a, proposal_object::id_type p) {
+//            auto itr = account_to_proposals.find(a);
+//            if (itr != account_to_proposals.end()) {
+//                itr->second.erase(p);
+//                if (itr->second.empty()) {
+//                    account_to_proposals.erase(itr->first);
+//                }
+//            }
+//        }
+//
+//        void required_approval_index::object_removed(const value_type &obj) {
+//            for (const auto &a : obj.required_active_approvals) {
+//                remove(a, obj.id);
+//            }
+//            for (const auto &a : obj.required_owner_approvals) {
+//                remove(a, obj.id);
+//            }
+//            for (const auto &a : obj.required_posting_approvals) {
+//                remove(a, obj.id);
+//            }
+//            for (const auto &a : obj.available_active_approvals) {
+//                remove(a, obj.id);
+//            }
+//            for (const auto &a : obj.available_owner_approvals) {
+//                remove(a, obj.id);
+//            }
+//            for (const auto &a : obj.available_posting_approvals) {
+//                remove(a, obj.id);
+//            }
+//        }
     }
 }
