@@ -12,7 +12,6 @@ namespace steemit {
     namespace chain {
         void asset_create_evaluator::do_apply(const asset_create_operation &op) {
             try {
-
                 database &d = get_database();
 
                 FC_ASSERT(op.common_options.whitelist_authorities.size() <=
@@ -21,10 +20,10 @@ namespace steemit {
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
 
                 // Check that all authorities do exist
-                for (auto id : op.common_options.whitelist_authorities) {
+                for (const auto &id : op.common_options.whitelist_authorities) {
                     d.get_account(id);
                 }
-                for (auto id : op.common_options.blacklist_authorities) {
+                for (const auto &id : op.common_options.blacklist_authorities) {
                     d.get_account(id);
                 }
 
@@ -71,7 +70,8 @@ namespace steemit {
                 }
                 if (op.is_prediction_market) {
                     FC_ASSERT(op.bitasset_opts);
-                    FC_ASSERT(op.precision == d.get_asset(op.bitasset_opts->short_backing_asset).precision);
+                    FC_ASSERT(op.precision ==
+                              d.get_asset(op.bitasset_opts->short_backing_asset).precision);
                 }
 
             }
@@ -102,15 +102,14 @@ namespace steemit {
                             a.precision = op.precision;
                             a.options = op.common_options;
                             if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
-                                a.options.core_exchange_rate.quote.symbol = asset(0, (next_asset_id++)->asset_name).symbol;
+                                a.options.core_exchange_rate.quote.symbol = asset(0, op.asset_name).symbol;
                             } else {
-                                a.options.core_exchange_rate.base.symbol = asset(0, (next_asset_id++)->asset_name).symbol;
+                                a.options.core_exchange_rate.base.symbol = asset(0, op.asset_name).symbol;
                             }
                             if (op.bitasset_opts.valid()) {
                                 a.market_issued = true;
                             }
                         });
-                assert(new_asset.asset_name == asset(0, next_asset_id->asset_name).symbol_name());
             }
             FC_CAPTURE_AND_RETHROW((op))
         }
@@ -225,12 +224,12 @@ namespace steemit {
 
                 FC_ASSERT(o.new_options.whitelist_authorities.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
-                for (auto id : o.new_options.whitelist_authorities) {
+                for (const auto &id : o.new_options.whitelist_authorities) {
                     d.get_account(id);
                 }
                 FC_ASSERT(o.new_options.blacklist_authorities.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
-                for (auto id : o.new_options.blacklist_authorities) {
+                for (const auto &id : o.new_options.blacklist_authorities) {
                     d.get_account(id);
                 }
             } FC_CAPTURE_AND_RETHROW((o))
@@ -322,7 +321,7 @@ namespace steemit {
 
                 FC_ASSERT(o.new_feed_producers.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
-                for (auto id : o.new_feed_producers) {
+                for (const auto &id : o.new_feed_producers) {
                     d.get_account(id);
                 }
 
@@ -353,10 +352,9 @@ namespace steemit {
                         }
                     }
                     //Now, add any new publishers
-                    for (auto itr = o.new_feed_producers.begin();
-                         itr != o.new_feed_producers.end(); ++itr) {
-                        if (!a.feeds.count(*itr)) {
-                            a.feeds[*itr];
+                    for (const auto &new_feed_producer : o.new_feed_producers) {
+                        if (!a.feeds.count(new_feed_producer)) {
+                            a.feeds[new_feed_producer];
                         }
                     }
                     a.update_median_feeds(get_database().head_block_time());
