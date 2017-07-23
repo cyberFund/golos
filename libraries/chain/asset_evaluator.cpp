@@ -12,7 +12,6 @@ namespace steemit {
     namespace chain {
         void asset_create_evaluator::do_apply(const asset_create_operation &op) {
             try {
-
                 database &d = get_database();
 
                 FC_ASSERT(op.common_options.whitelist_authorities.size() <=
@@ -71,7 +70,8 @@ namespace steemit {
                 }
                 if (op.is_prediction_market) {
                     FC_ASSERT(op.bitasset_opts);
-                    FC_ASSERT(op.precision == d.get_asset(op.bitasset_opts->short_backing_asset).precision);
+                    FC_ASSERT(op.precision ==
+                              d.get_asset(op.bitasset_opts->short_backing_asset).precision);
                 }
 
             }
@@ -102,15 +102,14 @@ namespace steemit {
                             a.precision = op.precision;
                             a.options = op.common_options;
                             if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
-                                a.options.core_exchange_rate.quote.symbol = asset(0, (next_asset_id++)->asset_name).symbol;
+                                a.options.core_exchange_rate.quote.symbol = asset(0, op.asset_name).symbol;
                             } else {
-                                a.options.core_exchange_rate.base.symbol = asset(0, (next_asset_id++)->asset_name).symbol;
+                                a.options.core_exchange_rate.base.symbol = asset(0, op.asset_name).symbol;
                             }
                             if (op.bitasset_opts.valid()) {
                                 a.market_issued = true;
                             }
                         });
-                assert(new_asset.asset_name == asset(0, next_asset_id->asset_name).symbol_name());
             }
             FC_CAPTURE_AND_RETHROW((op))
         }
