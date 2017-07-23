@@ -2768,7 +2768,7 @@ namespace steemit {
                     a.options.core_exchange_rate.base.amount = 1;
                     a.options.core_exchange_rate.base.symbol = SBD_SYMBOL;
                     a.options.core_exchange_rate.quote.amount = 1;
-                    a.options.core_exchange_rate.quote.symbol = SBD_SYMBOL;
+                    a.options.core_exchange_rate.quote.symbol = STEEM_SYMBOL;
                 });
 
                 create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
@@ -3162,6 +3162,10 @@ namespace steemit {
                                     fho.current_median_history = min_price;
                                 }
                             }
+
+                            modify(get_asset(SBD_SYMBOL_NAME), [&](asset_object &a) {
+                                a.options.core_exchange_rate = fho.current_median_history;
+                            });
                         }
                     });
                 }

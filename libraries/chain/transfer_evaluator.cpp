@@ -55,8 +55,6 @@ namespace steemit {
         }
 
         void transfer_to_vesting_evaluator::do_apply(const protocol::transfer_to_vesting_operation &o) {
-
-
             const auto &from_account = this->db.get_account(o.from);
             const auto &to_account = o.to.size() ? this->db.get_account(o.to)
                                                  : from_account;
@@ -68,7 +66,6 @@ namespace steemit {
         }
 
         void transfer_to_savings_evaluator::do_apply(const transfer_to_savings_operation &op) {
-
             const auto &from = this->db.get_account(op.from);
             const auto &to = this->db.get_account(op.to);
             FC_ASSERT(this->db.get_balance(from, op.amount.symbol_name()) >=
@@ -79,7 +76,6 @@ namespace steemit {
         }
 
         void transfer_from_savings_evaluator::do_apply(const protocol::transfer_from_savings_operation &op) {
-
             const auto &from = this->db.get_account(op.from);
             this->db.get_account(op.to); // Verify to account exists
 
@@ -108,7 +104,6 @@ namespace steemit {
         }
 
         void cancel_transfer_from_savings_evaluator::do_apply(const protocol::cancel_transfer_from_savings_operation &op) {
-
             const auto &swo = this->db.get_savings_withdraw(op.from, op.request_id);
             this->db.adjust_savings_balance(this->db.get_account(swo.from), swo.amount);
             this->db.remove(swo);

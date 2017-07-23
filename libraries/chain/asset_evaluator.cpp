@@ -21,10 +21,10 @@ namespace steemit {
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
 
                 // Check that all authorities do exist
-                for (auto id : op.common_options.whitelist_authorities) {
+                for (const auto &id : op.common_options.whitelist_authorities) {
                     d.get_account(id);
                 }
-                for (auto id : op.common_options.blacklist_authorities) {
+                for (const auto &id : op.common_options.blacklist_authorities) {
                     d.get_account(id);
                 }
 
@@ -225,12 +225,12 @@ namespace steemit {
 
                 FC_ASSERT(o.new_options.whitelist_authorities.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
-                for (auto id : o.new_options.whitelist_authorities) {
+                for (const auto &id : o.new_options.whitelist_authorities) {
                     d.get_account(id);
                 }
                 FC_ASSERT(o.new_options.blacklist_authorities.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
-                for (auto id : o.new_options.blacklist_authorities) {
+                for (const auto &id : o.new_options.blacklist_authorities) {
                     d.get_account(id);
                 }
             } FC_CAPTURE_AND_RETHROW((o))
@@ -322,7 +322,7 @@ namespace steemit {
 
                 FC_ASSERT(o.new_feed_producers.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
-                for (auto id : o.new_feed_producers) {
+                for (const auto &id : o.new_feed_producers) {
                     d.get_account(id);
                 }
 
@@ -353,10 +353,9 @@ namespace steemit {
                         }
                     }
                     //Now, add any new publishers
-                    for (auto itr = o.new_feed_producers.begin();
-                         itr != o.new_feed_producers.end(); ++itr) {
-                        if (!a.feeds.count(*itr)) {
-                            a.feeds[*itr];
+                    for (const auto &new_feed_producer : o.new_feed_producers) {
+                        if (!a.feeds.count(new_feed_producer)) {
+                            a.feeds[new_feed_producer];
                         }
                     }
                     a.update_median_feeds(get_database().head_block_time());
