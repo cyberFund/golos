@@ -426,7 +426,7 @@ namespace steemit {
 
                     // It's a symbol
                     optional<asset_object> rec = _remote_db->lookup_asset_symbols({
-                            asset_symbol
+                            asset_name_type(asset_symbol)
                     }).front();
                     if (rec) {
                         if (rec->asset_name != asset_symbol) {
@@ -1333,7 +1333,8 @@ namespace steemit {
         }
 
         asset_object wallet_api::get_asset(string asset_symbol) const {
-            auto a = my->_remote_db->lookup_asset_symbols({asset_symbol
+            auto a = my->_remote_db->lookup_asset_symbols({
+                    asset_name_type(asset_symbol)
             }).front();
 
             FC_ASSERT(a);

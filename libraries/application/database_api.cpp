@@ -824,10 +824,9 @@ namespace steemit {
             vector<optional<asset_object>> result;
             result.reserve(asset_symbols.size());
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                    [this, &assets_by_symbol](const string &symbol_or_id) -> optional<asset_object> {
-                        auto ptr = _db.find_asset(symbol_or_id);
-                        return ptr == nullptr ? optional<asset_object>()
-                                              : *ptr;
+                    [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<asset_object> {
+                        auto ptr = _db.find_asset(symbol);
+                        return ptr == nullptr ? optional<asset_object>() : *ptr;
                     });
             return result;
         }
