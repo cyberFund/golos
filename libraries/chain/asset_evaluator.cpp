@@ -92,11 +92,7 @@ namespace steemit {
                     });
                 }
 
-                auto &asset_idx = db.get_index<asset_index>().indices().get<by_asset_name>();
-                auto next_asset_id = asset_idx.lower_bound(STEEM_SYMBOL_NAME);
-
-                const asset_object &new_asset =
-                        db.create<asset_object>([&](asset_object &a) {
+                db.create<asset_object>([&](asset_object &a) {
                             a.issuer = op.issuer;
                             a.asset_name = op.asset_name;
                             a.precision = op.precision;

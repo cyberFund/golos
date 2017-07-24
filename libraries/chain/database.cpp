@@ -310,7 +310,7 @@ namespace steemit {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                shared_ptr <fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
@@ -326,7 +326,7 @@ namespace steemit {
             return bid;
         }
 
-        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional <signed_block> database::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -345,9 +345,9 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional <signed_block> database::fetch_block_by_number(uint32_t block_num) const {
             try {
-                optional<signed_block> b;
+                optional <signed_block> b;
 
                 auto results = _fork_db.fetch_block_by_number(block_num);
                 if (results.size() == 1) {
@@ -375,7 +375,7 @@ namespace steemit {
 
         std::vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(head_block_id(), head_of_fork);
+                pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() ==
                        branches.second.back()->previous_id()))) {
                     edump((head_of_fork)
@@ -732,7 +732,7 @@ namespace steemit {
                    dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
+        void database::add_checkpoints(const flat_map <uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
@@ -774,7 +774,7 @@ namespace steemit {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                vector <std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -790,7 +790,7 @@ namespace steemit {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
+                    shared_ptr <fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -810,7 +810,7 @@ namespace steemit {
                             for (auto ritr = branches.first.rbegin();
                                  ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
-                                optional<fc::exception> except;
+                                optional <fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
@@ -1096,7 +1096,7 @@ namespace steemit {
                 auto head_id = head_block_id();
 
                 /// save the head block so we can recover its transactions
-                optional<signed_block> head_block = fetch_block_by_id(head_id);
+                optional <signed_block> head_block = fetch_block_by_id(head_id);
                 STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
 
                 _fork_db.pop_block();
@@ -1918,8 +1918,8 @@ namespace steemit {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector<reward_fund_context> funds;
-            vector<share_type> steem_awarded;
+            vector <reward_fund_context> funds;
+            vector <share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (auto itr = reward_idx.begin();
@@ -2121,7 +2121,8 @@ namespace steemit {
                 });
 
                 modify(get_asset_dynamic_data(STEEM_SYMBOL_NAME), [&](asset_dynamic_data_object &a) {
-                    a.current_supply += content_reward.amount + witness_pay.amount + vesting_reward.amount;
+                    a.current_supply +=
+                            content_reward.amount + witness_pay.amount + vesting_reward.amount;
                 });
             }
         }
@@ -2249,7 +2250,8 @@ namespace steemit {
 
         asset database::get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const {
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() >
-                      STEEMIT_CASHOUT_WINDOW_SECONDS / 7, "Extension time should be equal or greater than a day");
+                      STEEMIT_CASHOUT_WINDOW_SECONDS /
+                      7, "Extension time should be equal or greater than a day");
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() <
                       STEEMIT_CASHOUT_WINDOW_SECONDS, "Extension time should be less or equal than a week");
 
@@ -3113,7 +3115,7 @@ namespace steemit {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector<price> feeds;
+                vector <price> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
@@ -3223,7 +3225,7 @@ namespace steemit {
                     }
                 }
                 flat_set<account_name_type> required;
-                vector<authority> other;
+                vector <authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -3512,7 +3514,8 @@ namespace steemit {
                 if (head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
                     modify(dpo, [&](dynamic_global_property_object &_dpo) {
                         if (head_block_num() > STEEMIT_MAX_WITNESSES) {
-                            _dpo.last_irreversible_block_num = head_block_num() - STEEMIT_MAX_WITNESSES;
+                            _dpo.last_irreversible_block_num =
+                                    head_block_num() - STEEMIT_MAX_WITNESSES;
                         }
                     });
                 } else {
@@ -3524,13 +3527,15 @@ namespace steemit {
                         wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
                     }
 
-                    static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero");
+                    static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD >
+                                  0, "irreversible threshold must be nonzero");
 
                     // 1 1 1 2 2 2 2 2 2 2 -> 2     .7*10 = 7
                     // 1 1 1 1 1 1 1 2 2 2 -> 1
                     // 3 3 3 3 3 3 3 3 3 3 -> 3
 
-                    size_t offset = ((STEEMIT_100_PERCENT - STEEMIT_IRREVERSIBLE_THRESHOLD) * wit_objs.size() /
+                    size_t offset = ((STEEMIT_100_PERCENT - STEEMIT_IRREVERSIBLE_THRESHOLD) *
+                                     wit_objs.size() /
                                      STEEMIT_100_PERCENT);
 
                     std::nth_element(wit_objs.begin(), wit_objs.begin() + offset, wit_objs.end(),
@@ -3560,7 +3565,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr <fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block, "Current fork in the fork database does not contain the last_irreversible_block");
                             _block_log.append(block->data);
@@ -3862,7 +3867,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional<asset> collateral_freed;
+                optional <asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -4393,23 +4398,25 @@ namespace steemit {
 
         void database::clear_expired_orders() {
             if (has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
-                detail::with_skip_flags(*this, get_node_properties().skip_flags | skip_authority_check, [&]() {
+                detail::with_skip_flags(*this,
+                        get_node_properties().skip_flags | skip_authority_check, [&]() {
 
-                    //Cancel expired limit orders
-                    auto &limit_index = get_index<limit_order_index>().indices().get<by_expiration>();
-                    while (!limit_index.empty() && limit_index.begin()->expiration <= head_block_time()) {
-                        limit_order_cancel_operation canceler;
-                        const limit_order_object &order = *limit_index.begin();
-                        canceler.owner = order.seller;
-                        canceler.order_id = order.order_id;
-                        canceler.fee = 0; //current_fee_schedule().calculate_fee(canceler);
-                        if (canceler.fee->amount > order.deferred_fee) {
-                            wlog("At block ${b}, fee for clearing expired order ${oid} was capped at deferred_fee ${fee}", ("b", head_block_num())("oid", order.id)("fee", order.deferred_fee));
-                            canceler.fee = asset(order.deferred_fee, STEEM_SYMBOL);
-                        }
-                        apply_operation(canceler);
-                    }
-                });
+                            //Cancel expired limit orders
+                            auto &limit_index = get_index<limit_order_index>().indices().get<by_expiration>();
+                            while (!limit_index.empty() &&
+                                   limit_index.begin()->expiration <= head_block_time()) {
+                                limit_order_cancel_operation canceler;
+                                const limit_order_object &order = *limit_index.begin();
+                                canceler.owner = order.seller;
+                                canceler.order_id = order.order_id;
+                                canceler.fee = 0; //current_fee_schedule().calculate_fee(canceler);
+                                if (canceler.fee->amount > order.deferred_fee) {
+                                    wlog("At block ${b}, fee for clearing expired order ${oid} was capped at deferred_fee ${fee}", ("b", head_block_num())("oid", order.id)("fee", order.deferred_fee));
+                                    canceler.fee = asset(order.deferred_fee, STEEM_SYMBOL);
+                                }
+                                apply_operation(canceler);
+                            }
+                        });
 
                 //Process expired force settlement orders
                 auto &settlement_index = get_index<force_settlement_index>().indices().get<by_expiration>();
@@ -4497,7 +4504,8 @@ namespace steemit {
                         auto &pays = order.balance;
                         auto receives = (order.balance * mia.current_feed.settlement_price);
                         receives.amount = (fc::uint128_t(receives.amount.value) *
-                                           (STEEMIT_100_PERCENT - mia.options.force_settlement_offset_percent) /
+                                           (STEEMIT_100_PERCENT -
+                                            mia.options.force_settlement_offset_percent) /
                                            STEEMIT_100_PERCENT).to_uint64();
                         assert(receives <= order.balance * mia.current_feed.settlement_price);
 
@@ -4511,7 +4519,8 @@ namespace steemit {
                             auto itr = call_index.lower_bound(boost::make_tuple(price::min(get_asset_bitasset_data(mia_object.asset_name).options.short_backing_asset,
                                     mia_object.asset_name)));
                             // There should always be a call order, since asset exists!
-                            assert(itr != call_index.end() && itr->debt_type() == mia_object.asset_name);
+                            assert(itr != call_index.end() &&
+                                   itr->debt_type() == mia_object.asset_name);
                             asset max_settlement = max_settlement_volume - settled;
 
                             if (order.balance.amount == 0) {
@@ -4712,7 +4721,10 @@ namespace steemit {
 
 
         asset database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
-            return get<account_balance_object, by_account_asset>(boost::make_tuple(a.name, asset_name)).balance;
+            try {
+                const account_balance_object &b = get<account_balance_object, by_account_asset>(boost::make_tuple(a.name, asset_name));
+                return asset(b.balance, b.asset_name);
+            } FC_CAPTURE_AND_RETHROW((asset_name))
         }
 
         asset database::get_savings_balance(const account_object &a, const asset_name_type &asset_name) const {
@@ -5413,7 +5425,8 @@ namespace steemit {
             }
 
             for (const auto id : acct.blacklisting_accounts) {
-                if (asset_obj.options.blacklist_authorities.find(id) != asset_obj.options.blacklist_authorities.end()) {
+                if (asset_obj.options.blacklist_authorities.find(id) !=
+                    asset_obj.options.blacklist_authorities.end()) {
                     return false;
                 }
             }
@@ -5423,7 +5436,8 @@ namespace steemit {
             }
 
             for (const auto id : acct.whitelisting_accounts) {
-                if (asset_obj.options.whitelist_authorities.find(id) != asset_obj.options.whitelist_authorities.end()) {
+                if (asset_obj.options.whitelist_authorities.find(id) !=
+                    asset_obj.options.whitelist_authorities.end()) {
                     return true;
                 }
             }
