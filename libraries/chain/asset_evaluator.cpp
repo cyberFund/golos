@@ -93,19 +93,19 @@ namespace steemit {
                 }
 
                 db.create<asset_object>([&](asset_object &a) {
-                            a.issuer = op.issuer;
-                            a.asset_name = op.asset_name;
-                            a.precision = op.precision;
-                            a.options = op.common_options;
-                            if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
-                                a.options.core_exchange_rate.quote.symbol = asset(0, op.asset_name).symbol;
-                            } else {
-                                a.options.core_exchange_rate.base.symbol = asset(0, op.asset_name).symbol;
-                            }
-                            if (op.bitasset_opts.valid()) {
-                                a.market_issued = true;
-                            }
-                        });
+                    a.issuer = op.issuer;
+                    a.asset_name = op.asset_name;
+                    a.precision = op.precision;
+                    a.options = op.common_options;
+                    if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
+                        a.options.core_exchange_rate.quote.symbol = asset(0, op.asset_name).symbol;
+                    } else {
+                        a.options.core_exchange_rate.base.symbol = asset(0, op.asset_name).symbol;
+                    }
+                    if (op.bitasset_opts.valid()) {
+                        a.market_issued = true;
+                    }
+                });
             }
             FC_CAPTURE_AND_RETHROW((op))
         }

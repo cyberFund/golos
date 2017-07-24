@@ -800,12 +800,11 @@ namespace steemit {
             FC_ASSERT(limit <= 100);
             const auto &assets_by_symbol = _db.get_index<asset_index>().indices().get<by_asset_name>();
             vector<asset_object> result;
-            result.reserve(limit);
 
-            auto itr = assets_by_symbol.lower_bound(lower_bound_symbol);
+            auto itr = assets_by_symbol.begin();
 
-            if (lower_bound_symbol == "") {
-                itr = assets_by_symbol.begin();
+            if (lower_bound_symbol != "") {
+                itr = assets_by_symbol.lower_bound(lower_bound_symbol);
             }
 
             while (limit-- && itr != assets_by_symbol.end()) {
