@@ -1603,10 +1603,9 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.active = authority(1, active, 1);
                 op.posting = authority(1, posting, 1);
                 op.memo_key = memo;
-                op.json_metadata = json_meta;
+                op.json_metadata = std::move(json_meta);
                 op.fee = steem_fee;
                 op.delegation = delegated_vests;
-                op.fee = my->_remote_db->get_chain_properties().account_creation_fee;
 
                 signed_transaction tx;
                 tx.operations.push_back(op);
@@ -1951,7 +1950,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
 /**
  *  This method will genrate new owner, active, and memo keys for the new account which
- *  will be controlable by this wallet.
+ *  will be controllable by this wallet.
  */
         annotated_signed_transaction wallet_api::create_account_delegated(string creator, asset steem_fee, asset delegated_vests, string new_account_name, string json_meta, bool broadcast) {
             try {
@@ -1964,7 +1963,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 import_key(active.wif_priv_key);
                 import_key(posting.wif_priv_key);
                 import_key(memo.wif_priv_key);
-                return create_account_with_keys_delegated(creator, steem_fee, delegated_vests, new_account_name, json_meta, owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
+                return create_account_with_keys_delegated(creator, std::move(steem_fee),
+                        std::move(delegated_vests), new_account_name, json_meta, owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
             } FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta))
         }
 
