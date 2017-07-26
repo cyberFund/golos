@@ -152,7 +152,7 @@ namespace steemit {
 
             const signed_transaction get_recent_transaction(const transaction_id_type &trx_id) const;
 
-            std::vector<block_id_type> get_block_ids_on_fork(block_id_type head_of_fork) const;
+            const vector <block_id_type> &get_block_ids_on_fork(block_id_type head_of_fork) const;
 
             chain_id_type get_chain_id() const;
 

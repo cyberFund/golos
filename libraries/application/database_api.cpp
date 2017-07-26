@@ -72,10 +72,12 @@ namespace steemit {
             uint64_t get_witness_count() const;
 
             // Balances
-            vector<asset> get_account_balances(account_name_type account_name, const flat_set<std::string> &assets) const;
+            vector<asset> get_account_balances(account_name_type account_name, const flat_set<asset_name_type> &assets) const;
 
             // Assets
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
+
+            vector<optional<asset_object>> get_assets_by_issuer(const account_name_type &issuer) const;
 
             vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
 
@@ -708,7 +710,7 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        vector<asset> database_api::get_account_balances(account_name_type name, const flat_set<std::string> &assets) const {
+        vector<asset> database_api::get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const {
             return my->get_account_balances(name, assets);
         }
 
@@ -744,15 +746,34 @@ namespace steemit {
 
         vector<optional<asset_object>> database_api_impl::get_assets(const vector<asset_name_type> &asset_symbols) const {
             vector<optional<asset_object>> result;
-            result.reserve(asset_symbols.size());
+
+            const auto &idx = _db.get_index<asset_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this](asset_name_type id) -> optional<asset_object> {
-                        if (auto o = _db.find_asset(id)) {
+                        auto itr = idx.find(id);
+                        if (itr != idx.end()) {
                             subscribe_to_item(id);
-                            return *o;
+                            return *itr;
                         }
                         return {};
                     });
+            return result;
+        }
+
+        vector<optional<asset_object>> database_api::get_assets_by_issuer(const account_name_type &issuer) const {
+            return my->get_assets_by_issuer(issuer);
+        }
+
+        vector<optional<asset_object>> database_api_impl::get_assets_by_issuer(const account_name_type &issuer) const {
+            vector<optional<asset_object>> result;
+
+            const auto &idx = _db.get_index<asset_index>().indices().get<by_issuer>();
+            auto itr = idx.find(issuer);
+            while (itr != idx.end()) {
+                result.push_back(*itr);
+                ++itr;
+            }
+
             return result;
         }
 
@@ -762,12 +783,14 @@ namespace steemit {
 
         vector<optional<asset_dynamic_data_object>> database_api_impl::get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const {
             vector<optional<asset_dynamic_data_object>> result;
-            result.reserve(asset_symbols.size());
+
+            const auto &idx = _db.get_index<asset_dynamic_data_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this](string symbol) -> optional<asset_dynamic_data_object> {
-                        if (auto o = _db.find_asset_dynamic_data(symbol)) {
+                        auto itr = idx.find(symbol);
+                        if (itr != idx.end()) {
                             subscribe_to_item(symbol);
-                            return *o;
+                            return *itr;
                         }
                         return {};
                     });
@@ -780,12 +803,14 @@ namespace steemit {
 
         vector<optional<asset_bitasset_data_object>> database_api_impl::get_bitassets_data(const vector<asset_name_type> &asset_symbols) const {
             vector<optional<asset_bitasset_data_object>> result;
-            result.reserve(asset_symbols.size());
+
+            const auto &idx = _db.get_index<asset_bitasset_data_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                     [this](string symbol) -> optional<asset_bitasset_data_object> {
-                        if (auto o = _db.find_asset_bitasset_data(symbol)) {
+                        auto itr = idx.find(symbol);
+                        if (itr != idx.end()) {
                             subscribe_to_item(symbol);
-                            return *o;
+                            return *itr;
                         }
                         return {};
                     });

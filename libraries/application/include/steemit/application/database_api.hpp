@@ -343,6 +343,8 @@ namespace steemit {
              */
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
+            vector<optional<asset_object>> get_assets_by_issuer(const account_name_type &issuer) const;
+
             vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
 
             vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<asset_name_type> &asset_symbols) const;
@@ -778,6 +780,7 @@ FC_API(steemit::application::database_api,
 
                 // Assets
                 (get_assets)
+                (get_assets_by_issuer)
                 (get_assets_dynamic_data)
                 (get_bitassets_data)
                 (list_assets)

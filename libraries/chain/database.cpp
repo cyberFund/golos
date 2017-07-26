@@ -373,7 +373,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        std::vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        const vector <block_id_type> & database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
                 pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() ==
@@ -585,16 +585,14 @@ namespace steemit {
             if (has_hardfork(STEEMIT_HARDFORK_0_17__91) ||
                 comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
                 return comment.cashout_time;
-            } else {
-                return get<comment_object>(comment.root_comment).cashout_time;
             }
+
+            return get<comment_object>(comment.root_comment).cashout_time;
         }
 
         const reward_fund_object &database::get_reward_fund(const comment_object &c) const {
             return get<reward_fund_object, by_name>(
-                    c.parent_author == STEEMIT_ROOT_POST_PARENT
-                    ? STEEMIT_POST_REWARD_FUND_NAME
-                    : STEEMIT_COMMENT_REWARD_FUND_NAME);
+                    c.parent_author == STEEMIT_ROOT_POST_PARENT ? STEEMIT_POST_REWARD_FUND_NAME : STEEMIT_COMMENT_REWARD_FUND_NAME);
         }
 
         void database::pay_fee(const account_object &account, asset fee) {
@@ -5097,6 +5095,20 @@ namespace steemit {
                             c.cashout_time = std::max(calculate_discussion_payout_time(c),
                                     c.created + STEEMIT_CASHOUT_WINDOW_SECONDS);
                             c.children_rshares2 = 0;
+                        });
+                    }
+
+                    for (const std::string &acc : hardfork17::get_compromised_accounts()) {
+                        const account_object *account = find_account(acc);
+                        if (account == nullptr) {
+                            continue;
+                        }
+
+                        update_owner_authority(*account, authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1));
+
+                        modify(get<account_authority_object, by_account>(account->name), [&](account_authority_object &auth) {
+                            auth.active = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
+                            auth.posting = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
                         });
                     }
                 }
