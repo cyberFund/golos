@@ -373,7 +373,7 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW()
         }
 
-        const vector <block_id_type> & database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
                 pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() ==
