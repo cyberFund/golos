@@ -154,7 +154,7 @@ namespace steemit {
             protocol::asset_options options;
 
             /// Extra data associated with BitAssets. This field is non-null if and only if is_market_issued() returns true
-            bool market_issued;
+            bool market_issued = false;
 
             optional<account_name_type> buyback_account;
 

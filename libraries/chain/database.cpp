@@ -2744,6 +2744,7 @@ namespace steemit {
                     a.options.flags = 0;
                     a.options.issuer_permissions = 0;
                     a.issuer = STEEMIT_NULL_ACCOUNT;
+                    a.market_issued = false;
                     a.options.core_exchange_rate.base.amount = 1;
                     a.options.core_exchange_rate.base.symbol = STEEM_SYMBOL;
                     a.options.core_exchange_rate.quote.amount = 1;
@@ -2762,6 +2763,7 @@ namespace steemit {
                     a.options.flags = 0;
                     a.options.issuer_permissions = 0;
                     a.issuer = STEEMIT_NULL_ACCOUNT;
+                    a.market_issued = false;
                     a.options.core_exchange_rate.base.amount = 1;
                     a.options.core_exchange_rate.base.symbol = SBD_SYMBOL;
                     a.options.core_exchange_rate.quote.amount = 1;
