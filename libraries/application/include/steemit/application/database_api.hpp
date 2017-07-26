@@ -263,7 +263,7 @@ namespace steemit {
              * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
              * @return Balances of the account
              */
-            vector<asset> get_account_balances(account_name_type name, const flat_set<std::string> &assets) const;
+            vector<asset> get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const;
 
             /**
              * @brief Get the total number of accounts registered with the blockchain

@@ -714,7 +714,7 @@ namespace steemit {
             return my->get_account_balances(name, assets);
         }
 
-        vector<asset> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<std::string> &assets) const {
+        vector<asset> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<asset_name_type> &assets) const {
             vector<asset> result;
             if (assets.empty()) {
                 // if the caller passes in an empty list of assets, return balances for all assets the account owns
