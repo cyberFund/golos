@@ -749,7 +749,7 @@ namespace steemit {
 
             const auto &idx = _db.get_index<asset_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                    [this](asset_name_type id) -> optional<asset_object> {
+                    [&](asset_name_type id) -> optional<asset_object> {
                         auto itr = idx.find(id);
                         if (itr != idx.end()) {
                             subscribe_to_item(id);
@@ -786,7 +786,7 @@ namespace steemit {
 
             const auto &idx = _db.get_index<asset_dynamic_data_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                    [this](string symbol) -> optional<asset_dynamic_data_object> {
+                    [&](string symbol) -> optional<asset_dynamic_data_object> {
                         auto itr = idx.find(symbol);
                         if (itr != idx.end()) {
                             subscribe_to_item(symbol);
@@ -806,7 +806,7 @@ namespace steemit {
 
             const auto &idx = _db.get_index<asset_bitasset_data_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                    [this](string symbol) -> optional<asset_bitasset_data_object> {
+                    [&](string symbol) -> optional<asset_bitasset_data_object> {
                         auto itr = idx.find(symbol);
                         if (itr != idx.end()) {
                             subscribe_to_item(symbol);
