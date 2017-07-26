@@ -1231,7 +1231,7 @@ namespace steemit {
         }
 
         vector<asset> wallet_api::list_account_balances(const account_name_type &account_name) {
-            return my->_remote_db->get_account_balances(get_account(account_name).name, flat_set<std::string>());
+            return my->_remote_db->get_account_balances(get_account(account_name).name, flat_set<asset_name_type>());
         }
 
         vector<asset_object> wallet_api::list_assets(const string &lowerbound, uint32_t limit) const {
