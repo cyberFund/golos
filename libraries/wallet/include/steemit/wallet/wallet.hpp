@@ -9,6 +9,7 @@
 
 #include <fc/real128.hpp>
 #include <fc/crypto/base58.hpp>
+#include <steemit/market_history/market_history_api.hpp>
 
 using namespace steemit::application;
 using namespace steemit::chain;
@@ -892,7 +893,7 @@ namespace steemit {
              *
              * @param limit Maximum number of orders to return for bids and asks. Max is 1000.
              */
-            order_book get_order_book(const string &base, const string &quote, unsigned limit = 50);
+            market_history::order_book get_order_book(const string &base, const string &quote, unsigned limit = 50);
 
             vector<extended_limit_order> get_open_orders(string account_name);
 
