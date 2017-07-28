@@ -27,7 +27,7 @@
 #include <steemit/application/database_api.hpp>
 #include <steemit/protocol/types.hpp>
 
-#include <graphene/network/node.hpp>
+#include <steemit/network/node.hpp>
 
 #include <fc/api.hpp>
 #include <fc/optional.hpp>
@@ -50,6 +50,15 @@ namespace steemit {
         class application;
 
         struct api_context;
+
+        struct account_asset_balance {
+            account_name_type name;
+            share_type amount;
+        };
+        struct asset_holders {
+            std::string asset_symbol;
+            int count;
+        };
 
         /**
          * @brief The network_broadcast_api class allows broadcasting of transactions.
@@ -144,7 +153,7 @@ namespace steemit {
             /**
              * @brief Get status of all current connections to peers
              */
-            std::vector<graphene::network::peer_status> get_connected_peers() const;
+            std::vector<network::peer_status> get_connected_peers() const;
 
             /**
              * @brief Get advanced node parameters, such as desired and max
@@ -162,7 +171,7 @@ namespace steemit {
             /**
              * @brief Return list of potential peers
              */
-            std::vector<graphene::network::potential_peer_record> get_potential_peers() const;
+            std::vector<network::potential_peer_record> get_potential_peers() const;
 
             /// internal method, not exposed via JSON RPC
             void on_api_startup();
@@ -183,6 +192,25 @@ namespace steemit {
             fc::string blockchain_version;
             fc::string steem_revision;
             fc::string fc_revision;
+        };
+
+        /**
+    * @brief
+    */
+        class asset_api {
+        public:
+            asset_api(steemit::chain::database &db);
+
+            ~asset_api();
+
+            vector<account_asset_balance> get_asset_holders(std::string asset_symbol, uint32_t start, uint32_t limit) const;
+
+            int get_asset_holders_count(std::string asset_symbol) const;
+
+            vector<asset_holders> get_all_asset_holders() const;
+
+        private:
+            steemit::chain::database &_db;
         };
 
         /**
@@ -241,6 +269,11 @@ FC_API(steemit::application::network_node_api,
                 (get_potential_peers)
                 (get_advanced_node_parameters)
                 (set_advanced_node_parameters)
+)
+FC_API(steemit::application::asset_api,
+        (get_asset_holders)
+                (get_asset_holders_count)
+                (get_all_asset_holders)
 )
 FC_API(steemit::application::login_api,
         (login)

@@ -27,7 +27,7 @@
 #include <steemit/application/api_context.hpp>
 #include <steemit/chain/database.hpp>
 
-#include <graphene/network/node.hpp>
+#include <steemit/network/node.hpp>
 
 #include <fc/api.hpp>
 #include <fc/rpc/api_connection.hpp>
@@ -92,10 +92,10 @@ namespace steemit {
                 return result;
             }
 
-            graphene::network::node_ptr p2p_node();
+            network::node_ptr p2p_node();
 
             std::shared_ptr<chain::database> chain_database() const;
-            //std::shared_ptr<graphene::db::object_database> pending_trx_database() const;
+            //std::shared_ptr<graphene::get_database::object_database> pending_trx_database() const;
 
             void set_block_production(bool producing_blocks);
 

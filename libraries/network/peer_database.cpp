@@ -30,10 +30,10 @@
 #include <fc/io/raw.hpp>
 #include <fc/io/json.hpp>
 
-#include <graphene/network/peer_database.hpp>
+#include <steemit/network/peer_database.hpp>
 
 
-namespace graphene {
+namespace steemit {
     namespace network {
         namespace detail {
             using namespace boost::multi_index;
@@ -258,4 +258,4 @@ namespace graphene {
         }
 
     }
-} // end namespace graphene::network
+} // end namespace steemit::network

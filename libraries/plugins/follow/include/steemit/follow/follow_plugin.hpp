@@ -5,7 +5,6 @@
 
 #include <fc/thread/future.hpp>
 
-#include <steemit/follow/follow_api.hpp>
 
 namespace steemit {
     namespace follow {

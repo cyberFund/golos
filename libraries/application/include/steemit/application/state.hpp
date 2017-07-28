@@ -113,6 +113,10 @@ namespace steemit {
             vector<pair<account_name_type, uint32_t>> guest_bloggers;
 
             optional<map<uint32_t, extended_limit_order>> open_orders;
+            optional<vector<account_balance_object>>  balances;
+            optional<vector<call_order_object>>        call_orders;
+            optional<vector<force_settlement_object>>  settle_orders;
+            optional<vector<asset_symbol_type>>            assets;
             optional<vector<string>> comments; /// permlinks for this user
             optional<vector<string>> blog; /// blog posts for this user
             optional<vector<string>> feed; /// feed posts for this user
@@ -192,14 +196,13 @@ namespace steemit {
             string error;
             optional<market> market_data;
         };
-
     }
 }
 
 FC_REFLECT_DERIVED(steemit::application::extended_account,
         (steemit::application::account_api_obj),
         (vesting_balance)(reputation)
-                (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(blog_category)(recommended))
+                (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(blog_category)(recommended)(balances))
 
 
 FC_REFLECT(steemit::application::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time));

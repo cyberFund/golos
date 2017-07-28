@@ -4,7 +4,7 @@
 
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
 #include <steemit/market_history/market_history_plugin.hpp>
 
@@ -19,7 +19,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
         using namespace steemit::market_history;
 
         try {
-            auto mh_plugin = app.register_plugin<market_history_plugin>();
+            auto mh_plugin = application.register_plugin<market_history_plugin>();
             boost::program_options::variables_map options;
             mh_plugin->plugin_initialize(options);
 
@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             generate_blocks(db.get_comment("alice", std::string("test")).cashout_time);
 
             const auto &bucket_idx = db.get_index<bucket_index>().indices().get<by_bucket>();
-            const auto &order_hist_idx = db.get_index<order_history_index>().indices().get<by_id>();
+            const auto &order_hist_idx = db.get_index<order_history_index>().indices().get<steemit::chain::by_id>();
 
             BOOST_REQUIRE(bucket_idx.begin() == bucket_idx.end());
             BOOST_REQUIRE(order_hist_idx.begin() == order_hist_idx.end());
@@ -294,37 +294,37 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
 
             BOOST_REQUIRE(order->time == fill_order_a_time);
             BOOST_REQUIRE(order->op.current_owner == "bob");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("1.500 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.750 TBD"));
             order++;
 
             BOOST_REQUIRE(order->time == fill_order_b_time);
             BOOST_REQUIRE(order->op.current_owner == "sam");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.500 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.250 TBD"));
             order++;
 
             BOOST_REQUIRE(order->time == fill_order_c_time);
             BOOST_REQUIRE(order->op.current_owner == "alice");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.250 TBD"));
             BOOST_REQUIRE(order->op.open_owner == "sam");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.500 TESTS"));
             order++;
 
             BOOST_REQUIRE(order->time == fill_order_c_time);
             BOOST_REQUIRE(order->op.current_owner == "bob");
-            BOOST_REQUIRE(order->op.current_orderid == 0);
+            BOOST_REQUIRE(order->op.current_order_id == 0);
             BOOST_REQUIRE(order->op.current_pays == ASSET("0.450 TESTS"));
             BOOST_REQUIRE(order->op.open_owner == "alice");
-            BOOST_REQUIRE(order->op.open_orderid == 0);
+            BOOST_REQUIRE(order->op.open_order_id == 0);
             BOOST_REQUIRE(order->op.open_pays == ASSET("0.250 TBD"));
             order++;
 

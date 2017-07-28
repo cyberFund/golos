@@ -1,7 +1,7 @@
 #pragma once
 
 #include <steemit/protocol/exceptions.hpp>
-#include <steemit/protocol/operations.hpp>
+#include <steemit/protocol/operations/operations.hpp>
 
 namespace steemit {
     namespace chain {
@@ -9,7 +9,7 @@ namespace steemit {
         class database;
 
         template<typename OperationType=steemit::protocol::operation>
-        class evaluator {
+        class generic_evaluator {
         public:
             virtual void apply(const OperationType &op) = 0;
 
@@ -17,17 +17,17 @@ namespace steemit {
         };
 
         template<typename EvaluatorType, typename OperationType=steemit::protocol::operation>
-        class evaluator_impl : public evaluator<OperationType> {
+        class evaluator : public generic_evaluator<OperationType> {
         public:
             typedef OperationType operation_sv_type;
             // typedef typename EvaluatorType::operation_type op_type;
 
-            evaluator_impl(database &d)
-                    : _db(d) {
+            evaluator(database &d)
+                    : db(d) {
             }
 
             virtual void apply(const OperationType &o) final override {
-                auto *eval = static_cast< EvaluatorType * >(this);
+                auto *eval = static_cast<EvaluatorType *>(this);
                 const auto &op = o.template get<typename EvaluatorType::operation_type>();
                 eval->do_apply(op);
             }
@@ -36,26 +36,13 @@ namespace steemit {
                 return OperationType::template tag<typename EvaluatorType::operation_type>::value;
             }
 
-            database &db() {
-                return _db;
+            database &get_database() {
+                return db;
             }
 
         protected:
-            database &_db;
+            database &db;
         };
 
     }
 }
-
-#define STEEMIT_DEFINE_EVALUATOR(X) \
-class X ## _evaluator : public steemit::chain::evaluator_impl< X ## _evaluator > \
-{                                                                           \
-   public:                                                                  \
-      typedef X ## _operation operation_type;                               \
-                                                                            \
-      X ## _evaluator( database& db )                                       \
-         : steemit::chain::evaluator_impl< X ## _evaluator >( db )          \
-      {}                                                                    \
-                                                                            \
-      void do_apply( const X ## _operation& o );                            \
-};

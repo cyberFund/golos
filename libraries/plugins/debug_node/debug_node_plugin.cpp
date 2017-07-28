@@ -197,20 +197,20 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
    // - delete if object contains only ID field
    // - otherwise, write
 
-   graphene::db2::generic_id oid;
+   graphene::db2::generic_id object_id;
    uint8_t action = db_action_nil;
    auto it_id = vo.find("id");
    FC_ASSERT( it_id != vo.end() );
 
-   from_variant( it_id->value(), oid );
+   from_variant( it_id->value(), object_id );
    action = ( vo.size() == 1 ) ? db_action_delete : db_action_write;
 
-   from_variant( vo["id"], oid );
+   from_variant( vo["id"], object_id );
    if( vo.size() == 1 )
       action = db_action_delete;
 
    fc::mutable_variant_object mvo( vo );
-   mvo( "id", oid._id );
+   mvo( "id", object_id._id );
    auto it_action = vo.find("_action" );
    if( it_action != vo.end() )
    {
@@ -239,7 +239,7 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
          FC_ASSERT( false );
          break;
       case db_action_write:
-         db.modify( db.get_object( oid ), [&]( graphene::db::object& obj )
+         db.modify( db.get_object( object_id ), [&]( graphene::db::object& obj )
          {
             idx.object_default( obj );
             idx.object_from_variant( vo, obj );
@@ -247,16 +247,16 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
          FC_ASSERT( false );
          break;
       case db_action_update:
-         db.modify_variant( oid, mvo );
+         db.modify_variant( object_id, mvo );
          break;
       case db_action_delete:
-         db.remove_object( oid );
+         db.remove_object( object_id );
          break;
       case db_action_set_hardfork:
          {
             uint32_t hardfork_id;
             from_variant( vo[ "hardfork_id" ], hardfork_id );
-            db.set_hardfork( hardfork_id, false );
+            get_database.set_hardfork( hardfork_id, false );
          }
          break;
       default:
@@ -364,7 +364,7 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
                     return;
                 }
                 //for( const fc::variant_object& update : it->second )
-                //   debug_apply_update( db, update, logging );
+                //   debug_apply_update( get_database, update, logging );
                 for (auto &update : it->second) {
                     update(db);
                 }

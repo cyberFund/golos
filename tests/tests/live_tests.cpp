@@ -49,9 +49,9 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
 
       flat_map< std::tuple< account_name_type, string >, share_type > comment_net_rshares;
       flat_map< std::tuple< account_name_type, string >, share_type > comment_abs_rshares;
-      flat_map< comment_id_type, uint64_t > total_vote_weights;
-      flat_map< comment_id_type, uint64_t > orig_vote_weight;
-      flat_map< comment_id_type, uint64_t > expected_reward;
+      flat_map< comment_object::id_type, uint64_t > total_vote_weights;
+      flat_map< comment_object::id_type, uint64_t > orig_vote_weight;
+      flat_map< comment_object::id_type, uint64_t > expected_reward;
       fc::uint128_t total_rshares2 = 0;
       const auto& com_idx = db.get_index< comment_index >().indices().get< by_permlink >();
       auto com_itr = com_idx.begin();
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
       BOOST_TEST_MESSAGE( "Saving category rshares" );
 
       const auto& cat_idx = db.get_index< category_index >().indices();
-      flat_map< category_id_type, share_type > category_rshares;
+      flat_map< category_object::id_type, share_type > category_rshares;
 
       for( auto cat_itr = cat_idx.begin(); cat_itr != cat_idx.end(); cat_itr++ )
       {
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
 
     BOOST_AUTO_TEST_CASE(retally_votes) {
         try {
-            flat_map<witness_id_type, share_type> expected_votes;
+            flat_map<witness_object::id_type, share_type> expected_votes;
 
             const auto &by_account_witness_idx = db.get_index<witness_vote_index>().indices();
 

@@ -7,7 +7,6 @@
 #include <steemit/protocol/config.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/generic_custom_operation_interpreter.hpp>
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/account_object.hpp>
@@ -362,12 +361,12 @@ namespace steemit {
 
                 db.pre_apply_operation.connect([&](const operation_notification &o) { my->pre_operation(o); });
                 db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
-                add_plugin_index<follow_index>(db);
-                add_plugin_index<feed_index>(db);
-                add_plugin_index<blog_index>(db);
-                add_plugin_index<reputation_index>(db);
-                add_plugin_index<follow_count_index>(db);
-                add_plugin_index<blog_author_stats_index>(db);
+                db.add_plugin_index<follow_index>();
+                db.add_plugin_index<feed_index>();
+                db.add_plugin_index<blog_index>();
+                db.add_plugin_index<reputation_index>();
+                db.add_plugin_index<follow_count_index>();
+                db.add_plugin_index<blog_author_stats_index>();
 
                 if (options.count("follow-max-feed-size")) {
                     uint32_t feed_size = options["follow-max-feed-size"].as<uint32_t>();

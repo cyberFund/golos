@@ -9,7 +9,7 @@
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/transaction_object.hpp>
 #include <steemit/chain/witness_objects.hpp>
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
 
 namespace steemit {
@@ -59,14 +59,10 @@ namespace steemit {
                 }
             }
 
-            bool operator< (const comment_api_obj &right) const {
-                return id < right.id;
-            }
-
             comment_api_obj() {
             }
 
-            comment_id_type id;
+            comment_object::id_type id;
             string category;
             string languages;
             account_name_type parent_author;
@@ -105,7 +101,7 @@ namespace steemit {
 
             int32_t net_votes;
 
-            comment_id_type root_comment;
+            comment_object::id_type root_comment;
 
             asset max_accepted_payout;
             uint16_t percent_steem_dollars;

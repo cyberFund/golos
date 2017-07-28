@@ -7,7 +7,6 @@
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/hardfork.hpp>
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
@@ -59,7 +58,7 @@ namespace steemit {
 
                 void remove_stats(const tag_object &tag, const tag_stats_object &stats) const {
                     _db.modify(stats, [&](tag_stats_object &s) {
-                        if (tag.parent == comment_id_type()) {
+                        if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 -= tag.children_rshares2;
                             s.top_posts--;
                         } else {
@@ -71,7 +70,7 @@ namespace steemit {
 
                 void add_stats(const tag_object &tag, const tag_stats_object &stats) const {
                     _db.modify(stats, [&](tag_stats_object &s) {
-                        if (tag.parent == comment_id_type()) {
+                        if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 += tag.children_rshares2;
                             s.top_posts++;
                         } else {
@@ -176,8 +175,8 @@ namespace steemit {
                 void create_tag(const string &tag, const comment_object &comment, double hot, double trending) const {
 
 
-                    comment_id_type parent;
-                    account_id_type author = _db.get_account(comment.author).id;
+                    comment_object::id_type parent;
+                    account_object::id_type author = _db.get_account(comment.author).id;
 
                     if (comment.parent_author.size()) {
                         parent = _db.get_comment(comment.parent_author, comment.parent_permlink).id;
@@ -249,38 +248,47 @@ namespace steemit {
 
 
                 /** finds tags that have been added or removed or updated */
-                void update_tags(const comment_object &c) const {
+                void update_tags(const comment_object &c, bool parse_tags = false) const {
                     try {
 
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        auto meta = filter_tags(c);
                         const auto &comment_idx = _db.get_index<tag_index>().indices().get<by_comment>();
-                        auto citr = comment_idx.lower_bound(c.id);
 
-                        map<string, const tag_object *> existing_tags;
-                        vector<const tag_object *> remove_queue;
-                        while (citr != comment_idx.end() && citr->comment == c.id) {
-                            const tag_object *tag = &*citr;
-                            ++citr;
-                            if (meta.tags.find(tag->name) == meta.tags.end()) {
-                                remove_queue.push_back(tag);
-                            } else {
-                                existing_tags[tag->name] = tag;
+                        if (parse_tags) {
+                            auto meta = filter_tags(c);
+                            auto citr = comment_idx.lower_bound(c.id);
+
+                            map<string, const tag_object *> existing_tags;
+                            vector<const tag_object *> remove_queue;
+                            while (citr != comment_idx.end() && citr->comment == c.id) {
+                                const tag_object *tag = &*citr;
+                                ++citr;
+                                if (meta.tags.find(tag->name) == meta.tags.end()) {
+                                    remove_queue.push_back(tag);
+                                } else {
+                                    existing_tags[tag->name] = tag;
+                                }
                             }
-                        }
 
-                        for (const auto &tag : meta.tags) {
-                            auto existing = existing_tags.find(tag);
-                            if (existing == existing_tags.end()) {
-                                create_tag(tag, c, hot, trending);
-                            } else {
-                                update_tag(*existing->second, c, hot, trending);
+                            for (const auto &tag : meta.tags) {
+                                auto existing = existing_tags.find(tag);
+                                if (existing == existing_tags.end()) {
+                                    create_tag(tag, c, hot, trending);
+                                } else {
+                                    update_tag(*existing->second, c, hot, trending);
+                                }
                             }
-                        }
 
-                        for (const auto &item : remove_queue) {
-                            remove_tag(*item);
+                            for (const auto &item : remove_queue) {
+                                remove_tag(*item);
+                            }
+                        } else {
+                            auto citr = comment_idx.lower_bound(c.id);
+                            while (citr != comment_idx.end() && citr->comment == c.id) {
+                                update_tag(*citr, c, hot, trending);
+                                ++citr;
+                            }
                         }
 
                         if (c.parent_author.size()) {
@@ -289,7 +297,7 @@ namespace steemit {
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
                 }
 
-                const peer_stats_object &get_or_create_peer_stats(account_id_type voter, account_id_type peer) const {
+                const peer_stats_object &get_or_create_peer_stats(account_object::id_type voter, account_object::id_type peer) const {
                     const auto &peeridx = _db.get_index<peer_stats_index>().indices().get<by_voter_peer>();
                     auto itr = peeridx.find(boost::make_tuple(voter, peer));
                     if (itr == peeridx.end()) {
@@ -301,7 +309,7 @@ namespace steemit {
                     return *itr;
                 }
 
-                void update_indirect_vote(account_id_type a, account_id_type b, int positive) const {
+                void update_indirect_vote(account_object::id_type a, account_object::id_type b, int positive) const {
                     if (a == b) {
                         return;
                     }
@@ -335,7 +343,7 @@ namespace steemit {
                     });
 
                     const auto &voteidx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_id_type(c.id), account_id_type()));
+                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_object::id_type(c.id), account_object::id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
                         update_indirect_vote(voter.id, itr->voter,
                                 (itr->vote_percent > 0) == (vote > 0));
@@ -344,7 +352,7 @@ namespace steemit {
                 }
 
                 void operator()(const comment_operation &op) const {
-                    update_tags(_db.get_comment(op.author, op.permlink));
+                    update_tags(_db.get_comment(op.author, op.permlink), true);
                 }
 
                 void operator()(const transfer_operation &op) const {
@@ -382,9 +390,9 @@ namespace steemit {
                 void operator()(const vote_operation &op) const {
                     update_tags(_db.get_comment(op.author, op.permlink));
                     /*
-                    update_peer_stats( _db.get_account(op.voter),
-                                       _db.get_account(op.author),
-                                       _db.get_comment(op.author, op.permlink),
+                    update_peer_stats( db.get_account(op.voter),
+                                       db.get_account(op.author),
+                                       db.get_comment(op.author, op.permlink),
                                        op.weight );
                                        */
                 }
@@ -446,10 +454,10 @@ namespace steemit {
         tags_plugin::tags_plugin(application *app)
                 : plugin(app), my(new detail::tags_plugin_impl(*this)) {
             chain::database &db = database();
-            add_plugin_index<tag_index>(db);
-            add_plugin_index<tag_stats_index>(db);
-            add_plugin_index<peer_stats_index>(db);
-            add_plugin_index<author_tag_stats_index>(db);
+            db.add_plugin_index<tag_index>();
+            db.add_plugin_index<tag_stats_index>();
+            db.add_plugin_index<peer_stats_index>();
+            db.add_plugin_index<author_tag_stats_index>();
         }
 
         tags_plugin::~tags_plugin() {

@@ -75,7 +75,7 @@ namespace steemit {
             active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
             /// Add the highest voted witnesses
-            flat_set<witness_id_type> selected_voted;
+            flat_set<witness_object::id_type> selected_voted;
             selected_voted.reserve(wso.max_voted_witnesses);
 
             const auto &widx = db.get_index<witness_index>().indices().get<by_vote_name>();
@@ -95,7 +95,7 @@ namespace steemit {
             auto num_elected = active_witnesses.size();
 
             /// Add miners from the top of the mining queue
-            flat_set<witness_id_type> selected_miners;
+            flat_set<witness_object::id_type> selected_miners;
             selected_miners.reserve(wso.max_miner_witnesses);
             const auto &gprops = db.get_dynamic_global_properties();
             const auto &pow_idx = db.get_index<witness_index>().indices().get<by_pow>();

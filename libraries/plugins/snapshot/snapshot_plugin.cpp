@@ -1,7 +1,6 @@
 #include <steemit/snapshot/snapshot_plugin.hpp>
 #include <steemit/snapshot/snapshot_state.hpp>
 
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
@@ -156,7 +155,7 @@ namespace steemit {
                     snapshot_state snapshot = fc::json::from_file(fc::path(iterator)).as<snapshot_state>();
                     for (account_summary &account : snapshot.accounts) {
                         if (!db.find_account(account.name)) {
-                            db.create<chain::account_object>([&](chain::account_object &a) {
+                            const chain::account_object &new_account = db.create<chain::account_object>([&](chain::account_object &a) {
                                 a.name = account.name;
                                 a.memo_key = account.keys.memo_key;
 
@@ -169,6 +168,25 @@ namespace steemit {
                                     a.recovery_account = account.recovery_account;
                                 }
                             });
+
+                            auto &index = db.get_index<chain::account_balance_index>().indices().get<chain::by_account_asset>();
+                            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL_NAME));
+                            if (itr == index.end()) {
+                                db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
+                                    b.owner = new_account.name;
+                                    b.asset_name = STEEM_SYMBOL_NAME;
+                                    b.balance = 0;
+                                });
+                            }
+
+                            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL_NAME));
+                            if (itr == index.end()) {
+                                db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
+                                    b.owner = new_account.name;
+                                    b.asset_name = SBD_SYMBOL_NAME;
+                                    b.balance = 0;
+                                });
+                            }
 
                             impl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
                                 auth.account = account.name;

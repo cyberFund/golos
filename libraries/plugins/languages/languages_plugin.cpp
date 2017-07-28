@@ -7,7 +7,6 @@
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/hardfork.hpp>
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
@@ -68,7 +67,7 @@ namespace steemit {
 
                 void remove_stats(const language_object &tag, const language_stats_object &stats) const {
                     _db.modify(stats, [&](language_stats_object &s) {
-                        if (tag.parent == comment_id_type()) {
+                        if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 -= tag.children_rshares2;
                             s.top_posts--;
                         } else {
@@ -80,7 +79,7 @@ namespace steemit {
 
                 void add_stats(const language_object &tag, const language_stats_object &stats) const {
                     _db.modify(stats, [&](language_stats_object &s) {
-                        if (tag.parent == comment_id_type()) {
+                        if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 += tag.children_rshares2;
                             s.top_posts++;
                         } else {
@@ -146,8 +145,8 @@ namespace steemit {
                 }
 
                 void create_tag(const string &language, const comment_object &comment, double hot, double trending) const {
-                    comment_id_type parent;
-                    account_id_type author = _db.get_account(comment.author).id;
+                    comment_object::id_type parent;
+                    account_object::id_type author = _db.get_account(comment.author).id;
 
                     if (comment.parent_author.size()) {
                         parent = _db.get_comment(comment.parent_author, comment.parent_permlink).id;
@@ -253,7 +252,7 @@ namespace steemit {
 
                 }
 
-                const peer_stats_object &get_or_create_peer_stats(account_id_type voter, account_id_type peer) const {
+                const peer_stats_object &get_or_create_peer_stats(account_object::id_type voter, account_object::id_type peer) const {
                     const auto &peeridx = _db.get_index<peer_stats_index>().indices().get<by_voter_peer>();
                     auto itr = peeridx.find(boost::make_tuple(voter, peer));
                     if (itr == peeridx.end()) {
@@ -265,7 +264,7 @@ namespace steemit {
                     return *itr;
                 }
 
-                void update_indirect_vote(account_id_type a, account_id_type b, int positive) const {
+                void update_indirect_vote(account_object::id_type a, account_object::id_type b, int positive) const {
                     if (a == b) {
                         return;
                     }
@@ -300,7 +299,7 @@ namespace steemit {
                     });
 
                     const auto &voteidx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_id_type(c.id), account_id_type()));
+                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_object::id_type(c.id), account_object::id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
                         update_indirect_vote(voter.id, itr->voter,
                                 (itr->vote_percent > 0) == (vote > 0));
@@ -405,10 +404,10 @@ namespace steemit {
         languages_plugin::languages_plugin(application *app)
                 : plugin(app), my(new detail::languages_plugin_impl(*this)) {
             chain::database &db = database();
-            add_plugin_index<language_index>(db);
-            add_plugin_index<language_stats_index>(db);
-            add_plugin_index<peer_stats_index>(db);
-            add_plugin_index<author_language_stats_index>(db);
+            db.add_plugin_index<language_index>();
+            db.add_plugin_index<language_stats_index>();
+            db.add_plugin_index<peer_stats_index>();
+            db.add_plugin_index<author_language_stats_index>();
         }
 
         languages_plugin::~languages_plugin() {

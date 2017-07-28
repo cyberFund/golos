@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Golos, Inc., and contributors.
+ * Copyright (c) 2017 Golos, Inc., and contributors.
  */
 #pragma once
 
@@ -16,9 +16,27 @@
 #define STEEMIT_INIT_PUBLIC_KEY_STR             (std::string(steemit::protocol::public_key_type(STEEMIT_INIT_PRIVATE_KEY.get_public_key())))
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
+#define STEEMIT_MIN_ASSET_SYMBOL_LENGTH 3
+#define STEEMIT_MAX_ASSET_SYMBOL_LENGTH 16
+
+/**
+ *  These ratios are fixed point numbers with a denominator of STEEMIT_COLLATERAL_RATIO_DENOM, the
+ *  minimum maitenance collateral is therefore 1.001x and the default
+ *  maintenance ratio is 1.75x
+ */
+///@{
+#define STEEMIT_COLLATERAL_RATIO_DENOM                 1000
+#define STEEMIT_MIN_COLLATERAL_RATIO                   1001  ///< lower than this could result in divide by 0
+#define STEEMIT_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
+#define GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
+#define GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
+///@}
+
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
+#define STEEM_SYMBOL_NAME ("GOLOS")
 #define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< Test Backed Dollars with 3 digits of precision
+#define SBD_SYMBOL_NAME ("GBG")
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
@@ -70,6 +88,8 @@
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
 #define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
+#define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
+
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
@@ -80,6 +100,15 @@
 
 #define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       30
 
+#define STEEMIT_MAX_MARKET_FEE_PERCENT                         STEEMIT_100_PERCENT
+#define STEEMIT_DEFAULT_FORCE_SETTLEMENT_DELAY                 (60*60*24) ///< 1 day
+#define STEEMIT_DEFAULT_FORCE_SETTLEMENT_OFFSET                0 ///< 1%
+#define STEEMIT_DEFAULT_FORCE_SETTLEMENT_MAX_VOLUME            (20* STEEMIT_1_PERCENT) ///< 20%
+#define STEEMIT_DEFAULT_PRICE_FEED_LIFETIME                    (60*60*24) ///< 1 day
+#define STEEMIT_MAX_FEED_PRODUCERS                             200
+#define STEEMIT_DEFAULT_MAX_AUTHORITY_MEMBERSHIP               10
+#define STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES        10
+#define STEEMIT_DEFAULT_MAX_ASSET_FEED_PUBLISHERS              10
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
@@ -136,7 +165,9 @@
 
 #define STEEMIT_POST_REWARD_FUND_NAME           ("post")
 #define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
-#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
+
+#define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
+#define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
 
 #define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
 #define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
@@ -168,7 +199,7 @@
 // chosen to be the maximal value such that STEEMIT_APR_PERCENT_MULTIPLY_PER_HOUR * 2**64 * 100000 < 2**128
 #define STEEMIT_APR_PERCENT_SHIFT_PER_HOUR              77
 
-// These constants add up to GRAPHENE_100_PERCENT.  Each GRAPHENE_1_PERCENT is equivalent to 1% per year APY
+// These constants add up to STEEMIT_100_PERCENT.  Each STEEMIT_1_PERCENT is equivalent to 1% per year APY
 // *including the corresponding 9x vesting rewards*
 #define STEEMIT_CURATE_APR_PERCENT              1937
 #define STEEMIT_CONTENT_APR_PERCENT             5813
@@ -235,11 +266,29 @@
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< GESTS with 6 digits of precision
-#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< GOLOS with 3 digits of precision
-#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< STEEM Backed Dollars with 3 digits of precision
+#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
+#define STEEM_SYMBOL_NAME ("GOLOS")
+#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< Test Backed Dollars with 3 digits of precision
+#define SBD_SYMBOL_NAME ("GBG")
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< STEEM Dollars with 3 digits of precision
 #define STEEMIT_SYMBOL                          "GOLOS"
 #define STEEMIT_ADDRESS_PREFIX                  "GLS"
+
+#define STEEMIT_MIN_ASSET_SYMBOL_LENGTH 3
+#define STEEMIT_MAX_ASSET_SYMBOL_LENGTH 16
+
+/**
+ *  These ratios are fixed point numbers with a denominator of GRAPHENE_COLLATERAL_RATIO_DENOM, the
+ *  minimum maitenance collateral is therefore 1.001x and the default
+ *  maintenance ratio is 1.75x
+ */
+///@{
+#define STEEMIT_COLLATERAL_RATIO_DENOM                 1000
+#define STEEMIT_MIN_COLLATERAL_RATIO                   1001  ///< lower than this could result in divide by 0
+#define STEEMIT_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
+#define GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
+#define GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
+///@}
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
@@ -290,6 +339,8 @@
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
 #define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
+#define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
+
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
@@ -300,6 +351,15 @@
 
 #define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       30
 
+#define STEEMIT_MAX_MARKET_FEE_PERCENT                         STEEMIT_100_PERCENT
+#define STEEMIT_DEFAULT_FORCE_SETTLEMENT_DELAY                 (60*60*24) ///< 1 day
+#define STEEMIT_DEFAULT_FORCE_SETTLEMENT_OFFSET                0 ///< 1%
+#define STEEMIT_DEFAULT_FORCE_SETTLEMENT_MAX_VOLUME            (20* STEEMIT_1_PERCENT) ///< 20%
+#define STEEMIT_DEFAULT_PRICE_FEED_LIFETIME                    (60*60*24) ///< 1 day
+#define STEEMIT_MAX_FEED_PRODUCERS                             200
+#define STEEMIT_DEFAULT_MAX_AUTHORITY_MEMBERSHIP               10
+#define STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES        10
+#define STEEMIT_DEFAULT_MAX_ASSET_FEED_PUBLISHERS              10
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
@@ -356,7 +416,6 @@
 
 #define STEEMIT_POST_REWARD_FUND_NAME           ("post")
 #define STEEMIT_COMMENT_REWARD_FUND_NAME        ("comment")
-#define STEEMIT_RECENT_RSHARES_DECAY_RATE       (fc::days(30))
 
 #define STEEMIT_POST_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 90)
 #define STEEMIT_COMMENT_REWARD_FUND_PERCENT (STEEMIT_1_PERCENT * 10)
@@ -388,7 +447,7 @@
 // chosen to be the maximal value such that STEEMIT_APR_PERCENT_MULTIPLY_PER_HOUR * 2**64 * 100000 < 2**128
 #define STEEMIT_APR_PERCENT_SHIFT_PER_HOUR              77
 
-// These constants add up to GRAPHENE_100_PERCENT.  Each GRAPHENE_1_PERCENT is equivalent to 1% per year APY
+// These constants add up to STEEMIT_100_PERCENT.  Each STEEMIT_1_PERCENT is equivalent to 1% per year APY
 // *including the corresponding 9x vesting rewards*
 #define STEEMIT_CURATE_APR_PERCENT              1937
 #define STEEMIT_CONTENT_APR_PERCENT             5813
@@ -454,6 +513,10 @@
  *  Reserved Account IDs with special meaning
  */
 ///@{
+/// Represents the current committee members, two-week review period
+#define STEEMIT_COMMITTEE_ACCOUNT "committee"
+/// Represents the current witnesses
+#define STEEMIT_WITNESS_ACCOUNT "witness"
 /// Represents the current witnesses
 #define STEEMIT_MINER_ACCOUNT                   "miners"
 /// Represents the canonical account with NO authority (nobody can access funds in null account)
