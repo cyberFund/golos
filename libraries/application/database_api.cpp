@@ -2,6 +2,7 @@
 #include <steemit/application/application.hpp>
 #include <steemit/application/database_api.hpp>
 
+#include <steemit/follow/follow_api.hpp>
 #include <steemit/snapshot/snapshot_plugin.hpp>
 #include <steemit/market_history/market_history_plugin.hpp>
 

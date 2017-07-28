@@ -2438,7 +2438,7 @@ namespace steemit {
                 return result;
             }
 
-            return my->_remote_market_history_api->get_order_book(base, quote, limit);
+            return (*my->_remote_market_history_api)->get_order_book(base, quote, limit);
         }
 
         vector<extended_limit_order> wallet_api::get_open_orders(string account_name) {
@@ -2449,7 +2449,7 @@ namespace steemit {
                 return {};
             }
 
-            return my->_remote_market_history_api->get_open_orders(account_name);
+            return (*my->_remote_market_history_api)->get_open_orders(account_name);
         }
 
         annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset amount_to_sell, asset min_to_receive, bool fill_or_kill, uint32_t expiration_sec, bool broadcast) {

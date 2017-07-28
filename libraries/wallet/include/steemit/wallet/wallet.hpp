@@ -2,15 +2,15 @@
 
 #include <steemit/application/api.hpp>
 #include <steemit/private_message/private_message_plugin.hpp>
-#include <steemit/follow/follow_plugin.hpp>
+#include <steemit/follow/follow_api.hpp>
+#include <steemit/market_history/market_history_api.hpp>
+
 #include <steemit/application/steem_api_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 
 #include <fc/real128.hpp>
 #include <fc/crypto/base58.hpp>
-
-#include <steemit/market_history/market_history_api.hpp>
 
 using namespace steemit::application;
 using namespace steemit::chain;

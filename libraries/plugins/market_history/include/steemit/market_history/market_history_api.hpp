@@ -139,11 +139,11 @@ namespace steemit {
 
             /**
              * @brief Returns recent trades for the market assetA:assetB
-             * Note: Currentlt, timezone offsets are not supported. The time must be UTC.
+             * Note: Currently, timezone offsets are not supported. The time must be UTC.
              * @param a String name of the first asset
              * @param b String name of the second asset
              * @param stop Stop time as a UNIX timestamp
-             * @param limit Number of trasactions to retrieve, capped at 100
+             * @param limit Number of transactions to retrieve, capped at 100
              * @param start Start time as a UNIX timestamp
              * @return Recent transactions in the market
              */
