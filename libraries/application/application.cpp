@@ -882,18 +882,20 @@ namespace steemit {
             default_apis.push_back("database_api");
             default_apis.push_back("login_api");
             default_apis.push_back("account_by_key_api");
+            default_apis.push_back("market_history_api");
             std::string str_default_apis = boost::algorithm::join(default_apis, " ");
 
             std::vector<std::string> default_plugins;
             default_plugins.push_back("witness");
             default_plugins.push_back("account_history");
             default_plugins.push_back("account_by_key");
+            default_plugins.push_back("market_history");
             default_plugins.push_back("snapshot");
             std::string str_default_plugins = boost::algorithm::join(default_plugins, " ");
 
             configuration_file_options.add_options()
                     ("p2p-endpoint", bpo::value<string>(), "Endpoint for P2P node to listen on")
-                    ("p2p-max-connections", bpo::value<uint32_t>(), "Maxmimum number of incoming connections on P2P endpoint")
+                    ("p2p-max-connections", bpo::value<uint32_t>(), "Maximum number of incoming connections on P2P endpoint")
                     ("seed-node,s", bpo::value<vector<string>>()->composing(), "P2P nodes to connect to on startup (may specify multiple times)")
                     ("checkpoint,c", bpo::value<vector<string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
                     ("shared-file-dir", bpo::value<string>(), "Location of the shared memory file. Defaults to data_dir/blockchain")
