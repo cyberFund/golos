@@ -19,7 +19,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
         using namespace steemit::market_history;
 
         try {
-            auto mh_plugin = application.register_plugin<market_history_plugin>();
+            auto mh_plugin = app.register_plugin<market_history_plugin>();
             boost::program_options::variables_map options;
             mh_plugin->plugin_initialize(options);
 
