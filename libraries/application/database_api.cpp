@@ -743,7 +743,7 @@ namespace steemit {
         vector<asset_object> database_api_impl::get_assets_by_issuer(const account_name_type &issuer) const {
             vector<asset_object> result;
 
-            auto range = _db.get_index<asset_index>().indices().get<by_issuer>().equal_range(boost::make_tuple(issuer));
+            auto range = _db.get_index<asset_index>().indices().get<by_issuer>().equal_range(issuer);
             for (const asset_object &asset : boost::make_iterator_range(range.first, range.second)) {
                 result.emplace_back(asset);
             }
