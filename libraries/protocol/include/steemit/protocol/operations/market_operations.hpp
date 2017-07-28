@@ -42,11 +42,6 @@ namespace steemit {
          */
 
         struct limit_order_create_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            optional<asset> fee;
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
@@ -90,11 +85,6 @@ namespace steemit {
 
         struct limit_order_create2_operation
                 : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 5 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            optional<asset> fee;
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
@@ -134,11 +124,6 @@ namespace steemit {
          */
 
         struct limit_order_cancel_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            optional<asset> fee;
             integral_id_type order_id = 0;
             account_name_type owner;
             extensions_type extensions;
@@ -167,12 +152,6 @@ namespace steemit {
          *  @note this operation can be used to force a market order using the collateral without requiring outside funds.
          */
         struct call_order_update_operation : public base_operation {
-            /** this is slightly more expensive than limit orders, this pricing impacts prediction markets */
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            optional<asset> fee;
             integral_id_type order_id = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset delta_collateral; ///< the amount of collateral to add to the margin position
@@ -194,12 +173,7 @@ namespace steemit {
 
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
-FC_REFLECT(steemit::protocol::limit_order_create_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::limit_order_create2_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::call_order_update_operation::fee_parameters_type, (fee))
-
-FC_REFLECT(steemit::protocol::limit_order_create_operation, (fee)(owner)(order_id)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_create2_operation, (fee)(owner)(order_id)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (fee)(owner)(order_id)(extensions))
-FC_REFLECT(steemit::protocol::call_order_update_operation, (fee)(funding_account)(delta_collateral)(delta_debt)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_create_operation, (owner)(order_id)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_create2_operation, (owner)(order_id)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id)(extensions))
+FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt)(extensions))

@@ -96,14 +96,6 @@ namespace steemit {
          * @ingroup operations
          */
         struct asset_create_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t symbol3 = 500000 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint64_t symbol4 = 300000 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint64_t long_symbol = 5000 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint32_t price_per_kbyte = 10; /// only required for large memos.
-            };
-
-            asset fee;
             /// This account must sign and pay the fee for this operation. Later, this account may update the asset
             account_name_type issuer;
             /// The ticker symbol of this asset
@@ -133,8 +125,6 @@ namespace steemit {
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(issuer);
             }
-
-            share_type calculate_fee(const fee_parameters_type &k) const;
         };
 
         /**
@@ -148,11 +138,6 @@ namespace steemit {
          *  feed price.
          */
         struct asset_global_settle_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
             asset_name_type asset_to_settle;
             price settle_price;
@@ -183,17 +168,6 @@ namespace steemit {
          * The fee is paid by @ref account, and @ref account must authorize this operation
          */
         struct asset_settle_operation : public base_operation {
-            struct fee_parameters_type {
-                /** this fee should be high to encourage small settlement requests to
-                 * be performed on the market rather than via forced settlement.
-                 *
-                 * Note that in the event of a black swan or prediction market close out
-                 * everyone will have to pay this fee.
-                 */
-                uint64_t fee = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
@@ -225,17 +199,6 @@ namespace steemit {
          * The fee is paid by @ref account, and @ref account must authorize this operation
          */
         struct asset_force_settle_operation : public base_operation {
-            struct fee_parameters_type {
-                /** this fee should be high to encourage small settlement requests to
-                 * be performed on the market rather than via forced settlement.
-                 *
-                 * Note that in the event of a black swan or prediction market close out
-                 * everyone will have to pay this fee.
-                 */
-                uint64_t fee = 100 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
@@ -259,11 +222,6 @@ namespace steemit {
          */
         struct asset_fund_fee_pool_operation : public base_operation {
         public:
-            struct fee_parameters_type {
-                uint64_t fee = STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee; ///< core asset
             account_name_type from_account;
             asset_name_type asset_name;
             share_type amount; ///< core asset
@@ -296,12 +254,6 @@ namespace steemit {
          * @post @ref asset_to_update will have options matching those of new_options
          */
         struct asset_update_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint32_t price_per_kbyte = 10;
-            };
-
-            asset fee;
             account_name_type issuer;
             asset_name_type asset_to_update;
 
@@ -319,8 +271,6 @@ namespace steemit {
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(issuer);
             }
-
-            share_type calculate_fee(const fee_parameters_type &k) const;
         };
 
         /**
@@ -337,11 +287,6 @@ namespace steemit {
          * @post @ref asset_to_update will have BitAsset-specific options matching those of new_options
          */
         struct asset_update_bitasset_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 500 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             account_name_type issuer;
             asset_name_type asset_to_update;
 
@@ -376,11 +321,6 @@ namespace steemit {
          * prior to execution of this operation, will be preserved
          */
         struct asset_update_feed_producers_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 500;
-            };
-
-            asset fee;
             account_name_type issuer;
             asset_name_type asset_to_update;
 
@@ -415,11 +355,6 @@ namespace steemit {
          * its collateral.
          */
         struct asset_publish_feed_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee; ///< paid for by publisher
             account_name_type publisher;
             asset_name_type asset_name; ///< asset for which the feed is published
             price_feed feed;
@@ -440,12 +375,6 @@ namespace steemit {
          * @ingroup operations
          */
         struct asset_issue_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint32_t price_per_kbyte = STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             account_name_type issuer; ///< Must be asset_to_issue->asset_id->issuer
             asset asset_to_issue;
             account_name_type issue_to_account;
@@ -464,8 +393,6 @@ namespace steemit {
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(issuer);
             }
-
-            share_type calculate_fee(const fee_parameters_type &k) const;
         };
 
         /**
@@ -475,11 +402,6 @@ namespace steemit {
          * @note You cannot use this operation on market-issued assets.
          */
         struct asset_reserve_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             account_name_type payer;
             asset amount_to_reserve;
             extensions_type extensions;
@@ -499,11 +421,6 @@ namespace steemit {
          * @brief used to transfer accumulated fees back to the issuer's balance.
          */
         struct asset_claim_fees_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-            };
-
-            asset fee;
             account_name_type issuer;
             asset amount_to_claim; /// amount_to_claim.asset_id->issuer must == issuer
             extensions_type extensions;
@@ -521,8 +438,7 @@ namespace steemit {
     }
 } // steemit::protocol
 
-FC_REFLECT(steemit::protocol::asset_claim_fees_operation, (fee)(issuer)(amount_to_claim)(extensions))
-FC_REFLECT(steemit::protocol::asset_claim_fees_operation::fee_parameters_type, (fee))
+FC_REFLECT(steemit::protocol::asset_claim_fees_operation, (issuer)(amount_to_claim)(extensions))
 
 FC_REFLECT(steemit::protocol::asset_options,
         (max_supply)
@@ -548,22 +464,7 @@ FC_REFLECT(steemit::protocol::bitasset_options,
                 (extensions)
 )
 
-
-FC_REFLECT(steemit::protocol::asset_create_operation::fee_parameters_type, (symbol3)(symbol4)(long_symbol)(price_per_kbyte))
-FC_REFLECT(steemit::protocol::asset_global_settle_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_settle_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_force_settle_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_update_operation::fee_parameters_type, (fee)(price_per_kbyte))
-FC_REFLECT(steemit::protocol::asset_update_bitasset_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_update_feed_producers_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_publish_feed_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::protocol::asset_issue_operation::fee_parameters_type, (fee)(price_per_kbyte))
-FC_REFLECT(steemit::protocol::asset_reserve_operation::fee_parameters_type, (fee))
-
-
 FC_REFLECT(steemit::protocol::asset_create_operation,
-        (fee)
                 (issuer)
                 (asset_name)
                 (precision)
@@ -573,7 +474,6 @@ FC_REFLECT(steemit::protocol::asset_create_operation,
                 (extensions)
 )
 FC_REFLECT(steemit::protocol::asset_update_operation,
-        (fee)
                 (issuer)
                 (asset_to_update)
                 (new_issuer)
@@ -581,23 +481,22 @@ FC_REFLECT(steemit::protocol::asset_update_operation,
                 (extensions)
 )
 FC_REFLECT(steemit::protocol::asset_update_bitasset_operation,
-        (fee)
                 (issuer)
                 (asset_to_update)
                 (new_options)
                 (extensions)
 )
 FC_REFLECT(steemit::protocol::asset_update_feed_producers_operation,
-        (fee)(issuer)(asset_to_update)(new_feed_producers)(extensions)
+        (issuer)(asset_to_update)(new_feed_producers)(extensions)
 )
 FC_REFLECT(steemit::protocol::asset_publish_feed_operation,
-        (fee)(publisher)(asset_name)(feed)(extensions))
-FC_REFLECT(steemit::protocol::asset_settle_operation, (fee)(account)(amount)(extensions))
-FC_REFLECT(steemit::protocol::asset_force_settle_operation, (fee)(account)(amount)(settlement_id)(extensions))
-FC_REFLECT(steemit::protocol::asset_global_settle_operation, (fee)(issuer)(asset_to_settle)(settle_price)(extensions))
+        (publisher)(asset_name)(feed)(extensions))
+FC_REFLECT(steemit::protocol::asset_settle_operation, (account)(amount)(extensions))
+FC_REFLECT(steemit::protocol::asset_force_settle_operation, (account)(amount)(settlement_id)(extensions))
+FC_REFLECT(steemit::protocol::asset_global_settle_operation, (issuer)(asset_to_settle)(settle_price)(extensions))
 FC_REFLECT(steemit::protocol::asset_issue_operation,
-        (fee)(issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
+        (issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
 FC_REFLECT(steemit::protocol::asset_reserve_operation,
-        (fee)(payer)(amount_to_reserve)(extensions))
+        (payer)(amount_to_reserve)(extensions))
 
-FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (fee)(from_account)(asset_name)(amount)(extensions));
+FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (from_account)(asset_name)(amount)(extensions));

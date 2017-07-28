@@ -745,7 +745,7 @@ namespace steemit {
 
             const auto &idx = _db.get_index<asset_index>().indices().get<by_issuer>();
             auto itr = idx.find(issuer);
-            while (itr != idx.end()) {
+            while (itr != idx.end() && itr != nullptr) {
                 result.push_back(*itr);
                 ++itr;
             }

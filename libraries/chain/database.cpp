@@ -4409,11 +4409,7 @@ namespace steemit {
                                 const limit_order_object &order = *limit_index.begin();
                                 canceler.owner = order.seller;
                                 canceler.order_id = order.order_id;
-                                canceler.fee = 0; //current_fee_schedule().calculate_fee(canceler);
-                                if (canceler.fee->amount > order.deferred_fee) {
-                                    wlog("At block ${b}, fee for clearing expired order ${oid} was capped at deferred_fee ${fee}", ("b", head_block_num())("oid", order.id)("fee", order.deferred_fee));
-                                    canceler.fee = asset(order.deferred_fee, STEEM_SYMBOL);
-                                }
+
                                 apply_operation(canceler);
                             }
                         });
