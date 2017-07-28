@@ -445,7 +445,6 @@ namespace steemit {
             try {
                 asset_create_operation creator;
                 creator.issuer = issuer;
-                creator.fee = asset();
                 creator.asset_name = name;
                 creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
                 creator.precision = 2;
@@ -475,7 +474,6 @@ namespace steemit {
             try {
                 asset_create_operation creator;
                 creator.issuer = issuer;
-                creator.fee = asset();
                 creator.asset_name = name;
                 creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
                 creator.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
@@ -500,7 +498,6 @@ namespace steemit {
         const asset_object &database_fixture::create_user_issued_asset(const string &name) {
             asset_create_operation creator;
             creator.issuer = account_name_type();
-            creator.fee = asset();
             creator.asset_name = name;
             creator.common_options.max_supply = 0;
             creator.precision = 2;
@@ -518,7 +515,6 @@ namespace steemit {
         const asset_object &database_fixture::create_user_issued_asset(const asset_name_type &name, const account_object &issuer, uint16_t flags) {
             asset_create_operation creator;
             creator.issuer = issuer.name;
-            creator.fee = asset();
             creator.asset_name = name;
             creator.common_options.max_supply = 0;
             creator.precision = 2;
