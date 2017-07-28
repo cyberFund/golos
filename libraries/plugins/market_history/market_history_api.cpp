@@ -4,6 +4,7 @@
 
 #include <steemit/application/application.hpp>
 
+#include <fc/crypto/bigint.hpp>
 #include <fc/bloom_filter.hpp>
 
 namespace steemit {
@@ -11,7 +12,7 @@ namespace steemit {
 
         namespace detail {
 
-            class market_history_api_impl {
+            class market_history_api_impl : public std::enable_shared_from_this<market_history_api_impl> {
             public:
                 market_history_api_impl(steemit::application::application &_app)
                         : app(_app) {
@@ -188,7 +189,8 @@ namespace steemit {
                                                        yesterday, batch_size);
                         }
 
-                        const auto last_trade_yesterday = get_trade_history(base, quote, yesterday, fc::time_point_sec(),
+                        const auto last_trade_yesterday = get_trade_history(
+                                base, quote, yesterday, fc::time_point_sec(),
                                 1);
                         if (!last_trade_yesterday.empty()) {
                             const auto price_yesterday = last_trade_yesterday[0].price;
@@ -267,7 +269,7 @@ namespace steemit {
                         order ord;
                         ord.price = price_to_real(o.sell_price);
                         ord.quote = asset_to_real(share_type(
-                                (uint128_t(o.for_sale.value) *
+                                (o.for_sale.value *
                                  o.sell_price.quote.amount.value) /
                                 o.sell_price.base.amount.value),
                                                   assets[1]->precision);
@@ -280,7 +282,7 @@ namespace steemit {
                         ord.quote = asset_to_real(o.for_sale,
                                                   assets[1]->precision);
                         ord.base = asset_to_real(share_type(
-                                (uint128_t(o.for_sale.value) *
+                                (o.for_sale.value *
                                  o.sell_price.quote.amount.value) /
                                 o.sell_price.base.amount.value),
                                                  assets[0]->precision);
@@ -561,10 +563,6 @@ namespace steemit {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_settle_orders(a, limit);
             });
-        }
-
-        vector<call_order_object> market_history_api::get_margin_positions(const string &name) const {
-            return my->get_margin_positions(name);
         }
 
         std::vector<liquidity_balance> market_history_api::get_liquidity_queue(const string &start_account, uint32_t limit) const {
