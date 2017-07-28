@@ -1077,6 +1077,20 @@ namespace steemit {
                     }
                 }
 
+                void use_remote_market_history_api() {
+                    if (_remote_market_history_api.valid()) {
+                        return;
+                    }
+
+                    try {
+                        _remote_market_history_api = _remote_api->get_api_by_name(
+                                "market_history_api")->as<market_history::market_history_api>();
+                    } catch (const fc::exception &e) {
+                        elog("Couldn't get market_history API");
+                        throw (e);
+                    }
+                }
+
                 void network_add_nodes(const vector<string> &nodes) {
                     use_network_node_api();
                     for (const string &node_address : nodes) {
@@ -1195,6 +1209,7 @@ namespace steemit {
                 fc::api<network_broadcast_api> _remote_net_broadcast;
                 optional<fc::api<network_node_api>> _remote_net_node;
                 optional<fc::api<account_by_key::account_by_key_api>> _remote_account_by_key_api;
+                optional<fc::api<market_history::market_history_api>> _remote_market_history_api;
                 optional<fc::api<private_message_api>> _remote_message_api;
                 optional<fc::api<follow::follow_api>> _remote_follow_api;
                 uint32_t _tx_expiration_seconds = 30;
@@ -2413,12 +2428,28 @@ namespace steemit {
             return my->_remote_db->get_withdraw_routes(account, type);
         }
 
-        order_book wallet_api::get_order_book(const string &base, const string &quote, unsigned limit) {
-            return (my->_remote_db->get_order_book(base, quote, limit));
+        market_history::order_book wallet_api::get_order_book(const string &base, const string &quote, unsigned limit) {
+            market_history::order_book result;
+
+            try {
+                my->use_remote_market_history_api();
+            } catch (fc::exception &e) {
+                elog("Connected node needs to enable market_history");
+                return result;
+            }
+
+            return my->_remote_market_history_api->get_order_book(base, quote, limit);
         }
 
         vector<extended_limit_order> wallet_api::get_open_orders(string account_name) {
-            return my->_remote_db->get_open_orders(account_name);
+            try {
+                my->use_remote_market_history_api();
+            } catch (fc::exception &e) {
+                elog("Connected node needs to enable market_history");
+                return {};
+            }
+
+            return my->_remote_market_history_api->get_open_orders(account_name);
         }
 
         annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset amount_to_sell, asset min_to_receive, bool fill_or_kill, uint32_t expiration_sec, bool broadcast) {

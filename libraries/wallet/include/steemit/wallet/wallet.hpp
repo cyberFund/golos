@@ -9,6 +9,7 @@
 
 #include <fc/real128.hpp>
 #include <fc/crypto/base58.hpp>
+
 #include <steemit/market_history/market_history_api.hpp>
 
 using namespace steemit::application;
@@ -891,6 +892,8 @@ namespace steemit {
             /**
              * Gets the current order book for selected asset pair
              *
+             * @param base Base symbol string
+             * @param quote Quote symbol string
              * @param limit Maximum number of orders to return for bids and asks. Max is 1000.
              */
             market_history::order_book get_order_book(const string &base, const string &quote, unsigned limit = 50);

@@ -40,6 +40,10 @@ namespace steemit {
 
         struct bucket_object
                 : public chain::object<bucket_object_type, bucket_object> {
+            bucket_object() {
+
+            }
+
             template<typename Constructor, typename Allocator>
             bucket_object(Constructor &&c, chainbase::allocator<Allocator> a) {
                 c(*this);
@@ -93,6 +97,10 @@ namespace steemit {
 
         struct asset_bucket_object
                 : public chain::object<asset_bucket_object_type, asset_bucket_object> {
+            asset_bucket_object() {
+
+            }
+
             template<typename Constructor, typename Allocator>
             asset_bucket_object(Constructor &&c, chainbase::allocator<Allocator> a) {
                 c(*this);
