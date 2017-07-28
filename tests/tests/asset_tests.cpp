@@ -21,7 +21,6 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
             asset_name_type test_asset_id = "ADVANCED";
             asset_create_operation creator;
             creator.issuer = account_name_type();
-            creator.fee = asset();
             creator.asset_name = "ADVANCED";
             creator.common_options.max_supply = 100000000;
             creator.precision = 2;
