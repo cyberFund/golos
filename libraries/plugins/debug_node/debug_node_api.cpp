@@ -249,15 +249,15 @@ namespace steemit {
 
 /*void debug_node_api_impl::debug_push_block( const steemit::chain::signed_block& block )
 {
-   app.chain_database()->push_block( block );
+   application.chain_database()->push_block( block );
 }*/
 
                 steemit::chain::witness_schedule_object debug_node_api_impl::debug_get_witness_schedule() {
-                    return app.chain_database()->get(steemit::chain::witness_schedule_id_type());
+                    return app.chain_database()->get(steemit::chain::witness_schedule_object::id_type());
                 }
 
                 steemit::chain::hardfork_property_object debug_node_api_impl::debug_get_hardfork_property_object() {
-                    return app.chain_database()->get(steemit::chain::hardfork_property_id_type());
+                    return app.chain_database()->get(steemit::chain::hardfork_property_object::id_type());
                 }
 
                 void debug_node_api_impl::debug_update_object(const fc::variant_object &update) {
@@ -300,7 +300,7 @@ namespace steemit {
                 }
 
                 bool debug_node_api_impl::debug_has_hardfork(uint32_t hardfork_id) {
-                    return app.chain_database()->get(steemit::chain::hardfork_property_id_type()).last_hardfork >=
+                    return app.chain_database()->get(steemit::chain::hardfork_property_object::id_type()).last_hardfork >=
                            hardfork_id;
                 }
 

@@ -13,8 +13,11 @@ endif(MSVC)
 
 set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp" PROPERTIES GENERATED TRUE)
 
-list(APPEND CURRENT_TARGET_HEADERS
+list(APPEND ${CURRENT_TARGET}_HEADERS
+        include/steemit/chain/account_evaluator.hpp
         include/steemit/chain/account_object.hpp
+        include/steemit/chain/asset_object.hpp
+        include/steemit/chain/asset_evaluator.hpp
         include/steemit/chain/block_log.hpp
         include/steemit/chain/block_summary_object.hpp
         include/steemit/chain/comment_object.hpp
@@ -30,15 +33,20 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/global_property_object.hpp
         include/steemit/chain/history_object.hpp
         include/steemit/chain/immutable_chain_parameters.hpp
-        include/steemit/chain/index.hpp
+        include/steemit/chain/market_evaluator.hpp
+        include/steemit/chain/market_object.hpp
         include/steemit/chain/node_property_object.hpp
+        include/steemit/chain/operation_history_object.hpp
         include/steemit/chain/operation_notification.hpp
+        include/steemit/chain/proposal_evaluator.hpp
+        include/steemit/chain/proposal_object.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp
-        include/steemit/chain/snapshot_state.hpp
         include/steemit/chain/steem_evaluator.hpp
         include/steemit/chain/steem_object_types.hpp
         include/steemit/chain/steem_objects.hpp
+        include/steemit/chain/transfer_evaluator.hpp
+        include/steemit/chain/transaction_evaluation_state.hpp
         include/steemit/chain/transaction_object.hpp
         include/steemit/chain/witness_objects.hpp
         include/steemit/chain/witness_schedule.hpp
@@ -48,13 +56,21 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/utilities/uint256.hpp
         )
 
-list(APPEND CURRENT_TARGET_SOURCES
+list(APPEND ${CURRENT_TARGET}_SOURCES
+        account_evaluator.cpp
+        account_object.cpp
+        asset_evaluator.cpp
+        asset_object.cpp
         block_log.cpp
         database.cpp
         fork_database.cpp
+        market_evaluator.cpp
         shared_authority.cpp
         steem_evaluator.cpp
+        proposal_evaluator.cpp
         steem_objects.cpp
+        transfer_evaluator.cpp
+        proposal_object.cpp
         witness_schedule.cpp
 
         utilities/reward.cpp
@@ -62,16 +78,16 @@ list(APPEND CURRENT_TARGET_SOURCES
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_${CURRENT_TARGET} SHARED
-            ${CURRENT_TARGET_HEADERS}
-            ${CURRENT_TARGET_SOURCES}
+            ${${CURRENT_TARGET}_HEADERS}
+            ${${CURRENT_TARGET}_SOURCES}
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp"
             )
 else()
     add_library(golos_${CURRENT_TARGET} STATIC
-            ${CURRENT_TARGET_HEADERS}
-            ${CURRENT_TARGET_SOURCES}
+            ${${CURRENT_TARGET}_HEADERS}
+            ${${CURRENT_TARGET}_SOURCES}
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp"
@@ -99,4 +115,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${CURRENT_TARGET_HEADERS} DESTINATION "include/steemit/chain")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")

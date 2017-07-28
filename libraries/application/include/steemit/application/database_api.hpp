@@ -4,6 +4,7 @@
 #include <steemit/application/state.hpp>
 
 #include <steemit/chain/database.hpp>
+#include <steemit/chain/proposal_object.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/steem_object_types.hpp>
 #include <steemit/chain/history_object.hpp>
@@ -30,29 +31,11 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace steemit::protocol;
 
-        struct order {
-            price order_price;
-            double real_price; // dollars per steem
-            share_type steem;
-            share_type sbd;
-            fc::time_point_sec created;
-        };
-
-        struct order_book {
-            std::vector<order> asks;
-            std::vector<order> bids;
-        };
-
         struct api_context;
 
         struct scheduled_hardfork {
             hardfork_version hf_version;
             fc::time_point_sec live_time;
-        };
-
-        struct liquidity_balance {
-            std::string account;
-            fc::uint128_t weight;
         };
 
         struct withdraw_route {
@@ -175,22 +158,11 @@ namespace steemit {
 
             reward_fund_api_obj get_reward_fund(string name) const;
 
-            //////////
-            // Keys //
-            //////////
-
-            std::vector<std::set<std::string>> get_key_references(std::vector<public_key_type> key) const;
-
             //////////////
             // Accounts //
             //////////////
 
             std::vector<extended_account> get_accounts(std::vector<std::string> names) const;
-
-            /**
-             *  @return all accounts that referr to the key or account id in their owner or active authorities.
-             */
-            std::vector<account_id_type> get_account_references(account_id_type account_id) const;
 
             /**
              * @brief Get a list of accounts by name
@@ -208,6 +180,18 @@ namespace steemit {
              * @return Map of account names to corresponding IDs
              */
             std::set<std::string> lookup_accounts(const std::string &lower_bound_name, uint32_t limit) const;
+
+            //////////////
+            // Balances //
+            //////////////
+
+            /**
+             * @brief Get an account's balances in various assets
+             * @param name of the account to get balances for
+             * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
+             * @return Balances of the account
+             */
+            vector<asset> get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const;
 
             /**
              * @brief Get the total number of accounts registered with the blockchain
@@ -243,7 +227,7 @@ namespace steemit {
              *
              * This function has semantics identical to @ref get_objects
              */
-            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_id_type> &witness_ids) const;
+            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
 
             std::vector<convert_request_api_obj> get_conversion_requests(const std::string &account_name) const;
 
@@ -275,26 +259,43 @@ namespace steemit {
             uint64_t get_witness_count() const;
 
             ////////////
-            // Market //
+            // Assets //
             ////////////
 
             /**
-             * @breif Gets the current order book for STEEM:SBD market
-             * @param limit Maximum number of orders for each side of the spread to return -- Must not exceed 1000
+             * @brief Get a list of assets by ID
+             * @param asset_symbols IDs of the assets to retrieve
+             * @return The assets corresponding to the provided IDs
+             *
+             * This function has semantics identical to @ref get_objects
              */
-            order_book get_order_book(uint32_t limit = 1000) const;
+            vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
-            std::vector<extended_limit_order> get_open_orders(std::string owner) const;
+            vector<optional<asset_object>> get_assets_by_issuer(const account_name_type &issuer) const;
+
+            vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
+
+            vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<asset_name_type> &asset_symbols) const;
 
             /**
-             * @breif Gets the current liquidity reward queue.
-             * @param start_account The account to start the list from, or "" to get the head of the queue
-             * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
+             * @brief Get assets alphabetically by symbol name
+             * @param lower_bound_symbol Lower bound of symbol names to retrieve
+             * @param limit Maximum number of assets to fetch (must not exceed 100)
+             * @return The assets found
              */
-            std::vector<liquidity_balance> get_liquidity_queue(std::string start_account, uint32_t limit = 1000) const;
+            vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
+
+            /**
+             * @brief Get a list of assets by symbol
+             * @param asset_symbols Symbols or stringified IDs of the assets to retrieve
+             * @return The assets corresponding to the provided symbols or IDs
+             *
+             * This function has semantics identical to @ref get_objects
+             */
+            vector<optional<asset_object>> lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const;
 
             ////////////////////////////
-            // Authority / validation //
+            // Authority / Validation //
             ////////////////////////////
 
             /// @brief Get a hexdump of the serialized binary form of a transaction
@@ -474,12 +475,21 @@ namespace steemit {
 
             fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset cost) const;
 
+            ///////////////////////////
+            // Proposed transactions //
+            ///////////////////////////
+
+            /**
+             *  @return the set of proposed transactions relevant to the specified account id.
+             */
+            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
+
             ////////////////////////////
             // Handlers - not exposed //
             ////////////////////////////
             void on_api_startup();
 
-            discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
+            discussion get_discussion(comment_object::id_type, uint32_t truncate_body = 0) const;
 
         private:
             void set_pending_payout(discussion &d) const;
@@ -495,13 +505,14 @@ namespace steemit {
             > std::multimap<Object, discussion, DiscussionIndex> get_discussions(
                     const discussion_query &query,
                     const std::string &tag,
-                    comment_id_type parent,
+                    comment_object::id_type parent,
                     const Index &tidx,
                     StartItr tidx_itr,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
                     const std::function<bool(const Object &)> &tag_exit,
                     bool ignore_parent = false) const;
+
 
             template<typename Object,
                     typename DatabaseIndex,
@@ -511,7 +522,7 @@ namespace steemit {
             > std::multimap<Object, discussion, DiscussionIndex> select(
                     const std::set<std::string> &select_set,
                     const discussion_query &query,
-                    comment_id_type parent,
+                    comment_object::id_type parent,
                     const std::function<bool(const comment_api_obj &)> &filter,
                     const std::function<bool(const comment_api_obj &)> &exit,
                     const std::function<bool(const Object &)> &exit2,
@@ -532,8 +543,7 @@ namespace steemit {
                     const std::string &start_permlink) const;
 
 
-
-            comment_id_type get_parent(const discussion_query &q) const;
+            comment_object::id_type get_parent(const discussion_query &q) const;
 
             void recursively_fetch_content(state &_state, discussion &root, std::set<std::string> &referenced_accounts) const;
 
@@ -542,10 +552,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
-FC_REFLECT(steemit::application::order_book, (asks)(bids));
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
-FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
 FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language)(filter_language));
@@ -560,7 +567,7 @@ FC_API(steemit::application::database_api,
                 (set_block_applied_callback)
                 (cancel_all_subscriptions)
 
-                // tags
+                // Tags
                 (get_trending_tags)
                 (get_tags_used_by_author)
                 (get_discussions_by_payout)
@@ -599,12 +606,8 @@ FC_API(steemit::application::database_api,
                 (get_next_scheduled_hardfork)
                 (get_reward_fund)
 
-                // Keys
-                (get_key_references)
-
                 // Accounts
                 (get_accounts)
-                (get_account_references)
                 (lookup_account_names)
                 (lookup_accounts)
                 (get_account_count)
@@ -620,10 +623,16 @@ FC_API(steemit::application::database_api,
                 (get_vesting_delegations)
                 (get_expiring_vesting_delegations)
 
-                // Market
-                (get_order_book)
-                (get_open_orders)
-                (get_liquidity_queue)
+                // Balances
+                (get_account_balances)
+
+                // Assets
+                (get_assets)
+                (get_assets_by_issuer)
+                (get_assets_dynamic_data)
+                (get_bitassets_data)
+                (list_assets)
+                (lookup_asset_symbols)
 
                 // Authority / validation
                 (get_transaction_hex)
@@ -633,11 +642,11 @@ FC_API(steemit::application::database_api,
                 (verify_authority)
                 (verify_account_authority)
 
-                // votes
+                // Votes
                 (get_active_votes)
                 (get_account_votes)
 
-                // content
+                // Content
                 (get_content)
                 (get_content_replies)
                 (get_discussions_by_author_before_date)
@@ -653,4 +662,7 @@ FC_API(steemit::application::database_api,
                 (get_witness_count)
                 (get_active_witnesses)
                 (get_miner_queue)
+
+                // Proposed transactions
+                (get_proposed_transactions)
 )

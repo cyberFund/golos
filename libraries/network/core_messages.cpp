@@ -21,10 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <graphene/network/core_messages.hpp>
+#include <steemit/network/core_messages.hpp>
 
-
-namespace graphene {
+namespace steemit {
     namespace network {
 
         const core_message_type_enum trx_message::type = core_message_type_enum::trx_message_type;

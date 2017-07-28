@@ -20,7 +20,7 @@ namespace steemit {
                 _op_evaluators[OperationType::template tag<typename EvaluatorType::operation_type>::value].reset(new EvaluatorType(_db, args...));
             }
 
-            evaluator<OperationType> &get_evaluator(const OperationType &op) {
+            generic_evaluator<OperationType> &get_evaluator(const OperationType &op) {
                 int i_which = op.which();
                 uint64_t u_which = uint64_t(i_which);
                 if (i_which < 0)
@@ -28,14 +28,14 @@ namespace steemit {
                 if (u_which >= _op_evaluators.size())
                     assert("No registered evaluator for this operation" &&
                            false);
-                unique_ptr<evaluator<OperationType>> &eval = _op_evaluators[u_which];
+                unique_ptr<generic_evaluator<OperationType>> &eval = _op_evaluators[u_which];
                 if (!eval)
                     assert("No registered evaluator for this operation" &&
                            false);
                 return *eval;
             }
 
-            std::vector<std::unique_ptr<evaluator<OperationType>>> _op_evaluators;
+            std::vector<std::unique_ptr<generic_evaluator<OperationType>>> _op_evaluators;
             database &_db;
         };
 

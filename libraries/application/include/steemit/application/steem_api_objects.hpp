@@ -26,38 +26,39 @@ namespace steemit {
       created( o.created ),
       expiration( o.expiration ),
       seller( o.seller ),
-      orderid( o.orderid ),
+      order_id( o.order_id ),
       for_sale( o.for_sale ),
       sell_price( o.sell_price )
    {}
 
    limit_order(){}
 
-   chain::limit_order_id_type id;
+   chain::integral_id_type id;
    time_point_sec             created;
    time_point_sec             expiration;
    account_name_type          seller;
-   uint32_t                   orderid;
+   uint32_t                   order_id;
    share_type                 for_sale;
    price                      sell_price;
 };*/
 
-typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
-    typedef chain::block_summary_object block_summary_api_obj;
-    typedef chain::comment_vote_object comment_vote_api_obj;
-    typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
-    typedef chain::convert_request_object convert_request_api_obj;
-    typedef chain::escrow_object escrow_api_obj;
-    typedef chain::liquidity_reward_balance_object liquidity_reward_balance_api_obj;
-    typedef chain::limit_order_object limit_order_api_obj;
-    typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
-    typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
-    typedef chain::witness_vote_object witness_vote_api_obj;
-    typedef chain::witness_schedule_object witness_schedule_api_obj;
-    typedef chain::account_bandwidth_object account_bandwidth_api_obj;
-    typedef chain::vesting_delegation_object vesting_delegation_api_obj;
-    typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
-    typedef chain::reward_fund_object reward_fund_api_obj;
+
+        typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
+        typedef chain::block_summary_object block_summary_api_obj;
+        typedef chain::comment_vote_object comment_vote_api_obj;
+        typedef chain::dynamic_global_property_object dynamic_global_property_api_obj;
+        typedef chain::convert_request_object convert_request_api_obj;
+        typedef chain::escrow_object escrow_api_obj;
+        typedef chain::liquidity_reward_balance_object liquidity_reward_balance_api_obj;
+        typedef chain::limit_order_object limit_order_api_obj;
+        typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
+        typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
+        typedef chain::witness_vote_object witness_vote_api_obj;
+        typedef chain::witness_schedule_object witness_schedule_api_obj;
+        typedef chain::account_bandwidth_object account_bandwidth_api_obj;
+        typedef chain::vesting_delegation_object vesting_delegation_api_obj;
+        typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
+        typedef chain::reward_fund_object reward_fund_api_obj;
 
         struct category_api_obj {
             category_api_obj(const chain::category_object &c) :
@@ -72,7 +73,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             category_api_obj() {
             }
 
-            category_id_type id;
+            category_object::id_type id;
             string name;
             share_type abs_rshares;
             asset total_payouts;
@@ -215,7 +216,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             account_api_obj() {
             }
 
-            account_id_type id;
+            account_object::id_type id;
 
             account_name_type name;
             authority owner;
@@ -302,7 +303,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             owner_authority_history_api_obj() {
             }
 
-            owner_authority_history_id_type id;
+            owner_authority_history_object::id_type id;
 
             account_name_type account;
             authority previous_owner_authority;
@@ -321,7 +322,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             account_recovery_request_api_obj() {
             }
 
-            account_recovery_request_id_type id;
+            account_recovery_request_object::id_type id;
             account_name_type account_to_recover;
             authority new_owner_authority;
             time_point_sec expires;
@@ -345,7 +346,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             savings_withdraw_api_obj() {
             }
 
-            savings_withdraw_id_type id;
+            savings_withdraw_object::id_type id;
             account_name_type from;
             account_name_type to;
             string memo;
@@ -364,7 +365,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             feed_history_api_obj() {
             }
 
-            feed_history_id_type id;
+            feed_history_object::id_type id;
             price current_median_history;
             deque<price> price_history;
         };
@@ -396,7 +397,7 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
             witness_api_obj() {
             }
 
-            witness_id_type id;
+            witness_object::id_type id;
             account_name_type owner;
             time_point_sec created;
             string url;

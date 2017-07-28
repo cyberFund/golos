@@ -29,9 +29,9 @@
 #include <fc/crypto/aes.hpp>
 #include <fc/network/ip.hpp>
 
-#include <graphene/network/stcp_socket.hpp>
+#include <steemit/network/stcp_socket.hpp>
 
-namespace graphene {
+namespace steemit {
     namespace network {
 
         stcp_socket::stcp_socket()
@@ -193,5 +193,5 @@ namespace graphene {
 
 
     }
-} // namespace graphene::network
+} // namespace steemit::network
 

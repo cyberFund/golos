@@ -37,7 +37,7 @@ typedef fc::static_variant<
 class test_plugin : public plugin
 {
    public:
-      test_plugin( application* app );
+      test_plugin( application* application );
 
       std::string plugin_name()const override { return "TEST"; }
 
@@ -61,13 +61,13 @@ void test_b_evaluator::do_apply( const test_b_operation& o )
 {
    const auto& account = db().get_account( o.account );
 
-   db().modify( account, [&]( account_object& a )
+   get_database().modify( account, [&]( account_object& a )
    {
       a.json_metadata = "b";
    });
 }
 
-test_plugin::test_plugin( application* app ) : plugin( app )
+test_plugin::test_plugin( application* application ) : plugin( application )
 {
    _evaluator_registry = std::make_shared< generic_custom_operation_interpreter< test_op > >( database() );
 

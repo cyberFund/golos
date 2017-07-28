@@ -1,8 +1,9 @@
 #pragma once
 
 #include <steemit/protocol/authority.hpp>
-#include <steemit/protocol/steem_operations.hpp>
+#include <steemit/protocol/operations/steem_operations.hpp>
 
+#include <steemit/chain/account_object.hpp>
 #include <steemit/chain/steem_object_types.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
@@ -131,8 +132,8 @@ namespace steemit {
 
             id_type id;
 
-            witness_id_type witness;
-            account_id_type account;
+            witness_object::id_type witness;
+            account_object::id_type account;
         };
 
         class witness_schedule_object
@@ -178,7 +179,7 @@ namespace steemit {
         witness_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<witness_object, witness_id_type, &witness_object::id>>,
+                by_id>, member<witness_object, witness_object::id_type, &witness_object::id>>,
         ordered_non_unique <tag<by_work>, member<witness_object, digest_type, &witness_object::last_work>>,
         ordered_unique <tag<by_name>, member<witness_object, account_name_type, &witness_object::owner>>,
         ordered_non_unique <tag<by_pow>, member<witness_object, uint64_t, &witness_object::pow_worker>>,
@@ -193,7 +194,7 @@ namespace steemit {
         composite_key<witness_object,
                 member <
                 witness_object, fc::uint128, &witness_object::virtual_scheduled_time>,
-        member<witness_object, witness_id_type, &witness_object::id>
+        member<witness_object, witness_object::id_type, &witness_object::id>
         >
         >
         >,
@@ -207,22 +208,22 @@ namespace steemit {
         witness_vote_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<witness_vote_object, witness_vote_id_type, &witness_vote_object::id>>,
+                by_id>, member<witness_vote_object, witness_vote_object::id_type, &witness_vote_object::id>>,
         ordered_unique <tag<by_account_witness>,
         composite_key<witness_vote_object,
                 member <
-                witness_vote_object, account_id_type, &witness_vote_object::account>,
-        member<witness_vote_object, witness_id_type, &witness_vote_object::witness>
+                witness_vote_object, account_object::id_type, &witness_vote_object::account>,
+        member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness>
         >,
-        composite_key_compare <std::less<account_id_type>, std::less<witness_id_type>>
+        composite_key_compare <std::less<account_object::id_type>, std::less<witness_object::id_type>>
         >,
         ordered_unique <tag<by_witness_account>,
         composite_key<witness_vote_object,
                 member <
-                witness_vote_object, witness_id_type, &witness_vote_object::witness>,
-        member<witness_vote_object, account_id_type, &witness_vote_object::account>
+                witness_vote_object, witness_object::id_type, &witness_vote_object::witness>,
+        member<witness_vote_object, account_object::id_type, &witness_vote_object::account>
         >,
-        composite_key_compare <std::less<witness_id_type>, std::less<account_id_type>>
+        composite_key_compare <std::less<witness_object::id_type>, std::less<account_object::id_type>>
         >
         >, // indexed_by
         allocator <witness_vote_object>
@@ -233,7 +234,7 @@ namespace steemit {
         witness_schedule_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<witness_schedule_object, witness_schedule_id_type, &witness_schedule_object::id>>
+                by_id>, member<witness_schedule_object, witness_schedule_object::id_type, &witness_schedule_object::id>>
         >,
         allocator <witness_schedule_object>
         >

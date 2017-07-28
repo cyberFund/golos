@@ -46,7 +46,7 @@ namespace steemit {
             uint16_t what = 0;
         };
 
-        typedef oid<follow_object> follow_id_type;
+        typedef object_id<follow_object> follow_id_type;
 
         class feed_object : public object<feed_object_type, feed_object> {
         public:
@@ -64,12 +64,12 @@ namespace steemit {
             shared_vector<account_name_type> reblogged_by;
             account_name_type first_reblogged_by;
             time_point_sec first_reblogged_on;
-            comment_id_type comment;
+            comment_object::id_type comment;
             uint32_t reblogs;
             uint32_t account_feed_id = 0;
         };
 
-        typedef oid<feed_object> feed_id_type;
+        typedef object_id<feed_object> feed_id_type;
 
 
         class blog_object : public object<blog_object_type, blog_object> {
@@ -85,12 +85,12 @@ namespace steemit {
             id_type id;
 
             account_name_type account;
-            comment_id_type comment;
+            comment_object::id_type comment;
             time_point_sec reblogged_on;
             uint32_t blog_feed_id = 0;
         };
 
-        typedef oid<blog_object> blog_id_type;
+        typedef object_id<blog_object> blog_id_type;
 
 /**
  *  This index is maintained to get an idea of which authors are resteemed by a particular blogger and
@@ -114,7 +114,7 @@ namespace steemit {
             uint32_t count = 0;
         };
 
-        typedef oid<blog_author_stats_object> blog_author_stats_id_type;
+        typedef object_id<blog_author_stats_object> blog_author_stats_id_type;
 
 
         class reputation_object
@@ -134,7 +134,7 @@ namespace steemit {
             share_type reputation;
         };
 
-        typedef oid<reputation_object> reputation_id_type;
+        typedef object_id<reputation_object> reputation_id_type;
 
 
         class follow_count_object
@@ -155,7 +155,7 @@ namespace steemit {
             uint32_t following_count = 0;
         };
 
-        typedef oid<follow_count_object> follow_count_id_type;
+        typedef object_id<follow_count_object> follow_count_id_type;
 
 
         struct by_following_follower;
@@ -236,10 +236,10 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_comment>,
                                 composite_key<feed_object,
-                                        member<feed_object, comment_id_type, &feed_object::comment>,
+                                        member<feed_object, comment_object::id_type, &feed_object::comment>,
                                         member<feed_object, account_name_type, &feed_object::account>
                                 >,
-                                composite_key_compare<std::less<comment_id_type>, std::less<account_name_type>>
+                                composite_key_compare<std::less<comment_object::id_type>, std::less<account_name_type>>
                         >
                 >,
                 allocator<feed_object>
@@ -269,10 +269,10 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_comment>,
                                 composite_key<blog_object,
-                                        member<blog_object, comment_id_type, &blog_object::comment>,
+                                        member<blog_object, comment_object::id_type, &blog_object::comment>,
                                         member<blog_object, account_name_type, &blog_object::account>
                                 >,
-                                composite_key_compare<std::less<comment_id_type>, std::less<account_name_type>>
+                                composite_key_compare<std::less<comment_object::id_type>, std::less<account_name_type>>
                         >
                 >,
                 allocator<blog_object>
