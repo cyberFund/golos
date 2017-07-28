@@ -249,7 +249,7 @@ namespace steemit {
 
 /*void debug_node_api_impl::debug_push_block( const steemit::chain::signed_block& block )
 {
-   app.chain_database()->push_block( block );
+   application.chain_database()->push_block( block );
 }*/
 
                 steemit::chain::witness_schedule_object debug_node_api_impl::debug_get_witness_schedule() {

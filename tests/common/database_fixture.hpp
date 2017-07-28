@@ -138,7 +138,7 @@ namespace steemit {
         using namespace steemit::protocol;
 
         struct database_fixture {
-            // the reason we use an app is to exercise the indexes of built-in
+            // the reason we use an application is to exercise the indexes of built-in
             //   plugins
             steemit::application::application app;
             chain::database &db;

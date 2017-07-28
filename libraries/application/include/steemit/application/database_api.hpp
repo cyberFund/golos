@@ -31,56 +31,11 @@ namespace steemit {
         using namespace steemit::chain;
         using namespace steemit::protocol;
 
-        struct order {
-            price order_price;
-            double real_price; // dollars per steem
-            share_type steem;
-            share_type sbd;
-            fc::time_point_sec created;
-        };
-
-        struct order_book {
-            string base;
-            string quote;
-            std::vector<order> bids;
-            std::vector<order> asks;
-        };
-
-        struct market_ticker {
-            string base;
-            string quote;
-            double latest;
-            double lowest_ask;
-            double highest_bid;
-            double percent_change;
-            double base_volume;
-            double quote_volume;
-        };
-
-        struct market_volume {
-            string base;
-            string quote;
-            double base_volume;
-            double quote_volume;
-        };
-
-        struct market_trade {
-            fc::time_point_sec date;
-            double price;
-            double amount;
-            double value;
-        };
-
         struct api_context;
 
         struct scheduled_hardfork {
             hardfork_version hf_version;
             fc::time_point_sec live_time;
-        };
-
-        struct liquidity_balance {
-            std::string account;
-            fc::uint128_t weight;
         };
 
         struct withdraw_route {
@@ -366,105 +321,6 @@ namespace steemit {
              */
             vector<optional<asset_object>> lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const;
 
-            /////////////////////
-            // Markets / feeds //
-            /////////////////////
-
-            /**
-             * @brief Get limit orders in a given market
-             * @param a ID of asset being sold
-             * @param b ID of asset being purchased
-             * @param limit Maximum number of orders to retrieve
-             * @return The limit orders, ordered from least price to greatest
-             */
-            vector<limit_order_object> get_limit_orders(string a, string b, uint32_t limit) const;
-
-            /**
-             * @brief Get call orders in a given asset
-             * @param a ID of asset being called
-             * @param limit Maximum number of orders to retrieve
-             * @return The call orders, ordered from earliest to be called to latest
-             */
-            vector<call_order_object> get_call_orders(const asset_name_type &a, uint32_t limit) const;
-
-            /**
-             * @brief Get forced settlement orders in a given asset
-             * @param a ID of asset being settled
-             * @param limit Maximum number of orders to retrieve
-             * @return The settle orders, ordered from earliest settlement date to latest
-             */
-            vector<force_settlement_object> get_settle_orders(const asset_name_type &a, uint32_t limit) const;
-
-            /**
-             *  @return all open margin positions for a given account id.
-             */
-            vector<call_order_object> get_margin_positions(const account_name_type &name) const;
-
-            /**
-             * @brief Request notification when the active orders in the market between two assets changes
-             * @param callback Callback method which is called when the market changes
-             * @param a First asset ID
-             * @param b Second asset ID
-             *
-             * Callback will be passed a variant containing a vector<pair<operation, operation_result>>. The vector will
-             * contain, in order, the operations which changed the market, and their results.
-             */
-            void subscribe_to_market(std::function<void(const variant &)> callback,
-                    string a, string b);
-
-            /**
-             * @brief Unsubscribe from updates to a given market
-             * @param a First asset ID
-             * @param b Second asset ID
-             */
-            void unsubscribe_from_market(string a, string b);
-
-            /**
-             * @brief Returns the ticker for the market assetA:assetB
-             * @param a String name of the first asset
-             * @param b String name of the second asset
-             * @return The market ticker for the past 24 hours.
-             */
-            market_ticker get_ticker(const string &base, const string &quote) const;
-
-            /**
-             * @brief Returns the 24 hour volume for the market assetA:assetB
-             * @param a String name of the first asset
-             * @param b String name of the second asset
-             * @return The market volume over the past 24 hours
-             */
-            market_volume get_24_volume(const string &base, const string &quote) const;
-
-            /**
-             * @brief Returns the order book for the market base:quote
-             * @param base String name of the first asset
-             * @param quote String name of the second asset
-             * @param depth of the order book. Up to depth of each asks and bids, capped at 50. Prioritizes most moderate of each
-             * @return Order book of the market
-             */
-            order_book get_order_book(const string &base, const string &quote, unsigned limit = 50) const;
-
-            /**
-             * @brief Returns recent trades for the market assetA:assetB
-             * Note: Currentlt, timezone offsets are not supported. The time must be UTC.
-             * @param a String name of the first asset
-             * @param b String name of the second asset
-             * @param stop Stop time as a UNIX timestamp
-             * @param limit Number of trasactions to retrieve, capped at 100
-             * @param start Start time as a UNIX timestamp
-             * @return Recent transactions in the market
-             */
-            vector<market_trade> get_trade_history(const string &base, const string &quote, fc::time_point_sec start, fc::time_point_sec stop, unsigned limit = 100) const;
-
-            std::vector<extended_limit_order> get_open_orders(std::string owner) const;
-
-            /**
-             * @breif Gets the current liquidity reward queue.
-             * @param start_account The account to start the list from, or "" to get the head of the queue
-             * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
-             */
-            std::vector<liquidity_balance> get_liquidity_queue(std::string start_account, uint32_t limit = 1000) const;
-
             ////////////////////////////
             // Authority / Validation //
             ////////////////////////////
@@ -698,14 +554,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::order, (order_price)(real_price)(steem)(sbd)(created));
-FC_REFLECT(steemit::application::order_book, (asks)(bids)(base)(quote));
-FC_REFLECT(steemit::application::market_ticker, (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
-FC_REFLECT(steemit::application::market_volume, (base)(quote)(base_volume)(quote_volume));
-FC_REFLECT(steemit::application::market_trade, (date)(price)(amount)(value));
-
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
-FC_REFLECT(steemit::application::liquidity_balance, (account)(weight));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
 FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit));
@@ -785,20 +634,6 @@ FC_API(steemit::application::database_api,
                 (get_bitassets_data)
                 (list_assets)
                 (lookup_asset_symbols)
-
-                // Markets / feeds
-                (get_order_book)
-                (get_limit_orders)
-                (get_call_orders)
-                (get_settle_orders)
-                (get_margin_positions)
-                (subscribe_to_market)
-                (unsubscribe_from_market)
-                (get_ticker)
-                (get_24_volume)
-                (get_trade_history)
-                (get_open_orders)
-                (get_liquidity_queue)
 
                 // Authority / validation
                 (get_transaction_hex)
