@@ -745,8 +745,8 @@ namespace steemit {
 
             const auto &idx = _db.get_index<asset_index>().indices().get<by_issuer>();
             auto itr = idx.find(issuer);
-            while (itr != idx.end() && itr != nullptr) {
-                result.push_back(*itr);
+            while (itr != idx.end()) {
+                result.emplace_back(*itr);
                 ++itr;
             }
 
@@ -958,7 +958,7 @@ namespace steemit {
                 std::vector<convert_request_api_obj> result;
                 auto itr = idx.lower_bound(account);
                 while (itr != idx.end() && itr->owner == account) {
-                    result.push_back(*itr);
+                    result.emplace_back(*itr);
                     ++itr;
                 }
                 return result;
@@ -1002,7 +1002,7 @@ namespace steemit {
                         }
                     }
 
-                    result.push_back(vstate);
+                    result.emplace_back(vstate);
                     ++itr;
                 }
                 return result;
@@ -1027,7 +1027,7 @@ namespace steemit {
                     avote.rshares = itr->rshares;
                     avote.percent = itr->vote_percent;
                     avote.time = itr->last_update;
-                    result.push_back(avote);
+                    result.emplace_back(avote);
                     ++itr;
                 }
                 return result;
@@ -1135,7 +1135,7 @@ namespace steemit {
                     discussion push_discussion(*itr);
                     push_discussion.active_votes = get_active_votes(author, permlink);
 
-                    result.push_back(discussion(*itr));
+                    result.emplace_back(*itr);
                     set_pending_payout(result.back());
                     ++itr;
                 }
@@ -1171,7 +1171,7 @@ namespace steemit {
 
                 while (itr != last_update_idx.end() && result.size() < limit &&
                        itr->parent_author == *parent_author) {
-                    result.push_back(*itr);
+                    result.emplace_back(*itr);
                     set_pending_payout(result.back());
                     result.back().active_votes = get_active_votes(itr->author, to_string(itr->permlink));
                     ++itr;
@@ -1222,9 +1222,9 @@ namespace steemit {
                 while (itr != tidx.end() && itr->author == acnt->id &&
                        result.size() < 1000) {
                     if (!fc::is_utf8(itr->tag)) {
-                        result.push_back(std::make_pair(fc::prune_invalid_utf8(itr->tag), itr->total_posts));
+                        result.emplace_back(std::make_pair(fc::prune_invalid_utf8(itr->tag), itr->total_posts));
                     } else {
-                        result.push_back(std::make_pair(itr->tag, itr->total_posts));
+                        result.emplace_back(std::make_pair(itr->tag, itr->total_posts));
                     }
                     ++itr;
                 }
@@ -1258,7 +1258,7 @@ namespace steemit {
                         push_object.name = fc::prune_invalid_utf8(push_object.name);
                     }
 
-                    result.push_back(push_object);
+                    result.emplace_back(push_object);
                     ++itr;
                 }
                 return result;
@@ -1419,7 +1419,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_trending>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1484,7 +1484,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_reward_fund_net_rshares>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1548,7 +1548,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_reward_fund_net_rshares>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1617,7 +1617,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_promoted>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1681,7 +1681,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_created>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1745,7 +1745,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_active>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1812,7 +1812,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_cashout>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1877,7 +1877,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_net_rshares>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -1941,7 +1941,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_net_votes>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -2005,7 +2005,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_children>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -2070,7 +2070,7 @@ namespace steemit {
                 }
 
                 for (const std::multimap<tags::tag_object, discussion, tags::by_parent_hot>::value_type &iterator : map_result) {
-                    return_result.push_back(iterator.second);
+                    return_result.emplace_back(iterator.second);
                 }
 
                 return return_result;
@@ -2131,7 +2131,7 @@ namespace steemit {
                                 }
                             }
 
-                            result.push_back(get_discussion(feed_itr->comment));
+                            result.emplace_back(get_discussion(feed_itr->comment));
                             if (feed_itr->first_reblogged_by !=
                                 account_name_type()) {
                                 result.back().reblogged_by = std::vector<account_name_type>(feed_itr->reblogged_by.begin(), feed_itr->reblogged_by.end());
@@ -2205,7 +2205,7 @@ namespace steemit {
                                 }
                             }
 
-                            result.push_back(get_discussion(blog_itr->comment, query.truncate_body));
+                            result.emplace_back(get_discussion(blog_itr->comment, query.truncate_body));
                             if (blog_itr->reblogged_on > time_point_sec()) {
                                 result.back().first_reblogged_on = blog_itr->reblogged_on;
                             }
@@ -2258,7 +2258,7 @@ namespace steemit {
                                 continue;
                             }
 
-                            result.push_back(get_discussion(comment_itr->id));
+                            result.emplace_back(get_discussion(comment_itr->id));
                         }
                         catch (const fc::exception &e) {
                             edump((e.to_detail_string()));
@@ -2292,7 +2292,7 @@ namespace steemit {
                 }
 
                 while (itr != ridx.end() && result.size() < limit) {
-                    result.push_back(category_api_obj(*itr));
+                    result.emplace_back(category_api_obj(*itr));
                     ++itr;
                 }
                 return result;
