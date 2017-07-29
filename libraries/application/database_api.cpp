@@ -79,7 +79,7 @@ namespace steemit {
             // Assets
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
-            vector<asset_object> get_assets_by_issuer(string issuer) const;
+            vector<optional<asset_object>> get_assets_by_issuer(string issuer) const;
 
             vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
 
