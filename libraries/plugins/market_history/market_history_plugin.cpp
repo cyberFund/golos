@@ -41,8 +41,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.pays.symbol;
-                        hkey.quote = o.receives.symbol;
+                        hkey.base = o.pays.symbol_name();
+                        hkey.quote = o.receives.symbol_name();
                         if (hkey.base > hkey.quote) {
                             std::swap(hkey.base, hkey.quote);
                         }
@@ -84,8 +84,8 @@ namespace steemit {
                                            fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.pays.symbol;
-                            key.quote = o.receives.symbol;
+                            key.base = o.pays.symbol_name();
+                            key.quote = o.receives.symbol_name();
 
 
                             /** for every matched order there are two fill order operations created, one for

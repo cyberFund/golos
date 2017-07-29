@@ -138,7 +138,7 @@ namespace steemit {
         using namespace steemit::protocol;
 
         struct database_fixture {
-            // the reason we use an app is to exercise the indexes of built-in
+            // the reason we use an application is to exercise the indexes of built-in
             //   plugins
             steemit::application::application app;
             chain::database &db;
@@ -194,37 +194,37 @@ namespace steemit {
 
             void force_global_settle(const asset_object &what, const price &p);
 
-            void force_settle(account_name_type who, asset what) {
+            void force_settle(const account_name_type &who, asset what) {
                 return force_settle(db.get_account(who), what);
             }
 
             void force_settle(const account_object &who, asset what);
 
-            void update_feed_producers(asset_symbol_type mia, flat_set<account_name_type> producers) {
+            void update_feed_producers(const asset_name_type &mia, flat_set<account_name_type> producers) {
                 update_feed_producers(db.get_asset(mia), producers);
             }
 
             void update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers);
 
-            void publish_feed(asset_symbol_type mia, account_name_type by, const price_feed &f) {
+            void publish_feed(const asset_name_type &mia, const account_name_type &by, const price_feed &f) {
                 publish_feed(db.get_asset(mia), db.get_account(by), f);
             }
 
             void publish_feed(const asset_object &mia, const account_object &by, const price_feed &f);
 
-            const call_order_object *borrow(account_name_type who, asset what, asset collateral) {
+            const call_order_object *borrow(const account_name_type &who, asset what, asset collateral) {
                 return borrow(db.get_account(who), what, collateral);
             }
 
             const call_order_object *borrow(const account_object &who, asset what, asset collateral);
 
-            void cover(account_name_type who, asset what, asset collateral_freed) {
+            void cover(const account_name_type &who, asset what, asset collateral_freed) {
                 cover(db.get_account(who), what, collateral_freed);
             }
 
             void cover(const account_object &who, asset what, asset collateral_freed);
 
-            const asset_object &get_asset(const string &symbol) const;
+            const asset_object &get_asset(const asset_name_type &symbol) const;
 
             const account_object &get_account(const string &name) const;
 
@@ -240,7 +240,7 @@ namespace steemit {
 
             const asset_object &create_user_issued_asset(const string &name);
 
-            const asset_object &create_user_issued_asset(const string &name,
+            const asset_object &create_user_issued_asset(const asset_name_type &name,
                     const account_object &issuer,
                     uint16_t flags);
 
@@ -304,7 +304,7 @@ namespace steemit {
 
             void print_joint_market(const string &syma, const string &symb) const;
 
-            int64_t get_balance(account_name_type account, asset_symbol_type a) const;
+            int64_t get_balance(account_name_type account, const asset_name_type &a) const;
 
             int64_t get_balance(const account_object &account, const asset_object &a) const;
 

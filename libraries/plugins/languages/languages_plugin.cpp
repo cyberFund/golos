@@ -19,22 +19,27 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "include/steemit/tags/tags_plugin.hpp"
+
+#include "include/steemit/languages/languages_plugin.hpp"
 
 namespace steemit {
-    namespace tags {
+    namespace languages {
 
         namespace detail {
 
             using namespace steemit::protocol;
 
-            class tags_plugin_impl {
+            class languages_plugin_impl final {
             public:
-                tags_plugin_impl(tags_plugin &_plugin)
+                languages_plugin_impl(languages_plugin &_plugin)
                         : _self(_plugin) {
                 }
 
-                virtual ~tags_plugin_impl();
+                virtual ~languages_plugin_impl();
+
+                languages_plugin_impl &self() {
+                    return *this;
+                }
 
                 steemit::chain::database &database() {
                     return _self.database();
@@ -42,22 +47,26 @@ namespace steemit {
 
                 void on_operation(const operation_notification &note);
 
-                tags_plugin &_self;
+                languages_plugin &_self;
+                set<string> cache_languages;
             };
 
-            tags_plugin_impl::~tags_plugin_impl() {
+            languages_plugin_impl::~languages_plugin_impl() {
                 return;
             }
 
             struct operation_visitor {
-                operation_visitor(database &db) : _db(db) {
+                operation_visitor(languages_plugin_impl &self)
+                        : languages_plugin(self), _db(self.database()) {
+
                 };
                 typedef void result_type;
 
-                database &_db;
+                languages_plugin_impl &languages_plugin;
+                steemit::chain::database &_db;
 
-                void remove_stats(const tag_object &tag, const tag_stats_object &stats) const {
-                    _db.modify(stats, [&](tag_stats_object &s) {
+                void remove_stats(const language_object &tag, const language_stats_object &stats) const {
+                    _db.modify(stats, [&](language_stats_object &s) {
                         if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 -= tag.children_rshares2;
                             s.top_posts--;
@@ -68,8 +77,8 @@ namespace steemit {
                     });
                 }
 
-                void add_stats(const tag_object &tag, const tag_stats_object &stats) const {
-                    _db.modify(stats, [&](tag_stats_object &s) {
+                void add_stats(const language_object &tag, const language_stats_object &stats) const {
+                    _db.modify(stats, [&](language_stats_object &s) {
                         if (tag.parent == comment_object::id_type()) {
                             s.total_children_rshares2 += tag.children_rshares2;
                             s.top_posts++;
@@ -80,80 +89,43 @@ namespace steemit {
                     });
                 }
 
-                void remove_tag(const tag_object &tag) const {
+                void remove_tag(const language_object &tag) const {
                     /// TODO: update tag stats object
                     _db.remove(tag);
 
-                    const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
+                    const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.name));
                     if (itr != idx.end() && itr->author == tag.author &&
-                        itr->tag == tag.name) {
-                        _db.modify(*itr, [&](author_tag_stats_object &stats) {
+                        itr->language == tag.name) {
+                        _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts--;
                         });
                     }
                 }
 
-                const tag_stats_object &get_stats(const string &tag) const {
-                    const auto &stats_idx = _db.get_index<tag_stats_index>().indices().get<by_tag>();
+                const language_stats_object &get_stats(const string &tag) const {
+                    const auto &stats_idx = _db.get_index<language_stats_index>().indices().get<by_tag>();
                     auto itr = stats_idx.find(tag);
                     if (itr != stats_idx.end()) {
                         return *itr;
                     }
 
-                    return _db.create<tag_stats_object>([&](tag_stats_object &stats) {
-                        stats.tag = tag;
+                    return _db.create<language_stats_object>([&](language_stats_object &stats) {
+                        stats.language = tag;
                     });
                 }
 
-                comment_metadata filter_tags(const comment_object &c) const {
-                    comment_metadata meta;
-
-                    if (c.json_metadata.size()) {
-                        try {
-                            meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
-                        }
-                        catch (const fc::exception &e) {
-                            // Do nothing on malformed json_metadata
-                        }
-                    }
-
-                    set<string> lower_tags;
-                    if (c.category != "") {
-                        meta.tags.insert(fc::to_lower(to_string(c.category)));
-                    }
-
-                    uint8_t tag_limit = 5;
-                    uint8_t count = 0;
-                    for (const auto &tag : meta.tags) {
-                        ++count;
-                        if (count > tag_limit ||
-                            lower_tags.size() > tag_limit) {
-                            break;
-                        }
-                        if (tag == "") {
-                            continue;
-                        }
-                        lower_tags.insert(fc::to_lower(tag));
-                    }
-
-                    /// the universal tag applies to everything safe for work or nsfw with a non-negative payout
-                    if (c.net_rshares >= 0) {
-                        lower_tags.insert(string()); /// add it to the universal tag
-                    }
-
-                    meta.tags = std::move(lower_tags);
-
-                    return meta;
-                }
-
-
-                void update_tag(const tag_object &current, const comment_object &comment, double hot, double trending) const {
+                void update_tag(
+                        const language_object &current,
+                        const comment_object &comment,
+                        double hot,
+                        double trending
+                ) const {
                     const auto &stats = get_stats(current.name);
                     remove_stats(current, stats);
 
                     if (comment.cashout_time != fc::time_point_sec::maximum()) {
-                        _db.modify(current, [&](tag_object &obj) {
+                        _db.modify(current, [&](language_object &obj) {
                             obj.active = comment.active;
                             obj.cashout = _db.calculate_discussion_payout_time(comment);
                             obj.children = comment.children;
@@ -172,9 +144,7 @@ namespace steemit {
                     }
                 }
 
-                void create_tag(const string &tag, const comment_object &comment, double hot, double trending) const {
-
-
+                void create_tag(const string &language, const comment_object &comment, double hot, double trending) const {
                     comment_object::id_type parent;
                     account_object::id_type author = _db.get_account(comment.author).id;
 
@@ -182,8 +152,8 @@ namespace steemit {
                         parent = _db.get_comment(comment.parent_author, comment.parent_permlink).id;
                     }
 
-                    const auto &tag_obj = _db.create<tag_object>([&](tag_object &obj) {
-                        obj.name = tag;
+                    const auto &tag_obj = _db.create<language_object>([&](language_object &obj) {
+                        obj.name = language;
                         obj.comment = comment.id;
                         obj.parent = parent;
                         obj.created = comment.created;
@@ -197,23 +167,36 @@ namespace steemit {
                         obj.hot = hot;
                         obj.trending = trending;
                     });
-                    add_stats(tag_obj, get_stats(tag));
+                    add_stats(tag_obj, get_stats(language));
 
 
-                    const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
-                    auto itr = idx.lower_bound(boost::make_tuple(author, tag));
+                    const auto &idx = _db.get_index<author_language_stats_index>().indices().get<by_author_tag_posts>();
+                    auto itr = idx.lower_bound(boost::make_tuple(author, language));
                     if (itr != idx.end() && itr->author == author &&
-                        itr->tag == tag) {
-                        _db.modify(*itr, [&](author_tag_stats_object &stats) {
+                        itr->language == language) {
+                        _db.modify(*itr, [&](author_language_stats_object &stats) {
                             stats.total_posts++;
                         });
                     } else {
-                        _db.create<author_tag_stats_object>([&](author_tag_stats_object &stats) {
+                        _db.create<author_language_stats_object>([&](author_language_stats_object &stats) {
                             stats.author = author;
-                            stats.tag = tag;
+                            stats.language = language;
                             stats.total_posts = 1;
                         });
                     }
+
+                    languages_plugin.self().cache_languages.emplace(language);
+                }
+
+                comment_metadata filter_tags(const comment_object &c) const {
+                    comment_metadata meta;
+                    if (c.json_metadata.size()) {
+                        try {
+                            meta=fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                        } FC_CAPTURE_LOG_AND_RETHROW((c))
+                    }
+
+                    return meta;
                 }
 
                 /**
@@ -221,13 +204,12 @@ namespace steemit {
                  */
                 template<int64_t S, int32_t T>
                 double calculate_score(const share_type &score, const time_point_sec &created) const {
-                    /// new algorithm
                     auto mod_score = score.value / S;
 
                     /// reddit algorithm
                     double order = log10(std::max<int64_t>(std::abs(mod_score), 1));
-                    int sign = 0;
 
+                    int sign = 0;
                     if (mod_score > 0) {
                         sign = 1;
                     } else if (mod_score < 0) {
@@ -246,55 +228,28 @@ namespace steemit {
                     return calculate_score<10000000, 480000>(score, created);
                 }
 
-
-                /** finds tags that have been added or removed or updated */
-                void update_tags(const comment_object &c, bool parse_tags = false) const {
+                /** finds tags that have been added or  updated */
+                void update_tags(const comment_object &c) const {
                     try {
-
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        const auto &comment_idx = _db.get_index<tag_index>().indices().get<by_comment>();
+                        auto meta = filter_tags(c);
+                        const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
 
-                        if (parse_tags) {
-                            auto meta = filter_tags(c);
-                            auto citr = comment_idx.lower_bound(c.id);
+                        auto itr = comment_idx.find(c.id);
 
-                            map<string, const tag_object *> existing_tags;
-                            vector<const tag_object *> remove_queue;
-                            while (citr != comment_idx.end() && citr->comment == c.id) {
-                                const tag_object *tag = &*citr;
-                                ++citr;
-                                if (meta.tags.find(tag->name) == meta.tags.end()) {
-                                    remove_queue.push_back(tag);
-                                } else {
-                                    existing_tags[tag->name] = tag;
-                                }
-                            }
-
-                            for (const auto &tag : meta.tags) {
-                                auto existing = existing_tags.find(tag);
-                                if (existing == existing_tags.end()) {
-                                    create_tag(tag, c, hot, trending);
-                                } else {
-                                    update_tag(*existing->second, c, hot, trending);
-                                }
-                            }
-
-                            for (const auto &item : remove_queue) {
-                                remove_tag(*item);
-                            }
+                        if (itr == comment_idx.end()) {
+                            create_tag(meta.language, c, hot, trending);
                         } else {
-                            auto citr = comment_idx.lower_bound(c.id);
-                            while (citr != comment_idx.end() && citr->comment == c.id) {
-                                update_tag(*citr, c, hot, trending);
-                                ++citr;
-                            }
+                            update_tag(*itr, c, hot, trending);
                         }
 
                         if (c.parent_author.size()) {
                             update_tags(_db.get_comment(c.parent_author, c.parent_permlink));
                         }
+
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
+
                 }
 
                 const peer_stats_object &get_or_create_peer_stats(account_object::id_type voter, account_object::id_type peer) const {
@@ -327,7 +282,8 @@ namespace steemit {
                     });
                 }
 
-                void update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c, int vote) const {
+                void
+                update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c, int vote) const {
                     if (voter.id == author.id) {
                         return;
                     } /// ignore votes for yourself
@@ -352,7 +308,7 @@ namespace steemit {
                 }
 
                 void operator()(const comment_operation &op) const {
-                    update_tags(_db.get_comment(op.author, op.permlink), true);
+                    update_tags(_db.get_comment(op.author, op.permlink));
                 }
 
                 void operator()(const transfer_operation &op) const {
@@ -368,11 +324,11 @@ namespace steemit {
 
                             auto c = _db.find_comment(acnt, perm);
                             if (c && c->parent_author.size() == 0) {
-                                const auto &comment_idx = _db.get_index<tag_index>().indices().get<by_comment>();
+                                const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
                                 auto citr = comment_idx.lower_bound(c->id);
                                 while (citr != comment_idx.end() &&
                                        citr->comment == c->id) {
-                                    _db.modify(*citr, [&](tag_object &t) {
+                                    _db.modify(*citr, [&](language_object &t) {
                                         if (t.cashout !=
                                             fc::time_point_sec::maximum()) {
                                             t.promoted_balance += op.amount.amount;
@@ -390,15 +346,15 @@ namespace steemit {
                 void operator()(const vote_operation &op) const {
                     update_tags(_db.get_comment(op.author, op.permlink));
                     /*
-                    update_peer_stats( db.get_account(op.voter),
-                                       db.get_account(op.author),
-                                       db.get_comment(op.author, op.permlink),
+                    update_peer_stats( _db.get_account(op.voter),
+                                       _db.get_account(op.author),
+                                       _db.get_comment(op.author, op.permlink),
                                        op.weight );
                                        */
                 }
 
                 void operator()(const delete_comment_operation &op) const {
-                    const auto &idx = _db.get_index<tag_index>().indices().get<by_author_comment>();
+                    const auto &idx = _db.get_index<language_index>().indices().get<by_author_comment>();
 
                     const auto &auth = _db.get_account(op.author);
                     auto itr = idx.lower_bound(boost::make_tuple(auth.id));
@@ -406,8 +362,10 @@ namespace steemit {
                         const auto &tobj = *itr;
                         const auto *obj = _db.find<comment_object>(itr->comment);
                         ++itr;
-                        if (!obj) {
+                        if (obj == nullptr) {
                             _db.remove(tobj);
+                        } else {
+                            languages_plugin.self().cache_languages.erase(to_string(obj->languages));
                         }
                     }
                 }
@@ -415,14 +373,6 @@ namespace steemit {
                 void operator()(const comment_reward_operation &op) const {
                     const auto &c = _db.get_comment(op.author, op.permlink);
                     update_tags(c);
-
-                    auto meta = filter_tags(c);
-
-                    for (auto tag : meta.tags) {
-                        _db.modify(get_stats(tag), [&](tag_stats_object &ts) {
-                            ts.total_payout += op.payout;
-                        });
-                    }
                 }
 
                 void operator()(const comment_payout_update_operation &op) const {
@@ -436,10 +386,10 @@ namespace steemit {
             };
 
 
-            void tags_plugin_impl::on_operation(const operation_notification &note) {
+            void languages_plugin_impl::on_operation(const operation_notification &note) {
                 try {
                     /// plugins shouldn't ever throw
-                    note.op.visit(operation_visitor(database()));
+                    note.op.visit(operation_visitor(self()));
                 }
                 catch (const fc::exception &e) {
                     edump((e.to_detail_string()));
@@ -451,65 +401,93 @@ namespace steemit {
 
         } /// end detail namespace
 
-        tags_plugin::tags_plugin(application *app)
-                : plugin(app), my(new detail::tags_plugin_impl(*this)) {
+        languages_plugin::languages_plugin(application *app)
+                : plugin(app), my(new detail::languages_plugin_impl(*this)) {
             chain::database &db = database();
-            db.add_plugin_index<tag_index>();
-            db.add_plugin_index<tag_stats_index>();
+            db.add_plugin_index<language_index>();
+            db.add_plugin_index<language_stats_index>();
             db.add_plugin_index<peer_stats_index>();
-            db.add_plugin_index<author_tag_stats_index>();
+            db.add_plugin_index<author_language_stats_index>();
         }
 
-        tags_plugin::~tags_plugin() {
+        languages_plugin::~languages_plugin() {
 
         }
 
-        bool tags_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
-            if (query.select_authors.size()) {
-                if (query.select_authors.find(c.author) == query.select_authors.end()) {
+        bool languages_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
+            if (query.filter_language.size()) {
+                if (c.languages.empty()) {
                     return true;
                 }
             }
 
-            tags::comment_metadata meta;
-
-            if (c.json_metadata.size()) {
-                try {
-                    meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
-                } catch (const fc::exception &e) {
-                    // Do nothing on malformed json_metadata
-                }
+            if (query.filter_language.count(c.languages)) {
+                return true;
             }
 
-            for (const std::set<std::string>::value_type &iterator : query.filter_tags) {
-                if (meta.tags.find(iterator) != meta.tags.end()) {
-                    return true;
-                }
-            }
-
-            return condition(c) ||
-                   query.filter_tags.find(c.category) !=
-                   query.filter_tags.end();
+            return false || condition(c);
         }
 
-        void tags_plugin::plugin_set_program_options(
+        void languages_plugin::plugin_set_program_options(
                 boost::program_options::options_description &cli,
-                boost::program_options::options_description &cfg) {
+                boost::program_options::options_description &cfg
+        ) {
 
         }
 
-        void tags_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
-            ilog("Initializing tags plugin");
-            database().post_apply_operation.connect([&](const operation_notification &note) { my->on_operation(note); });
+        void languages_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
+            ilog("Intializing languages plugin");
+            database().post_apply_operation.connect(
+                    [&](const operation_notification &note) { my->on_operation(note); });
 
-            app().register_api_factory<tag_api>("tag_api");
+            app().register_api_factory<language_api>("language_api");
         }
 
-        void tags_plugin::plugin_startup() {
 
+        void languages_plugin::plugin_startup() {
+            database().with_read_lock(
+                    [&]() {
+                        const auto &index = my->database().get_index<language_index>().indices().get<by_comment>();
+                        auto itr = index.begin();
+                        for (; itr != index.end(); ++itr) {
+                            my->self().cache_languages.emplace(itr->name);
+                        }
+                    }
+            );
+            ilog("startup languages plugin");
         }
+
+    const std::set<std::string> languages_plugin::get_languages() const {
+        return  my->self().cache_languages;
+    }
+
+    struct language_api::impl{
+        impl(steemit::application::application &app):app(app){}
+        ~impl()=default;
+        steemit::application::application &app;
+    };
+
+    language_api::language_api(const steemit::application::api_context &ctx):pimpl(new impl(ctx.app)) {
+    }
+
+    void language_api::on_api_startup() {
+
+    }
+
+    language_api::language_api() {
+
+    }
+
+    std::vector<std::string> language_api::get_languages() const {
+        std::vector<std::string> tmp;
+        for(const auto&i:pimpl->app.get_plugin<languages_plugin>(LANGUAGES_PLUGIN_NAME)->get_languages()){
+            tmp.push_back(i);
+        }
+        return tmp;
+    }
+
+
     }
 } /// steemit::tags
 
-STEEMIT_DEFINE_PLUGIN(tags, steemit::tags::tags_plugin
-)
+STEEMIT_DEFINE_PLUGIN(languages, steemit::languages::languages_plugin)

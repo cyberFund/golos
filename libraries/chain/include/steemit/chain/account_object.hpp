@@ -106,11 +106,11 @@ namespace steemit {
             id_type id;
 
             account_name_type owner;
-            protocol::asset_symbol_type asset_type;
-            share_type balance = 0;
+            protocol::asset_name_type asset_name;
+            share_type balance = 0; ///< total liquid shares held by this account
 
             protocol::asset get_balance() const {
-                return protocol::asset(balance, asset_type);
+                return protocol::asset(balance, asset_name);
             }
 
             void adjust_balance(const protocol::asset &delta);
@@ -217,7 +217,7 @@ namespace steemit {
              * This is utilized to restrict buyback accounts to the assets that trade in their markets.
              * In the future we may expand this to allow accounts to e.g. voluntarily restrict incoming transfers.
              */
-            optional<flat_set<protocol::asset_symbol_type>> allowed_assets;
+            optional<flat_set<protocol::asset_name_type>> allowed_assets;
 
             /**
           * This is a set of all accounts which have 'whitelisted' this account. Whitelisting is only used in core
@@ -419,18 +419,18 @@ namespace steemit {
                                 composite_key<
                                         account_balance_object,
                                         member<account_balance_object, account_name_type, &account_balance_object::owner>,
-                                        member<account_balance_object, protocol::asset_symbol_type, &account_balance_object::asset_type>
+                                        member<account_balance_object, protocol::asset_name_type, &account_balance_object::asset_name>
                                 >
                         >,
                         ordered_unique<tag<by_asset_balance>,
                                 composite_key<
                                         account_balance_object,
-                                        member<account_balance_object, protocol::asset_symbol_type, &account_balance_object::asset_type>,
+                                        member<account_balance_object, protocol::asset_name_type, &account_balance_object::asset_name>,
                                         member<account_balance_object, share_type, &account_balance_object::balance>,
                                         member<account_balance_object, account_name_type, &account_balance_object::owner>
                                 >,
                                 composite_key_compare<
-                                        std::less<protocol::asset_symbol_type>,
+                                        std::less<protocol::asset_name_type>,
                                         std::greater<share_type>,
                                         std::less<account_name_type>
                                 >
@@ -675,51 +675,51 @@ namespace steemit {
                 allocator<change_recovery_account_request_object>
         > change_recovery_account_request_index;
 
-        /**
-         *  @brief This secondary index will allow a reverse lookup of all accounts that a particular key or account
-         *  is an potential signing authority.
-         */
-        class account_member_index : public chainbase::secondary_index<account_authority_index> {
-        public:
-            virtual void object_inserted(const value_type &obj) override;
-
-            virtual void object_removed(const value_type &obj) override;
-
-            virtual void about_to_modify(const value_type &before) override;
-
-            virtual void object_modified(const value_type &after) override;
-
-
-            /** given an account or key, map it to the set of accounts that reference it in an active or owner authority */
-            map<account_name_type, set<account_name_type>> account_to_account_memberships;
-            map<public_key_type, set<account_name_type>> account_to_key_memberships;
-
-        protected:
-            set<account_name_type> get_account_members(const value_type &a) const;
-
-            set<public_key_type> get_key_members(const value_type &a) const;
-
-            set<account_name_type> before_account_members;
-            set<public_key_type> before_key_members;
-        };
-
-        /**
-         *  @brief This secondary index will allow a reverse lookup of all accounts that have been referred by
-         *  a particular account.
-         */
-        class account_referrer_index : public chainbase::secondary_index<account_index> {
-        public:
-            virtual void object_inserted(const value_type &obj) override;
-
-            virtual void object_removed(const value_type &obj) override;
-
-            virtual void about_to_modify(const value_type &before) override;
-
-            virtual void object_modified(const value_type &after) override;
-
-            /** maps the referrer to the set of accounts that they have referred */
-            map<account_name_type, set<account_name_type>> referred_by;
-        };
+//        /**
+//         *  @brief This secondary index will allow a reverse lookup of all accounts that a particular key or account
+//         *  is an potential signing authority.
+//         */
+//        class account_member_index : public chainbase::secondary_index<account_authority_index> {
+//        public:
+//            virtual void object_inserted(const value_type &obj) override;
+//
+//            virtual void object_removed(const value_type &obj) override;
+//
+//            virtual void about_to_modify(const value_type &before) override;
+//
+//            virtual void object_modified(const value_type &after) override;
+//
+//
+//            /** given an account or key, map it to the set of accounts that reference it in an active or owner authority */
+//            map<account_name_type, set<account_name_type>> account_to_account_memberships;
+//            map<public_key_type, set<account_name_type>> account_to_key_memberships;
+//
+//        protected:
+//            set<account_name_type> get_account_members(const value_type &a) const;
+//
+//            set<public_key_type> get_key_members(const value_type &a) const;
+//
+//            set<account_name_type> before_account_members;
+//            set<public_key_type> before_key_members;
+//        };
+//
+//        /**
+//         *  @brief This secondary index will allow a reverse lookup of all accounts that have been referred by
+//         *  a particular account.
+//         */
+//        class account_referrer_index : public chainbase::secondary_index<account_index> {
+//        public:
+//            virtual void object_inserted(const value_type &obj) override;
+//
+//            virtual void object_removed(const value_type &obj) override;
+//
+//            virtual void about_to_modify(const value_type &before) override;
+//
+//            virtual void object_modified(const value_type &after) override;
+//
+//            /** maps the referrer to the set of accounts that they have referred */
+//            map<account_name_type, set<account_name_type>> referred_by;
+//        };
     }
 }
 
@@ -773,7 +773,7 @@ FC_REFLECT(steemit::chain::change_recovery_account_request_object,
         (id)(account_to_recover)(recovery_account)(effective_on))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::change_recovery_account_request_object, steemit::chain::change_recovery_account_request_index)
 
-FC_REFLECT(steemit::chain::account_balance_object, (id)(owner)(asset_type)(balance))
+FC_REFLECT(steemit::chain::account_balance_object, (id)(owner)(asset_name)(balance))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_balance_object, steemit::chain::account_balance_index)
 
 FC_REFLECT(steemit::chain::account_statistics_object,

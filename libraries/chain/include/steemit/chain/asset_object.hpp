@@ -37,7 +37,7 @@ namespace steemit {
                 : public object<asset_dynamic_data_object_type, asset_dynamic_data_object> {
         public:
             template<typename Constructor, typename Allocator>
-            asset_dynamic_data_object(Constructor &&c, allocator <Allocator> a) {
+            asset_dynamic_data_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             }
 
@@ -46,7 +46,8 @@ namespace steemit {
 
             id_type id;
 
-            protocol::asset_symbol_type symbol;
+            /// Ticker symbol for this asset, i.e. "USD"
+            protocol::asset_name_type asset_name;
 
             /// The number of shares currently in existence
             share_type current_supply;
@@ -66,7 +67,7 @@ namespace steemit {
                 : public object<asset_object_type, asset_object> {
         public:
             template<typename Constructor, typename Allocator>
-            asset_object(Constructor &&c, allocator <Allocator> a) {
+            asset_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             }
 
@@ -75,8 +76,6 @@ namespace steemit {
 
             id_type id;
 
-            protocol::asset_symbol_type symbol;
-
             /// This function does not check if any registered asset has this symbol or not; it simply checks whether the
             /// symbol would be valid.
             /// @return true if symbol is a valid ticker symbol; false otherwise.
@@ -84,7 +83,7 @@ namespace steemit {
 
             /// @return true if this is a market-issued asset; false otherwise.
             bool is_market_issued() const {
-                return marked_issued;
+                return market_issued;
             }
 
             /// @return true if users may request force-settlement of this market-issued asset; false otherwise
@@ -118,7 +117,7 @@ namespace steemit {
 
             /// Helper function to get an asset object with the given amount in this asset's type
             protocol::asset amount(share_type a) const {
-                return protocol::asset(a, symbol);
+                return {a, asset_name};
             }
 
             /// Convert a string amount (i.e. "123.45") to an asset object with this asset's type
@@ -136,17 +135,17 @@ namespace steemit {
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
             string amount_to_pretty_string(share_type amount) const {
-                return amount_to_string(amount) + " " + symbol_name;
+                return amount_to_string(amount) + " " + asset_name;
             }
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
             string amount_to_pretty_string(const protocol::asset &amount) const {
-                FC_ASSERT(amount.symbol == id);
+                FC_ASSERT(amount.symbol_name() == asset_name);
                 return amount_to_pretty_string(amount.amount);
             }
 
             /// Ticker symbol for this asset, i.e. "USD"
-            string symbol_name;
+            protocol::asset_name_type asset_name;
             /// Maximum number of digits after the decimal point (must be <= 12)
             uint8_t precision = 0;
             /// ID of the account which issued this asset.
@@ -155,9 +154,9 @@ namespace steemit {
             protocol::asset_options options;
 
             /// Extra data associated with BitAssets. This field is non-null if and only if is_market_issued() returns true
-            bool marked_issued;
+            bool market_issued = false;
 
-            optional <account_name_type> buyback_account;
+            optional<account_name_type> buyback_account;
 
             void validate() const {
                 // UIAs may not be prediction markets, have force settlement, or global settlements
@@ -184,7 +183,7 @@ namespace steemit {
                 : public object<asset_bitasset_data_object_type, asset_bitasset_data_object> {
         public:
             template<typename Constructor, typename Allocator>
-            asset_bitasset_data_object(Constructor &&c, allocator <Allocator> a) {
+            asset_bitasset_data_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             }
 
@@ -194,7 +193,8 @@ namespace steemit {
 
             id_type id;
 
-            protocol::asset_symbol_type symbol;
+            /// Ticker symbol for this asset, i.e. "USD"
+            protocol::asset_name_type asset_name;
 
             /// The tunable options for BitAssets are stored in this field.
             protocol::bitasset_options options;
@@ -202,7 +202,7 @@ namespace steemit {
             /// Feeds published for this asset. If issuer is not committee, the keys in this map are the feed publishing
             /// accounts; otherwise, the feed publishers are the currently active committee_members and witnesses and this map
             /// should be treated as an implementation detail. The timestamp on each feed is the time it was published.
-            flat_map <account_name_type, pair<time_point_sec, protocol::price_feed>> feeds;
+            flat_map<account_name_type, pair<time_point_sec, protocol::price_feed>> feeds;
             /// This is the currently active price feed, calculated as the median of values from the currently active
             /// feeds.
             protocol::price_feed current_feed;
@@ -249,61 +249,57 @@ namespace steemit {
         };
 
         struct by_feed_expiration;
-        struct by_symbol;
+        struct by_asset_name;
         struct by_type;
         struct by_issuer;
 
-        typedef multi_index_container <
-        asset_bitasset_data_object,
-        indexed_by<ordered_unique < tag < by_id>,
-        member<asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
-        ordered_non_unique <tag<by_feed_expiration>,
-        const_mem_fun<asset_bitasset_data_object, time_point_sec, &asset_bitasset_data_object::feed_expiration_time>
-        >,
-        ordered_unique <tag<by_symbol>,
-        member<asset_bitasset_data_object, protocol::asset_symbol_type, &asset_bitasset_data_object::symbol>>
-        >,allocator <asset_bitasset_data_object>
-        >
-        asset_bitasset_data_index;
+        typedef multi_index_container<
+                asset_bitasset_data_object,
+                indexed_by<ordered_unique<tag<by_id>,
+                        member<asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
+                        ordered_non_unique<tag<by_feed_expiration>,
+                                const_mem_fun<asset_bitasset_data_object, time_point_sec, &asset_bitasset_data_object::feed_expiration_time>
+                        >,
+                        ordered_unique<tag<by_asset_name>,
+                                member<asset_bitasset_data_object, protocol::asset_name_type, &asset_bitasset_data_object::asset_name>>
+                >, allocator<asset_bitasset_data_object>
+        > asset_bitasset_data_index;
 
-        typedef multi_index_container <
-        asset_dynamic_data_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
-        ordered_unique <tag<
-                by_symbol>, member<asset_dynamic_data_object, protocol::asset_symbol_type, &asset_dynamic_data_object::symbol>>
-        >,allocator <asset_dynamic_data_object>
-        >
-        asset_dynamic_data_index;
+        typedef multi_index_container<
+                asset_dynamic_data_object,
+                indexed_by<
+                        ordered_unique<tag<
+                                by_id>, member<asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
+                        ordered_unique<tag<
+                                by_asset_name>, member<asset_dynamic_data_object, protocol::asset_name_type, &asset_dynamic_data_object::asset_name>>
+                >, allocator<asset_dynamic_data_object>
+        > asset_dynamic_data_index;
 
-        typedef multi_index_container <
-        asset_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<asset_object, asset_object::id_type, &asset_object::id>>,
-        ordered_unique <tag<by_symbol>, member<asset_object, protocol::asset_symbol_type, &asset_object::symbol>>,
-        ordered_non_unique <tag<by_issuer>, member<asset_object, account_name_type, &asset_object::issuer>>,
-        ordered_unique <tag<by_type>,
-        composite_key<asset_object,
-                const_mem_fun <
-                asset_object, bool, &asset_object::is_market_issued>,
-        member<asset_object, asset_object::id_type, &asset_object::id>
-        >
-        >
-        >,allocator <asset_object>
-        >
-        asset_index;
+        typedef multi_index_container<
+                asset_object,
+                indexed_by<
+                        ordered_unique<tag<
+                                by_id>, member<asset_object, asset_object::id_type, &asset_object::id>>,
+                        ordered_unique<tag<by_asset_name>, member<asset_object, protocol::asset_name_type, &asset_object::asset_name>>,
+                        ordered_non_unique<tag<by_issuer>, member<asset_object, account_name_type, &asset_object::issuer>>,
+                        ordered_unique<tag<by_type>,
+                                composite_key<asset_object,
+                                        const_mem_fun<asset_object, bool, &asset_object::is_market_issued>,
+                                        member<asset_object, asset_object::id_type, &asset_object::id>
+                                >
+                        >
+                >, allocator<asset_object>
+        > asset_index;
     }
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::asset_dynamic_data_object,
-        (id)(symbol)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
+        (id)(asset_name)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_dynamic_data_object, steemit::chain::asset_dynamic_data_index)
 
 FC_REFLECT(steemit::chain::asset_bitasset_data_object,
         (id)
-                (symbol)
+                (asset_name)
                 (feeds)
                 (current_feed)
                 (current_feed_publication_time)
@@ -318,11 +314,12 @@ CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_bitasset_data_object, steemit::ch
 
 FC_REFLECT(steemit::chain::asset_object,
         (id)
-                (symbol)
+                (asset_name)
                 (precision)
                 (issuer)
                 (options)
                 (buyback_account)
+                (market_issued)
 )
 
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_object, steemit::chain::asset_index)

@@ -170,20 +170,20 @@ namespace steemit {
                             });
 
                             auto &index = db.get_index<chain::account_balance_index>().indices().get<chain::by_account_asset>();
-                            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL));
+                            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL_NAME));
                             if (itr == index.end()) {
                                 db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
                                     b.owner = new_account.name;
-                                    b.asset_type = STEEM_SYMBOL;
+                                    b.asset_name = STEEM_SYMBOL_NAME;
                                     b.balance = 0;
                                 });
                             }
 
-                            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL));
+                            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL_NAME));
                             if (itr == index.end()) {
                                 db.create<chain::account_balance_object>([new_account](chain::account_balance_object &b) {
                                     b.owner = new_account.name;
-                                    b.asset_type = SBD_SYMBOL;
+                                    b.asset_name = SBD_SYMBOL_NAME;
                                     b.balance = 0;
                                 });
                             }

@@ -50,12 +50,6 @@ namespace steemit {
          * object.
          */
         struct proposal_create_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint32_t price_per_kbyte = 10;
-            };
-
-            asset fee;
             account_name_type owner;
             integral_id_type proposal_id;
             vector <operation_wrapper> proposed_operations;
@@ -64,6 +58,10 @@ namespace steemit {
             extensions_type extensions;
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+                a.insert(owner);
+            }
         };
 
         /**
@@ -85,13 +83,7 @@ namespace steemit {
          * add or remove active authority approval to such a proposal will fail.
          */
         struct proposal_update_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint32_t price_per_kbyte = 10;
-            };
-
             account_name_type owner;
-            asset fee;
             integral_id_type proposal_id;
             flat_set <account_name_type> active_approvals_to_add;
             flat_set <account_name_type> active_approvals_to_remove;
@@ -124,29 +116,24 @@ namespace steemit {
          * proposal.
          */
         struct proposal_delete_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
             account_name_type owner;
             bool using_owner_authority = false;
-            asset fee;
             integral_id_type proposal_id;
             extensions_type extensions;
 
             void validate() const;
+
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+                a.insert(owner);
+            }
         };
         ///@}
 
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::protocol::proposal_create_operation::fee_parameters_type, (fee)(price_per_kbyte))
-FC_REFLECT(steemit::protocol::proposal_update_operation::fee_parameters_type, (fee)(price_per_kbyte))
-FC_REFLECT(steemit::protocol::proposal_delete_operation::fee_parameters_type, (fee))
-
-FC_REFLECT(steemit::protocol::proposal_create_operation, (owner)(fee)(proposal_id)(expiration_time)
+FC_REFLECT(steemit::protocol::proposal_create_operation, (owner)(proposal_id)(expiration_time)
         (proposed_operations)(review_period_seconds)(extensions))
-FC_REFLECT(steemit::protocol::proposal_update_operation, (owner)(fee)(proposal_id)
+FC_REFLECT(steemit::protocol::proposal_update_operation, (owner)(proposal_id)
         (active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)(owner_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)(key_approvals_to_add)(key_approvals_to_remove)(extensions))
-FC_REFLECT(steemit::protocol::proposal_delete_operation, (owner)(fee)(using_owner_authority)(proposal_id)(extensions))
+FC_REFLECT(steemit::protocol::proposal_delete_operation, (owner)(using_owner_authority)(proposal_id)(extensions))

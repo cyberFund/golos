@@ -277,7 +277,7 @@ namespace steemit {
 
             if (o.amount) {
                 FC_ASSERT(
-                        this->db.get_balance(from_account, o.amount->symbol) >=
+                        this->db.get_balance(from_account, o.amount->symbol_name()) >=
                         *o.amount, "Account does not have sufficient funds for transfer.");
 
                 this->db.pay_fee(from_account, *o.amount);
@@ -607,12 +607,12 @@ namespace steemit {
                     sbd_spent += o.fee;
                 }
 
-                FC_ASSERT(db.get_balance(from_account.name, STEEM_SYMBOL) >=
-                          steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}", ("r", steem_spent)("a", db.get_balance(from_account.name, STEEM_SYMBOL)));
+                FC_ASSERT(db.get_balance(from_account.name, STEEM_SYMBOL_NAME) >=
+                          steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}", ("r", steem_spent)("a", db.get_balance(from_account.name, STEEM_SYMBOL_NAME)));
 
                 FC_ASSERT(
-                        db.get_balance(from_account.name, SBD_SYMBOL) >=
-                        sbd_spent, "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}", ("r", sbd_spent)("a", db.get_balance(from_account.name, SBD_SYMBOL)));
+                        db.get_balance(from_account.name, SBD_SYMBOL_NAME) >=
+                        sbd_spent, "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}", ("r", sbd_spent)("a", db.get_balance(from_account.name, SBD_SYMBOL_NAME)));
 
                 this->db.adjust_balance(from_account, -steem_spent);
                 this->db.adjust_balance(from_account, -sbd_spent);
@@ -1644,7 +1644,7 @@ namespace steemit {
                           db.head_block_id(), "Equihash pow op not for last block");
                 auto recent_block_num = protocol::block_header::num_from_id(work.input.prev_block);
                 FC_ASSERT(recent_block_num > dgp.last_irreversible_block_num,
-                        "Equihash pow done for block older than last irreversible block num");
+                        "Equihash pow done for block older than last irreversible block num. Recent block: ${l}, Irreversible block: ${r}", ("l", recent_block_num)("r", dgp.last_irreversible_block_num));
                 FC_ASSERT(work.pow_summary <
                           target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}", ("w", work.pow_summary)("t", target_pow));
                 worker_account = work.input.worker_account;
@@ -1725,7 +1725,7 @@ namespace steemit {
         void convert_evaluator::do_apply(const convert_operation &o) {
 
             const auto &owner = this->db.get_account(o.owner);
-            FC_ASSERT(this->db.get_balance(owner, o.amount.symbol) >=
+            FC_ASSERT(this->db.get_balance(owner, o.amount.symbol_name()) >=
                       o.amount, "Account does not have sufficient balance for conversion.");
 
             this->db.adjust_balance(owner, -o.amount);
@@ -1764,7 +1764,7 @@ namespace steemit {
             if (o.require_owner) {
                 FC_ASSERT(challenged.reset_account ==
                           o.challenger, "Owner authority can only be challenged by its reset account.");
-                FC_ASSERT(db.get_balance(challenger, STEEM_SYMBOL) >=
+                FC_ASSERT(db.get_balance(challenger, STEEM_SYMBOL_NAME) >=
                           STEEMIT_OWNER_CHALLENGE_FEE);
                 FC_ASSERT(!challenged.owner_challenged);
                 FC_ASSERT(this->db.head_block_time() -
@@ -1778,7 +1778,7 @@ namespace steemit {
                     a.owner_challenged = true;
                 });
             } else {
-                FC_ASSERT(db.get_balance(challenger, STEEM_SYMBOL) >=
+                FC_ASSERT(db.get_balance(challenger, STEEM_SYMBOL_NAME) >=
                           STEEMIT_ACTIVE_CHALLENGE_FEE, "Account does not have sufficient funds to pay challenge fee.");
                 FC_ASSERT(!(challenged.owner_challenged ||
                             challenged.active_challenged), "Account is already challenged.");

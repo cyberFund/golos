@@ -1,6 +1,9 @@
 add_executable(js_operation_serializer main.cpp)
+
 if(UNIX AND NOT APPLE)
     set(rt_library rt)
+elseif(APPLE)
+    list(APPEND PLATFORM_SPECIFIC_LIBS readline)
 endif()
 
 target_link_libraries(js_operation_serializer

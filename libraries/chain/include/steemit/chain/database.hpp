@@ -120,10 +120,10 @@ namespace steemit {
             /**
              * @brief Retrieve a particular account's balance in a given asset
              * @param owner Account whose balance should be retrieved
-             * @param asset_id ID of the asset to get balance in
+             * @param asset_name ID of the asset to get balance in
              * @return owner's balance in asset
              */
-            asset get_balance(account_name_type owner, asset_symbol_type asset_id) const;
+            asset get_balance(account_name_type owner, asset_name_type asset_name) const;
 
             /// This is an overloaded method.
             asset get_balance(const account_object &owner, const asset_object &asset_obj) const;
@@ -152,21 +152,21 @@ namespace steemit {
 
             const signed_transaction get_recent_transaction(const transaction_id_type &trx_id) const;
 
-            std::vector<block_id_type> get_block_ids_on_fork(block_id_type head_of_fork) const;
+            vector<block_id_type> get_block_ids_on_fork(block_id_type head_of_fork) const;
 
             chain_id_type get_chain_id() const;
 
-            const asset_object &get_asset(const asset_symbol_type &name) const;
+            const asset_object &get_asset(const asset_name_type &name) const;
 
-            const asset_object *find_asset(const asset_symbol_type &name) const;
+            const asset_object *find_asset(const asset_name_type &name) const;
 
-            const asset_dynamic_data_object &get_asset_dynamic_data(const asset_symbol_type &name) const;
+            const asset_dynamic_data_object &get_asset_dynamic_data(const asset_name_type &name) const;
 
-            const asset_dynamic_data_object *find_asset_dynamic_data(const asset_symbol_type &name) const;
+            const asset_dynamic_data_object *find_asset_dynamic_data(const asset_name_type &name) const;
 
-            const asset_bitasset_data_object &get_asset_bitasset_data(const asset_symbol_type &name) const;
+            const asset_bitasset_data_object &get_asset_bitasset_data(const asset_name_type &name) const;
 
-            const asset_bitasset_data_object *find_asset_bitasset_data(const asset_symbol_type &name) const;
+            const asset_bitasset_data_object *find_asset_bitasset_data(const asset_name_type &name) const;
 
             const proposal_object &get_proposal(const account_name_type &name, protocol::integral_id_type id) const;
 
@@ -393,9 +393,9 @@ namespace steemit {
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);
 
-            asset get_balance(const account_object &a, asset_symbol_type symbol) const;
+            asset get_balance(const account_object &a, const asset_name_type &asset_name) const;
 
-            asset get_savings_balance(const account_object &a, asset_symbol_type symbol) const;
+            asset get_savings_balance(const account_object &a, const asset_name_type &asset_name) const;
 
             /** this updates the votes for witnesses as a result of account voting proxy changing */
             void adjust_proxied_witness_votes(const account_object &a,

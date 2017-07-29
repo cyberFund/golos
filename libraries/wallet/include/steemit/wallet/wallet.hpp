@@ -2,7 +2,9 @@
 
 #include <steemit/application/api.hpp>
 #include <steemit/private_message/private_message_plugin.hpp>
-#include <steemit/follow/follow_plugin.hpp>
+#include <steemit/follow/follow_api.hpp>
+#include <steemit/market_history/market_history_api.hpp>
+
 #include <steemit/application/steem_api_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
@@ -453,10 +455,10 @@ namespace steemit {
              *  that is paid by the creator. The current account creation fee can be found with the
              *  'info' wallet command.
              *
-             *  These accounts are created with combination of STEEM and delegated SP
+             *  These accounts are created with combination of GOLOS and delegated GP
              *
              *  @param creator The account creating the new account
-             *  @param steem_fee The amount of the fee to be paid with STEEM
+             *  @param steem_fee The amount of the fee to be paid with GOLOS
              *  @param delegated_vests The amount of the fee to be paid with delegation
              *  @param new_account_name The name of the new account
              *  @param json_meta JSON Metadata associated with the new account
@@ -470,10 +472,10 @@ namespace steemit {
              * wallet. There is a fee associated with account creation that is paid by the creator.
              * The current account creation fee can be found with the 'info' wallet command.
              *
-             * These accounts are created with combination of STEEM and delegated SP
+             * These accounts are created with combination of GOLOS and delegated GP
              *
              * @param creator The account creating the new account
-             * @param steem_fee The amount of the fee to be paid with STEEM
+             * @param steem_fee The amount of the fee to be paid with GOLOS
              * @param delegated_vests The amount of the fee to be paid with delegation
              * @param newname The name of the new account
              * @param json_meta JSON Metadata associated with the new account
@@ -671,25 +673,25 @@ namespace steemit {
                     bool broadcast = false);
 
             /**
-             * Transfer funds from one account to another. STEEM and SBD can be transferred.
+             * Transfer funds from one account to another. GOLOS and SBD can be transferred.
              *
              * @param from The account the funds are coming from
              * @param to The account the funds are going to
-             * @param amount The funds being transferred. i.e. "100.000 STEEM"
+             * @param amount The funds being transferred. i.e. "100.000 GOLOS"
              * @param memo A memo for the transactionm, encrypted with the to account's public memo key
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction transfer(string from, string to, asset amount, string memo, bool broadcast = false);
 
             /**
-             * Transfer funds from one account to another using escrow. STEEM and SBD can be transferred.
+             * Transfer funds from one account to another using escrow. GOLOS and SBD can be transferred.
              *
              * @param from The account the funds are coming from
              * @param to The account the funds are going to
              * @param agent The account acting as the agent in case of dispute
              * @param escrow_id A unique id for the escrow transfer. (from, escrow_id) must be a unique pair
              * @param sbd_amount The amount of SBD to transfer
-             * @param steem_amount The amount of STEEM to transfer
+             * @param steem_amount The amount of GOLOS to transfer
              * @param fee The fee paid to the agent
              * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
              * @param escrow_expiration The expiration of the escrow transfer, after which either party can claim the funds
@@ -761,7 +763,7 @@ namespace steemit {
              * @param receiver The account that will receive funds being released
              * @param escrow_id A unique id for the escrow transfer
              * @param sbd_amount The amount of SBD that will be released
-             * @param steem_amount The amount of STEEM that will be released
+             * @param steem_amount The amount of GOLOS that will be released
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction escrow_release(
@@ -777,13 +779,13 @@ namespace steemit {
             );
 
             /**
-             * Transfer STEEM into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
+             * Transfer GOLOS into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
              * for a minimum of one coin year and can be withdrawn once a week over a two year withdraw period.
-             * VESTS are protected against dilution up until 90% of STEEM is vesting.
+             * VESTS are protected against dilution up until 90% of GOLOS is vesting.
              *
-             * @param from The account the STEEM is coming from
+             * @param from The account the GOLOS is coming from
              * @param to The account getting the VESTS
-             * @param amount The amount of STEEM to vest i.e. "100.00 STEEM"
+             * @param amount The amount of GOLOS to vest i.e. "100.00 GOLOS"
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction transfer_to_vesting(string from, string to, asset amount, bool broadcast = false);
@@ -794,13 +796,19 @@ namespace steemit {
             annotated_signed_transaction transfer_to_savings(string from, string to, asset amount, string memo, bool broadcast = false);
 
             /**
+             * @param from The account the GOLOS is coming from
+             * @param to The account getting the VESTS
+             * @param amount The amount of GOLOS to vest i.e. "100.00 GOLOS"
              * @param request_id - an unique ID assigned by from account, the id is used to cancel the operation and can be reused after the transfer completes
+             * @param memo a memo to include in the transaction, readable by the recipient
+             * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction transfer_from_savings(string from, uint32_t request_id, string to, asset amount, string memo, bool broadcast = false);
 
             /**
              *  @param request_id the id used in transfer_from_savings
              *  @param from the account that initiated the transfer
+             * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction cancel_transfer_from_savings(string from, uint32_t request_id, bool broadcast = false);
 
@@ -810,7 +818,7 @@ namespace steemit {
              *
              * @param from The account the VESTS are withdrawn from
              * @param vesting_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
-             *    withdrawn and deposited back as STEEM. i.e. "10.000000 VESTS"
+             *    withdrawn and deposited back as GOLOS. i.e. "10.000000 VESTS"
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction withdraw_vesting(string from, asset vesting_shares, bool broadcast = false);
@@ -820,17 +828,17 @@ namespace steemit {
              * based on the specified weights.
              *
              * @param from The account the VESTS are withdrawn from.
-             * @param to   The account receiving either VESTS or STEEM.
+             * @param to   The account receiving either VESTS or GOLOS.
              * @param percent The percent of the withdraw to go to the 'to' account. This is denoted in hundreths of a percent.
              *    i.e. 100 is 1% and 10000 is 100%. This value must be between 1 and 100000
              * @param auto_vest Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
-             *    them as STEEM.
+             *    them as GOLOS.
              * @param broadcast true if you wish to broadcast the transaction.
              */
             annotated_signed_transaction set_withdraw_vesting_route(string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false);
 
             /**
-             *  This method will convert SBD to STEEM at the current_median_history price one
+             *  This method will convert SBD to GOLOS at the current_median_history price one
              *  week from the time it is executed. This method depends upon there being a valid price feed.
              *
              *  @param from The account requesting conversion of its SBD i.e. "1.000 SBD"
@@ -840,8 +848,8 @@ namespace steemit {
             annotated_signed_transaction convert_sbd(string from, asset amount, bool broadcast = false);
 
             /**
-             * A witness can public a price feed for the STEEM:SBD market. The median price feed is used
-             * to process conversion requests from SBD to STEEM.
+             * A witness can public a price feed for the GOLOS:SBD market. The median price feed is used
+             * to process conversion requests from SBD to GOLOS.
              *
              * @param witness The witness publishing the price feed
              * @param exchange_rate The desired exchange rate
@@ -884,9 +892,11 @@ namespace steemit {
             /**
              * Gets the current order book for selected asset pair
              *
+             * @param base Base symbol string
+             * @param quote Quote symbol string
              * @param limit Maximum number of orders to return for bids and asks. Max is 1000.
              */
-            order_book get_order_book(const string &base, const string &quote, unsigned limit = 50);
+            market_history::order_book get_order_book(const string &base, const string &quote, unsigned limit = 50);
 
             vector<extended_limit_order> get_open_orders(string account_name);
 
@@ -895,7 +905,7 @@ namespace steemit {
              *
              *  @param owner The name of the account creating the order
              *  @param order_id is a unique identifier assigned by the creator of the order, it can be reused after the order has been filled
-             *  @param amount_to_sell The amount of either SBD or STEEM you wish to sell
+             *  @param amount_to_sell The amount of either SBD or GOLOS you wish to sell
              *  @param min_to_receive The amount of the other asset you will receive at a minimum
              *  @param fill_or_kill true if you want the order to be killed if it cannot immediately be filled
              *  @param expiration the time the order should expire if it has not been filled
@@ -1265,16 +1275,42 @@ namespace steemit {
              */
             annotated_signed_transaction extend_payout_by_time(string payer, string author, string permlink, fc::time_point_sec extension_time, bool broadcast);
 
+            /**
+             * Send the encrypted private email-like message to user
+             * @param from message author name
+             * @param to message recipient name
+             * @param subject message subject
+             * @param body message content
+             * @param broadcast true if you wish to broadcast the transaction
+             */
             annotated_signed_transaction send_private_message(string from, string to, string subject, string body, bool broadcast);
 
+            /**
+             * Retrieves the private message inbox for the account mentioned
+             * @param account account to retrieve inbox for
+             * @param newest timestamp to start retrieve messages from
+             * @param limit amount of messages to retrieve
+             * @return message api objects vector
+             */
             vector<extended_message_object> get_inbox(string account, fc::time_point newest, uint32_t limit);
 
+            /**
+             * Retrieves the private message outbox for the account mentioned
+             * @param account account to retrieve outbox for
+             * @param newest timestamp to start retireve messages from
+             * @param limit amount of messages to retrieve
+             * @return message api objects vector
+             */
             vector<extended_message_object> get_outbox(string account, fc::time_point newest, uint32_t limit);
 
+            /**
+             *
+             * @param mo message api object to try to decrypt
+             */
             message_body try_decrypt_message(const message_api_obj &mo);
 
             /**
-             * Vote on a comment to be paid STEEM
+             * Vote on a comment to be paid GOLOS
              *
              * @param voter The account voting
              * @param author The author of the comment to be voted on

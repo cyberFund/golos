@@ -29,7 +29,7 @@ namespace steemit {
 
             id_type id;
 
-            bip::vector<char, allocator<char>> packed_trx;
+            boost::interprocess::vector<char, allocator<char>> packed_trx;
             transaction_id_type trx_id;
             time_point_sec expiration;
         };

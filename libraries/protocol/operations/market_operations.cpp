@@ -51,7 +51,6 @@ namespace steemit {
 
         void call_order_update_operation::validate() const {
             try {
-                FC_ASSERT(fee->amount >= 0);
                 FC_ASSERT(delta_collateral.symbol != delta_debt.symbol);
                 FC_ASSERT(
                         delta_collateral.amount != 0 || delta_debt.amount != 0);
