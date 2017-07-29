@@ -76,7 +76,7 @@ namespace steemit {
             // Assets
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
-            vector<asset_object> get_assets_by_issuer(const account_name_type &issuer) const;
+            vector<asset_object> get_assets_by_issuer(string issuer) const;
 
             vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
 
@@ -736,12 +736,12 @@ namespace steemit {
             return result;
         }
 
-        vector<asset_object> database_api::get_assets_by_issuer(const account_name_type &issuer) const {
+        vector<optional<asset_object>> database_api::get_assets_by_issuer(string issuer) const {
             return my->get_assets_by_issuer(issuer);
         }
 
-        vector<asset_object> database_api_impl::get_assets_by_issuer(const account_name_type &issuer) const {
-            vector<asset_object> result;
+        vector<optional<asset_object>> database_api_impl::get_assets_by_issuer(string issuer) const {
+            vector<optional<asset_object>> result;
 
             auto range = _db.get_index<asset_index>().indices().get<by_issuer>().equal_range(issuer);
             for (const asset_object &asset : boost::make_iterator_range(range.first, range.second)) {
@@ -930,9 +930,9 @@ namespace steemit {
             return true;
         }
 
-        bool database_api::verify_account_authority(const std::string &name_or_id, const flat_set<public_key_type> &signers) const {
+        bool database_api::verify_account_authority(const std::string &name, const flat_set<public_key_type> &signers) const {
             return my->_db.with_read_lock([&]() {
-                return my->verify_account_authority(name_or_id, signers);
+                return my->verify_account_authority(name, signers);
             });
         }
 

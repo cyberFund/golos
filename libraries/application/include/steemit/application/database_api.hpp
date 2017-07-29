@@ -298,7 +298,7 @@ namespace steemit {
              */
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
 
-            vector<asset_object> get_assets_by_issuer(const account_name_type &issuer) const;
+            vector<optional<asset_object>> get_assets_by_issuer(string issuer) const;
 
             vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
 
@@ -351,7 +351,7 @@ namespace steemit {
             /*
              * @return true if the signers have enough authority to authorize an account
              */
-            bool verify_account_authority(const std::string &name_or_id, const flat_set<public_key_type> &signers) const;
+            bool verify_account_authority(const std::string &name, const flat_set<public_key_type> &signers) const;
 
             /**
              *  if permlink is "" then it will return all votes for author
