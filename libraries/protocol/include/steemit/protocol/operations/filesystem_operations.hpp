@@ -25,11 +25,6 @@ namespace steemit {
          * Such an account can grant or remove right to publish a content. Only DECENT account has permission to use this method.
          */
         struct set_publishing_manager_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type from;
             vector<account_name_type> to;
             bool can_create_publishers;
@@ -50,11 +45,6 @@ namespace steemit {
          * @brief Allows account to publish a content. Only account with publishing manager status has permission to use this method.
          */
         struct set_publishing_right_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type from;
             vector<account_name_type> to;
             bool is_publisher;
@@ -76,11 +66,6 @@ namespace steemit {
          * @brief Submits content to the blockchain.
          */
         struct content_submit_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type author;
             // optional parameter. If map is not empty, payout will be splitted
             // maps co-authors to split based on basis points
@@ -114,11 +99,6 @@ namespace steemit {
          * @brief This operation is used to cancel submitted content.
          */
         struct content_cancellation_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type author;
             string URI;
 
@@ -163,11 +143,6 @@ namespace steemit {
          * @brief This operation is used to send a request to buy a content.
          */
         struct request_to_buy_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             string URI;
             account_name_type consumer;
             asset price;
@@ -188,11 +163,6 @@ namespace steemit {
          * @brief Rates a content.
          */
         struct leave_rating_and_comment_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             string URI;
             account_name_type consumer;
             uint64_t rating; //<1-5
@@ -210,11 +180,6 @@ namespace steemit {
          * @brief This operation is used to register a new seeder, modify the existing seeder or to extend seeder's lifetime.
          */
         struct ready_to_publish_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type seeder;
             bigint_type pubKey;
             /// Available space on seeder's disc dedicated to contents, in MBs
@@ -235,11 +200,6 @@ namespace steemit {
          * @brief Seeders have to periodically prove that they hold the content.
          */
         struct proof_of_custody_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type seeder;
             string URI;
             fc::optional<custody_proof_type> proof;
@@ -256,11 +216,6 @@ namespace steemit {
          * @brief This operation is used to send encrypted share of a content and proof of delivery to consumer.
          */
         struct deliver_keys_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type seeder;
             buying_object::id_type buying;
 
@@ -279,11 +234,6 @@ namespace steemit {
          * @brief This is a virtual operation emitted for the purpose of returning escrow to author
          */
         struct return_escrow_submission_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type author;
             asset escrow;
             content_object::id_type content;
@@ -302,11 +252,6 @@ namespace steemit {
          * @brief This is a virtual operation emitted for the purpose of returning escrow to consumer
          */
         struct return_escrow_buying_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type consumer;
             asset escrow;
             buying_object::id_type buying;
@@ -325,11 +270,6 @@ namespace steemit {
          * @brief This operation is used to report stats. These stats are later used to rate seeders.
          */
         struct report_stats_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             /// Map of seeders to amount they uploaded
             map<account_name_type, uint64_t> stats;
             account_name_type consumer;
@@ -346,12 +286,6 @@ namespace steemit {
          * @brief
          */
         struct pay_seeder_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
-
             asset payout;
             account_name_type author;
             account_name_type seeder;
@@ -370,12 +304,6 @@ namespace steemit {
          * @brief
          */
         struct finish_buying_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
-
             asset payout;
             // do we need here region_code_from?
             account_name_type author;
@@ -414,32 +342,3 @@ FC_REFLECT(steemit::chain::proof_of_custody_operation,
            (fee)(seeder)(URI)(proof))
 FC_REFLECT(steemit::chain::deliver_keys_operation,
            (fee)(seeder)(proof)(key)(buying))
-FC_REFLECT(steemit::chain::return_escrow_submission_operation,
-           (fee)(author)(escrow)(content))
-FC_REFLECT(steemit::chain::return_escrow_buying_operation,
-           (fee)(consumer)(escrow)(buying))
-FC_REFLECT(steemit::chain::report_stats_operation, (fee)(consumer)(stats))
-FC_REFLECT(steemit::chain::pay_seeder_operation,
-           (fee)(payout)(author)(seeder));
-FC_REFLECT(steemit::chain::finish_buying_operation,
-           (fee)(payout)(author)(co_authors)(buying)(consumer));
-
-FC_REFLECT(
-        steemit::chain::set_publishing_manager_operation::fee_parameters_type,
-        (fee))
-FC_REFLECT(steemit::chain::set_publishing_right_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(steemit::chain::content_submit_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(steemit::chain::content_cancellation_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(steemit::chain::request_to_buy_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(
-        steemit::chain::leave_rating_and_comment_operation::fee_parameters_type,
-        (fee))
-FC_REFLECT(steemit::chain::ready_to_publish_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(steemit::chain::proof_of_custody_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(steemit::chain::deliver_keys_operation::fee_parameters_type, (fee))

@@ -24,11 +24,6 @@ namespace steemit {
          * @brief This is a virtual operation emitted for the purpose of returning escrow to author
          */
         struct return_escrow_submission_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type author;
             asset escrow;
             content_object::id_type content;
@@ -47,11 +42,6 @@ namespace steemit {
          * @brief This is a virtual operation emitted for the purpose of returning escrow to consumer
          */
         struct return_escrow_buying_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             account_name_type consumer;
             asset escrow;
             buying_object::id_type buying;
@@ -70,11 +60,6 @@ namespace steemit {
          * @brief This operation is used to report stats. These stats are later used to rate seeders.
          */
         struct report_stats_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
             /// Map of seeders to amount they uploaded
             map<account_name_type, uint64_t> stats;
             account_name_type consumer;
@@ -91,12 +76,6 @@ namespace steemit {
          * @brief
          */
         struct pay_seeder_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
-
             asset payout;
             account_name_type author;
             account_name_type seeder;
@@ -115,12 +94,6 @@ namespace steemit {
          * @brief
          */
         struct finish_buying_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 0;
-            };
-
-            asset fee;
-
             asset payout;
             // do we need here region_code_from?
             account_name_type author;
@@ -136,14 +109,14 @@ namespace steemit {
                 FC_ASSERT(!"virtual operation");
             }
         };
-
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::return_escrow_submission_operation::fee_parameters_type,
-        (fee))
-FC_REFLECT(steemit::chain::return_escrow_buying_operation::fee_parameters_type,
-           (fee))
-FC_REFLECT(steemit::chain::report_stats_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::chain::pay_seeder_operation::fee_parameters_type, (fee))
-FC_REFLECT(steemit::chain::finish_buying_operation::fee_parameters_type, (fee))
+FC_REFLECT(steemit::chain::return_escrow_submission_operation,
+           (author)(escrow)(content))
+FC_REFLECT(steemit::chain::return_escrow_buying_operation,
+           (consumer)(escrow)(buying))
+FC_REFLECT(steemit::chain::report_stats_operation, (consumer)(stats))
+FC_REFLECT(steemit::chain::pay_seeder_operation, (payout)(author)(seeder));
+FC_REFLECT(steemit::chain::finish_buying_operation,
+           (payout)(author)(co_authors)(buying)(consumer));

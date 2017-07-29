@@ -4,7 +4,7 @@
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/seeder_object.hpp>
-#include <steemit/chain/exceptions.hpp>
+#include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/hardfork.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/asset_object.hpp>
@@ -30,8 +30,7 @@ namespace steemit {
                 }
                 FC_ASSERT(o.from == account_id_type(15),
                           "This operation is permitted only to DECENT account");
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void set_publishing_manager_evaluator::do_apply(const set_publishing_manager_operation &o) {
@@ -63,8 +62,7 @@ namespace steemit {
                                                     });
                     }
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void set_publishing_right_evaluator::do_evaluate(const set_publishing_right_operation &o) {
@@ -72,8 +70,7 @@ namespace steemit {
                 const auto &from_acc = db().get<account_object>(o.from);
                 FC_ASSERT(from_acc.rights_to_publish.is_publishing_manager,
                           "Account does not have permission to give publishing rights");
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void set_publishing_right_evaluator::do_apply(const set_publishing_right_operation &o) {
@@ -108,8 +105,7 @@ namespace steemit {
                     }
                 }
 
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void content_submit_evaluator::do_evaluate(const content_submit_operation &o) {
@@ -233,8 +229,7 @@ namespace steemit {
                     FC_ASSERT(days * total_price_per_day <= o.publishing_fee);
                 }
 
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void content_submit_evaluator::do_apply(const content_submit_operation &o) {
@@ -263,7 +258,7 @@ namespace steemit {
 
                     db().modify<content_object>(*content_itr,
                                                 [&](content_object &co) {
-                                                    map <uint32_t, asset> prices;
+                                                    map<uint32_t, asset> prices;
                                                     for (auto const &item : o.price) {
                                                         prices[item.region] = item.price;
                                                     }
@@ -272,8 +267,8 @@ namespace steemit {
                                                             RegionCodes::OO_none);
                                                     if (it_no_regions !=
                                                         prices.end()) {
-                                                            co.price.SetSimplePrice(
-                                                                    it_no_regions->second);
+                                                        co.price.SetSimplePrice(
+                                                                it_no_regions->second);
                                                     } else {
                                                         for (auto const &price_item : prices) {
                                                             co.price.SetRegionPrice(
@@ -304,7 +299,7 @@ namespace steemit {
                             [&](content_object &co) {  //create new content object and store all values from the operation
                                 co.author = o.author;
                                 co.co_authors = o.co_authors;
-                                map <uint32_t, asset> prices;
+                                map<uint32_t, asset> prices;
                                 for (auto const &item : o.price) {
                                     prices[item.region] = item.price;
                                 }
@@ -380,8 +375,7 @@ namespace steemit {
                             });
                 }
 
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void content_cancellation_evaluator::do_evaluate(const content_cancellation_operation &o) {
@@ -392,8 +386,7 @@ namespace steemit {
                 FC_ASSERT(o.author == content_itr->author);
                 FC_ASSERT(content_itr->expiration > db().head_block_time());
                 FC_ASSERT(!content_itr->is_blocked);
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void content_cancellation_evaluator::do_apply(const content_cancellation_operation &o) {
@@ -406,13 +399,12 @@ namespace steemit {
                                                 if (content_obj.expiration >
                                                     db().head_block_time() +
                                                     (24 * 60 * 60)) {
-                                                        content_obj.expiration =
-                                                                db().head_block_time() +
-                                                                (24 * 60 * 60);
+                                                    content_obj.expiration =
+                                                            db().head_block_time() +
+                                                            (24 * 60 * 60);
                                                 }
                                             });
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void request_to_buy_evaluator::do_evaluate(const request_to_buy_operation &o) {
@@ -424,7 +416,7 @@ namespace steemit {
                           db().get_balance(o.consumer, o.price.asset_id));
                 FC_ASSERT(content->expiration > db().head_block_time());
 
-                optional <asset> price = content->price.GetPrice(
+                optional<asset> price = content->price.GetPrice(
                         o.region_code_from);
 
                 FC_ASSERT(price.valid(),
@@ -439,7 +431,7 @@ namespace steemit {
                     /// Check whether subscription exists. If so, consumer doesn't need pay for content
                     if (subscription != range.end() &&
                         subscription->expiration > db().head_block_time()) {
-                            is_subscriber = true;
+                        is_subscriber = true;
                     }
                 }
 
@@ -462,8 +454,7 @@ namespace steemit {
                     FC_ASSERT(o.price >= dct_price);
                 }
                 return void();
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void request_to_buy_evaluator::do_apply(const request_to_buy_operation &o) {
@@ -515,8 +506,7 @@ namespace steemit {
                             obj.m_transaction_fee = o.fee;
                             obj.m_timestamp = d.head_block_time();
                         });
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void deliver_keys_evaluator::do_evaluate(const deliver_keys_operation &o) {
@@ -540,8 +530,7 @@ namespace steemit {
                                                                  secondK,
                                                                  seeder_pubKey,
                                                                  buyer_pubKey));
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void deliver_keys_evaluator::do_apply(const deliver_keys_operation &o) {
@@ -557,11 +546,11 @@ namespace steemit {
                 if (std::find(buying.seeders_answered.begin(),
                               buying.seeders_answered.end(), o.seeder) ==
                     buying.seeders_answered.end()) {
-                        db().modify<buying_object>(buying, [&](buying_object &bo) {
-                            bo.seeders_answered.push_back(o.seeder);
-                            bo.key_particles.push_back(
-                                    decent::encrypt::Ciphertext(o.key));
-                        });
+                    db().modify<buying_object>(buying, [&](buying_object &bo) {
+                        bo.seeders_answered.push_back(o.seeder);
+                        bo.key_particles.push_back(
+                                decent::encrypt::Ciphertext(o.key));
+                    });
                 }
                 delivered = buying.seeders_answered.size() >= content->quorum;
                 //if the content has already been delivered or expired, just note the key particles and go on
@@ -613,8 +602,7 @@ namespace steemit {
                 {
                     db().buying_expire(buying);
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void leave_rating_evaluator::do_evaluate(const leave_rating_and_comment_operation &o) {
@@ -628,8 +616,7 @@ namespace steemit {
                 FC_ASSERT(bo->delivered, "not delivered");
                 FC_ASSERT(!bo->rated_or_commented,
                           "already rated or commented");
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void leave_rating_evaluator::do_apply(const leave_rating_and_comment_operation &o) {
@@ -691,14 +678,12 @@ namespace steemit {
                                     obj.m_str_description + ")";
                             obj.m_timestamp = d.head_block_time();
                         });
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void ready_to_publish_evaluator::do_evaluate(const ready_to_publish_operation &o) {
             try {
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void ready_to_publish_evaluator::do_apply(const ready_to_publish_operation &o) {
@@ -729,8 +714,7 @@ namespace steemit {
                         so.ipfs_ID = o.ipfs_ID;
                     });
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void proof_of_custody_evaluator::do_evaluate(const proof_of_custody_operation &o) {
@@ -762,8 +746,7 @@ namespace steemit {
                           "Invalid proof of custody");
 
                 //ilog("proof_of_custody OK");
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void proof_of_custody_evaluator::do_apply(const proof_of_custody_operation &o) {
@@ -833,8 +816,7 @@ namespace steemit {
                     op.payout = reward;
                     db().push_applied_operation(op);
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         void return_escrow_submission_evaluator::do_evaluate(const return_escrow_submission_operation &o) {
@@ -849,8 +831,7 @@ namespace steemit {
 
         void report_stats_evaluator::do_evaluate(const report_stats_operation &o) {
             try {
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
 
             void result;
             return result;
@@ -866,8 +847,7 @@ namespace steemit {
                                                                sso.total_upload += item.second;
                                                            });
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
 
             void result;
             return result;

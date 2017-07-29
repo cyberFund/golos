@@ -4,21 +4,17 @@
 
 namespace steemit {
     namespace protocol {
-
         void set_publishing_manager_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT(to.size() > 0);
             FC_ASSERT(from == account_id_type(15),
                       "Account does not have permission to this operation");
         }
 
         void set_publishing_right_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT(to.size() > 0);
         }
 
         void content_submit_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT(co_authors.size() <= 10);
 
             uint32_t sum_of_splits = 0;
@@ -46,12 +42,10 @@ namespace steemit {
         }
 
         void request_to_buy_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT(price.amount >= 0);
         }
 
         void leave_rating_and_comment_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT((rating > 0 && rating <= 5));
             if (!comment.empty()) {
                 FC_ASSERT(comment.length() <= STEEMIT_MAX_COMMENT_SIZE);
@@ -59,22 +53,18 @@ namespace steemit {
         }
 
         void ready_to_publish_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT(space > 0 && space <= UINT64_MAX);
             FC_ASSERT(price_per_MByte >= 0 && price_per_MByte <= UINT32_MAX);
             FC_ASSERT(!ipfs_ID.empty());
         }
 
         void proof_of_custody_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
         }
 
         void deliver_keys_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
         }
 
         void report_stats_operation::validate() const {
-            FC_ASSERT(fee.amount >= 0);
             FC_ASSERT(stats.size() != 0);
             for (const auto &element : stats) {
                 FC_ASSERT(element.second >= 0);
