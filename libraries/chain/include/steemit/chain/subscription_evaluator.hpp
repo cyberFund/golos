@@ -10,9 +10,7 @@ namespace steemit {
         public:
             typedef subscribe_operation operation_type;
 
-            void_result do_evaluate(const subscribe_operation &o);
-
-            void_result do_apply(const subscribe_operation &o);
+            void do_apply(const subscribe_operation &o);
         };
 
         class subscribe_by_author_evaluator
@@ -20,9 +18,7 @@ namespace steemit {
         public:
             typedef subscribe_by_author_operation operation_type;
 
-            void_result do_evaluate(const subscribe_by_author_operation &o);
-
-            void_result do_apply(const subscribe_by_author_operation &o);
+            void do_apply(const subscribe_by_author_operation &o);
         };
 
         class automatic_renewal_of_subscription_evaluator
@@ -30,9 +26,7 @@ namespace steemit {
         public:
             typedef automatic_renewal_of_subscription_operation operation_type;
 
-            void_result do_evaluate(const automatic_renewal_of_subscription_operation &o);
-
-            void_result do_apply(const automatic_renewal_of_subscription_operation &o);
+            void do_apply(const automatic_renewal_of_subscription_operation &o);
         };
 
         class disallow_automatic_renewal_of_subscription_evaluator
@@ -40,9 +34,7 @@ namespace steemit {
         public:
             typedef disallow_automatic_renewal_of_subscription_operation operation_type;
 
-            void_result do_evaluate(const disallow_automatic_renewal_of_subscription_operation &o);
-
-            void_result do_apply(const disallow_automatic_renewal_of_subscription_operation &o);
+            void do_apply(const disallow_automatic_renewal_of_subscription_operation &o);
         };
 
         class renewal_of_subscription_evaluator
@@ -50,9 +42,7 @@ namespace steemit {
         public:
             typedef renewal_of_subscription_operation operation_type;
 
-            void_result do_evaluate(const renewal_of_subscription_operation &o);
-
-            void_result do_apply(const renewal_of_subscription_operation &o);
+            void do_apply(const renewal_of_subscription_operation &o);
         };
     }
 } // namespace::chain
