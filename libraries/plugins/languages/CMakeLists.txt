@@ -1,11 +1,11 @@
-set(CURRENT_TARGET tags)
+set(CURRENT_TARGET languages)
 
 list(APPEND CURRENT_TARGET_HEADERS
-        include/steemit/tags/tags_plugin.hpp
+        include/steemit/languages/languages_plugin.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES
-        tags_plugin.cpp
+        languages_plugin.cpp
         )
 
 if(BUILD_SHARED_LIBRARIES)
