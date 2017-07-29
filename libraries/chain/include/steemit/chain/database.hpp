@@ -18,6 +18,8 @@
 #include <fc/log/logger.hpp>
 
 #include <map>
+#include "content_object.hpp"
+#include "buying_object.hpp"
 
 namespace steemit {
     namespace chain {
@@ -263,18 +265,9 @@ namespace steemit {
             ///@throws fc::exception if the proposed transaction fails to apply.
             void push_proposal(const proposal_object &proposal);
 
-            signed_block generate_block(
-                    const fc::time_point_sec when,
-                    const account_name_type &witness_owner,
-                    const fc::ecc::private_key &block_signing_private_key,
-                    uint32_t skip
-            );
+            signed_block generate_block(const fc::time_point_sec when, const account_name_type &witness_owner, const fc::ecc::private_key &block_signing_private_key, uint32_t skip);
 
-            signed_block _generate_block(
-                    const fc::time_point_sec when,
-                    const account_name_type &witness_owner,
-                    const fc::ecc::private_key &block_signing_private_key
-            );
+            signed_block _generate_block(const fc::time_point_sec when, const account_name_type &witness_owner, const fc::ecc::private_key &block_signing_private_key);
 
             void pop_block();
 
@@ -329,7 +322,7 @@ namespace steemit {
              *  Emitted After a block has been applied and committed.  The callback
              *  should not yield and should execute quickly.
              */
-            //fc::signal<void(const vector< graphene::db2::generic_id >&)> changed_objects;
+            //fc::signal<void(const vector< steemit::db2::generic_id >&)> changed_objects;
 
             /** this signal is emitted any time an object is removed and contains a
              * pointer to the last value of every object that was removed.
@@ -398,10 +391,9 @@ namespace steemit {
             asset get_savings_balance(const account_object &a, const asset_name_type &asset_name) const;
 
             /** this updates the votes for witnesses as a result of account voting proxy changing */
-            void adjust_proxied_witness_votes(const account_object &a,
-                    const std::array<share_type,
-                            STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
-                    int depth = 0);
+            void adjust_proxied_witness_votes(const account_object &a, const std::array<share_type,
+                    STEEMIT_MAX_PROXY_RECURSION_DEPTH +
+                    1> &delta, int depth = 0);
 
             /** this updates the votes for all witnesses as a result of account VESTS changing */
             void adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth = 0);
@@ -558,6 +550,51 @@ namespace steemit {
             asset pay_market_fees(const asset_object &recv_asset, const asset &receives);
 
             ///@}
+
+            /**
+          * @brief Returns unused escrow from expired buying to consumer
+          * @param buying Expired buying object
+          */
+            void buying_expire(const buying_object &buying);
+
+            /**
+             * @brief Returns unused publishing fee to author
+             * @param content Expired content object
+             */
+            void content_expire(const content_object &content);
+
+            /**
+             * @brief Renewal of expired subscription
+             * @param subscription Expired subscription object
+             * @param subscription_period Extension of subscription, in days
+             * @param price Price for subscription
+             */
+            void renew_subscription(const subscription_object &subscription, const uint32_t subscription_period, const asset price);
+
+            /**
+             * @brief Disallows automatic renewal of subscription if consumer doesn't have enought balance to renew
+             * expired subscription
+             * @param subscription Expired subscription object
+             */
+            void disallow_automatic_renewal_of_subscription(const subscription_object &subscription);
+
+            void filesystem_housekeeping();
+
+            share_type get_new_asset_per_block();
+
+            share_type get_asset_per_block_by_block_num(uint32_t block_num);
+
+            steemit::chain::miner_reward_input get_time_to_maint_by_block_time(fc::time_point_sec block_time);
+
+            share_type get_miner_budget(uint32_t blocks);
+
+            bool is_reward_switch_in_interval(uint64_t a, uint64_t b) const;
+
+            uint64_t get_next_reward_switch_block(uint64_t start) const;
+
+            real_supply get_real_supply() const;
+
+            bool is_reward_switch_time() const;
 
             void perform_vesting_share_split(uint32_t magnitude);
 
