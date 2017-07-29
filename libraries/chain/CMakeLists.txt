@@ -48,6 +48,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/chain/steem_evaluator.hpp
      include/steemit/chain/steem_object_types.hpp
      include/steemit/chain/steem_objects.hpp
+     include/steemit/chain/subscription_evaluator.hpp
      include/steemit/chain/transfer_evaluator.hpp
      include/steemit/chain/transaction_evaluation_state.hpp
      include/steemit/chain/transaction_object.hpp
@@ -74,6 +75,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      steem_evaluator.cpp
      proposal_evaluator.cpp
      steem_objects.cpp
+     subscription_evaluator.cpp
      transfer_evaluator.cpp
      proposal_object.cpp
      witness_schedule.cpp
