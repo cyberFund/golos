@@ -1291,10 +1291,6 @@ namespace steemit {
                     d.json_metadata = fc::prune_invalid_utf8(d.json_metadata);
                 }
 
-                if (!fc::is_utf8(d.languages)) {
-                    d.languages = fc::prune_invalid_utf8(d.languages);
-                }
-
             }
             return d;
         }

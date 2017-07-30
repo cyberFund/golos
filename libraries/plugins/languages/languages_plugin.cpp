@@ -415,13 +415,20 @@ namespace steemit {
         }
 
         bool languages_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
+            comment_metadata meta;
+            if (c.json_metadata.size()) {
+                try {
+                    meta=fc::json::from_string(c.json_metadata).as<comment_metadata>();
+                } FC_CAPTURE_LOG_AND_RETHROW((c))
+            }
+
             if (query.filter_language.size()) {
-                if (c.languages.empty()) {
+                if (meta.language.empty()) {
                     return true;
                 }
             }
 
-            if (query.filter_language.count(c.languages)) {
+            if (query.filter_language.count(meta.language)) {
                 return true;
             }
 
