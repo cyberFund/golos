@@ -21,7 +21,7 @@ namespace steemit {
             comment_api_obj(const chain::comment_object &o) :
                     id(o.id),
                     category(to_string(o.category)),
-                    languages(to_string(o.languages)),
+                    languages(to_string(o.language)),
                     parent_author(o.parent_author),
                     parent_permlink(to_string(o.parent_permlink)),
                     author(o.author),

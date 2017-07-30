@@ -2456,7 +2456,7 @@ namespace steemit {
             FC_ASSERT(!is_locked());
             limit_order_create_operation op;
             op.owner = owner;
-            op.order_id = order_id;
+            op.orderid = order_id;
             op.amount_to_sell = amount_to_sell;
             op.min_to_receive = min_to_receive;
             op.fill_or_kill = fill_or_kill;
@@ -2475,7 +2475,7 @@ namespace steemit {
             FC_ASSERT(!is_locked());
             limit_order_cancel_operation op;
             op.owner = owner;
-            op.order_id = order_id;
+            op.orderid = order_id;
 
             signed_transaction tx;
             tx.operations.push_back(op);

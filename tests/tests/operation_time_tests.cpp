@@ -1879,7 +1879,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.owner = "alice";
             op.amount_to_sell = asset(alice_sbd.amount.value / 20, SBD_SYMBOL);
             op.min_to_receive = op.amount_to_sell * exchange_rate;
-            op.order_id = 1;
+            op.orderid = 1;
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -1900,7 +1900,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.min_to_receive = op.amount_to_sell;
             op.amount_to_sell = op.min_to_receive * exchange_rate;
             op.fill_or_kill = false;
-            op.order_id = 2;
+            op.orderid = 2;
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -1960,7 +1960,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                                        20), STEEM_SYMBOL);
             op.min_to_receive = asset((alice_sbd.amount.value /
                                        20), SBD_SYMBOL);
-            op.order_id = 3;
+            op.orderid = 3;
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -1976,7 +1976,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_TEST_MESSAGE("Creating Limit Order for SBD that will stay on the books for 30 minutes.");
 
             op.owner = "bob";
-            op.order_id = 4;
+            op.orderid = 4;
             op.amount_to_sell = asset((alice_sbd.amount.value / 10) * 3 -
                                       alice_sbd.amount.value /
                                       20, STEEM_SYMBOL);
@@ -1999,7 +1999,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_TEST_MESSAGE("Filling both limit orders.");
 
             op.owner = "alice";
-            op.order_id = 5;
+            op.orderid = 5;
             op.amount_to_sell = asset(
                     (alice_sbd.amount.value / 10) * 3, SBD_SYMBOL);
             op.min_to_receive = asset(
@@ -2071,7 +2071,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Testing a partial fill before minimum time and full fill after minimum time");
 
-            op.order_id = 6;
+            op.orderid = 6;
             op.amount_to_sell = asset(
                     alice_sbd.amount.value / 20 * 2, SBD_SYMBOL);
             op.min_to_receive = asset(
@@ -2090,7 +2090,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                     2), true);
 
             op.owner = "bob";
-            op.order_id = 7;
+            op.orderid = 7;
             op.amount_to_sell = asset(
                     alice_sbd.amount.value / 20, STEEM_SYMBOL);
             op.min_to_receive = asset(alice_sbd.amount.value / 20, SBD_SYMBOL);
@@ -2146,7 +2146,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                             STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10, true);
 
             op.owner = "sam";
-            op.order_id = 8;
+            op.orderid = 8;
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -2215,7 +2215,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.amount_to_sell = asset(
                     8 * (alice_sbd.amount.value / 20), STEEM_SYMBOL);
             op.min_to_receive = asset(op.amount_to_sell.amount, SBD_SYMBOL);
-            op.order_id = 9;
+            op.orderid = 9;
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2229,7 +2229,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.amount_to_sell = asset(
                     7 * (alice_sbd.amount.value / 20), SBD_SYMBOL);;
             op.min_to_receive = asset(op.amount_to_sell.amount, STEEM_SYMBOL);
-            op.order_id = 10;
+            op.orderid = 10;
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2286,7 +2286,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.owner = "bob";
             op.amount_to_sell.amount = alice_sbd.amount / 20;
             op.min_to_receive.amount = op.amount_to_sell.amount;
-            op.order_id = 11;
+            op.orderid = 11;
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2350,7 +2350,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             db.push_transaction(tx, 0);
 
             op.owner = "bob";
-            op.order_id = 12;
+            op.orderid = 12;
             op.amount_to_sell = asset(3 * (alice_sbd.amount / 40), SBD_SYMBOL);
             op.min_to_receive = asset(op.amount_to_sell.amount, STEEM_SYMBOL);
             tx.operations.clear();
@@ -2363,7 +2363,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                             STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10, true);
 
             op.owner = "dave";
-            op.order_id = 13;
+            op.orderid = 13;
             op.amount_to_sell = op.min_to_receive;
             op.min_to_receive.symbol = SBD_SYMBOL;
             tx.operations.clear();
@@ -2490,7 +2490,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                     STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC, true);
 
             op.owner = "sam";
-            op.order_id = 14;
+            op.orderid = 14;
             op.amount_to_sell = ASSET("1.000 TESTS");
             op.min_to_receive = ASSET("1.000 TBD");
             tx.operations.clear();
@@ -2515,7 +2515,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             generate_block();
 
             op.owner = "alice";
-            op.order_id = 15;
+            op.orderid = 15;
             op.amount_to_sell.symbol = SBD_SYMBOL;
             op.min_to_receive.symbol = STEEM_SYMBOL;
             tx.operations.clear();

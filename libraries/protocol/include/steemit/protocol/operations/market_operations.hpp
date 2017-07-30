@@ -43,16 +43,16 @@ namespace steemit {
 
         struct limit_order_create_operation : public base_operation {
             account_name_type owner;
-            integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
+            integral_id_type orderid = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
             asset min_to_receive;
+
+            /// If this flag is set the entire order must be filled or the operation is rejected
+            bool fill_or_kill = false;
 
             /// The order will be removed from the books if not filled by expiration
             /// Upon expiration, all unsold asset will be returned to seller
             time_point_sec expiration = time_point_sec::maximum();
-
-            /// If this flag is set the entire order must be filled or the operation is rejected
-            bool fill_or_kill = false;
 
             extensions_type extensions;
 
@@ -86,7 +86,7 @@ namespace steemit {
         struct limit_order_create2_operation
                 : public base_operation {
             account_name_type owner;
-            integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
+            integral_id_type orderid = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
             bool fill_or_kill = false;
             price exchange_rate;
@@ -124,13 +124,9 @@ namespace steemit {
          */
 
         struct limit_order_cancel_operation : public base_operation {
-            integral_id_type order_id = 0;
             account_name_type owner;
+            integral_id_type orderid = 0;
             extensions_type extensions;
-
-            account_name_type fee_payer() const {
-                return owner;
-            }
 
             void validate() const;
 
@@ -152,7 +148,7 @@ namespace steemit {
          *  @note this operation can be used to force a market order using the collateral without requiring outside funds.
          */
         struct call_order_update_operation : public base_operation {
-            integral_id_type order_id = 0;
+            integral_id_type orderid = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset delta_collateral; ///< the amount of collateral to add to the margin position
             asset delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt
@@ -173,7 +169,7 @@ namespace steemit {
 
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
-FC_REFLECT(steemit::protocol::limit_order_create_operation, (owner)(order_id)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_create2_operation, (owner)(order_id)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(orderid)(extensions))
 FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt)(extensions))

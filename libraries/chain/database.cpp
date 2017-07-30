@@ -1923,12 +1923,12 @@ namespace steemit {
             for (auto itr = reward_idx.begin();
                  itr != reward_idx.end(); ++itr) {
                 // Add all reward funds to the local cache and decay their recent rshares
-                modify(*itr, [&](reward_fund_object &rfo) {
-                    rfo.recent_rshares2 -= (rfo.recent_rshares2 *
-                                            (head_block_time() -
-                                             rfo.last_update).to_seconds());
-                    rfo.last_update = head_block_time();
-                });
+//                modify(*itr, [&](reward_fund_object &rfo) {
+//                    rfo.recent_rshares2 -= (rfo.recent_rshares2 *
+//                                            (head_block_time() -
+//                                             rfo.last_update).to_seconds());
+//                    rfo.last_update = head_block_time();
+//                });
 
                 reward_fund_context rf_ctx;
                 rf_ctx.recent_rshares2 = itr->recent_rshares2;
@@ -4226,7 +4226,7 @@ namespace steemit {
 
                 if (create_virtual_op) {
                     limit_order_cancel_operation vop;
-                    vop.order_id = order.order_id;
+                    vop.orderid = order.order_id;
                     vop.owner = order.seller;
                     push_virtual_operation(vop);
                 }
@@ -4408,7 +4408,7 @@ namespace steemit {
                                 limit_order_cancel_operation canceler;
                                 const limit_order_object &order = *limit_index.begin();
                                 canceler.owner = order.seller;
-                                canceler.order_id = order.order_id;
+                                canceler.orderid = order.order_id;
 
                                 apply_operation(canceler);
                             }

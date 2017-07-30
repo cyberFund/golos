@@ -76,7 +76,7 @@ namespace steemit {
 
                     bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
                         obj.created = this->db.head_block_time();
-                        obj.order_id = op.order_id;
+                        obj.order_id = op.orderid;
                         obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.get_price();
@@ -108,7 +108,7 @@ namespace steemit {
                 const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
                     obj.created = this->db.head_block_time();
                     obj.seller = op.owner;
-                    obj.order_id = op.order_id;
+                    obj.order_id = op.orderid;
                     obj.for_sale = op.amount_to_sell.amount;
                     obj.sell_price = op.get_price();
                     obj.expiration = op.expiration;
@@ -166,7 +166,7 @@ namespace steemit {
 
                     bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
                         obj.created = this->db.head_block_time();
-                        obj.order_id = op.order_id;
+                        obj.order_id = op.orderid;
                         obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.get_price();
@@ -198,7 +198,7 @@ namespace steemit {
                 const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
                     obj.created = this->db.head_block_time();
                     obj.seller = op.owner;
-                    obj.order_id = op.order_id;
+                    obj.order_id = op.orderid;
                     obj.for_sale = op.amount_to_sell.amount;
                     obj.sell_price = op.exchange_rate;
                     obj.expiration = op.expiration;
@@ -217,7 +217,7 @@ namespace steemit {
                 try {
                     database &d = get_database();
 
-                    _order = d.find_limit_order(op.owner, op.order_id);
+                    _order = d.find_limit_order(op.owner, op.orderid);
                     FC_ASSERT(_order->seller == op.owner);
                 }
                 FC_CAPTURE_AND_RETHROW((op))
@@ -236,7 +236,7 @@ namespace steemit {
                     d.check_call_orders(d.get_asset(quote_asset));
                 } FC_CAPTURE_AND_RETHROW((op))
             } else {
-                this->db.cancel_order(this->db.get_limit_order(op.owner, op.order_id), false);
+                this->db.cancel_order(this->db.get_limit_order(op.owner, op.orderid), false);
             }
         }
 
@@ -317,7 +317,7 @@ namespace steemit {
                     FC_ASSERT(op.delta_debt.amount > 0);
 
                     call_obj = &d.create<call_order_object>([&](call_order_object &call) {
-                        call.order_id = op.order_id;
+                        call.order_id = op.orderid;
                         call.borrower = op.funding_account;
                         call.collateral = op.delta_collateral.amount;
                         call.debt = op.delta_debt.amount;

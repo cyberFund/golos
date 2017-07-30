@@ -365,7 +365,7 @@ namespace steemit {
                         if (obj == nullptr) {
                             _db.remove(tobj);
                         } else {
-                            languages_plugin.self().cache_languages.erase(to_string(obj->languages));
+                            languages_plugin.self().cache_languages.erase(to_string(obj->language));
                         }
                     }
                 }
