@@ -46,26 +46,8 @@ namespace steemit {
             integral_id_type orderid = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
             asset min_to_receive;
-
-            /// If this flag is set the entire order must be filled or the operation is rejected
             bool fill_or_kill = false;
-
-            /// The order will be removed from the books if not filled by expiration
-            /// Upon expiration, all unsold asset will be returned to seller
             time_point_sec expiration = time_point_sec::maximum();
-
-            extensions_type extensions;
-
-            pair<asset_name_type, asset_name_type> get_market() const {
-                return amount_to_sell.symbol < min_to_receive.symbol ?
-                       std::make_pair(amount_to_sell.symbol_name(), min_to_receive.symbol_name())
-                                                                     :
-                       std::make_pair(min_to_receive.symbol_name(), amount_to_sell.symbol_name());
-            }
-
-            account_name_type fee_payer() const {
-                return owner;
-            }
 
             void validate() const;
 
@@ -76,6 +58,13 @@ namespace steemit {
             price get_price() const {
                 return amount_to_sell / min_to_receive;
             }
+
+            pair<asset_symbol_type, asset_symbol_type> get_market() const {
+                return amount_to_sell.symbol < min_to_receive.symbol
+                       ? std::make_pair(amount_to_sell.symbol,
+                                        min_to_receive.symbol) : std::make_pair(
+                                min_to_receive.symbol, amount_to_sell.symbol);
+            }
         };
 
         /**
@@ -83,8 +72,7 @@ namespace steemit {
          *  than calculating it from other fields.
          */
 
-        struct limit_order_create2_operation
-                : public base_operation {
+        struct limit_order_create2_operation : public base_operation {
             account_name_type owner;
             integral_id_type orderid = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
@@ -105,13 +93,11 @@ namespace steemit {
             }
 
             pair<asset_name_type, asset_name_type> get_market() const {
-                return exchange_rate.base.symbol <
-                       exchange_rate.quote.symbol ?
-                       std::make_pair(exchange_rate.base.symbol_name(), exchange_rate.quote
-                               .symbol_name())
-                                                  :
-                       std::make_pair(exchange_rate.quote.symbol_name(), exchange_rate.base
-                               .symbol_name());
+                return exchange_rate.base.symbol < exchange_rate.quote.symbol
+                       ? std::make_pair(exchange_rate.base.symbol_name(),
+                                        exchange_rate.quote.symbol_name())
+                       : std::make_pair(exchange_rate.quote.symbol_name(),
+                                        exchange_rate.base.symbol_name());
             }
         };
 
@@ -169,7 +155,13 @@ namespace steemit {
 
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
-FC_REFLECT(steemit::protocol::limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(expiration)(fill_or_kill)(exchange_rate)(extensions))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(orderid)(extensions))
-FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_create_operation,
+           (owner)(orderid)(amount_to_sell)(min_to_receive)(expiration)(
+                   fill_or_kill))
+FC_REFLECT(steemit::protocol::limit_order_create2_operation,
+           (owner)(orderid)(amount_to_sell)(expiration)(fill_or_kill)(
+                   exchange_rate))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation,
+           (owner)(orderid))
+FC_REFLECT(steemit::protocol::call_order_update_operation,
+           (funding_account)(delta_collateral)(delta_debt))
