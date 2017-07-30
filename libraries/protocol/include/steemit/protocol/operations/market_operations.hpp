@@ -156,12 +156,11 @@ namespace steemit {
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
 FC_REFLECT(steemit::protocol::limit_order_create_operation,
-           (owner)(orderid)(amount_to_sell)(min_to_receive)(expiration)(
-                   fill_or_kill))
+           (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(
+                   expiration))
 FC_REFLECT(steemit::protocol::limit_order_create2_operation,
-           (owner)(orderid)(amount_to_sell)(expiration)(fill_or_kill)(
-                   exchange_rate))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation,
-           (owner)(orderid))
+           (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(
+                   expiration))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(orderid))
 FC_REFLECT(steemit::protocol::call_order_update_operation,
            (funding_account)(delta_collateral)(delta_debt))
