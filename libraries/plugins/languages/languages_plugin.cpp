@@ -27,7 +27,7 @@ namespace steemit {
 
         std::string get_language(const comment_object &c) {
             comment_metadata meta;
-            if (c.json_metadata.size()) {
+            if (c.json_metadata.empty()) {
                 try {
                     meta=fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
                 } FC_CAPTURE_LOG_AND_RETHROW((c))
@@ -39,7 +39,7 @@ namespace steemit {
 
         std::string get_language(const steemit::application::comment_api_obj &c) {
             comment_metadata meta;
-            if (c.json_metadata.size()) {
+            if (c.json_metadata.empty()) {
                 try {
                     meta=fc::json::from_string(c.json_metadata).as<comment_metadata>();
                 } FC_CAPTURE_LOG_AND_RETHROW((c))
