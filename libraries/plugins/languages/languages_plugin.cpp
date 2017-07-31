@@ -20,7 +20,7 @@
 #include <boost/algorithm/string.hpp>
 
 
-#include "include/steemit/languages/languages_plugin.hpp"
+#include <steemit/languages/languages_plugin.hpp>
 
 namespace steemit {
     namespace languages {
