@@ -119,7 +119,7 @@ namespace steemit {
                     }
 
                     set<string> lower_tags;
-                    if (c.category != "") {
+                    if (!c.category.empty()) {
                         meta.tags.insert(fc::to_lower(to_string(c.category)));
                     }
 
@@ -131,7 +131,7 @@ namespace steemit {
                             lower_tags.size() > tag_limit) {
                             break;
                         }
-                        if (tag == "") {
+                        if (tag.empty()) {
                             continue;
                         }
                         lower_tags.insert(fc::to_lower(tag));
