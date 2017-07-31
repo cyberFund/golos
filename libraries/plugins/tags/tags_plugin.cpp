@@ -109,7 +109,7 @@ namespace steemit {
                 comment_metadata filter_tags(const comment_object &c) const {
                     comment_metadata meta;
 
-                    if (c.json_metadata.empty()) {
+                    if (!c.json_metadata.empty()) {
                         try {
                             meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
                         }
@@ -473,7 +473,7 @@ namespace steemit {
 
             tags::comment_metadata meta;
 
-            if (c.json_metadata.empty()) {
+            if (!c.json_metadata.empty()) {
                 try {
                     meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                 } catch (const fc::exception &e) {
