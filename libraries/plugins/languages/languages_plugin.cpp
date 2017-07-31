@@ -25,6 +25,31 @@
 namespace steemit {
     namespace languages {
 
+        std::string get_language(const comment_object &c) {
+            comment_metadata meta;
+            if (c.json_metadata.size()) {
+                try {
+                    meta=fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                } FC_CAPTURE_LOG_AND_RETHROW((c))
+            }
+
+            return std::string(meta.language);
+        }
+
+
+        std::string get_language(const steemit::application::comment_api_obj &c) {
+            comment_metadata meta;
+            if (c.json_metadata.size()) {
+                try {
+                    meta=fc::json::from_string(c.json_metadata).as<comment_metadata>();
+                } FC_CAPTURE_LOG_AND_RETHROW((c))
+            }
+
+            return std::string(meta.language);
+        }
+
+
+
         namespace detail {
 
             using namespace steemit::protocol;
@@ -188,15 +213,8 @@ namespace steemit {
                     languages_plugin.self().cache_languages.emplace(language);
                 }
 
-                comment_metadata filter_tags(const comment_object &c) const {
-                    comment_metadata meta;
-                    if (c.json_metadata.size()) {
-                        try {
-                            meta=fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
-                        } FC_CAPTURE_LOG_AND_RETHROW((c))
-                    }
-
-                    return meta;
+                std::string filter_tags(const comment_object &c) const {
+                    return get_language(c);
                 }
 
                 /**
@@ -233,13 +251,13 @@ namespace steemit {
                     try {
                         auto hot = calculate_hot(c.net_rshares, c.created);
                         auto trending = calculate_trending(c.net_rshares, c.created);
-                        auto meta = filter_tags(c);
+                        auto language = filter_tags(c);
                         const auto &comment_idx = _db.get_index<language_index>().indices().get<by_comment>();
 
                         auto itr = comment_idx.find(c.id);
 
                         if (itr == comment_idx.end()) {
-                            create_tag(meta.language, c, hot, trending);
+                            create_tag(language, c, hot, trending);
                         } else {
                             update_tag(*itr, c, hot, trending);
                         }
@@ -365,7 +383,7 @@ namespace steemit {
                         if (obj == nullptr) {
                             _db.remove(tobj);
                         } else {
-                            languages_plugin.self().cache_languages.erase(to_string(obj->language));
+                            languages_plugin.self().cache_languages.erase(get_language(*obj));
                         }
                     }
                 }
@@ -415,20 +433,15 @@ namespace steemit {
         }
 
         bool languages_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
-            comment_metadata meta;
-            if (c.json_metadata.size()) {
-                try {
-                    meta=fc::json::from_string(c.json_metadata).as<comment_metadata>();
-                } FC_CAPTURE_LOG_AND_RETHROW((c))
-            }
+            std::string language = get_language(c);
 
             if (query.filter_language.size()) {
-                if (meta.language.empty()) {
+                if (language.empty()) {
                     return true;
                 }
             }
 
-            if (query.filter_language.count(meta.language)) {
+            if (query.filter_language.count(language)) {
                 return true;
             }
 
