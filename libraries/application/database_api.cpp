@@ -1020,8 +1020,7 @@ namespace steemit {
             u256 total_r2 = to256(props.total_reward_shares2);
 
             if (props.total_reward_shares2 > 0) {
-                auto vshares = chain::utilities::calculate_vshares(
-                        d.net_rshares.value > 0 ? d.net_rshares.value : 0);
+                auto vshares = chain::utilities::calculate_claims(d.net_rshares.value > 0 ? d.net_rshares.value : 0);
 
                 //int64_t abs_net_rshares = llabs(d.net_rshares.value);
 

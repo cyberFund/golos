@@ -1346,8 +1346,8 @@ namespace steemit {
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
                     /// calculate rshares2 value
-                    new_rshares = utilities::calculate_vshares(new_rshares);
-                    old_rshares = utilities::calculate_vshares(old_rshares);
+                    new_rshares = utilities::calculate_claims(new_rshares);
+                    old_rshares = utilities::calculate_claims(old_rshares);
 
                     const auto &cat = _db.get_category(comment.category);
                     _db.modify(cat, [&](category_object &c) {
@@ -1577,8 +1577,8 @@ namespace steemit {
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
                     /// calculate rshares2 value
-                    new_rshares = utilities::calculate_vshares(new_rshares);
-                    old_rshares = utilities::calculate_vshares(old_rshares);
+                    new_rshares = utilities::calculate_claims(new_rshares);
+                    old_rshares = utilities::calculate_claims(old_rshares);
 
                     _db.modify(comment, [&](comment_object &c) {
                         c.total_vote_weight -= itr->weight;
