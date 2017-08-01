@@ -27,31 +27,33 @@ namespace steemit {
 
         std::string get_language(const comment_object &c) {
             comment_metadata meta;
+            std::string language("");
             if (!c.json_metadata.empty()) {
                 try {
-                    meta = fc::json::from_string(
-                            to_string(c.json_metadata)).as<comment_metadata>();
-                } catch (const fc::exception &e) {
-                    // Do nothing on malformed json_metadata
+                    meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
+                    language = meta.language;
+                } catch (...) {
+
                 }
             }
 
-            return std::string(meta.language);
+            return language;
         }
 
 
         std::string get_language(const steemit::application::comment_api_obj &c) {
             comment_metadata meta;
+            std::string language("");
             if (!c.json_metadata.empty()) {
                 try {
-                    meta = fc::json::from_string(
-                            c.json_metadata).as<comment_metadata>();
-                } catch (const fc::exception &e) {
+                    meta = fc::json::from_string(c.json_metadata).as<comment_metadata>();
+                    language = meta.language;
+                } catch (...) {
                     // Do nothing on malformed json_metadata
                 }
             }
 
-            return std::string(meta.language);
+            return language;
         }
 
 
