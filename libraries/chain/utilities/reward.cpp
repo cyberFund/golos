@@ -66,7 +66,7 @@ namespace steemit {
                 uint64_t result = 0;
                 if (rf.name == STEEMIT_POST_REWARD_FUND_NAME || rf.name == STEEMIT_COMMENT_REWARD_FUND_NAME) {
                     uint128_t two_alpha = rf.content_constant * 2;
-                          result = ( uint128_t( vote_rshares, 0 ) / ( two_alpha + vote_rshares ) ).to_uint64();
+                    result = (uint128_t(vote_rshares, 0) / (two_alpha + vote_rshares)).to_uint64();
                 } else {
                     wlog("Unknown reward fund type ${rf}", ("rf", rf.name));
                 }
@@ -83,11 +83,22 @@ namespace steemit {
             uint128_t calculate_claims(const uint128_t &rshares, const reward_fund_object &rf) {
                 uint128_t result = 0;
                 if (rf.name == STEEMIT_POST_REWARD_FUND_NAME || rf.name == STEEMIT_COMMENT_REWARD_FUND_NAME) {
-                          // ( ( r + a )^2 - a^2 ) / ( r + g )
-                          // In this implementation g = 40a
-                    uint128_t rshares_plus_a = rshares + rf.content_constant;
-                          uint128_t rshares_plus_g = rshares + rf.content_constant * STEEMIT_CONTENT_G_CONST;
-      result = ( rshares_plus_a * rshares_plus_a - rf.content_constant * rf.content_constant ) / rshares_plus_g;
+                    //
+                    // s = rf.content_constant
+                    // alpha = beta * s
+                    // gamma = 2 alpha beta mu
+                    //
+                    uint64_t s = rf.content_constant;
+                    uint64_t two_alpha = (2 * STEEMIT_CONTENT_CONSTANT_BETA_HF17) * s;
+                    uint64_t gamma = (2 * STEEMIT_CONTENT_CONSTANT_BETA_HF17 * STEEMIT_CONTENT_CONSTANT_BETA_HF17 *
+                                      STEEMIT_CONTENT_CONSTANT_MU_HF17) * s;
+
+                    // rshares is uint128_t so we don't have to upcast
+                    uint128_t r_squared = rshares * rshares;
+                    uint128_t two_alpha_r = rshares * two_alpha;
+                    uint128_t beta_r_plus_gamma = STEEMIT_CONTENT_CONSTANT_BETA_HF17 * rshares + gamma;
+
+                    result = (r_squared + two_alpha_r) / beta_r_plus_gamma;
                 } else {
                     wlog("Unknown reward fund type ${rf}", ("rf", rf.name));
                 }

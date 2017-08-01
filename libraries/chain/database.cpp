@@ -3884,7 +3884,7 @@ namespace steemit {
                         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                                    rfo.content_constant = STEEMIT_CONTENT_CONSTANT_HF17;
+                                    rfo.content_constant = STEEMIT_CONTENT_CONSTANT_S_HF17;
                         rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
                     });
 
@@ -3892,7 +3892,7 @@ namespace steemit {
                         rfo.name = STEEMIT_COMMENT_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                                    rfo.content_constant = STEEMIT_CONTENT_CONSTANT_HF17;
+                                    rfo.content_constant = STEEMIT_CONTENT_CONSTANT_S_HF17;
                         rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
                     });
                 }
