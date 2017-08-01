@@ -259,7 +259,7 @@ namespace steemit {
             fc::uint128_t recent_claims = 0;
             time_point_sec last_update;
             uint16_t percent_content_rewards = 0;
-            uint64_t content_constant = 0;
+            uint128_t content_constant = 0;
         };
 
         struct by_price;
