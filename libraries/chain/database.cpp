@@ -2094,9 +2094,8 @@ namespace steemit {
         }
 
         uint16_t database::get_curation_rewards_percent(const comment_object &c) const {
-            if (has_hardfork(STEEMIT_HARDFORK_0_17__86) &&
-                c.parent_author != STEEMIT_ROOT_POST_PARENT) {
-                return 0;
+            if( has_hardfork( STEEMIT_HARDFORK_0_17__86 ) )
+                return get_reward_fund( c ).percent_curation_rewards;
             } else if (has_hardfork(STEEMIT_HARDFORK_0_8__116)) {
                 return STEEMIT_1_PERCENT * 25;
             } else {
@@ -3885,14 +3884,16 @@ namespace steemit {
                         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                        rfo.content_constant = utilities::get_content_constant_s().to_uint64();
+                        rfo.content_constant = uint64_t(277777777777ll); // 1E13 / 36
+                        rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
                     });
 
                     create<reward_fund_object>([&](reward_fund_object &rfo) {
                         rfo.name = STEEMIT_COMMENT_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
-                        rfo.content_constant = utilities::get_content_constant_s().to_uint64();
+                        rfo.content_constant = uint64_t(277777777777ll); // 1E13 / 36
+                        rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
                     });
                 }
                     break;
