@@ -1347,9 +1347,9 @@ namespace steemit {
                                                                                      reward_fund);
                                     uint64_t new_weight = utilities::get_vote_weight(comment.vote_rshares.value,
                                                                                      reward_fund);
-                                }
+                                    cv.weight = new_weight - old_weight;
 
-                                if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                                } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     uint64_t old_weight = ((std::numeric_limits<uint64_t>::max() *
                                                             fc::uint128_t(old_vote_rshares.value)) /
                                                            (2 * two_s + old_vote_rshares.value)).to_uint64();
