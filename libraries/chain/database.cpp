@@ -1705,7 +1705,7 @@ namespace steemit {
 
             while (current != cidx.end() && current->cashout_time <= head_block_time()) {
                 if (has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
-                         auto fund_id = get_reward_fund( *current ).id._id;
+                    auto fund_id = get_reward_fund(*current).id._id;
                     ctx.total_reward_shares2 = funds[fund_id].recent_rshares2;
                     ctx.total_reward_fund_steem = funds[fund_id].reward_balance;
                     funds[fund_id].steem_awarded += cashout_comment_helper(ctx, *current);
@@ -1720,9 +1720,10 @@ namespace steemit {
                         // This extra logic is for when the funds are created in HF 16. We are using this data to preload
                         // recent rshares 2 to prevent any downtime in payouts at HF 17. After HF 17, we can capture
                         // the value of recent rshare 2 and set it at the hardfork instead of computing it every reindex
-                                    if( funds.size() && comment.net_rshares > 0 ) {
-                                                          const auto& rf = get_reward_fund( comment );
-               funds[ rf.id._id ].recent_claims += utilities::calculate_claims( comment.net_rshares.value, rf );
+                        if (funds.size() && comment.net_rshares > 0) {
+                            const auto &rf = get_reward_fund(comment);
+                            funds[rf.id._id].recent_claims += utilities::calculate_claims(comment.net_rshares.value,
+                                                                                          rf);
                         }
 
                         auto reward = cashout_comment_helper(ctx, comment);
@@ -3683,8 +3684,8 @@ void database::apply_hardfork(uint32_t hardfork) {
 
             // As a shortcut in payout processing, we use the id as an array index.
             // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-                        FC_ASSERT( post_rf.id._id == 0 );
-            FC_ASSERT( comment_rf.id._id == 1 );
+            FC_ASSERT(post_rf.id._id == 0);
+            FC_ASSERT(comment_rf.id._id == 1);
         }
             break;
 
