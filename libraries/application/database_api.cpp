@@ -1035,8 +1035,8 @@ namespace steemit {
             });
         }
 
-        u256 to256(const fc::uint128 &t) {
-            u256 result(t.high_bits());
+        boost::multiprecision::uint256_t to256(const fc::uint128 &t) {
+            boost::multiprecision::uint256_t result(t.high_bits());
             result <<= 65;
             result += t.low_bits();
             return result;
@@ -1062,7 +1062,7 @@ namespace steemit {
                 pot = pot * hist.current_median_history;
             }
 
-            u256 total_r2 = 0;
+            boost::multiprecision::uint256_t total_r2 = 0;
             if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                 total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_rshares2);
             } else {
@@ -1072,22 +1072,22 @@ namespace steemit {
             if (props.total_reward_shares2 > 0) {
                 uint128_t vshares;
                 if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                    vshares = steemit::chain::utilities::calculate_vshares(
-                            d.net_rshares.value > 0 ? d.net_rshares.value
-                                                    : 0, my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
+                    vshares = steemit::chain::utilities::calculate_claims(
+                            d.net_rshares.value > 0 ? d.net_rshares.value : 0,
+                            my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
                 } else {
-                    vshares = steemit::chain::utilities::calculate_vshares(
+                    vshares = steemit::chain::utilities::calculate_claims(
                             d.net_rshares.value > 0 ? d.net_rshares.value : 0);
                 }
 
-                u256 r2 = to256(vshares); //to256(abs_net_rshares);
+                boost::multiprecision::uint256_t r2 = to256(vshares); //to256(abs_net_rshares);
                 /*
       r2 *= r2;
       */
                 r2 *= pot.amount.value;
                 r2 /= total_r2;
 
-                u256 tpp = to256(d.children_rshares2);
+                boost::multiprecision::uint256_t tpp = to256(d.children_rshares2);
                 tpp *= pot.amount.value;
                 tpp /= total_r2;
 

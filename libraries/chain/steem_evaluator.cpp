@@ -1224,8 +1224,8 @@ namespace steemit {
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
                     /// calculate rshares2 value
-                    new_rshares = utilities::calculate_vshares(new_rshares);
-                    old_rshares = utilities::calculate_vshares(old_rshares);
+                    new_rshares = utilities::calculate_claims(new_rshares);
+                    old_rshares = utilities::calculate_claims(old_rshares);
 
                     const auto &cat = this->db.get_category(comment.category);
                     this->db.modify(cat, [&](category_object &c) {
@@ -1275,8 +1275,8 @@ namespace steemit {
                         if (curation_reward_eligible) {
                             if (comment.created <
                                 fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME)) {
-                                u512 rshares3(rshares);
-                                u256 total2(comment.abs_rshares.value);
+                                boost::multiprecision::uint512_t rshares3(rshares);
+                                boost::multiprecision::uint256_t total2(comment.abs_rshares.value);
 
                                 if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     rshares3 *= 10000;
@@ -1456,8 +1456,8 @@ namespace steemit {
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
                     /// calculate rshares2 value
-                    new_rshares = utilities::calculate_vshares(new_rshares);
-                    old_rshares = utilities::calculate_vshares(old_rshares);
+                    new_rshares = utilities::calculate_claims(new_rshares);
+                    old_rshares = utilities::calculate_claims(old_rshares);
 
                     this->db.modify(comment, [&](comment_object &c) {
                         c.total_vote_weight -= itr->weight;
