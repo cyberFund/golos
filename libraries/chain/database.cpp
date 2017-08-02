@@ -1805,7 +1805,7 @@ namespace steemit {
             for (const auto &itr : reward_idx) {
                 // Add all reward funds to the local cache and decay their recent rshares
                 //                modify(*itr, [&](reward_fund_object &rfo) {
-                //                    rfo.recent_rshares2 -= (rfo.recent_rshares2 *
+                //                    rfo.recent_claims -= (rfo.recent_claims *
                 //                                            (head_block_time() -
                 //                                             rfo.last_update).to_seconds());
                 //                    rfo.last_update = head_block_time();
@@ -1890,7 +1890,7 @@ namespace steemit {
                 for (size_t i = 0; i < funds.size(); i++) {
                     modify(get<reward_fund_object, by_id>(reward_fund_object::id_type(i)),
                            [&](reward_fund_object &rfo) {
-                               rfo.recent_rshares2 = funds[i].recent_rshares2;
+                               rfo.recent_claims = funds[i].recent_rshares2;
                                rfo.reward_balance -= funds[i].steem_awarded;
                            });
                 }

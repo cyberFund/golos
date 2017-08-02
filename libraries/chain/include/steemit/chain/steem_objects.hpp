@@ -219,7 +219,7 @@ namespace steemit {
             reward_fund_object::id_type id;
             reward_fund_name_type name;
             asset reward_balance = asset(0, STEEM_SYMBOL);
-            fc::uint128_t recent_rshares2 = 0;
+            fc::uint128_t recent_claims = 0;
             time_point_sec last_update;
             uint16_t percent_content_rewards = 0;
             uint64_t content_constant = 0;
