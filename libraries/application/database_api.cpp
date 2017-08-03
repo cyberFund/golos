@@ -1064,7 +1064,7 @@ namespace steemit {
 
             boost::multiprecision::uint256_t total_r2 = 0;
             if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_claims);
+                total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_rshares2);
             } else {
                 total_r2 = to256(props.total_reward_shares2);
             }

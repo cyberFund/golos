@@ -78,6 +78,8 @@ namespace steemit {
                 } else {
                     wlog("Unknown reward fund type ${rf}", ("rf", rf.name));
                 }
+
+                return result;
             }
         }
     }

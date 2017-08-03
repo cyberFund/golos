@@ -3229,7 +3229,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             {
                 const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
-                BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
+                BOOST_REQUIRE(post_rf.recent_rshares2 == alice_vshares);
                 validate_database();
             }
 
@@ -3242,7 +3242,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 alice_vshares -= (alice_vshares * STEEMIT_BLOCK_INTERVAL);
                 const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
-                BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
+                BOOST_REQUIRE(post_rf.recent_rshares2 == alice_vshares);
 
                 generate_block();
 
@@ -3253,7 +3253,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
                 BOOST_REQUIRE(
-                        post_rf.recent_claims == alice_vshares + bob_vshares);
+                        post_rf.recent_rshares2 == alice_vshares + bob_vshares);
                 validate_database();
             }
         }
