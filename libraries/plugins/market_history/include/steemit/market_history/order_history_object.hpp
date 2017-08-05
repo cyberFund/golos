@@ -31,7 +31,7 @@ namespace steemit {
             }
         };
 
-        struct order_history_object : public chain::object<order_history_object_type, order_history_object> {
+        struct order_history_object : public chainbase::object<order_history_object_type, order_history_object> {
             template<typename Constructor, typename Allocator>
             order_history_object(Constructor &&c, chainbase::allocator<Allocator> a) {
                 c(*this);
