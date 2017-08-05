@@ -563,19 +563,19 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.modify(mod_sam_comment, [&](comment_object &com) {
                 com.net_rshares = 10;
                 com.abs_rshares = 10;
-                com.children_rshares2 = chain::utilities::calculate_vshares(10);
+                com.children_rshares2 = chain::utilities::calculate_claims(10);
             });
 
             db.modify(mod_bob_comment, [&](comment_object &com) {
-                com.children_rshares2 = chain::utilities::calculate_vshares(10);
+                com.children_rshares2 = chain::utilities::calculate_claims(10);
             });
 
             db.modify(mod_alice_comment, [&](comment_object &com) {
-                com.children_rshares2 = chain::utilities::calculate_vshares(10);
+                com.children_rshares2 = chain::utilities::calculate_claims(10);
             });
 
             db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &o) {
-                o.total_reward_shares2 = chain::utilities::calculate_vshares(10);
+                o.total_reward_shares2 = chain::utilities::calculate_claims(10);
             });
 
             tx.signatures.clear();
@@ -2832,7 +2832,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           ASSET("5.000 TESTS").amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 1);
+            BOOST_REQUIRE(fill_order_op.current_orderid == 1);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           ASSET("7.500 TBD").amount.value);
             validate_database();
@@ -3223,7 +3223,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           ASSET("5.000 TESTS").amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 1);
+            BOOST_REQUIRE(fill_order_op.current_orderid == 1);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           ASSET("7.500 TBD").amount.value);
             validate_database();
