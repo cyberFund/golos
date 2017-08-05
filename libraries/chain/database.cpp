@@ -4220,11 +4220,25 @@ namespace steemit {
                               ("a", get_account(a.name).name)("b", to_pretty_string(asset(0, delta.symbol)))("r",
                                                                                                              to_pretty_string(
                                                                                                                      -delta)));
-                    create<account_balance_object>([a, &delta](account_balance_object &b) {
-                        b.owner = a.name;
-                        b.asset_name = delta.symbol_name();
-                        b.balance = delta.amount.value;
-                    });
+                    if (delta.symbol == SBD_SYMBOL) {
+                        create<account_balance_object>([a, &delta](account_balance_object &b) {
+                            b.owner = a.name;
+                            b.asset_name = delta.symbol_name();
+                            b.balance = 0;
+                        });
+
+                        adjust_sbd_balance(a);
+
+                        modify(*itr, [delta](account_balance_object &b) {
+                            b.adjust_balance(delta);
+                        });
+                    } else {
+                        create<account_balance_object>([a, &delta](account_balance_object &b) {
+                            b.owner = a.name;
+                            b.asset_name = delta.symbol_name();
+                            b.balance = delta.amount.value;
+                        });
+                    }
                 } else {
                     if (delta.amount < 0) {
                         FC_ASSERT(itr->get_balance() >= -delta,
@@ -4233,15 +4247,14 @@ namespace steemit {
                                                                                                              to_pretty_string(
                                                                                                                      -delta)));
                     }
+                    if (delta.symbol == SBD_SYMBOL) {
+                        adjust_sbd_balance(a);
+                    }
+
                     modify(*itr, [delta](account_balance_object &b) {
                         b.adjust_balance(delta);
                     });
                 }
-
-                if (delta.symbol == SBD_SYMBOL) {
-                    adjust_sbd_balance(a);
-                }
-
             } FC_CAPTURE_AND_RETHROW((a)(delta))
         }
 
