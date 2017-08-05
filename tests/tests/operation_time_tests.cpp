@@ -1938,7 +1938,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             auto fill_order_op = ops[0].get<fill_order_operation>();
 
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 1);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 1);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
@@ -2024,7 +2024,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             fill_order_op = ops[1].get<fill_order_operation>();
             BOOST_REQUIRE(fill_order_op.open_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 4);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 4);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset((alice_sbd.amount.value / 10) * 3 -
                                 alice_sbd.amount.value /
@@ -2038,7 +2038,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             fill_order_op = ops[3].get<fill_order_operation>();
             BOOST_REQUIRE(fill_order_op.open_owner == "sam");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 3);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 3);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
@@ -2111,7 +2111,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             fill_order_op = ops[0].get<fill_order_operation>();
 
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 6);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 6);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
@@ -2165,7 +2165,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             fill_order_op = ops[1].get<fill_order_operation>();
 
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 6);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 6);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
                                 20, SBD_SYMBOL).amount.value);
@@ -2247,7 +2247,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             fill_order_op = ops[0].get<fill_order_operation>();
 
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 9);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 9);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           7 * (alice_sbd.amount.value / 20));
             BOOST_REQUIRE(fill_order_op.current_owner == "dave");
@@ -2302,7 +2302,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             fill_order_op = ops[0].get<fill_order_operation>();
 
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 9);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 9);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           alice_sbd.amount.value / 20);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
@@ -2381,7 +2381,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             fill_order_op = ops[0].get<fill_order_operation>();
 
             BOOST_REQUIRE(fill_order_op.open_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 12);
+            BOOST_REQUIRE(fill_order_op.open_orderid == 12);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           3 * (alice_sbd.amount.value / 40));
             BOOST_REQUIRE(fill_order_op.current_owner == "dave");

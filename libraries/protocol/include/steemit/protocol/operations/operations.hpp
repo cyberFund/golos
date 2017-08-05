@@ -113,7 +113,8 @@ namespace steemit {
                 comment_payout_update_operation,
                 return_vesting_delegation_operation,
                 asset_settle_cancel_operation,
-                fill_asset_order_operation
+                fill_call_order_operation,
+                fill_settlement_order_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,
