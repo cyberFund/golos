@@ -901,7 +901,7 @@ namespace steemit {
                             ss
                                 << "\n=====================================================================================================\n";
                             for (const auto &o : orders) {
-                                ss << ' ' << setw(10) << o.order_id;
+                                ss << ' ' << setw(10) << o.orderid;
                                 ss << ' ' << setw(10) << o.real_price;
                                 ss << ' ' << setw(10) << fc::variant(
                                         asset(o.for_sale,

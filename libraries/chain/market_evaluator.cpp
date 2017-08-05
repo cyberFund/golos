@@ -76,7 +76,7 @@ namespace steemit {
 
                     bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
                         obj.created = this->db.head_block_time();
-                        obj.order_id = op.orderid;
+                        obj.orderid = op.orderid;
                         obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.get_price();
@@ -108,7 +108,7 @@ namespace steemit {
                 const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
                     obj.created = this->db.head_block_time();
                     obj.seller = op.owner;
-                    obj.order_id = op.orderid;
+                    obj.orderid = op.orderid;
                     obj.for_sale = op.amount_to_sell.amount;
                     obj.sell_price = op.get_price();
                     obj.expiration = op.expiration;
@@ -166,7 +166,7 @@ namespace steemit {
 
                     bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
                         obj.created = this->db.head_block_time();
-                        obj.order_id = op.orderid;
+                        obj.orderid = op.orderid;
                         obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
                         obj.sell_price = op.get_price();
@@ -198,7 +198,7 @@ namespace steemit {
                 const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
                     obj.created = this->db.head_block_time();
                     obj.seller = op.owner;
-                    obj.order_id = op.orderid;
+                    obj.orderid = op.orderid;
                     obj.for_sale = op.amount_to_sell.amount;
                     obj.sell_price = op.exchange_rate;
                     obj.expiration = op.expiration;

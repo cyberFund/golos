@@ -29,7 +29,7 @@ namespace steemit {
             time_point_sec created;
             time_point_sec expiration;
             account_name_type seller;
-            protocol::integral_id_type order_id = 0;
+            protocol::integral_id_type orderid = 0;
             share_type for_sale; ///< asset id is sell_price.base.symbol
             protocol::price sell_price;
             share_type deferred_fee;
@@ -146,7 +146,7 @@ namespace steemit {
         composite_key_compare <std::greater<protocol::price>, std::less<limit_order_object::id_type>>
         >,
         ordered_unique <tag<by_account>, composite_key<limit_order_object, member <
-                                                                           limit_order_object, account_name_type, &limit_order_object::seller>, member<limit_order_object, protocol::integral_id_type, &limit_order_object::order_id>>
+                                                                           limit_order_object, account_name_type, &limit_order_object::seller>, member<limit_order_object, protocol::integral_id_type, &limit_order_object::orderid>>
         >
         >,
         allocator <limit_order_object>
