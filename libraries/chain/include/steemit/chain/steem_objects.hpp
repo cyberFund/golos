@@ -473,7 +473,7 @@ FC_REFLECT(steemit::chain::reward_fund_object,
         (id)
                 (name)
                 (reward_balance)
-                (recent_rshares2)
+                (recent_claims)
                 (last_update)
                 (percent_content_rewards)
                 (content_constant)

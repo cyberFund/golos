@@ -1581,12 +1581,6 @@ namespace steemit {
             /// TODO: potentially modify author's total payout numbers as well
         }
 
-        /**
-         *  This method will iterate through all comment_vote_objects and give them
-         *  (max_rewards * weight) / c.total_vote_weight.
-         *
-         *  @returns unclaimed rewards.
-         */
         share_type database::pay_curators(const comment_object &c, share_type &max_rewards) {
             try {
                 uint128_t total_weight(c.total_vote_weight);
@@ -1800,7 +1794,7 @@ namespace steemit {
                 //                });
 
                 reward_fund_context rf_ctx;
-                rf_ctx.recent_claims = itr.recent_rshares2;
+                rf_ctx.recent_claims = itr.recent_claims;
                 rf_ctx.reward_balance = itr.reward_balance;
 
                 funds.push_back(rf_ctx);
