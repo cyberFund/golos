@@ -1,27 +1,31 @@
-#ifndef GOLOS_SMART_WORKER_HPP
-#define GOLOS_SMART_WORKER_HPP
+#ifndef GOLOS_WORKER_STOEAGE_HPP
+#define GOLOS_WORKER_STOEAGE_HPP
 
 #include <memory>
-
-#include "forward.hpp"
-
 #include "smart_worker.hpp"
 
 namespace steemit {
     namespace chain {
+        namespace dynamic_extension {
+            class worker_storage final {
+            public:
+                worker_storage()= default;
+                worker_storage(const worker_storage&)= default;
+                worker_storage&operator=(const worker_storage&)= default;
+                worker_storage(worker_storage&&)= default;
+                worker_storage&operator=(worker_storage&&)= default;
 
+                void add(worker_t *);
 
-        class worker_storage {
-        public:
+                void add(smart_worker);
 
-            void add(worker_t *);
+                view_t get(const std::string &);
 
-            void add(smart_worker *);
-
-        private:
-            struct impl;
-            std::shared_ptr<impl>pimpl;
-        };
+            private:
+                struct impl;
+                std::shared_ptr<impl> pimpl;
+            };
+        }
     }
 }
 #endif //GOLOS_SMART_WORKER_HPP

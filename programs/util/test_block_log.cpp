@@ -1,4 +1,4 @@
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database_basic.hpp>
 
 int main(int argc, char **argv, char **envp) {
     try {

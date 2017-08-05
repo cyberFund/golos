@@ -2,6 +2,8 @@
 
 #include <steemit/chain/steem_objects.hpp>
 
+#include <steemit/chain/database/database.hpp>
+
 namespace steemit {
     namespace market_history {
 

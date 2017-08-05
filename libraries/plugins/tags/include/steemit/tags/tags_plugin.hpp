@@ -2,7 +2,7 @@
 
 #include <steemit/application/plugin.hpp>
 
-#include <steemit/chain/metadatabase.hpp>
+#include <steemit/chain/database/database_police.hpp>
 #include <steemit/chain/comment_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>

@@ -39,9 +39,34 @@ namespace steemit {
                 reblog_operation
         > follow_plugin_operation;
 
-        DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, follow);
+        class follow_evaluator final : public chain::evaluator_impl<database,follow_evaluator,follow_plugin_operation> {
+        public:
+            using operation_type = follow_operation ;
 
-        DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, reblog);
+            template<typename DataBase>
+            follow_evaluator(DataBase &db, follow_plugin* plugin) : chain::evaluator_impl<database,follow_evaluator,follow_plugin_operation>(db),_plugin(plugin) {}
+
+            void do_apply(const follow_operation &o);
+
+            follow_plugin* _plugin;
+        };
+
+        class reblog_evaluator final : public chain::evaluator_impl<database,reblog_evaluator,follow_plugin_operation> {
+        public:
+            using operation_type = reblog_operation ;
+
+            template<typename DataBase>
+            reblog_evaluator(DataBase &db, follow_plugin* plugin) : chain::evaluator_impl<database,reblog_evaluator,follow_plugin_operation>(db),_plugin(plugin) {}
+
+            void do_apply(const reblog_operation &o);
+
+            follow_plugin* _plugin;
+        };
+
+
+        //DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, follow);
+
+        //DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, reblog);
 
     }
 } // steemit::follow

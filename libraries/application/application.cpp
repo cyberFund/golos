@@ -1,29 +1,6 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #include <steemit/application/api.hpp>
 
-#include <steemit/chain/database_exceptions.hpp>
+#include <steemit/chain/database/database_exceptions.hpp>
 
 #include <fc/time.hpp>
 
@@ -216,7 +193,7 @@ namespace steemit {
                 application_impl(application *self)
                         : _self(self),
                         //_pending_trx_db(std::make_shared<graphene::db::object_database>()),
-                          _chain_db(std::make_shared<chain::database>()) {
+                          _chain_db(make_database()) {
                 }
 
                 ~application_impl() {
@@ -446,8 +423,8 @@ namespace steemit {
                                 // leave that peer connected so that they can get sync blocks from us
                                 bool result = _chain_db->push_block(blk_msg.block, (_is_block_producer |
                                                                                     _force_validate)
-                                                                                   ? database::skip_nothing
-                                                                                   : database::skip_transaction_signatures);
+                                                                                   ? static_cast<uint32_t >(database::validation_steps::skip_nothing)
+                                                                                   : static_cast<uint32_t >(database::validation_steps::skip_transaction_signatures));
 
                                 if (!sync_mode &&
                                     blk_msg.block.transactions.size()) {

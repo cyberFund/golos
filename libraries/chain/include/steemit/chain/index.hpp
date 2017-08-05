@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database_basic.hpp>
 
 namespace steemit {
     namespace chain {

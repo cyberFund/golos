@@ -25,7 +25,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/unit_test_monitor.hpp>
 
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database_basic.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include "../common/database_fixture.hpp"

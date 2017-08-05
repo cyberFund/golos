@@ -2,7 +2,7 @@
 #define DATABASE_FIXTURE_HPP
 
 #include <steemit/application/application.hpp>
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database_basic.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>

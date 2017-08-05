@@ -4,7 +4,7 @@
 
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/history_object.hpp>
-
+#include <steemit/chain/database/database.hpp>
 #include <fc/smart_ref_impl.hpp>
 
 namespace steemit {

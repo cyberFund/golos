@@ -2,7 +2,7 @@
 
 #include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
-
+#include <steemit/chain/database/database.hpp>
 namespace steemit {
     namespace market_history {
 

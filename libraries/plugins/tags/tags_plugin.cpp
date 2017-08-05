@@ -5,7 +5,7 @@
 
 #include <steemit/protocol/config.hpp>
 
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database.hpp>
 #include <steemit/chain/hardfork.hpp>
 #include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>

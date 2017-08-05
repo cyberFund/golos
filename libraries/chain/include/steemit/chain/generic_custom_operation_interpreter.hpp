@@ -4,10 +4,9 @@
 #include <steemit/protocol/steem_operations.hpp>
 #include <steemit/protocol/operation_util_impl.hpp>
 
-#include <steemit/chain/evaluator.hpp>
-#include <steemit/chain/evaluator_registry.hpp>
+#include <steemit/chain/evaluators/evaluator.hpp>
+#include <steemit/chain/evaluators/evaluator_registry.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
-
 #include <graphene/schema/schema.hpp>
 
 #include <fc/variant.hpp>
@@ -18,19 +17,17 @@
 namespace steemit {
     namespace chain {
 
-        class database_basic;
-
-        template<typename CustomOperationType>
+        template<typename DataBase, typename CustomOperationType>
         class generic_custom_operation_interpreter
                 : public custom_operation_interpreter,
                   public evaluator_registry<CustomOperationType> {
         public:
-            generic_custom_operation_interpreter(database_basic &db)
-                    : evaluator_registry<CustomOperationType>(db) {
-            }
+            generic_custom_operation_interpreter(DataBase &db) :evaluator_registry<CustomOperationType>(),_db(db){}
+
+            DataBase& _db;
 
             void apply_operations(const vector<CustomOperationType> &custom_operations, const operation &outer_o) {
-                auto plugin_session = this->_db.start_undo_session(true);
+                auto plugin_session = _db.start_undo_session(true);
 
                 flat_set<account_name_type> outer_active;
                 flat_set<account_name_type> outer_owner;

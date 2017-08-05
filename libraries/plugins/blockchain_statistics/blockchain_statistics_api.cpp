@@ -1,5 +1,5 @@
 #include <steemit/blockchain_statistics/blockchain_statistics_api.hpp>
-
+#include <steemit/chain/database/database.hpp>
 namespace steemit {
     namespace blockchain_statistics {
 

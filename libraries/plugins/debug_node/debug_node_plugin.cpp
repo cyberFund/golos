@@ -11,6 +11,7 @@
 #include <fc/thread/scoped_lock.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
+#include <steemit/chain/database/database.hpp>
 
 namespace steemit {
     namespace plugin {

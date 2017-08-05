@@ -4,7 +4,7 @@
 
 #include <steemit/plugins/raw_block/raw_block_api.hpp>
 #include <steemit/plugins/raw_block/raw_block_plugin.hpp>
-
+#include <steemit/chain/database/database.hpp>
 namespace steemit {
     namespace plugin {
         namespace raw_block {

@@ -1,27 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 #include <steemit/private_message/private_message_evaluators.hpp>
 
 #include <steemit/application/impacted.hpp>
@@ -30,7 +6,7 @@
 #include <steemit/chain/generic_custom_operation_interpreter.hpp>
 
 #include <fc/smart_ref_impl.hpp>
-
+#include <steemit/chain/database/database.hpp>
 namespace steemit {
     namespace private_message {
 
@@ -47,15 +23,15 @@ namespace steemit {
                 }
 
                 private_message_plugin &_self;
-                std::shared_ptr<generic_custom_operation_interpreter<steemit::private_message::private_message_plugin_operation>> _custom_operation_interpreter;
+                std::shared_ptr<generic_custom_operation_interpreter<chain::database,private_message::private_message_plugin_operation>> _custom_operation_interpreter;
                 flat_map<string, string> _tracked_accounts;
             };
 
             private_message_plugin_impl::private_message_plugin_impl(private_message_plugin &_plugin)
                     : _self(_plugin) {
-                _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<steemit::private_message::private_message_plugin_operation>>(database());
+                _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<chain::database,steemit::private_message::private_message_plugin_operation>>(database());
 
-                _custom_operation_interpreter->register_evaluator<private_message_evaluator>(&_self);
+                _custom_operation_interpreter->register_evaluator<chain::database,private_message_evaluator>(database(),&_self);
 
                 database().set_custom_operation_interpreter(_self.plugin_name(), _custom_operation_interpreter);
                 return;

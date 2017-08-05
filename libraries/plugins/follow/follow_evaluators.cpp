@@ -187,9 +187,7 @@ namespace steemit {
                         const auto &old_feed_idx = db.get_index<feed_index>().indices().get<by_old_feed>();
                         auto old_feed = old_feed_idx.lower_bound(itr->follower);
 
-                        while (old_feed->account == itr->follower &&
-                               next_id - old_feed->account_feed_id >
-                               _plugin->max_feed_size) {
+                        while (old_feed->account == itr->follower && next_id - old_feed->account_feed_id > _plugin->max_feed_size) {
                             db.remove(*old_feed);
                             old_feed = old_feed_idx.lower_bound(itr->follower);
                         };

@@ -1,5 +1,5 @@
 
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database.hpp>
 
 #include <steemit/plugins/block_info/block_info.hpp>
 #include <steemit/plugins/block_info/block_info_api.hpp>

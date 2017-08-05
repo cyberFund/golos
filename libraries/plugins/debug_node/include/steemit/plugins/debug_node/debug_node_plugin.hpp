@@ -7,7 +7,7 @@
 
 #include <map>
 #include <fstream>
-
+#include <steemit/chain/database/database.hpp>
 namespace steemit {
     namespace protocol {
         struct chain_properties;
@@ -63,7 +63,7 @@ namespace steemit {
                 virtual void plugin_shutdown() override;
 
                 template<typename Lambda>
-                void debug_update(Lambda &&callback, uint32_t skip = steemit::chain::database::skip_nothing) {
+                void debug_update(Lambda &&callback, uint32_t skip = static_cast<uint32_t >(steemit::chain::database::validation_steps::skip_nothing)) {
                     // this was a method on database in Graphene
                     chain::database &db = database();
                     chain::block_id_type head_id = db.head_block_id();
@@ -86,7 +86,7 @@ namespace steemit {
                 uint32_t debug_generate_blocks(
                         const std::string &debug_key,
                         uint32_t count,
-                        uint32_t skip = steemit::chain::database::skip_nothing,
+                        uint32_t skip = static_cast<uint32_t>(steemit::chain::database::validation_steps::skip_nothing),
                         uint32_t miss_blocks = 0,
                         private_key_storage *key_storage = nullptr
                 );
@@ -95,7 +95,7 @@ namespace steemit {
                         const std::string &debug_key,
                         const fc::time_point_sec &head_block_time,
                         bool generate_sparsely,
-                        uint32_t skip = steemit::chain::database::skip_nothing,
+                        uint32_t skip = static_cast<uint32_t >(steemit::chain::database::validation_steps::skip_nothing),
                         private_key_storage *key_storage = nullptr
                 );
 

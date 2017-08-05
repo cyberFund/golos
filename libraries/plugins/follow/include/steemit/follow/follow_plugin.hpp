@@ -1,7 +1,7 @@
 #pragma once
 
 #include <steemit/application/plugin.hpp>
-#include <steemit/chain/database.hpp>
+#include <steemit/chain/database/database_basic.hpp>
 
 #include <fc/thread/future.hpp>
 

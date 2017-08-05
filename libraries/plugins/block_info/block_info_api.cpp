@@ -4,7 +4,7 @@
 
 #include <steemit/plugins/block_info/block_info_api.hpp>
 #include <steemit/plugins/block_info/block_info_plugin.hpp>
-
+#include <steemit/chain/database/database.hpp>
 namespace steemit {
     namespace plugin {
         namespace block_info {

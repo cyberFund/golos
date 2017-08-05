@@ -24,7 +24,7 @@
 #pragma once
 
 #include <steemit/application/application.hpp>
-#include <steemit/chain/evaluator.hpp>
+#include <steemit/chain/evaluators/evaluator.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -159,7 +159,7 @@ if( options.count(name) ) { \
    std::shared_ptr< steemit::application::abstract_plugin > create_ ## plugin_name ## _plugin( application::application* application )  \
    { return std::make_shared< plugin_class >( application ); } \
    } }
-
+/*
 #define DEFINE_PLUGIN_EVALUATOR(PLUGIN, OPERATION, X)                     \
 class X ## _evaluator : public steemit::chain::evaluator_impl< X ## _evaluator, OPERATION > \
 {                                                                           \
@@ -175,3 +175,4 @@ class X ## _evaluator : public steemit::chain::evaluator_impl< X ## _evaluator, 
                                                                             \
       PLUGIN* _plugin;                                                      \
 };
+*/
