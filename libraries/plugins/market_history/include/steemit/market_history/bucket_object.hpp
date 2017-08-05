@@ -39,7 +39,7 @@ namespace steemit {
         struct by_key;
 
         struct bucket_object
-                : public chainbase::object<bucket_object_type, bucket_object> {
+                : public chainbase::object<market_history_object_types::bucket_object_type, bucket_object> {
             bucket_object() {
 
             }

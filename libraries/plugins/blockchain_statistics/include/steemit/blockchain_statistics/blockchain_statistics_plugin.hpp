@@ -67,7 +67,7 @@ namespace steemit {
         };
 
         struct bucket_object
-                : public object<bucket_object_type, bucket_object> {
+                : public object<blockchain_statistics_object_type::bucket_object_type, bucket_object> {
             template<typename Constructor, typename Allocator>
             bucket_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
