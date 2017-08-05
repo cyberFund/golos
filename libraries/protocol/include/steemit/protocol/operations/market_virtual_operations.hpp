@@ -21,15 +21,15 @@ namespace steemit {
             }
 
             fill_order_operation(const string &c_o, uint32_t c_id, const asset &c_p, const string &o_o, uint32_t o_id,
-                                 const asset &o_p) : current_owner(c_o), current_orderid(c_id), current_pays(c_p),
-                                                     open_owner(o_o), open_orderid(o_id), open_pays(o_p) {
+                                 const asset &o_p) : current_owner(c_o), current_order_id(c_id), current_pays(c_p),
+                                                     open_owner(o_o), open_order_id(o_id), open_pays(o_p) {
             }
 
             account_name_type current_owner;
-            integral_id_type current_orderid = 0;
+            integral_id_type current_order_id = 0;
             asset current_pays;
             account_name_type open_owner;
-            integral_id_type open_orderid = 0;
+            integral_id_type open_order_id = 0;
             asset open_pays;
         };
 
@@ -46,10 +46,10 @@ namespace steemit {
             }
 
             fill_call_order_operation(integral_id_type o, const account_name_type &a, const asset &p, const asset &r,
-                                      const asset &f) : orderid(o), owner(a), pays(p), receives(r), fee(f) {
+                                      const asset &f) : order_id(o), owner(a), pays(p), receives(r), fee(f) {
             }
 
-            integral_id_type orderid;
+            integral_id_type order_id;
             account_name_type owner;
             asset pays;
             asset receives;
@@ -74,11 +74,11 @@ namespace steemit {
             }
 
             fill_settlement_order_operation(integral_id_type o, const account_name_type &a, const asset &p,
-                                            const asset &r, const asset &f) : orderid(o), owner(a), pays(p),
+                                            const asset &r, const asset &f) : order_id(o), owner(a), pays(p),
                                                                               receives(r) {
             }
 
-            integral_id_type orderid;
+            integral_id_type order_id;
             account_name_type owner;
             asset pays;
             asset receives;
@@ -98,8 +98,8 @@ namespace steemit {
 FC_REFLECT_TYPENAME(steemit::protocol::market_virtual_operations)
 
 FC_REFLECT(steemit::protocol::fill_order_operation,
-           (current_owner)(current_orderid)(current_pays)(open_owner)(open_orderid)(open_pays))
-FC_REFLECT(steemit::protocol::fill_call_order_operation, (orderid)(owner)(pays)(receives)(fee))
-FC_REFLECT(steemit::protocol::fill_settlement_order_operation, (orderid)(owner)(pays)(receives)(fee))
+           (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
+FC_REFLECT(steemit::protocol::fill_call_order_operation, (order_id)(owner)(pays)(receives)(fee))
+FC_REFLECT(steemit::protocol::fill_settlement_order_operation, (order_id)(owner)(pays)(receives)(fee))
 
 #endif //GOLOS_MARKET_VIRTUAL_OPERATIONS_HPP

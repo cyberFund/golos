@@ -3390,7 +3390,7 @@ namespace steemit {
                 bool called_some = check_call_orders(sell_asset, allow_black_swan);
                 called_some |= check_call_orders(receive_asset, allow_black_swan);
                 if (called_some && !find_limit_order(new_order_object.seller,
-                                                     new_order_object.orderid)) { // then we were filled by call order
+                                                     new_order_object.order_id)) { // then we were filled by call order
                     return true;
                 }
 
@@ -3530,8 +3530,8 @@ namespace steemit {
             }
 
             push_virtual_operation(
-                    fill_order_operation(new_order.seller, new_order.orderid, new_order_pays, old_order.seller,
-                                         old_order.orderid, old_order_pays));
+                    fill_order_operation(new_order.seller, new_order.order_id, new_order_pays, old_order.seller,
+                                         old_order.order_id, old_order_pays));
 
             int result = 0;
             result |= fill_order(new_order, new_order_pays, new_order_receives);
@@ -3818,8 +3818,8 @@ namespace steemit {
                     auto old_limit_itr = filled_limit ? limit_itr++ : limit_itr;
                     fill_order(*old_limit_itr, order_pays, order_receives);
                     push_virtual_operation(
-                            fill_order_operation{limit_itr->seller, limit_itr->orderid, limit_itr->amount_for_sale(),
-                                                 old_limit_itr->seller, old_limit_itr->orderid,
+                            fill_order_operation{limit_itr->seller, limit_itr->order_id, limit_itr->amount_for_sale(),
+                                                 old_limit_itr->seller, old_limit_itr->order_id,
                                                  old_limit_itr->amount_for_sale()});
 
 
@@ -3952,7 +3952,7 @@ namespace steemit {
 
                 if (create_virtual_op) {
                     limit_order_cancel_operation vop;
-                    vop.orderid = order.orderid;
+                    vop.order_id = order.order_id;
                     vop.owner = order.seller;
                     push_virtual_operation(vop);
                 }
@@ -4129,7 +4129,7 @@ namespace steemit {
                         limit_order_cancel_operation canceler;
                         const limit_order_object &order = *limit_index.begin();
                         canceler.owner = order.seller;
-                        canceler.orderid = order.orderid;
+                        canceler.order_id = order.order_id;
 
                         apply_operation(canceler);
                     }

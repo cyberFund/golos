@@ -43,7 +43,7 @@ namespace steemit {
 
         struct limit_order_create_operation : public base_operation {
             account_name_type owner;
-            integral_id_type orderid = 0; /// an ID assigned by owner, must be unique
+            integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
             asset min_to_receive;
             bool fill_or_kill = false;
@@ -74,7 +74,7 @@ namespace steemit {
 
         struct limit_order_create2_operation : public base_operation {
             account_name_type owner;
-            integral_id_type orderid = 0; /// an ID assigned by owner, must be unique
+            integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset amount_to_sell;
             bool fill_or_kill = false;
             price exchange_rate;
@@ -109,7 +109,7 @@ namespace steemit {
 
         struct limit_order_cancel_operation : public base_operation {
             account_name_type owner;
-            integral_id_type orderid = 0;
+            integral_id_type order_id = 0;
             extensions_type extensions;
 
             void validate() const;
@@ -132,7 +132,7 @@ namespace steemit {
          *  @note this operation can be used to force a market order using the collateral without requiring outside funds.
          */
         struct call_order_update_operation : public base_operation {
-            integral_id_type orderid = 0;
+            integral_id_type order_id = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset delta_collateral; ///< the amount of collateral to add to the margin position
             asset delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt
@@ -154,8 +154,8 @@ namespace steemit {
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
 FC_REFLECT(steemit::protocol::limit_order_create_operation,
-           (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration))
+           (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration))
 FC_REFLECT(steemit::protocol::limit_order_create2_operation,
-           (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(orderid))
+           (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id))
 FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt))
