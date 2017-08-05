@@ -1642,14 +1642,6 @@ namespace steemit {
                                             to_sbd(asset(curation_tokens, STEEM_SYMBOL)),
                                             to_sbd(asset(total_beneficiary, STEEM_SYMBOL)));
 
-
-                        /*if( sbd_created.symbol == SBD_SYMBOL )
-                           adjust_total_payout( comment, sbd_created + to_sbd( asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( reward_tokens.to_uint64() - author_tokens, STEEM_SYMBOL ) ) );
-                        else
-                           adjust_total_payout( comment, to_sbd( asset( vesting_steem + sbd_steem, STEEM_SYMBOL ) ), to_sbd( asset( reward_tokens.to_uint64() - author_tokens, STEEM_SYMBOL ) ) );
-                           */
-
-
                         push_virtual_operation(
                                 author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first,
                                                         sbd_payout.second, vest_created));
@@ -1669,7 +1661,6 @@ namespace steemit {
                         modify(cat, [&](category_object &c) {
                             c.total_payouts += to_sbd(asset(claimed_reward, STEEM_SYMBOL));
                         });
-
                     }
 
                     if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
