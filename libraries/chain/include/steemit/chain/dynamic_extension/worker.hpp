@@ -40,7 +40,7 @@ namespace steemit {
             };
 
             template<typename T>
-            T cast(boost::any r){
+            inline T cast(boost::any r) {
                 return boost::any_cast<T>(r);
             }
 

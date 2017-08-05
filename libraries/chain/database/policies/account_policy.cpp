@@ -317,7 +317,7 @@ namespace steemit {
                         (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) /
                         STEEMIT_100_PERCENT;
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                    content_reward = dynamic_extension::cast<fc::safe<long long int>>(references.dynamic_extension_worker().get("behaviour_based")->invoke("pay_reward_funds",content_reward));
+                    content_reward = dynamic_extension::cast<fc::safe<long int>>(references.dynamic_extension_worker().get("behaviour_based")->invoke("pay_reward_funds",content_reward));
                 } /// 75% to content creator
                 auto vesting_reward =
                         (new_steem * STEEMIT_VESTING_FUND_PERCENT) /

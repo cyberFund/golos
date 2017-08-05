@@ -24,7 +24,7 @@ namespace steemit {
         using steemit::application::application;
 
         using chainbase::object;
-        using chainbase::oid;
+        using chainbase::object_id;
         using chainbase::allocator;
 
 //
@@ -111,7 +111,7 @@ namespace steemit {
             }
         };
 
-        typedef oid<language_object> language_id_type;
+        typedef object_id<language_object> language_id_type;
 
         template<typename T, typename C = std::less<T>>
         class comparable_index {
@@ -409,7 +409,7 @@ namespace steemit {
             uint32_t comments = 0;
         };
 
-        typedef oid<language_stats_object> language_stats_id_type;
+        typedef object_id<language_stats_object> language_stats_id_type;
 
         struct by_comments;
         struct by_top_posts;
@@ -480,7 +480,7 @@ namespace steemit {
             }
         };
 
-        typedef oid<peer_stats_object> peer_stats_id_type;
+        typedef object_id<peer_stats_object> peer_stats_id_type;
 
         struct by_rank;
         struct by_voter_peer;
@@ -528,7 +528,7 @@ namespace steemit {
             uint32_t total_posts = 0;
         };
 
-        typedef oid<author_language_stats_object> author_tag_stats_id_type;
+        typedef object_id<author_language_stats_object> author_tag_stats_id_type;
 
         struct by_author_tag_posts;
         struct by_author_posts_tag;
