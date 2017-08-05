@@ -33,7 +33,6 @@ namespace steemit {
         };
 
         struct by_id;
-        struct by_bucket;
         struct by_key;
 
         struct bucket_object : public object<bucket_object_type, bucket_object> {

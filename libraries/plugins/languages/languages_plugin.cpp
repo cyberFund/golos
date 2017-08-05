@@ -63,8 +63,7 @@ namespace steemit {
 
             class languages_plugin_impl final {
             public:
-                languages_plugin_impl(languages_plugin &_plugin) : _self(
-                        _plugin) {
+                languages_plugin_impl(languages_plugin &_plugin) : _self(_plugin) {
                 }
 
                 virtual ~languages_plugin_impl();
@@ -437,8 +436,7 @@ namespace steemit {
         } /// end detail namespace
 
         languages_plugin::languages_plugin(application *app) : plugin(app),
-                                                               my(new detail::languages_plugin_impl(
-                                                                       *this)) {
+                                                               my(new detail::languages_plugin_impl(*this)) {
             chain::database &db = database();
             db.add_plugin_index<language_index>();
             db.add_plugin_index<language_stats_index>();
