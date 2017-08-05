@@ -389,6 +389,11 @@ namespace steemit {
 
             void adjust_supply(const asset &delta, bool adjust_vesting = false);
 
+            /**
+             * This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's             rshares2 changes
+             * from old_rshares2 to new_rshares2.  Maintaining invariants that children_rshares2 is the sum of all             descendants' rshares2,
+ * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
+ */
             void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);

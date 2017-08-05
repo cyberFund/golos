@@ -48,7 +48,8 @@ namespace steemit {
                     rs2 = (rs2 * ctx.reward_weight) / STEEMIT_100_PERCENT;
 
                     boost::multiprecision::uint256_t payout_u256 = (rf * rs2) / total_rshares2;
-                    FC_ASSERT(payout_u256 <= boost::multiprecision::uint256_t(uint64_t(std::numeric_limits<int64_t>::max())));
+                    FC_ASSERT(payout_u256 <=
+                              boost::multiprecision::uint256_t(uint64_t(std::numeric_limits<int64_t>::max())));
                     uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
                     if (is_comment_payout_dust(ctx.current_steem_price, payout)) {
