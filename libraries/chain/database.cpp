@@ -4302,7 +4302,6 @@ namespace steemit {
             });
         }
 
-
         void database::adjust_supply(const asset &delta, bool adjust_vesting) {
 
             const auto &props = get_dynamic_global_properties();
@@ -4329,7 +4328,6 @@ namespace steemit {
                 a.current_supply += delta.amount;
             });
         }
-
 
         asset database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
             try {
