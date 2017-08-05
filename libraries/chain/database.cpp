@@ -808,15 +808,6 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        /**
-         * Attempts to push the transaction into the pending queue
-         *
-         * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument. This
-         * will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block size.
-         * Although the transaction will probably not propagate further now, as the peers are likely to have their pending
-         * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pending
-         * queues.
-         */
         void database::push_transaction(const signed_transaction &trx, uint32_t skip) {
             try {
                 try {
@@ -1010,10 +1001,6 @@ namespace steemit {
             return pending_block;
         }
 
-        /**
-         * Removes the most recent block from the database and
-         * undoes any changes it made.
-         */
         void database::pop_block() {
             try {
                 _pending_tx_session.reset();
@@ -1116,10 +1103,6 @@ namespace steemit {
             return (when - first_slot_time).to_seconds() / STEEMIT_BLOCK_INTERVAL + 1;
         }
 
-        /**
-         *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
-         *  by STEEM and increasing the sbd supply by the specified amount.
-         */
         std::pair<asset, asset> database::create_sbd(const account_object &to_account, asset steem) {
             std::pair<asset, asset> assets(asset(0, SBD_SYMBOL), asset(0, STEEM_SYMBOL));
 
@@ -1152,27 +1135,9 @@ namespace steemit {
             return assets;
         }
 
-        /**
-         * @param to_account - the account to receive the new vesting shares
-         * @param STEEM - STEEM to be converted to vesting shares
-         */
         asset database::create_vesting(const account_object &to_account, asset steem) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
-
-                /**
-                 *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
-                 *  change as the result of the user adding funds
-                 *
-                 *  V / C  = (V+Vn) / (C+Cn)
-                 *
-                 *  Simplifies to Vn = (V * Cn ) / C
-                 *
-                 *  If Cn equals o.amount, then we must solve for Vn to know how many new vesting shares
-                 *  the user should receive.
-                 *
-                 *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
-                 */
                 asset new_vesting = steem * cprops.get_vesting_share_price();
 
                 modify(to_account, [&](account_object &to) {
@@ -1467,12 +1432,12 @@ namespace steemit {
                 ++current;
 
                 /**
-        *  Let T = total tokens in vesting fund
-        *  Let V = total vesting shares
-        *  Let v = total vesting shares being cashed out
-        *
-        *  The user may withdraw  vT / V tokens
-        */
+                 *  Let T = total tokens in vesting fund
+                 *  Let V = total vesting shares
+                 *  Let v = total vesting shares being cashed out
+                 *
+                 *  The user may withdraw  vT / V tokens
+                 */
                 share_type to_withdraw;
                 if (from_account.to_withdraw - from_account.withdrawn < from_account.vesting_withdraw_rate.amount) {
                     to_withdraw = std::min(from_account.vesting_shares.amount,
@@ -1785,14 +1750,6 @@ namespace steemit {
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
-                // Add all reward funds to the local cache and decay their recent rshares
-                //                modify(*itr, [&](reward_fund_object &rfo) {
-                //                    rfo.recent_claims -= (rfo.recent_claims *
-                //                                            (head_block_time() -
-                //                                             rfo.last_update).to_seconds());
-                //                    rfo.last_update = head_block_time();
-                //                });
-
                 reward_fund_context rf_ctx;
                 rf_ctx.recent_claims = itr.recent_claims;
                 rf_ctx.reward_balance = itr.reward_balance;
@@ -1879,25 +1836,15 @@ namespace steemit {
             }
         }
 
-        /**
-         *  Overall the network has an inflation rate of 102% of virtual steem per year
-         *  90% of inflation is directed to vesting shares
-         *  10% of inflation is directed to subjective proof of work voting
-         *  1% of inflation is directed to liquidity providers
-         *  1% of inflation is directed to block producers
-         *
-         *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
-         *  This method does not pay out witnesses.
-         */
         void database::process_funds() {
             const auto &props = get_dynamic_global_properties();
             const auto &wso = get_witness_schedule_object();
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 /**
-        * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
-        * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-        */
+                 * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
+                 * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
+                 */
                 int64_t start_inflation_rate = int64_t(STEEMIT_INFLATION_RATE_START_PERCENT);
                 int64_t inflation_rate_adjustment = int64_t(head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD);
                 int64_t inflation_rate_floor = int64_t(STEEMIT_INFLATION_RATE_STOP_PERCENT);
@@ -2183,11 +2130,6 @@ namespace steemit {
             return used_rewards;
         }
 
-        /**
-         *  Iterates over all conversion requests with a conversion date before
-         *  the head block time and then converts them to/from steem/sbd at the
-         *  current median price feed history price times the premium
-         */
         void database::process_conversions() {
             auto now = head_block_time();
             const auto &request_by_date = get_index<convert_request_index>().indices().get<by_conversion_date>();
@@ -3199,21 +3141,21 @@ namespace steemit {
                     dgp.average_block_size = (99 * dgp.average_block_size + block_size) / 100;
 
                     /**
-        *  About once per minute the average network use is consulted and used to
-        *  adjust the reserve ratio. Anything above 50% usage reduces the ratio by
-        *  half which should instantly bring the network from 50% to 25% use unless
-        *  the demand comes from users who have surplus capacity. In other words,
-        *  a 50% reduction in reserve ratio does not result in a 50% reduction in usage,
-        *  it will only impact users who where attempting to use more than 50% of their
-        *  capacity.
-        *
-        *  When the reserve ratio is at its max (10,000) a 50% reduction will take 3 to
-        *  4 days to return back to maximum.  When it is at its minimum it will return
-        *  back to its prior level in just a few minutes.
-        *
-        *  If the network reserve ratio falls under 100 then it is probably time to
-        *  increase the capacity of the network.
-        */
+                     *  About once per minute the average network use is consulted and used to
+                     *  adjust the reserve ratio. Anything above 50% usage reduces the ratio by
+                     *  half which should instantly bring the network from 50% to 25% use unless
+                     *  the demand comes from users who have surplus capacity. In other words,
+                     *  a 50% reduction in reserve ratio does not result in a 50% reduction in usage,
+                     *  it will only impact users who where attempting to use more than 50% of their
+                     *  capacity.
+                     *
+                     *  When the reserve ratio is at its max (10,000) a 50% reduction will take 3 to
+                     *  4 days to return back to maximum.  When it is at its minimum it will return
+                     *  back to its prior level in just a few minutes.
+                     *
+                     *  If the network reserve ratio falls under 100 then it is probably time to
+                     *  increase the capacity of the network.
+                     */
                     if (dgp.head_block_number % 20 == 0) {
                         if ((!has_hardfork(STEEMIT_HARDFORK_0_12__179) &&
                              dgp.average_block_size > dgp.maximum_block_size / 2) ||
@@ -3683,18 +3625,6 @@ namespace steemit {
             FC_CAPTURE_AND_RETHROW((settle)(pays)(receives))
         }
 
-        /**
-         *  Starting with the least collateralized orders, fill them if their
-         *  call price is above the max(lowest bid,call_limit).
-         *
-         *  This method will return true if it filled a short or limit
-         *
-         *  @param mia - the market issued asset that should be called.
-         *  @param enable_black_swan - when adjusting collateral, triggering a black swan is invalid and will throw
-         *                             if enable_black_swan is not set to true.
-         *
-         *  @return true if a margin call was executed.
-         */
         bool database::check_call_orders(const asset_object &mia, bool enable_black_swan) {
             try {
                 if (!mia.is_market_issued()) {
@@ -3815,14 +3745,6 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        /**
-         * All margin positions are force closed at the swan price
-         * Collateral received goes into a force-settlement fund
-         * No new margin positions can be created for this asset
-         * No more price feed updates
-         * Force settlement happens without delay at the swan price, deducting from force-settlement fund
-         * No more asset updates may be issued.
-        */
         void database::globally_settle_asset(const asset_object &mia, const price &settlement_price) {
             try {
                 /*
@@ -3998,15 +3920,6 @@ namespace steemit {
             }
         }
 
-        /**
-         *  let HB = the highest bid for the collateral  (aka who will pay the most DEBT for the least collateral)
-         *  let SP = current median feed's Settlement Price
-         *  let LC = the least collateralized call order's swan price (debt/collateral)
-         *
-         *  If there is no valid price feed or no bids then there is no black swan.
-         *
-         *  A black swan occurs if MAX(HB,SP) <= LC
-         */
         bool database::check_for_blackswan(const asset_object &mia, bool enable_black_swan) {
             if (!mia.is_market_issued()) {
                 return false;

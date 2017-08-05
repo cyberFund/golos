@@ -247,6 +247,15 @@ namespace steemit {
 
             bool push_block(const signed_block &b, uint32_t skip = skip_nothing);
 
+            /**
+             * Attempts to push the transaction into the pending queue
+             *
+             * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument    . This
+             * will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block si    ze.
+             * Although the transaction will probably not propagate further now, as the peers are likely to have their pe    nding
+             * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pend    ing
+             * queues.
+             */
             void push_transaction(const signed_transaction &trx, uint32_t skip = skip_nothing);
 
             void _maybe_warn_multiple_production(uint32_t height) const;
@@ -264,6 +273,10 @@ namespace steemit {
             signed_block _generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
                                          const fc::ecc::private_key &block_signing_private_key);
 
+            /**
+             * Removes the most recent block from the database and
+             * undoes any changes it made.
+             */
             void pop_block();
 
             void clear_pending();
@@ -363,9 +376,30 @@ namespace steemit {
              */
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
-            /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
+            /**
+             *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
+             *  by STEEM and increasing the sbd supply by the specified amount.
+             *  @return the sbd created and deposited to_account, may return STEEM if there is no median feed
+             */
             std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
 
+            /**
+             *  Creates vesting steem values
+             *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+             *  change as the result of the user adding funds
+             *
+             *  V / C  = (V+Vn) / (C+Cn)
+             *
+             *  Simplifies to Vn = (V * Cn ) / C
+             *
+             *  If Cn equals o.amount, then we must solve for Vn to know how many new vesting shares
+             *  the user should receive.
+             *
+             *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
+             *
+             * @param to_account - the account to receive the new vesting shares
+             * @param STEEM - STEEM to be converted to vesting shares
+             */
             asset create_vesting(const account_object &to_account, asset steem);
 
             void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value,
@@ -425,8 +459,23 @@ namespace steemit {
 
             void process_comment_cashout();
 
+            /**
+             *  Overall the network has an inflation rate of 102% of virtual steem per year
+             *  90% of inflation is directed to vesting shares
+             *  10% of inflation is directed to subjective proof of work voting
+             *  1% of inflation is directed to liquidity providers
+             *  1% of inflation is directed to block producers
+             *
+             *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
+             *  This method does not pay out witnesses.
+             */
             void process_funds();
 
+            /**
+             *  Iterates over all conversion requests with a conversion date before
+             *  the head block time and then converts them to/from steem/sbd at the
+             *  current median price feed history price times the premium
+             */
             void process_conversions();
 
             void process_savings_withdraws();
@@ -505,6 +554,14 @@ namespace steemit {
             std::deque<signed_transaction> _popped_tx;
 
             /// @{ @group Market Helpers
+            /**
+             * All margin positions are force closed at the swan price
+             * Collateral received goes into a force-settlement fund
+             * No new margin positions can be created for this asset
+             * No more price feed updates
+             * Force settlement happens without delay at the swan price, deducting from force-settlement fund
+             * No more asset updates may be issued.
+             */
             void globally_settle_asset(const asset_object &bitasset, const price &settle_price);
 
             void cancel_order(const force_settlement_object &order, bool create_virtual_op = true);
@@ -548,6 +605,18 @@ namespace steemit {
 
             bool fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives);
 
+            /**
+             *  Starting with the least collateralized orders, fill them if their
+             *  call price is above the max(lowest bid,call_limit).
+             *
+             *  This method will return true if it filled a short or limit
+             *
+             *  @param mia - the market issued asset that should be called.
+             *  @param enable_black_swan - when adjusting collateral, triggering a black swan is invalid and will throw
+             *                             if enable_black_swan is not set to true.
+             *
+             *  @return true if a margin call was executed.
+             */
             bool check_call_orders(const asset_object &mia, bool enable_black_swan = true);
 
             // helpers to fill_order
@@ -651,6 +720,15 @@ namespace steemit {
 
             void update_expired_feeds();
 
+            /**
+             *  let HB = the highest bid for the collateral  (aka who will pay the most DEBT for the least collateral)
+             *  let SP = current median feed's Settlement Price
+             *  let LC = the least collateralized call order's swan price (debt/collateral)
+             *
+             *  If there is no valid price feed or no bids then there is no black swan.
+             *
+             *  A black swan occurs if MAX(HB,SP) <= LC
+             */
             bool check_for_blackswan(const asset_object &mia, bool enable_black_swan = true);
 
             void process_header_extensions(const signed_block &next_block);
