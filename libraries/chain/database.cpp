@@ -3818,8 +3818,8 @@ namespace steemit {
                     auto old_limit_itr = filled_limit ? limit_itr++ : limit_itr;
                     fill_order(*old_limit_itr, order_pays, order_receives);
                     push_virtual_operation(
-                            fill_order_operation{limit_itr->seller, limit_itr->order_id, limit_itr->amount_for_sale(),
-                                                 old_limit_itr->seller, old_limit_itr->order_id,
+                            fill_order_operation{limit_itr->seller, limit_itr->orderid, limit_itr->amount_for_sale(),
+                                                 old_limit_itr->seller, old_limit_itr->orderid,
                                                  old_limit_itr->amount_for_sale()});
 
 
