@@ -24,13 +24,11 @@ namespace steemit {
             fc::time_point_sec open;
 
             friend bool operator<(const bucket_key &a, const bucket_key &b) {
-                return std::tie(a.base, a.quote, a.seconds, a.open) <
-                       std::tie(b.base, b.quote, b.seconds, b.open);
+                return std::tie(a.base, a.quote, a.seconds, a.open) < std::tie(b.base, b.quote, b.seconds, b.open);
             }
 
             friend bool operator==(const bucket_key &a, const bucket_key &b) {
-                return std::tie(a.base, a.quote, b.seconds, a.open) ==
-                       std::tie(b.base, b.quote, b.seconds, b.open);
+                return std::tie(a.base, a.quote, b.seconds, a.open) == std::tie(b.base, b.quote, b.seconds, b.open);
             }
         };
 
@@ -38,8 +36,7 @@ namespace steemit {
         struct by_bucket;
         struct by_key;
 
-        struct bucket_object
-                : public chainbase::object<market_history_object_types::bucket_object_type, bucket_object> {
+        struct bucket_object : public object<bucket_object_type, bucket_object> {
             bucket_object() {
 
             }
@@ -52,13 +49,11 @@ namespace steemit {
             id_type id;
 
             protocol::price high() const {
-                return protocol::asset(high_base, key.base) /
-                       protocol::asset(high_quote, key.quote);
+                return protocol::asset(high_base, key.base) / protocol::asset(high_quote, key.quote);
             }
 
             protocol::price low() const {
-                return protocol::asset(low_base, key.base) /
-                       protocol::asset(low_quote, key.quote);
+                return protocol::asset(low_base, key.base) / protocol::asset(low_quote, key.quote);
             }
 
             bucket_key key;
@@ -74,25 +69,18 @@ namespace steemit {
             protocol::share_type quote_volume;
         };
 
-        typedef multi_index_container<
-                bucket_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>, member<bucket_object, bucket_object::id_type, &bucket_object::id>>,
-                        ordered_unique<tag<by_key>, member<bucket_object, bucket_key, &bucket_object::key>>
-                >, chainbase::allocator<bucket_object>
-        > bucket_index;
+        typedef multi_index_container<bucket_object, indexed_by<
+                ordered_unique<tag<by_id>, member<bucket_object, bucket_object::id_type, &bucket_object::id>>,
+                ordered_unique<tag<by_key>, member<bucket_object, bucket_key, &bucket_object::key>>>,
+                chainbase::allocator<bucket_object> > bucket_index;
     }
 }
 
 FC_REFLECT_DERIVED(steemit::market_history::bucket_key, (steemit::market_history::key_interface), (seconds)(open));
 
 FC_REFLECT(steemit::market_history::bucket_object,
-        (id)(key)
-                (high_base)(high_quote)
-                (low_base)(low_quote)
-                (open_base)(open_quote)
-                (close_base)(close_quote)
-                (base_volume)(quote_volume))
+           (id)(key)(high_base)(high_quote)(low_base)(low_quote)(open_base)(open_quote)(close_base)(close_quote)(
+                   base_volume)(quote_volume))
 CHAINBASE_SET_INDEX_TYPE(steemit::market_history::bucket_object, steemit::market_history::bucket_index);
 
 #endif //GOLOS_BUCKET_OBJECT_HPP

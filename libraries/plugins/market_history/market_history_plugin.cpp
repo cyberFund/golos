@@ -426,8 +426,6 @@ namespace steemit {
 
                 db.add_plugin_index<bucket_index>();
                 db.add_plugin_index<order_history_index>();
-                db.add_plugin_index<bucket_index>();
-                db.add_plugin_index<order_history_index>();
 
                 if (options.count("bucket-size")) {
                     std::string buckets = options["bucket-size"].as<string>();
