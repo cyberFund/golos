@@ -21,9 +21,8 @@ namespace steemit {
             }
 
             fill_order_operation(const string &c_o, uint32_t c_id, const asset &c_p, const string &o_o, uint32_t o_id,
-                                             const asset &o_p)
-                    : current_owner(c_o), current_orderid(c_id), current_pays(c_p),
-                      open_owner(o_o), open_orderid(o_id), open_pays(o_p) {
+                                 const asset &o_p) : current_owner(c_o), current_orderid(c_id), current_pays(c_p),
+                                                     open_owner(o_o), open_orderid(o_id), open_pays(o_p) {
             }
 
             account_name_type current_owner;
@@ -47,8 +46,7 @@ namespace steemit {
             }
 
             fill_call_order_operation(integral_id_type o, const account_name_type &a, const asset &p, const asset &r,
-                                                  const asset &f)
-                    : orderid(o), owner(a), pays(p), receives(r), fee(f) {
+                                      const asset &f) : orderid(o), owner(a), pays(p), receives(r), fee(f) {
             }
 
             integral_id_type orderid;
@@ -75,8 +73,9 @@ namespace steemit {
 
             }
 
-            fill_settlement_order_operation(integral_id_type o, const account_name_type &a, const asset &p, const asset &r,
-                                                        const asset &f) : orderid(o), owner(a), pays(p), receives(r) {
+            fill_settlement_order_operation(integral_id_type o, const account_name_type &a, const asset &p,
+                                            const asset &r, const asset &f) : orderid(o), owner(a), pays(p),
+                                                                              receives(r) {
             }
 
             integral_id_type orderid;
@@ -90,8 +89,13 @@ namespace steemit {
                                                      : std::make_pair(receives.symbol_name(), pays.symbol_name());
             }
         };
+
+        typedef fc::static_variant<protocol::fill_order_operation, protocol::fill_call_order_operation,
+                protocol::fill_settlement_order_operation> market_virtual_operations;
     }
 }
+
+FC_REFLECT_TYPENAME(steemit::protocol::market_virtual_operations)
 
 FC_REFLECT(steemit::protocol::fill_order_operation,
            (current_owner)(current_orderid)(current_pays)(open_owner)(open_orderid)(open_pays))

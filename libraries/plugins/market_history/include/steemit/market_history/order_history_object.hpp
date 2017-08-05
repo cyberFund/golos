@@ -41,17 +41,17 @@ namespace steemit {
 
             history_key key;
             fc::time_point_sec time;
-            fc::static_variant<
-                    chain::fill_order_operation,
-                    chain::fill_call_order_operation,
-                    chain::fill_settlement_order_operation
-            > op;
+            protocol::market_virtual_operations op;
         };
 
         struct by_time;
         struct by_key;
 
-        typedef multi_index_container<order_history_object, indexed_by<ordered_unique<tag<chain::by_id>, member<order_history_object, order_history_object::id_type, &order_history_object::id>>, ordered_unique<tag<by_key>, member<order_history_object, history_key, &order_history_object::key>>>, chainbase::allocator<order_history_object> > order_history_index;
+        typedef multi_index_container <order_history_object, indexed_by<ordered_unique < tag < chain::by_id>, member<
+                order_history_object, order_history_object::id_type, &order_history_object::id>>, ordered_unique <tag<
+                by_key>, member<order_history_object, history_key, &order_history_object::key>>>, chainbase::allocator<
+                order_history_object> >
+        order_history_index;
     }
 }
 
