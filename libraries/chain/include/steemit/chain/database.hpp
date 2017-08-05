@@ -530,9 +530,6 @@ namespace steemit {
              * 3 - both were filled
              */
             ///@{
-            template<typename OrderType>
-            int match(const limit_order_object &bid, const OrderType &ask, const price &match_price);
-
             int match(const limit_order_object &bid, const limit_order_object &ask, const price &trade_price);
 
             /// @return the amount of asset settled
@@ -696,6 +693,5 @@ namespace steemit {
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
         };
-
     }
 }

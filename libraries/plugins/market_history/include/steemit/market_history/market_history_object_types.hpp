@@ -28,8 +28,6 @@ namespace steemit {
         enum market_history_object_types {
             bucket_object_type = (MARKET_HISTORY_SPACE_ID << 8),
             order_history_object_type = (MARKET_HISTORY_SPACE_ID << 8) + 1,
-            asset_bucket_object_type = (MARKET_HISTORY_SPACE_ID << 8) + 2,
-            asset_order_history_object_type = (MARKET_HISTORY_SPACE_ID << 8) + 3,
         };
     }
 }

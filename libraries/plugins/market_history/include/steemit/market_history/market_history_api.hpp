@@ -147,7 +147,11 @@ namespace steemit {
              * @param start Start time as a UNIX timestamp
              * @return Recent transactions in the market
              */
-            std::vector<market_trade> get_trade_history(const string &base, const string &quote, fc::time_point_sec start, fc::time_point_sec stop, unsigned limit = 100) const;
+            std::vector<market_trade> get_trade_history(const string &base, const string &quote,
+                                                        fc::time_point_sec start, fc::time_point_sec stop,
+                                                        unsigned limit = 100) const;
+
+            vector<order_history_object> get_fill_order_history(const string &a, const string &b, uint32_t limit) const;
 
             /**
              * @brief Returns the market history for the internal SBD:STEEM market.
@@ -156,7 +160,8 @@ namespace steemit {
              * @param end The end time to get market history
              * @return A list of market history buckets.
              */
-            std::vector<bucket_object> get_market_history(uint32_t bucket_seconds, time_point_sec start, time_point_sec end) const;
+            vector<bucket_object> get_market_history(const string &a, const string &b, uint32_t bucket_seconds,
+                                                     fc::time_point_sec start, fc::time_point_sec end)const;
 
             /**
              * @brief Returns the bucket seconds being tracked by the plugin.
@@ -198,7 +203,8 @@ namespace steemit {
              * @param start_account The account to start the list from, or "" to get the head of the queue
              * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
              */
-            std::vector<liquidity_balance> get_liquidity_queue(const string &start_account, uint32_t limit = 1000) const;
+            std::vector<liquidity_balance> get_liquidity_queue(const string &start_account,
+                                                               uint32_t limit = 1000) const;
 
         private:
             std::shared_ptr<detail::market_history_api_impl> my;
@@ -210,22 +216,17 @@ namespace steemit {
 FC_REFLECT(steemit::market_history::order, (price)(quote)(base));
 FC_REFLECT(steemit::market_history::order_book, (asks)(bids)(base)(quote));
 FC_REFLECT(steemit::market_history::market_ticker,
-           (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(
-                   base_volume)(quote_volume));
-FC_REFLECT(steemit::market_history::market_volume,
-           (base)(quote)(base_volume)(quote_volume));
+           (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
+FC_REFLECT(steemit::market_history::market_volume, (base)(quote)(base_volume)(quote_volume));
 FC_REFLECT(steemit::market_history::market_trade, (date)(price)(amount)(value));
 
 FC_REFLECT(steemit::market_history::liquidity_balance, (account)(weight));
 
 FC_API(steemit::market_history::market_history_api,
 // Subscriptions
-       (set_subscribe_callback)(set_pending_transaction_callback)(
-               set_block_applied_callback)(cancel_all_subscriptions)
+       (set_subscribe_callback)(set_pending_transaction_callback)(set_block_applied_callback)(cancel_all_subscriptions)
 
                //Market
-               (get_ticker)(get_volume)(get_order_book)(get_trade_history)(
-               get_market_history)(get_market_history_buckets)(
-               get_limit_orders)(get_call_orders)(get_settle_orders)(
-               get_margin_positions)(get_liquidity_queue)(subscribe_to_market)(
-               unsubscribe_from_market)(get_open_orders));
+               (get_ticker)(get_volume)(get_order_book)(get_trade_history)(get_market_history)(
+               get_market_history_buckets)(get_limit_orders)(get_call_orders)(get_settle_orders)(get_margin_positions)(
+               get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_open_orders)(get_fill_order_history));

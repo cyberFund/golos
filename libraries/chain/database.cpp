@@ -402,15 +402,15 @@ namespace steemit {
             return find<asset_dynamic_data_object, by_asset_name>(name);
         }
 
-        const proposal_object &
-        database::get_proposal(const account_name_type &name, protocol::integral_id_type id) const {
+        const proposal_object &database::get_proposal(const account_name_type &name,
+                                                      protocol::integral_id_type id) const {
             try {
                 return get<proposal_object, by_account>(boost::make_tuple(name, id));
             } FC_CAPTURE_AND_RETHROW((name))
         }
 
-        const proposal_object *
-        database::find_proposal(const account_name_type &name, protocol::integral_id_type id) const {
+        const proposal_object *database::find_proposal(const account_name_type &name,
+                                                       protocol::integral_id_type id) const {
             return find<proposal_object, by_account>(boost::make_tuple(name, id));
         }
 
@@ -444,15 +444,15 @@ namespace steemit {
             return find<account_statistics_object, by_name>(name);
         }
 
-        const comment_object &
-        database::get_comment(const account_name_type &author, const shared_string &permlink) const {
+        const comment_object &database::get_comment(const account_name_type &author,
+                                                    const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *
-        database::find_comment(const account_name_type &author, const shared_string &permlink) const {
+        const comment_object *database::find_comment(const account_name_type &author,
+                                                     const shared_string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
@@ -486,8 +486,8 @@ namespace steemit {
             return find<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
         }
 
-        const limit_order_object &
-        database::get_limit_order(const account_name_type &name, integral_id_type order_id) const {
+        const limit_order_object &database::get_limit_order(const account_name_type &name,
+                                                            integral_id_type order_id) const {
             try {
                 if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                     order_id = order_id & 0x0000FFFF;
@@ -497,8 +497,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((name)(order_id))
         }
 
-        const limit_order_object *
-        database::find_limit_order(const account_name_type &name, integral_id_type order_id) const {
+        const limit_order_object *database::find_limit_order(const account_name_type &name,
+                                                             integral_id_type order_id) const {
             if (!has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                 order_id = order_id & 0x0000FFFF;
             }
@@ -506,15 +506,15 @@ namespace steemit {
             return find<limit_order_object, by_account>(boost::make_tuple(name, order_id));
         }
 
-        const savings_withdraw_object &
-        database::get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
+        const savings_withdraw_object &database::get_savings_withdraw(const account_name_type &owner,
+                                                                      uint32_t request_id) const {
             try {
                 return get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
             } FC_CAPTURE_AND_RETHROW((owner)(request_id))
         }
 
-        const savings_withdraw_object *
-        database::find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
+        const savings_withdraw_object *database::find_savings_withdraw(const account_name_type &owner,
+                                                                       uint32_t request_id) const {
             return find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
         }
 
@@ -571,8 +571,8 @@ namespace steemit {
             adjust_supply(-fee);
         }
 
-        void
-        database::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+        void database::old_update_account_bandwidth(const account_object &a, uint32_t trx_size,
+                                                    const bandwidth_type type) {
             try {
                 const auto &props = get_dynamic_global_properties();
                 if (props.total_vesting_shares.amount > 0) {
@@ -1434,8 +1434,8 @@ namespace steemit {
         * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
         */
 
-        void
-        database::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+        void database::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2,
+                                       fc::uint128_t new_rshares2) {
             update_children_rshares2(*this, c, old_rshares2, new_rshares2);
 
             const auto &dgpo = get_dynamic_global_properties();
@@ -1632,15 +1632,15 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void
-        fill_comment_reward_context_local_state(utilities::comment_reward_context &ctx, const comment_object &comment) {
+        void fill_comment_reward_context_local_state(utilities::comment_reward_context &ctx,
+                                                     const comment_object &comment) {
             ctx.rshares = comment.net_rshares;
             ctx.reward_weight = comment.reward_weight;
             ctx.max_sbd = comment.max_accepted_payout;
         }
 
-        share_type
-        database::cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
+        share_type database::cashout_comment_helper(utilities::comment_reward_context &ctx,
+                                                    const comment_object &comment) {
             try {
                 const auto &cat = get_category(comment.category);
                 share_type claimed_reward = 0;
@@ -2127,8 +2127,8 @@ namespace steemit {
                           (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL));
         }
 
-        time_point_sec
-        database::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
+        time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
+                                                           const asset &input_cost) const {
             FC_ASSERT(input_cost.symbol == SBD_SYMBOL, "Extension payment should be in SBD");
             FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY > 0,
                       "Extension payment should cover more than a day");
@@ -2278,7 +2278,8 @@ namespace steemit {
             }
 
             // Apply effective recovery_account changes
-            const auto &change_req_idx = get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
+            const auto &change_req_idx = get_index<change_recovery_account_request_index>().indices().get<
+                    by_effective_date>();
             auto change_req = change_req_idx.begin();
 
             while (change_req != change_req_idx.end() && change_req->effective_on <= head_block_time()) {
@@ -2310,7 +2311,8 @@ namespace steemit {
         }
 
         void database::process_decline_voting_rights() {
-            const auto &request_idx = get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
+            const auto &request_idx = get_index<decline_voting_rights_request_index>().indices().get<
+                    by_effective_date>();
             auto itr = request_idx.begin();
 
             while (itr != request_idx.end() && itr->effective_date <= head_block_time()) {
@@ -3388,7 +3390,7 @@ namespace steemit {
                 bool called_some = check_call_orders(sell_asset, allow_black_swan);
                 called_some |= check_call_orders(receive_asset, allow_black_swan);
                 if (called_some && !find_limit_order(new_order_object.seller,
-                                                     new_order_object.order_id)) { // then we were filled by call order
+                                                     new_order_object.orderid)) { // then we were filled by call order
                     return true;
                 }
 
@@ -3417,85 +3419,40 @@ namespace steemit {
                 }
 
                 return find<limit_order_object>(order_id) == nullptr;
-            } else {
-
-                const auto &limit_price_idx = get_index<limit_order_index>().indices().get<by_price>();
-
-                auto max_price = ~new_order_object.sell_price;
-                auto limit_itr = limit_price_idx.lower_bound(max_price.max());
-                auto limit_end = limit_price_idx.upper_bound(max_price);
-
-                bool finished = false;
-                while (!finished && limit_itr != limit_end) {
-                    auto old_limit_itr = limit_itr;
-                    ++limit_itr;
-                    // match returns 2 when only the old order was fully filled. In this case, we keep matching; otherwise, we stop.
-                    finished = (match(new_order_object, *old_limit_itr, old_limit_itr->sell_price) & 0x1);
-                }
-
-                return find<limit_order_object>(order_id) == nullptr;
-            }
-        }
-
-        /**
-         *  Matches the two orders,
-         *
-         *  @return a bit field indicating which orders were filled (and thus removed)
-         *
-         *  0 - no orders were matched
-         *  1 - bid was filled
-         *  2 - ask was filled
-         *  3 - both were filled
-         */
-        template<typename OrderType>
-        int database::match(const limit_order_object &usd, const OrderType &core, const price &match_price) {
-            assert(usd.sell_price.quote.symbol == core.sell_price.base.symbol);
-            assert(usd.sell_price.base.symbol == core.sell_price.quote.symbol);
-            assert(usd.for_sale > 0 && core.for_sale > 0);
-
-            auto usd_for_sale = usd.amount_for_sale();
-            auto core_for_sale = core.amount_for_sale();
-
-            asset usd_pays, usd_receives, core_pays, core_receives;
-
-            if (usd_for_sale <= core_for_sale * match_price) {
-                core_receives = usd_for_sale;
-                usd_receives = usd_for_sale * match_price;
-            } else {
-                //This line once read: assert( core_for_sale < usd_for_sale * match_price );
-                //This assert is not always true -- see trade_amount_equals_zero in operation_tests.cpp
-                //Although usd_for_sale is greater than core_for_sale * match_price, core_for_sale == usd_for_sale * match_price
-                //Removing the assert seems to be safe -- apparently no asset is created or destroyed.
-                usd_receives = core_for_sale;
-                core_receives = core_for_sale * match_price;
             }
 
-            core_pays = usd_receives;
-            usd_pays = core_receives;
 
-            assert(usd_pays == usd.amount_for_sale() || core_pays == core.amount_for_sale());
+            const auto &limit_price_idx = get_index<limit_order_index>().indices().get<by_price>();
 
-            int result = 0;
-            result |= fill_order(usd, usd_pays, usd_receives);
-            result |= fill_order(core, core_pays, core_receives) << 1;
-            assert(result != 0);
-            return result;
+            auto max_price = ~new_order_object.sell_price;
+            auto limit_itr = limit_price_idx.lower_bound(max_price.max());
+            auto limit_end = limit_price_idx.upper_bound(max_price);
+
+            bool finished = false;
+            while (!finished && limit_itr != limit_end) {
+                auto old_limit_itr = limit_itr;
+                ++limit_itr;
+                // match returns 2 when only the old order was fully filled. In this case, we keep matching; otherwise, we stop.
+                finished = (match(new_order_object, *old_limit_itr, old_limit_itr->sell_price) & 0x1);
+            }
+
+            return find<limit_order_object>(order_id) == nullptr;
+
         }
 
-        asset
-        database::match(const call_order_object &call, const force_settlement_object &settle, const price &match_price,
-                        asset max_settlement) {
+        asset database::match(const call_order_object &call, const force_settlement_object &settle,
+                              const price &match_price, asset max_settlement) {
             try {
                 FC_ASSERT(call.get_debt().symbol == settle.balance.symbol);
                 FC_ASSERT(call.debt > 0 && call.collateral > 0 && settle.balance.amount > 0);
 
-                auto settle_for_sale = std::min(settle.balance, max_settlement);
+                const auto &settle_for_sale = std::min(settle.balance, max_settlement);
                 auto call_debt = call.get_debt();
 
                 asset call_receives = std::min(settle_for_sale, call_debt);
                 asset call_pays = call_receives * match_price;
                 asset settle_pays = call_receives;
-                asset settle_receives = call_pays;
+                const asset &settle_receives = call_pays;
 
                 /**
                  *  If the least collateralized call position lacks sufficient
@@ -3515,6 +3472,16 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((call)(settle)(match_price)(max_settlement))
         }
 
+        /**
+         *  Matches the two orders,
+         *
+         *  @return a bit field indicating which orders were filled (and thus removed)
+         *
+         *  0 - no orders were matched
+         *  1 - bid was filled
+         *  2 - ask was filled
+         *  3 - both were filled
+         */
         int database::match(const limit_order_object &new_order, const limit_order_object &old_order,
                             const price &match_price) {
             assert(new_order.sell_price.quote.symbol == old_order.sell_price.base.symbol);
@@ -3545,22 +3512,26 @@ namespace steemit {
 
             assert(new_order_pays == new_order.amount_for_sale() || old_order_pays == old_order.amount_for_sale());
 
-            auto age = head_block_time() - old_order.created;
-            if (!has_hardfork(STEEMIT_HARDFORK_0_12__178) &&
-                ((age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork(STEEMIT_HARDFORK_0_10__149)) ||
-                 (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 && has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
-                if (old_order_receives.symbol == STEEM_SYMBOL) {
-                    adjust_liquidity_reward(get_account(old_order.seller), old_order_receives, false);
-                    adjust_liquidity_reward(get_account(new_order.seller), -old_order_receives, false);
-                } else {
-                    adjust_liquidity_reward(get_account(old_order.seller), new_order_receives, true);
-                    adjust_liquidity_reward(get_account(new_order.seller), -new_order_receives, true);
+            if (old_order_receives.symbol == STEEM_SYMBOL || old_order_receives.symbol == SBD_SYMBOL) {
+                fc::microseconds age = head_block_time() - old_order.created;
+
+                if (!has_hardfork(STEEMIT_HARDFORK_0_12__178) &&
+                    ((age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork(STEEMIT_HARDFORK_0_10__149)) ||
+                     (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 &&
+                      has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
+                    if (old_order_receives.symbol == STEEM_SYMBOL) {
+                        adjust_liquidity_reward(get_account(old_order.seller), old_order_receives, false);
+                        adjust_liquidity_reward(get_account(new_order.seller), -old_order_receives, false);
+                    } else {
+                        adjust_liquidity_reward(get_account(old_order.seller), new_order_receives, true);
+                        adjust_liquidity_reward(get_account(new_order.seller), -new_order_receives, true);
+                    }
                 }
             }
 
             push_virtual_operation(
-                    fill_order_operation(new_order.seller, new_order.order_id, new_order_pays, old_order.seller,
-                                         old_order.order_id, old_order_pays));
+                    fill_order_operation(new_order.seller, new_order.orderid, new_order_pays, old_order.seller,
+                                         old_order.orderid, old_order_pays));
 
             int result = 0;
             result |= fill_order(new_order, new_order_pays, new_order_receives);
@@ -3570,7 +3541,7 @@ namespace steemit {
         }
 
 
-        void database::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sdb) {
+        void database::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sbd) {
             const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
             auto itr = ridx.find(owner.id);
             if (itr != ridx.end()) {
@@ -3581,7 +3552,7 @@ namespace steemit {
                         r.weight = 0;
                     }
 
-                    if (is_sdb) {
+                    if (is_sbd) {
                         r.sbd_volume += volume.amount.value;
                     } else {
                         r.steem_volume += volume.amount.value;
@@ -3593,7 +3564,7 @@ namespace steemit {
             } else {
                 create<liquidity_reward_balance_object>([&](liquidity_reward_balance_object &r) {
                     r.owner = owner.id;
-                    if (is_sdb) {
+                    if (is_sbd) {
                         r.sbd_volume = volume.amount.value;
                     } else {
                         r.steem_volume = volume.amount.value;
@@ -3611,28 +3582,31 @@ namespace steemit {
                 FC_ASSERT(pays.symbol != receives.symbol);
 
                 const account_object &seller = get_account(order.seller);
+                const asset_object &recv_asset = get_asset(receives.symbol_name());
 
-                adjust_balance(seller, receives);
+                auto issuer_fees = pay_market_fees(recv_asset, receives);
+                pay_order(seller, receives - issuer_fees, pays);
 
                 if (pays == order.amount_for_sale()) {
                     remove(order);
                     return true;
-                } else {
-                    modify(order, [&](limit_order_object &b) {
-                        b.for_sale -= pays.amount;
-                    });
-                    /**
-                     *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
-                     *  have hit the limit where the seller is asking for nothing in return.  When this
-                     *  happens we must refund any balance back to the seller, it is too small to be
-                     *  sold at the sale price.
-                     */
-                    if (order.amount_to_receive().amount == 0) {
-                        cancel_order(order);
-                        return true;
-                    }
-                    return false;
                 }
+
+                modify(order, [&](limit_order_object &b) {
+                    b.for_sale -= pays.amount;
+                });
+                /**
+                 *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
+                 *  have hit the limit where the seller is asking for nothing in return.  When this
+                 *  happens we must refund any balance back to the seller, it is too small to be
+                 *  sold at the sale price.
+                 */
+                if (order.amount_to_receive().amount == 0) {
+                    cancel_order(order);
+                    return true;
+                }
+                return false;
+
             } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
@@ -3677,13 +3651,12 @@ namespace steemit {
                             b.total_core_in_orders -= pays.amount;
                         }
 
-                        assert(b.total_core_in_orders >= 0);
+                        FC_ASSERT(b.total_core_in_orders >= 0);
                     });
                 }
 
                 assert(pays.symbol != receives.symbol);
-                push_virtual_operation(fill_asset_order_operation{order.order_id, order.borrower, pays, receives,
-                                                                  asset(0, pays.symbol)});
+                push_virtual_operation(fill_call_order_operation{order.order_id, order.borrower, pays, receives, asset(0, pays.symbol)});
 
                 if (collateral_freed) {
                     remove(order);
@@ -3709,9 +3682,10 @@ namespace steemit {
                 }
                 adjust_balance(get_account(settle.owner), receives - issuer_fees);
 
-                assert(pays.symbol != receives.symbol);
+                FC_ASSERT(pays.symbol != receives.symbol);
                 push_virtual_operation(
-                        fill_asset_order_operation{settle.settlement_id, settle.owner, pays, receives, issuer_fees});
+                        fill_settlement_order_operation{settle.settlement_id, settle.owner, pays, receives,
+                                                        issuer_fees});
 
                 if (filled) {
                     remove(settle);
@@ -3803,17 +3777,6 @@ namespace steemit {
                         return margin_called;
                     }
 
-                    if (feed_protected) {
-                        ilog("Feed protected margin call executing (HARDFORK_436_TIME not here yet)");
-                        idump((*call_itr));
-                        idump((*limit_itr));
-                    }
-
-                    //  idump((*call_itr));
-                    //  idump((*limit_itr));
-
-                    //  ilog( "match_price <= ~call_itr->call_price  performing a margin call" );
-
                     margin_called = true;
 
                     auto usd_to_buy = call_itr->get_debt();
@@ -3854,6 +3817,11 @@ namespace steemit {
 
                     auto old_limit_itr = filled_limit ? limit_itr++ : limit_itr;
                     fill_order(*old_limit_itr, order_pays, order_receives);
+                    push_virtual_operation(
+                            fill_order_operation{limit_itr->seller, limit_itr->orderid, limit_itr->amount_for_sale(),
+                                                 old_limit_itr->seller, old_limit_itr->orderid,
+                                                 old_limit_itr->amount_for_sale()});
+
 
                 } // whlie call_itr != call_end
 
@@ -3924,8 +3892,7 @@ namespace steemit {
         }
 
         void database::pay_order(const account_object &receiver, const asset &receives, const asset &pays) {
-            const auto &balances = get_account_statistics(receiver.name);
-            modify(balances, [&](account_statistics_object &b) {
+            modify(get_account_statistics(receiver.name), [&](account_statistics_object &b) {
                 if (pays.symbol == STEEM_SYMBOL) {
                     b.total_core_in_orders -= pays.amount;
                 }
@@ -3985,7 +3952,7 @@ namespace steemit {
 
                 if (create_virtual_op) {
                     limit_order_cancel_operation vop;
-                    vop.orderid = order.order_id;
+                    vop.orderid = order.orderid;
                     vop.owner = order.seller;
                     push_virtual_operation(vop);
                 }
@@ -4162,7 +4129,7 @@ namespace steemit {
                         limit_order_cancel_operation canceler;
                         const limit_order_object &order = *limit_index.begin();
                         canceler.owner = order.seller;
-                        canceler.orderid = order.order_id;
+                        canceler.orderid = order.orderid;
 
                         apply_operation(canceler);
                     }
