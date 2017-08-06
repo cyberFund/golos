@@ -80,8 +80,6 @@ namespace steemit {
             price exchange_rate;
             time_point_sec expiration = time_point_sec::maximum();
 
-            extensions_type extensions;
-
             void validate() const;
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
@@ -138,10 +136,6 @@ namespace steemit {
             asset delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt
             extensions_type extensions;
 
-            account_name_type fee_payer() const {
-                return funding_account;
-            }
-
             void validate() const;
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
@@ -154,8 +148,8 @@ namespace steemit {
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
 FC_REFLECT(steemit::protocol::limit_order_create_operation,
-           (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration))
+           (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill))
 FC_REFLECT(steemit::protocol::limit_order_create2_operation,
-           (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration))
+           (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill))
 FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id))
 FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt))
