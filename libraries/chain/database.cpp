@@ -4185,10 +4185,10 @@ namespace steemit {
                             auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
                             auto itr = index.find(boost::make_tuple(a.name, SBD_SYMBOL_NAME));
                             if (itr == index.end()) {
-                                create<account_balance_object>([a](account_balance_object &b) {
+                                create<account_balance_object>([a, &interest_paid](account_balance_object &b) {
                                     b.owner = a.name;
                                     b.asset_name = SBD_SYMBOL_NAME;
-                                    b.balance = interest_paid;
+                                    b.balance = interest_paid.amount;
                                 });
                             } else {
                                 modify(get<account_balance_object, by_account_asset>(
