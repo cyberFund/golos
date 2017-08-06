@@ -292,7 +292,7 @@ namespace steemit {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                shared_ptr <fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
@@ -307,7 +307,7 @@ namespace steemit {
             return bid;
         }
 
-        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional <signed_block> database::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -325,9 +325,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional <signed_block> database::fetch_block_by_number(uint32_t block_num) const {
             try {
-                optional<signed_block> b;
+                optional <signed_block> b;
 
                 auto results = _fork_db.fetch_block_by_number(block_num);
                 if (results.size() == 1) {
@@ -351,9 +351,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        vector <block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
+                pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
                         head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)(head_block_id())(branches.first.size())(branches.second.size()));
@@ -681,7 +681,7 @@ namespace steemit {
             return uint64_t(STEEMIT_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
+        void database::add_checkpoints(const flat_map <uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
@@ -721,7 +721,7 @@ namespace steemit {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                vector <std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -738,7 +738,7 @@ namespace steemit {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
+                    shared_ptr <fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -756,7 +756,7 @@ namespace steemit {
                             // push all blocks on the new fork
                             for (auto ritr = branches.first.rbegin(); ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
-                                optional<fc::exception> except;
+                                optional <fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
@@ -1007,7 +1007,7 @@ namespace steemit {
                 auto head_id = head_block_id();
 
                 /// save the head block so we can recover its transactions
-                optional<signed_block> head_block = fetch_block_by_id(head_id);
+                optional <signed_block> head_block = fetch_block_by_id(head_id);
                 STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
 
                 _fork_db.pop_block();
@@ -1736,8 +1736,8 @@ namespace steemit {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector<reward_fund_context> funds;
-            vector<share_type> steem_awarded;
+            vector <reward_fund_context> funds;
+            vector <share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
@@ -2874,7 +2874,7 @@ namespace steemit {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector<price> feeds;
+                vector <price> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
@@ -2976,7 +2976,7 @@ namespace steemit {
                     }
                 }
                 flat_set<account_name_type> required;
-                vector<authority> other;
+                vector <authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -3278,7 +3278,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr <fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block,
                                       "Current fork in the fork database does not contain the last_irreversible_block");
@@ -3535,7 +3535,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional<asset> collateral_freed;
+                optional <asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -4165,43 +4165,6 @@ namespace steemit {
             return get_asset(a.symbol_name()).amount_to_pretty_string(a.amount);
         }
 
-        void database::adjust_sbd_balance(const account_object &a, account_balance_object &balance) {
-            try {
-                modify(a, [&](account_object &acnt) {
-                    if (a.sbd_seconds_last_update != head_block_time()) {
-                        acnt.sbd_seconds += fc::uint128_t(balance.balance.value) *
-                                            (head_block_time() - a.sbd_seconds_last_update).to_seconds();
-                        acnt.sbd_seconds_last_update = head_block_time();
-
-                        if (acnt.sbd_seconds > 0 &&
-                            (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() >
-                            STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                            auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
-                            interest *= get_dynamic_global_properties().sbd_interest_rate;
-                            interest /= STEEMIT_100_PERCENT;
-                            asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-
-                            balance.adjust_balance(interest_paid);
-
-                            acnt.sbd_seconds = 0;
-                            acnt.sbd_last_interest_payment = head_block_time();
-
-                            push_virtual_operation(interest_operation(a.name, interest_paid));
-
-                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                                props.current_sbd_supply += interest_paid;
-                                props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                            });
-
-                            modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &a) {
-                                a.current_supply += interest_paid.amount;
-                            });
-                        }
-                    }
-                });
-            } FC_CAPTURE_AND_RETHROW((a))
-        }
-
         void database::adjust_balance(const account_object &a, const asset &delta) {
             try {
                 if (delta.amount == 0) {
@@ -4213,26 +4176,57 @@ namespace steemit {
                 if (itr == index.end()) {
                     FC_ASSERT(delta.amount > 0,
                               "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                              ("a", get_account(a.name).name)("b", to_pretty_string(asset(0, delta.symbol)))("r",
-                                                                                                             to_pretty_string(
-                                                                                                                     -delta)));
-                    if (delta.symbol == SBD_SYMBOL) {
-                        create<account_balance_object>([a, &delta](account_balance_object &b) {
-                            b.owner = a.name;
-                            b.asset_name = delta.symbol_name();
+                              ("a", get_account(a.name).name)
+                                      ("b", to_pretty_string(asset(0, delta.symbol)))
+                                      ("r",to_pretty_string(-delta)));
+
+                    create<account_balance_object>([&](account_balance_object &b) {
+                        b.owner = a.name;
+                        b.asset_name = delta.symbol_name();
+
+                        if (delta.symbol == SBD_SYMBOL) {
                             b.balance = 0;
 
-                            adjust_sbd_balance(a, b);
+                            if (a.sbd_seconds_last_update != head_block_time()) {
+                                modify(get_account(a.name), [&](account_object &accnt) {
+                                    accnt.sbd_seconds += uint128_t(b.balance.value) *
+                                                     (head_block_time() - a.sbd_seconds_last_update).to_seconds();
+                                    accnt.sbd_seconds_last_update = head_block_time();
+                                });
 
-                            b.adjust_balance(delta);
-                        });
-                    } else {
-                        create<account_balance_object>([a, &delta](account_balance_object &b) {
-                            b.owner = a.name;
-                            b.asset_name = delta.symbol_name();
+                                if (a.sbd_seconds > 0 &&
+                                    (a.sbd_seconds_last_update - a.sbd_last_interest_payment).to_seconds() >
+                                    STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                                    auto interest = a.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+                                    interest *= get_dynamic_global_properties().sbd_interest_rate;
+                                    interest /= STEEMIT_100_PERCENT;
+                                    asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                                    b.balance += interest_paid;
+
+                                    modify(get_account(a.name), [&](account_object &accnt) {
+                                        accnt.sbd_seconds = 0;
+                                        accnt.sbd_last_interest_payment = head_block_time();
+                                    });
+
+                                    push_virtual_operation(interest_operation(a.name, interest_paid));
+
+                                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                        props.current_sbd_supply += interest_paid;
+                                        props.virtual_supply +=
+                                                interest_paid * get_feed_history().current_median_history;
+                                    });
+
+                                    modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &asset) {
+                                        asset.current_supply += interest_paid.amount;
+                                    });
+                                }
+                            }
+                        } else {
                             b.balance = delta.amount.value;
-                        });
-                    }
+                        }
+
+                        b.adjust_balance(delta);
+                    });
                 } else {
                     if (delta.amount < 0) {
                         FC_ASSERT(itr->get_balance() >= -delta,
@@ -4246,6 +4240,43 @@ namespace steemit {
                     }
 
                     modify(*itr, [delta](account_balance_object &b) {
+                        if (delta.symbol == SBD_SYMBOL) {
+                            if (a.sbd_seconds_last_update != head_block_time()) {
+                                modify(get_account(a.name), [&](account_object &accnt) {
+                                    accnt.sbd_seconds += uint128_t(b.balance.value) *
+                                                         (head_block_time() - a.sbd_seconds_last_update).to_seconds();
+                                    accnt.sbd_seconds_last_update = head_block_time();
+                                });
+
+                                if (a.sbd_seconds > 0 &&
+                                    (a.sbd_seconds_last_update - a.sbd_last_interest_payment).to_seconds() >
+                                    STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                                    auto interest = a.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+                                    interest *= get_dynamic_global_properties().sbd_interest_rate;
+                                    interest /= STEEMIT_100_PERCENT;
+                                    asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                                    b.balance += interest_paid;
+
+                                    modify(get_account(a.name), [&](account_object &accnt) {
+                                        accnt.sbd_seconds = 0;
+                                        accnt.sbd_last_interest_payment = head_block_time();
+                                    });
+
+                                    push_virtual_operation(interest_operation(a.name, interest_paid));
+
+                                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                        props.current_sbd_supply += interest_paid;
+                                        props.virtual_supply +=
+                                                interest_paid * get_feed_history().current_median_history;
+                                    });
+
+                                    modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &asset) {
+                                        asset.current_supply += interest_paid.amount;
+                                    });
+                                }
+                            }
+                        }
+
                         b.adjust_balance(delta);
                     });
                 }
