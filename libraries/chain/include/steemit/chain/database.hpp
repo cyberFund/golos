@@ -716,8 +716,6 @@ namespace steemit {
 
             string to_pretty_string(const asset &a) const;
 
-            void adjust_sbd_balance(const account_object &a, account_balance_object &balance);
-
             void update_expired_feeds();
 
             /**
