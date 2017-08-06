@@ -4191,8 +4191,7 @@ namespace steemit {
                                     b.balance = interest_paid.amount;
                                 });
                             } else {
-                                modify(get<account_balance_object, by_account_asset>(
-                                        boost::make_tuple(a.name, SBD_SYMBOL_NAME)), [&](account_balance_object &b) {
+                                modify(*itr, [&](account_balance_object &b) {
                                     b.adjust_balance(interest_paid);
                                 });
                             }
