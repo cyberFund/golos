@@ -769,6 +769,8 @@ namespace steemit {
 
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
+
+            void adjust_sbd_balance(const account_object &a, account_balance_object &b);
         };
     }
 }
