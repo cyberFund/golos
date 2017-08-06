@@ -40,7 +40,7 @@ namespace steemit {
          * emitted for the purpose of accurately tracking account history, accelerating
          * a reindex.
          */
-        struct fill_call_order_operation : public base_operation {
+        struct fill_call_order_operation : public virtual_operation {
             fill_call_order_operation() {
 
             }
@@ -68,7 +68,7 @@ namespace steemit {
          * emitted for the purpose of accurately tracking account history, accelerating
          * a reindex.
          */
-        struct fill_settlement_order_operation : public base_operation {
+        struct fill_settlement_order_operation : public virtual_operation {
             fill_settlement_order_operation() {
 
             }
