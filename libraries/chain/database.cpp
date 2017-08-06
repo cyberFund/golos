@@ -4165,12 +4165,11 @@ namespace steemit {
             return get_asset(a.symbol_name()).amount_to_pretty_string(a.amount);
         }
 
-        void database::adjust_sbd_balance(const account_object &a) {
+        void database::adjust_sbd_balance(const account_object &a, account_balance_object &balance) {
             try {
                 modify(a, [&](account_object &acnt) {
                     if (a.sbd_seconds_last_update != head_block_time()) {
-                        acnt.sbd_seconds += fc::uint128_t(get<account_balance_object, by_account_asset>(
-                                boost::make_tuple(a.name, SBD_SYMBOL_NAME)).balance.value) *
+                        acnt.sbd_seconds += fc::uint128_t(balance.balance.value) *
                                             (head_block_time() - a.sbd_seconds_last_update).to_seconds();
                         acnt.sbd_seconds_last_update = head_block_time();
 
@@ -4182,19 +4181,7 @@ namespace steemit {
                             interest /= STEEMIT_100_PERCENT;
                             asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
 
-                            auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
-                            auto itr = index.find(boost::make_tuple(a.name, SBD_SYMBOL_NAME));
-                            if (itr == index.end()) {
-                                create<account_balance_object>([a, &interest_paid](account_balance_object &b) {
-                                    b.owner = a.name;
-                                    b.asset_name = SBD_SYMBOL_NAME;
-                                    b.balance = interest_paid.amount;
-                                });
-                            } else {
-                                modify(*itr, [&](account_balance_object &b) {
-                                    b.adjust_balance(interest_paid);
-                                });
-                            }
+                            balance.adjust_balance(interest_paid);
 
                             acnt.sbd_seconds = 0;
                             acnt.sbd_last_interest_payment = head_block_time();
@@ -4230,9 +4217,13 @@ namespace steemit {
                                                                                                              to_pretty_string(
                                                                                                                      -delta)));
                     if (delta.symbol == SBD_SYMBOL) {
-                        adjust_sbd_balance(a);
+                        create<account_balance_object>([a, &delta](account_balance_object &b) {
+                            b.owner = a.name;
+                            b.asset_name = delta.symbol_name();
+                            b.balance = 0;
 
-                        modify(*itr, [delta](account_balance_object &b) {
+                            adjust_sbd_balance(a, b);
+
                             b.adjust_balance(delta);
                         });
                     } else {
@@ -4246,12 +4237,12 @@ namespace steemit {
                     if (delta.amount < 0) {
                         FC_ASSERT(itr->get_balance() >= -delta,
                                   "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                                  ("a", get_account(a.name).name)
-                                          ("b", to_pretty_string(itr->get_balance()))
-                                          ("r",to_pretty_string(-delta)));
+                                  ("a", get_account(a.name).name)("b", to_pretty_string(itr->get_balance()))("r",
+                                                                                                             to_pretty_string(
+                                                                                                                     -delta)));
                     }
                     if (delta.symbol == SBD_SYMBOL) {
-                        adjust_sbd_balance(a);
+                        adjust_sbd_balance(a, *itr);
                     }
 
                     modify(*itr, [delta](account_balance_object &b) {
