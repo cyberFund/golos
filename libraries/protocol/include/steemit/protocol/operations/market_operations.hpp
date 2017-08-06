@@ -48,6 +48,7 @@ namespace steemit {
             asset min_to_receive;
             bool fill_or_kill = false;
             time_point_sec expiration = time_point_sec::maximum();
+            extensions_type extensions;
 
             void validate() const;
 
@@ -79,6 +80,7 @@ namespace steemit {
             bool fill_or_kill = false;
             price exchange_rate;
             time_point_sec expiration = time_point_sec::maximum();
+            extensions_type extensions;
 
             void validate() const;
 
@@ -148,8 +150,8 @@ namespace steemit {
 FC_REFLECT(steemit::protocol::convert_operation, (owner)(request_id)(amount));
 
 FC_REFLECT(steemit::protocol::limit_order_create_operation,
-           (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill))
+           (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill)(extensions))
 FC_REFLECT(steemit::protocol::limit_order_create2_operation,
-           (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill))
-FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id))
-FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt))
+           (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill)(extensions))
+FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id)(extensions))
+FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt)(extensions))
