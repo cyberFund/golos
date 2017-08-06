@@ -4182,10 +4182,20 @@ namespace steemit {
                             interest /= STEEMIT_100_PERCENT;
                             asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
 
-                            modify(get<account_balance_object, by_account_asset>(
-                                    boost::make_tuple(a.name, SBD_SYMBOL_NAME)), [&](account_balance_object &b) {
-                                b.adjust_balance(interest_paid);
-                            });
+                            auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
+                            auto itr = index.find(boost::make_tuple(a.name, SBD_SYMBOL_NAME));
+                            if (itr == index.end()) {
+                                create<account_balance_object>([a](account_balance_object &b) {
+                                    b.owner = a.name;
+                                    b.asset_name = SBD_SYMBOL_NAME;
+                                    b.balance = interest_paid;
+                                });
+                            } else {
+                                modify(get<account_balance_object, by_account_asset>(
+                                        boost::make_tuple(a.name, SBD_SYMBOL_NAME)), [&](account_balance_object &b) {
+                                    b.adjust_balance(interest_paid);
+                                });
+                            }
 
                             acnt.sbd_seconds = 0;
                             acnt.sbd_last_interest_payment = head_block_time();
@@ -4221,12 +4231,6 @@ namespace steemit {
                                                                                                              to_pretty_string(
                                                                                                                      -delta)));
                     if (delta.symbol == SBD_SYMBOL) {
-                        create<account_balance_object>([a, &delta](account_balance_object &b) {
-                            b.owner = a.name;
-                            b.asset_name = delta.symbol_name();
-                            b.balance = 0;
-                        });
-
                         adjust_sbd_balance(a);
 
                         modify(*itr, [delta](account_balance_object &b) {
@@ -4243,9 +4247,9 @@ namespace steemit {
                     if (delta.amount < 0) {
                         FC_ASSERT(itr->get_balance() >= -delta,
                                   "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                                  ("a", get_account(a.name).name)("b", to_pretty_string(itr->get_balance()))("r",
-                                                                                                             to_pretty_string(
-                                                                                                                     -delta)));
+                                  ("a", get_account(a.name).name)
+                                          ("b", to_pretty_string(itr->get_balance()))
+                                          ("r",to_pretty_string(-delta)));
                     }
                     if (delta.symbol == SBD_SYMBOL) {
                         adjust_sbd_balance(a);
