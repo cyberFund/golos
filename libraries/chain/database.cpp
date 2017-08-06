@@ -4201,7 +4201,7 @@ namespace steemit {
                                     interest *= get_dynamic_global_properties().sbd_interest_rate;
                                     interest /= STEEMIT_100_PERCENT;
                                     asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                                    b.balance += interest_paid;
+                                    b.balance += interest_paid.amount;
 
                                     modify(get_account(a.name), [&](account_object &accnt) {
                                         accnt.sbd_seconds = 0;
@@ -4235,11 +4235,8 @@ namespace steemit {
                                                                                                              to_pretty_string(
                                                                                                                      -delta)));
                     }
-                    if (delta.symbol == SBD_SYMBOL) {
-                        adjust_sbd_balance(a, *itr);
-                    }
 
-                    modify(*itr, [delta](account_balance_object &b) {
+                    modify(*itr, [&](account_balance_object &b) {
                         if (delta.symbol == SBD_SYMBOL) {
                             if (a.sbd_seconds_last_update != head_block_time()) {
                                 modify(get_account(a.name), [&](account_object &accnt) {
@@ -4255,7 +4252,7 @@ namespace steemit {
                                     interest *= get_dynamic_global_properties().sbd_interest_rate;
                                     interest /= STEEMIT_100_PERCENT;
                                     asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                                    b.balance += interest_paid;
+                                    b.balance += interest_paid.amount;
 
                                     modify(get_account(a.name), [&](account_object &accnt) {
                                         accnt.sbd_seconds = 0;
