@@ -1,6 +1,6 @@
 #include <steemit/chain/database/policies/withdrawal_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 namespace steemit {
     namespace chain {
 
@@ -117,6 +117,18 @@ namespace steemit {
 
                 references.push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));
             }
+        }
+
+        const savings_withdraw_object &
+        withdrawal_policy::get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
+            try {
+                return references.get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
+            } FC_CAPTURE_AND_RETHROW((owner)(request_id))
+        }
+
+        const savings_withdraw_object *
+        withdrawal_policy::find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
+            return references.find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
         }
     }
 }

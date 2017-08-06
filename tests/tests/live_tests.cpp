@@ -3,7 +3,7 @@
 #include <steemit/protocol/exceptions.hpp>
 
 #include <steemit/chain/database/database_basic.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 #include <fc/crypto/digest.hpp>
 

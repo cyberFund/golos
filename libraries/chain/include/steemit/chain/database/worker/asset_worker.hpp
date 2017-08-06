@@ -3,7 +3,7 @@
 
 #include <steemit/chain/database/database_worker.hpp>
 #include <steemit/protocol/config.hpp>
-#include <steemit/chain/global_property_object.hpp>
+#include <steemit/chain/chain_objects/global_property_object.hpp>
 #include <steemit/chain/database/database_police.hpp>
 
 namespace steemit {

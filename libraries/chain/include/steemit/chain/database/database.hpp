@@ -13,7 +13,7 @@ namespace steemit {
     namespace chain {
         class database final : public database_tag {
         public:
-            database(dynamic_extension::worker_storage&& storage, hard_fork_transformer &&hft) : database_tag(std::move(storage), std::move(hft)) {}
+            database(dynamic_extension::worker_storage&& storage, hard_fork_transformer &&hft);
             ~database() = default;
 
         protected:

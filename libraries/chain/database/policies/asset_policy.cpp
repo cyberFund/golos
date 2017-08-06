@@ -1,10 +1,18 @@
 #include <steemit/chain/database/policies/asset_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
+
 namespace steemit {
     namespace chain {
+        namespace {
+            const account_object &get_account(database_basic &db, const account_name_type &name) {
+                try {
+                    return db.get<account_object, by_name>(name);
+                } FC_CAPTURE_AND_RETHROW((name))
+            }
+        }
 
-        asset_policy::asset_policy(database_basic &ref,int) : generic_policy(ref) {
+        asset_policy::asset_policy(database_basic &ref, int) : generic_policy(ref) {
 
         }
 
@@ -23,15 +31,16 @@ namespace steemit {
             asset net_steem(0, STEEM_SYMBOL);
 
             while (itr != request_by_date.end() && itr->conversion_date <= now) {
-                const auto &user = references.get_account(itr->owner);
+                const auto &user = get_account(references, itr->owner);
                 auto amount_to_issue = itr->amount * fhistory.current_median_history;
 
-                references.dynamic_extension_worker().get("account")->invoke("adjust_balance",user, amount_to_issue);
+                references.dynamic_extension_worker().get("account")->invoke("adjust_balance", user, amount_to_issue);
 
                 net_sbd += itr->amount;
                 net_steem += amount_to_issue;
 
-                references.push_virtual_operation(fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
+                references.push_virtual_operation(
+                        fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
 
                 references.remove(*itr);
                 itr = request_by_date.begin();
@@ -47,7 +56,7 @@ namespace steemit {
         }
 
         void asset_policy::adjust_supply(const asset &delta, bool adjust_vesting) {
-            references.dynamic_extension_worker().get("asset")->invoke("adjust_supply",delta,adjust_vesting);
+            references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", delta, adjust_vesting);
         }
     }
 }

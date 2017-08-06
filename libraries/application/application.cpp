@@ -423,8 +423,8 @@ namespace steemit {
                                 // leave that peer connected so that they can get sync blocks from us
                                 bool result = _chain_db->push_block(blk_msg.block, (_is_block_producer |
                                                                                     _force_validate)
-                                                                                   ? static_cast<uint32_t >(database::validation_steps::skip_nothing)
-                                                                                   : static_cast<uint32_t >(database::validation_steps::skip_transaction_signatures));
+                                                                                   ? static_cast<uint32_t >(validation_steps::skip_nothing)
+                                                                                   : static_cast<uint32_t >(validation_steps::skip_transaction_signatures));
 
                                 if (!sync_mode &&
                                     blk_msg.block.transactions.size()) {

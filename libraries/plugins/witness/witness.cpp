@@ -1,8 +1,8 @@
 #include <steemit/witness/witness.hpp>
 
 #include <steemit/chain/database/database_exceptions.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/account_object.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 
@@ -139,7 +139,7 @@ void witness_plugin::plugin_startup() {
                 if (d.head_block_num() == 0) {
                     new_chain_banner(d);
                 }
-                _production_skip_flags |= static_cast<uint32_t >(steemit::chain::database::validation_steps::skip_undo_history_check);
+                _production_skip_flags |= static_cast<uint32_t >(chain::validation_steps::skip_undo_history_check);
             }
             schedule_production_loop();
         } else

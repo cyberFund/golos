@@ -1,10 +1,10 @@
 #pragma once
 
 #include <steemit/chain/database/database_basic.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/transaction_object.hpp>
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
+#include <steemit/chain/chain_objects/history_object.hpp>
+#include <steemit/chain/chain_objects/transaction_object.hpp>
+#include <steemit/chain/chain_objects/block_summary_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 #include <steemit/chain/database/policies/account_policy.hpp>

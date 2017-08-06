@@ -4,7 +4,7 @@
 #include <steemit/chain/database/database_worker.hpp>
 #include "steemit/chain/database/generic_policy.hpp"
 #include "steemit/chain/dynamic_extension/worker.hpp"
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 namespace steemit {
 namespace chain {

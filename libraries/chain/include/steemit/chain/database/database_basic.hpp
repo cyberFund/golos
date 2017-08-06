@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/chain/global_property_object.hpp>
+#include <steemit/chain/chain_objects/global_property_object.hpp>
 #include <steemit/chain/hardfork.hpp>
 #include <steemit/chain/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
@@ -11,8 +11,6 @@
 
 #include <fc/log/logger.hpp>
 
-
-#include <steemit/chain/database/transformer.hpp>
 #include <steemit/chain/dynamic_extension/worker_storage.hpp>
 #include "hard_fork_transformer.hpp"
 
@@ -34,11 +32,29 @@ namespace steemit {
             struct comment_reward_context;
         }
 
+        enum class validation_steps {
+            skip_nothing = 0,
+            skip_witness_signature = 1 << 0,  ///< used while reindexing
+            skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
+            skip_transaction_dupe_check = 1 << 2,  ///< used while reindexing
+            skip_fork_db = 1 << 3,  ///< used while reindexing
+            skip_block_size_check = 1 << 4,  ///< used when applying locally generated transactions
+            skip_tapos_check = 1 << 5,  ///< used while reindexing -- note this skips expiration check as well
+            skip_authority_check = 1 << 6,  ///< used while reindexing -- disables any checking of authority on transactions
+            skip_merkle_check = 1 << 7,  ///< used while reindexing
+            skip_undo_history_check = 1 << 8,  ///< used while reindexing
+            skip_witness_schedule_check = 1 << 9,  ///< used while reindexing
+            skip_validate = 1 << 10, ///< used prior to checkpoint, skips validate() call on transaction
+            skip_validate_invariants = 1 << 11, ///< used to skip database invariant check on block application
+            skip_undo_block = 1 << 12, ///< used to skip undo db on reindex
+            skip_block_log = 1 << 13  ///< used to skip block logging on reindex
+        };
+
         /**
          *   @class database
          *   @brief tracks the blockchain state in an extensible manner
          */
-        class database_basic : public transformer<chainbase::database> {
+        class database_basic : public chainbase::database {
         public:
 
             database_basic(dynamic_extension::worker_storage storage,hard_fork_transformer&&);
@@ -56,24 +72,6 @@ namespace steemit {
             bool _is_producing = false;
 
             bool _log_hardforks = true;
-
-            enum class validation_steps {
-                skip_nothing = 0,
-                skip_witness_signature = 1 << 0,  ///< used while reindexing
-                skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
-                skip_transaction_dupe_check = 1 << 2,  ///< used while reindexing
-                skip_fork_db = 1 << 3,  ///< used while reindexing
-                skip_block_size_check = 1 << 4,  ///< used when applying locally generated transactions
-                skip_tapos_check = 1 << 5,  ///< used while reindexing -- note this skips expiration check as well
-                skip_authority_check = 1 << 6,  ///< used while reindexing -- disables any checking of authority on transactions
-                skip_merkle_check = 1 << 7,  ///< used while reindexing
-                skip_undo_history_check = 1 << 8,  ///< used while reindexing
-                skip_witness_schedule_check = 1 << 9,  ///< used while reindexing
-                skip_validate = 1 << 10, ///< used prior to checkpoint, skips validate() call on transaction
-                skip_validate_invariants = 1 << 11, ///< used to skip database invariant check on block application
-                skip_undo_block = 1 << 12, ///< used to skip undo db on reindex
-                skip_block_log = 1 << 13  ///< used to skip block logging on reindex
-            };
 
             /**
              * @brief Open a database, creating a new one if necessary
@@ -148,6 +146,8 @@ namespace steemit {
             block_id_type head_block_id() const;
             uint32_t last_non_undoable_block_num() const;
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
+            const feed_history_object &get_feed_history() const;
+            const dynamic_global_property_object &get_dynamic_global_properties() const;
 ////Todo Nex Refactoring
 
             /**

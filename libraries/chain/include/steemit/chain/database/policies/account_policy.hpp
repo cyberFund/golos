@@ -2,7 +2,7 @@
 #define GOLOS_ACCOUNT_POLICE_HPP
 
 #include <steemit/chain/database/generic_policy.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 namespace steemit {
 namespace chain {
@@ -39,6 +39,9 @@ public:
 
     bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
+    const account_object &get_account(const account_name_type &name) const;
+
+    const account_object *find_account(const account_name_type &name) const;
 
     void expire_escrow_ratification();
 /*

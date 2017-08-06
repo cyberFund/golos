@@ -6,7 +6,7 @@
 #include "steemit/chain/database/generic_policy.hpp"
 #include "steemit/chain/dynamic_extension/worker.hpp"
 #include <steemit/protocol/block.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 namespace steemit {
 namespace chain {
@@ -46,6 +46,10 @@ struct witness_policy : public generic_policy {
         }
     }
 */
+
+    const witness_object &get_witness(const account_name_type &name) const;
+
+    const witness_object *find_witness(const account_name_type &name) const;
 
     void update_median_witness_props();
 

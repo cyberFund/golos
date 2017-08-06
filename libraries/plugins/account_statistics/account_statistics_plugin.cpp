@@ -1,6 +1,6 @@
 #include <steemit/account_statistics/account_statistics_api.hpp>
 #include <steemit/chain/database/database.hpp>
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/chain_objects/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
 
 namespace steemit {

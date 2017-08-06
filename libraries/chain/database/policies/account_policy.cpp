@@ -1,8 +1,63 @@
 #include <steemit/chain/database/policies/account_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
+#include <steemit/chain/compound.hpp>
 
 namespace steemit {
     namespace chain {
+        namespace {
+            asset get_content_reward(database_basic &db) {
+                const auto &props = db.get_dynamic_global_properties();
+                auto reward = asset(255, STEEM_SYMBOL);
+                static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
+                if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
+                    asset percent(
+                            protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
+                                    props.virtual_supply.amount),
+                            STEEM_SYMBOL);
+                    reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
+                }
+
+                return reward;
+            }
+
+
+            asset get_curation_reward(database_basic &db) {
+                const auto &props = db.get_dynamic_global_properties();
+                auto reward = asset(85, STEEM_SYMBOL);
+                static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
+                if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
+                    asset percent(
+                            protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
+                                    props.virtual_supply.amount),
+                            STEEM_SYMBOL);
+                    reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
+                }
+
+                return reward;
+            }
+
+            const witness_schedule_object &get_witness_schedule_object(database_basic &db) {
+                try {
+                    return db.get<witness_schedule_object>();
+                } FC_CAPTURE_AND_RETHROW()
+            }
+
+            const witness_object &get_witness(database_basic &db, const account_name_type &name) {
+                try {
+                    return db.get<witness_object, by_name>(name);
+                } FC_CAPTURE_AND_RETHROW((name))
+            }
+        }
+
+        const account_object &account_policy::get_account(const account_name_type &name) const {
+            try {
+                return references.get<account_object, by_name>(name);
+            } FC_CAPTURE_AND_RETHROW((name))
+        }
+
+        const account_object *account_policy::find_account(const account_name_type &name) const {
+            return references.find<account_object, by_name>(name);
+        }
 
         asset account_policy::get_balance(const account_object &a, asset_symbol_type symbol) const {
             switch (symbol) {
@@ -56,10 +111,12 @@ namespace steemit {
 
                                 references.push_virtual_operation(interest_operation(a.name, interest_paid));
 
-                                references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                                    props.current_sbd_supply += interest_paid;
-                                    props.virtual_supply += interest_paid * references.get_feed_history().current_median_history;
-                                });
+                                references.modify(references.get_dynamic_global_properties(),
+                                                  [&](dynamic_global_property_object &props) {
+                                                      props.current_sbd_supply += interest_paid;
+                                                      props.virtual_supply += interest_paid *
+                                                                              references.get_feed_history().current_median_history;
+                                                  });
                             }
                         }
                         acnt.savings_sbd_balance += delta;
@@ -71,22 +128,24 @@ namespace steemit {
         }
 
         void account_policy::adjust_balance(const account_object &a, const asset &delta) {
-            references.dynamic_extension_worker().get("account")->invoke("adjust_balance",a,delta);
+            references.dynamic_extension_worker().get("account")->invoke("adjust_balance", a, delta);
         }
 
         void account_policy::update_owner_authority(const account_object &account, const authority &owner_authority) {
             if (references.head_block_num() >= STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
                 references.create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
                     hist.account = account.name;
-                    hist.previous_owner_authority = references.get<account_authority_object, by_account>(account.name).owner;
+                    hist.previous_owner_authority = references.get<account_authority_object, by_account>(
+                            account.name).owner;
                     hist.last_valid_time = references.head_block_time();
                 });
             }
 
-            references.modify(references.get<account_authority_object, by_account>(account.name), [&](account_authority_object &auth) {
-                auth.owner = owner_authority;
-                auth.last_owner_update = references.head_block_time();
-            });
+            references.modify(references.get<account_authority_object, by_account>(account.name),
+                              [&](account_authority_object &auth) {
+                                  auth.owner = owner_authority;
+                                  auth.last_owner_update = references.head_block_time();
+                              });
         }
 
         void account_policy::clear_null_account_balance() {
@@ -94,7 +153,7 @@ namespace steemit {
                 return;
             }
 
-            const auto &null_account = references.get_account(STEEMIT_NULL_ACCOUNT);
+            const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
             asset total_steem(0, STEEM_SYMBOL);
             asset total_sbd(0, SBD_SYMBOL);
 
@@ -136,11 +195,11 @@ namespace steemit {
             }
 
             if (total_steem.amount > 0) {
-                references.dynamic_extension_worker().get("asset")->invoke("adjust_supply",-total_steem);
+                references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -total_steem);
             }
 
             if (total_sbd.amount > 0) {
-                references.dynamic_extension_worker().get("asset")->invoke("adjust_supply",-total_sbd);
+                references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -total_sbd);
             }
         }
 
@@ -153,7 +212,7 @@ namespace steemit {
 
             FC_ASSERT(account.balance >= fee);
             adjust_balance(account, -fee);
-            references.dynamic_extension_worker().get("asset")->invoke("adjust_supply",-fee);
+            references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -fee);
         }
 
         void account_policy::old_update_account_bandwidth(const account_object &a, uint32_t trx_size,
@@ -164,7 +223,8 @@ namespace steemit {
                     FC_ASSERT(a.vesting_shares.amount >
                               0, "Only accounts with a postive vesting balance may transact.");
 
-                    auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
+                    auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(
+                            boost::make_tuple(a.name, type));
 
                     if (band == nullptr) {
                         band = &references.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
@@ -214,12 +274,14 @@ namespace steemit {
         }
 
         bool
-        account_policy::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+        account_policy::update_account_bandwidth(const account_object &a, uint32_t trx_size,
+                                                 const bandwidth_type type) {
             const auto &props = references.get_dynamic_global_properties();
             bool has_bandwidth = true;
 
             if (props.total_vesting_shares.amount > 0) {
-                auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
+                auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(
+                        boost::make_tuple(a.name, type));
 
                 if (band == nullptr) {
                     band = &references.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
@@ -275,11 +337,12 @@ namespace steemit {
             const auto &escrow_idx = references.get_index<escrow_index>().indices().get<by_ratification_deadline>();
             auto escrow_itr = escrow_idx.lower_bound(false);
 
-            while (escrow_itr != escrow_idx.end() && !escrow_itr->is_approved() && escrow_itr->ratification_deadline <= references.head_block_time()) {
+            while (escrow_itr != escrow_idx.end() && !escrow_itr->is_approved() &&
+                   escrow_itr->ratification_deadline <= references.head_block_time()) {
                 const auto &old_escrow = *escrow_itr;
                 ++escrow_itr;
 
-                const auto &from_account = references.get_account(old_escrow.from);
+                const auto &from_account = get_account(old_escrow.from);
                 adjust_balance(from_account, old_escrow.steem_balance);
                 adjust_balance(from_account, old_escrow.sbd_balance);
                 adjust_balance(from_account, old_escrow.pending_fee);
@@ -288,12 +351,12 @@ namespace steemit {
         }
 
         asset account_policy::get_balance(const string &aname, asset_symbol_type symbol) const {
-            return get_balance(references.get_account(aname), symbol);
+            return get_balance(get_account(aname), symbol);
         }
 
         void account_policy::process_funds() {
             const auto &props = references.get_dynamic_global_properties();
-            const auto &wso = references.get_witness_schedule_object();
+            const auto &wso = get_witness_schedule_object(references);
 
             if (references.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 /**
@@ -309,23 +372,16 @@ namespace steemit {
                 int64_t current_inflation_rate = std::max(start_inflation_rate -
                                                           inflation_rate_adjustment, inflation_rate_floor);
 
-                auto new_steem =
-                        (props.virtual_supply.amount * current_inflation_rate) /
-                        (int64_t(STEEMIT_100_PERCENT) *
-                         int64_t(STEEMIT_BLOCKS_PER_YEAR));
-                auto content_reward =
-                        (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) /
-                        STEEMIT_100_PERCENT;
+                auto new_steem = (props.virtual_supply.amount * current_inflation_rate) / (int64_t(STEEMIT_100_PERCENT) * int64_t(STEEMIT_BLOCKS_PER_YEAR));
+                auto content_reward = (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) / STEEMIT_100_PERCENT;
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                    content_reward = dynamic_extension::cast<fc::safe<long int>>(references.dynamic_extension_worker().get("behaviour_based")->invoke("pay_reward_funds",content_reward));
+                    content_reward = dynamic_extension::cast<share_type>(references.dynamic_extension_worker().get("behaviour_based")->invoke("pay_reward_funds", content_reward));
                 } /// 75% to content creator
                 auto vesting_reward =
-                        (new_steem * STEEMIT_VESTING_FUND_PERCENT) /
-                        STEEMIT_100_PERCENT; /// 15% to vesting fund
-                auto witness_reward = new_steem - content_reward -
-                                      vesting_reward; /// Remaining 10% to witness pay
+                        (new_steem * STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+                auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
-                const auto &cwit = references.get_witness(props.current_witness);
+                const auto &cwit = get_witness(references, props.current_witness);
                 witness_reward *= STEEMIT_MAX_WITNESSES;
 
                 if (cwit.schedule == witness_object::timeshare) {
@@ -351,10 +407,10 @@ namespace steemit {
 
                 });
 
-                references.dynamic_extension_worker().get("witness")->invoke("create_vesting",references.get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
+                references.dynamic_extension_worker().get("witness")->invoke("create_vesting", get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
             } else {
-                auto content_reward = references.get_content_reward();
-                auto curate_reward = references.get_curation_reward();
+                auto content_reward = get_content_reward(references);
+                auto curate_reward = get_curation_reward(references);
                 auto witness_pay = get_producer_reward();
                 auto vesting_reward =
                         content_reward + curate_reward + witness_pay;
@@ -387,13 +443,15 @@ namespace steemit {
                     break;
                 }
 
-                adjust_balance(references.get_account(itr->to), itr->amount);
+                adjust_balance(get_account(itr->to), itr->amount);
 
-                references.modify(references.get_account(itr->from), [&](account_object &a) {
+                references.modify(get_account(itr->from), [&](account_object &a) {
                     a.savings_withdraw_requests--;
                 });
 
-                references.push_virtual_operation(fill_transfer_from_savings_operation(itr->from, itr->to, itr->amount, itr->request_id, to_string(itr->memo)));
+                references.push_virtual_operation(
+                        fill_transfer_from_savings_operation(itr->from, itr->to, itr->amount, itr->request_id,
+                                                             to_string(itr->memo)));
 
                 references.remove(*itr);
                 itr = idx.begin();
@@ -403,9 +461,11 @@ namespace steemit {
         asset account_policy::get_producer_reward() {
             const auto &props = references.get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
-            asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
+            asset percent(
+                    protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount),
+                    STEEM_SYMBOL);
 
-            const auto &witness_account = references.get_account(props.current_witness);
+            const auto &witness_account = get_account(props.current_witness);
 
             if (references.has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
@@ -415,9 +475,10 @@ namespace steemit {
                     STEEMIT_START_MINER_VOTING_BLOCK ||
                     (witness_account.vesting_shares.amount.value == 0)) {
                     // const auto& witness_obj = get_witness( props.current_witness );
-                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting",witness_account, pay);
+                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting", witness_account,
+                                                                                 pay);
                 } else {
-                    references.modify(references.get_account(witness_account.name), [&](account_object &a) {
+                    references.modify(get_account(witness_account.name), [&](account_object &a) {
                         a.balance += pay;
                     });
                 }
@@ -431,9 +492,10 @@ namespace steemit {
                     STEEMIT_START_MINER_VOTING_BLOCK ||
                     (witness_account.vesting_shares.amount.value == 0)) {
                     // const auto& witness_obj = get_witness( props.current_witness );
-                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting",witness_account, pay);
+                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting", witness_account,
+                                                                                 pay);
                 } else {
-                    references.modify(references.get_account(witness_account.name), [&](account_object &a) {
+                    references.modify(get_account(witness_account.name), [&](account_object &a) {
                         a.balance += pay;
                     });
                 }
@@ -457,7 +519,9 @@ namespace steemit {
             const auto &hist_idx = references.get_index<owner_authority_history_index>().indices(); //by id
             auto hist = hist_idx.begin();
 
-            while (hist != hist_idx.end() && time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) < references.head_block_time()) {
+            while (hist != hist_idx.end() &&
+                   time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) <
+                   references.head_block_time()) {
                 references.remove(*hist);
                 hist = hist_idx.begin();
             }
@@ -467,7 +531,7 @@ namespace steemit {
             auto change_req = change_req_idx.begin();
 
             while (change_req != change_req_idx.end() && change_req->effective_on <= references.head_block_time()) {
-                references.modify(references.get_account(change_req->account_to_recover), [&](account_object &a) {
+                references.modify(get_account(change_req->account_to_recover), [&](account_object &a) {
                     a.recovery_account = change_req->recovery_account;
                 });
 
@@ -481,18 +545,20 @@ namespace steemit {
             const auto &delegations_by_exp = references.get_index<vesting_delegation_expiration_index, by_expiration>();
             auto itr = delegations_by_exp.begin();
             while (itr != delegations_by_exp.end() && itr->expiration < now) {
-                references.modify(references.get_account(itr->delegator), [&](account_object &a) {
+                references.modify(get_account(itr->delegator), [&](account_object &a) {
                     a.delegated_vesting_shares -= itr->vesting_shares;
                 });
 
-                references.push_virtual_operation(return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
+                references.push_virtual_operation(
+                        return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
 
                 references.remove(*itr);
                 itr = delegations_by_exp.begin();
             }
         }
 
-        account_policy::account_policy(database_basic &ref,int) : generic_policy(ref) {
+        account_policy::account_policy(database_basic &ref, int) : generic_policy(ref) {
         }
+
     }
 }

@@ -5,7 +5,7 @@
 #include <steemit/application/api_context.hpp>
 #include <steemit/application/application.hpp>
 
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/chain_objects/account_object.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 
@@ -196,10 +196,10 @@ namespace steemit {
                         steemit::chain::block_log log;
                         log.open(src_path);
                         uint32_t first_block = db->head_block_num() + 1;
-                        uint32_t skip_flags = static_cast<uint32_t>(steemit::chain::database::validation_steps::skip_nothing);
+                        uint32_t skip_flags = static_cast<uint32_t>(chain::validation_steps::skip_nothing);
                         if (skip_validate_invariants) {
                             skip_flags = skip_flags |
-                                    static_cast<uint32_t>(steemit::chain::database::validation_steps::skip_validate_invariants);
+                                    static_cast<uint32_t>(chain::validation_steps::skip_validate_invariants);
                         }
                         for (uint32_t i = 0; i < count; i++) {
                             //fc::optional< steemit::chain::signed_block > block = log.read_block( log.get_block_pos( first_block + i ) );
@@ -235,11 +235,11 @@ namespace steemit {
                 }
 
                 uint32_t debug_node_api_impl::debug_generate_blocks(const std::string &debug_key, uint32_t count) {
-                    return get_plugin()->debug_generate_blocks(debug_key, count, static_cast<uint32_t >(steemit::chain::database::validation_steps::skip_nothing), 0, &key_storage);
+                    return get_plugin()->debug_generate_blocks(debug_key, count, static_cast<uint32_t >(chain::validation_steps::skip_nothing), 0, &key_storage);
                 }
 
                 uint32_t debug_node_api_impl::debug_generate_blocks_until(const std::string &debug_key, const fc::time_point_sec &head_block_time, bool generate_sparsely) {
-                    return get_plugin()->debug_generate_blocks_until(debug_key, head_block_time, generate_sparsely, static_cast<uint32_t >(steemit::chain::database::validation_steps::skip_nothing), &key_storage);
+                    return get_plugin()->debug_generate_blocks_until(debug_key, head_block_time, generate_sparsely, static_cast<uint32_t >(chain::validation_steps::skip_nothing), &key_storage);
                 }
 
                 fc::optional<steemit::chain::signed_block> debug_node_api_impl::debug_pop_block() {

@@ -1,7 +1,7 @@
 #include <steemit/follow/follow_operations.hpp>
 #include <steemit/follow/follow_objects.hpp>
 
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/chain_objects/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
 
 namespace steemit {

@@ -2,7 +2,7 @@
 
 #include <steemit/follow/follow_plugin.hpp>
 
-#include <steemit/chain/steem_object_types.hpp>
+#include <steemit/chain/chain_objects/steem_object_types.hpp>
 
 namespace steemit {
     namespace follow {

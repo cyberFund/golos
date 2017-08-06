@@ -1,14 +1,14 @@
 #include <steemit/protocol/steem_operations.hpp>
 
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/chain_objects/block_summary_object.hpp>
 #include <steemit/chain/compound.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/database/database_exceptions.hpp>
 #include <steemit/chain/db_with.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
+#include <steemit/chain/chain_objects/history_object.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
+#include <steemit/chain/chain_objects/transaction_object.hpp>
 #include <steemit/chain/shared_db_merkle.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
@@ -52,7 +52,28 @@ FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(cust
 
 namespace steemit {
     namespace chain {
+namespace {
+    const witness_schedule_object &get_witness_schedule_object(database_basic &db) {
+        try {
+            return db.get<witness_schedule_object>();
+        } FC_CAPTURE_AND_RETHROW()
+    }
 
+
+    account_name_type get_scheduled_witness(database_basic &db, uint32_t slot_num) {
+        const dynamic_global_property_object &dpo = db.get_dynamic_global_properties();
+        const witness_schedule_object &wso = get_witness_schedule_object(db);
+        uint64_t current_aslot = dpo.current_aslot + slot_num;
+        return wso.current_shuffled_witnesses[current_aslot % wso.num_scheduled_witnesses];
+    }
+
+
+    const witness_object &get_witness(database_basic &db, const account_name_type &name) {
+        try {
+            return db.get<witness_object, by_name>(name);
+        } FC_CAPTURE_AND_RETHROW((name))
+    }
+}
         using boost::container::flat_set;
 
         database_basic::database_basic(dynamic_extension::worker_storage storage,hard_fork_transformer&&hft):storage(storage),table_hard_fork(std::move(hft)){
@@ -540,10 +561,10 @@ namespace steemit {
             uint32_t skip = get_node_properties().skip_flags;
             uint32_t slot_num = get_slot_at_time(when);
             FC_ASSERT(slot_num > 0);
-            string scheduled_witness = get_scheduled_witness(slot_num);
+            string scheduled_witness = get_scheduled_witness(*this,slot_num);
             FC_ASSERT(scheduled_witness == witness_owner);
 
-            const auto &witness_obj = get_witness(witness_owner);
+            const auto &witness_obj = get_witness(*this,witness_owner);
 
             if (!(skip & static_cast<uint32_t >(validation_steps::skip_witness_signature)))
                 FC_ASSERT(witness_obj.signing_key == block_signing_private_key.get_public_key());
@@ -621,7 +642,7 @@ namespace steemit {
             pending_block.transaction_merkle_root = pending_block.calculate_merkle_root();
             pending_block.witness = witness_owner;
             if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                const auto &witness = get_witness(witness_owner);
+                const auto &witness = get_witness(*this,witness_owner);
 
                 if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
                     pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
@@ -1114,7 +1135,7 @@ namespace steemit {
 
                 if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) // Cannot remove after hardfork
                 {
-                    const auto &witness = get_witness(next_block.witness);
+                    const auto &witness = get_witness(*this,next_block.witness);
                     const auto &hardfork_state = get_hardfork_property_object();
                     FC_ASSERT(witness.running_version >=
                               hardfork_state.current_hardfork_version,
@@ -1182,7 +1203,7 @@ namespace steemit {
                     case 1: // version
                     {
                         auto reported_version = itr->get<version>();
-                        const auto &signing_witness = get_witness(next_block.witness);
+                        const auto &signing_witness = get_witness(*this,next_block.witness);
                         //idump( (next_block.witness)(signing_witness.running_version)(reported_version) );
 
                         if (reported_version !=
@@ -1196,7 +1217,7 @@ namespace steemit {
                     case 2: // hardfork_version vote
                     {
                         auto hfv = itr->get<hardfork_version_vote>();
-                        const auto &signing_witness = get_witness(next_block.witness);
+                        const auto &signing_witness = get_witness(*this,next_block.witness);
                         //idump( (next_block.witness)(signing_witness.running_version)(hfv) );
 
                         if (hfv.hf_version !=
@@ -1337,7 +1358,7 @@ namespace steemit {
             try {
                 FC_ASSERT(head_block_id() == next_block.previous, "", ("head_block_id", head_block_id())("next.prev", next_block.previous));
                 FC_ASSERT(head_block_time() < next_block.timestamp, "", ("head_block_time", head_block_time())("next", next_block.timestamp)("blocknum", next_block.block_num()));
-                const witness_object &witness = get_witness(next_block.witness);
+                const witness_object &witness = get_witness(const_cast<database_basic&>(*this),next_block.witness);
 
                 if (!(skip & static_cast<uint32_t >(validation_steps::skip_witness_signature)))
                     FC_ASSERT(next_block.validate_signee(witness.signing_key));
@@ -1346,7 +1367,7 @@ namespace steemit {
                     uint32_t slot_num = get_slot_at_time(next_block.timestamp);
                     FC_ASSERT(slot_num > 0);
 
-                    string scheduled_witness = get_scheduled_witness(slot_num);
+                    string scheduled_witness = get_scheduled_witness(const_cast<database_basic&>(*this),slot_num);
 
                     FC_ASSERT(witness.owner ==
                               scheduled_witness, "Witness produced block at wrong time",
@@ -1384,12 +1405,12 @@ namespace steemit {
                         }
                     });
                 } else {
-                    const witness_schedule_object &wso = get_witness_schedule_object();
+                    const witness_schedule_object &wso = get_witness_schedule_object(*this);
 
                     vector<const witness_object *> wit_objs;
                     wit_objs.reserve(wso.num_scheduled_witnesses);
                     for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-                        wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
+                        wit_objs.push_back(&get_witness(*this,wso.current_shuffled_witnesses[i]));
                     }
 
                     static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero");
@@ -1838,7 +1859,7 @@ namespace steemit {
                     assert(missed_blocks != 0);
                     missed_blocks--;
                     for (uint32_t i = 0; i < missed_blocks; ++i) {
-                        const auto &witness_missed = get_witness(get_scheduled_witness(i + 1));
+                        const auto &witness_missed = get_witness(const_cast<database_basic&>(*this),get_scheduled_witness(const_cast<database_basic&>(*this),i + 1));
                         if (witness_missed.owner != b.witness) {
                             modify(witness_missed, [&](witness_object &w) {
                                 w.total_missed++;
@@ -2108,6 +2129,20 @@ namespace steemit {
 
         dynamic_extension::worker_storage &database_basic::dynamic_extension_worker() {
             return storage;
+        }
+
+        const dynamic_global_property_object &database_basic::get_dynamic_global_properties() const {
+            try {
+                return get<dynamic_global_property_object>();
+            }
+            FC_CAPTURE_AND_RETHROW()
+
+        }
+
+        const feed_history_object &database_basic::get_feed_history() const {
+            try {
+                return get<feed_history_object>();
+            } FC_CAPTURE_AND_RETHROW()
         }
 
 ////Todo Nex Refactoring

@@ -3,7 +3,7 @@
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/steem_operations.hpp>
 
-#include <steemit/chain/steem_object_types.hpp>
+#include <steemit/chain/chain_objects/steem_object_types.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -509,7 +509,7 @@ namespace steemit {
 } // steemit::chain
 
 #include <steemit/chain/comment_object.hpp>
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/chain_objects/account_object.hpp>
 
 
 FC_REFLECT(steemit::chain::limit_order_object,

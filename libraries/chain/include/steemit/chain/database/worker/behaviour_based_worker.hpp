@@ -2,7 +2,7 @@
 #define GOLOS_BEHAVIOUR_BASED_WORKER_HPP
 
 #include <steemit/chain/database/database_worker.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 #include <steemit/chain/utilities/asset.hpp>
 #include <steemit/chain/database/database_police.hpp>
 

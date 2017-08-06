@@ -1,9 +1,9 @@
 #include <steemit/blockchain_statistics/blockchain_statistics_api.hpp>
 
 #include <steemit/application/impacted.hpp>
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/chain_objects/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/chain_objects/history_object.hpp>
 #include <steemit/chain/database/database.hpp>
 
 #include <steemit/chain/index.hpp>

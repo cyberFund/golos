@@ -78,7 +78,7 @@ namespace steemit {
             boost::program_options::variables_map _options;
             bool _production_enabled = false;
             uint32_t _required_witness_participation = 33 * STEEMIT_1_PERCENT;
-            uint32_t _production_skip_flags = static_cast<uint32_t>(steemit::chain::database::validation_steps::skip_nothing);
+            uint32_t _production_skip_flags = static_cast<uint32_t>(chain::validation_steps::skip_nothing);
             uint32_t _mining_threads = 0;
 
             uint64_t _head_block_num = 0;

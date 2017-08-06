@@ -134,6 +134,8 @@ namespace steemit {
             notify_post_apply_operation(note);
         }
 
+        database::database(dynamic_extension::worker_storage &&storage, hard_fork_transformer &&hft): database_tag(std::move(storage), std::move(hft)) {}
+
         shared_ptr<database> make_database() {
             hard_fork_transformer hft;
             dynamic_extension::worker_storage ws;

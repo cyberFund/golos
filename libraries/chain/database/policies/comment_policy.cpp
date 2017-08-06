@@ -1,9 +1,22 @@
 #include <steemit/chain/database/policies/comment_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 namespace steemit {
     namespace chain {
+
+        namespace {
+            const reward_fund_object &get_reward_fund(database_basic &db, const comment_object &c) {
+                return db.get<reward_fund_object, by_name>(
+                        c.parent_author == STEEMIT_ROOT_POST_PARENT ? STEEMIT_POST_REWARD_FUND_NAME : STEEMIT_COMMENT_REWARD_FUND_NAME);
+            }
+
+            const account_object &get_account(database_basic &db, const account_name_type &name) {
+                try {
+                    return db.get<account_object, by_name>(name);
+                } FC_CAPTURE_AND_RETHROW((name))
+            }
+        }
 
         share_type
         comment_policy::cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment) {
@@ -14,12 +27,13 @@ namespace steemit {
                     fill_comment_reward_context_local_state(ctx, comment);
 
                     const share_type reward = references.has_hardfork(STEEMIT_HARDFORK_0_17__86)
-                                              ? utilities::get_rshare_reward(ctx, references.get_reward_fund(comment))
+                                              ? utilities::get_rshare_reward(ctx, get_reward_fund(references, comment))
                                               : utilities::get_rshare_reward(ctx);
                     uint128_t reward_tokens = uint128_t(reward.value);
 
                     if (reward_tokens > 0) {
-                        share_type curation_tokens = ((reward_tokens * get_curation_rewards_percent(comment)) / STEEMIT_100_PERCENT).to_uint64();
+                        share_type curation_tokens = ((reward_tokens * get_curation_rewards_percent(comment)) /
+                                                      STEEMIT_100_PERCENT).to_uint64();
 
                         share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
 
@@ -31,7 +45,11 @@ namespace steemit {
 
                         for (auto &b : comment.beneficiaries) {
                             auto benefactor_tokens = (author_tokens * b.weight) / STEEMIT_100_PERCENT;
-                            auto vest_created =  dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("witness")->invoke("create_vesting",references.get_account(b.account), benefactor_tokens));
+                            auto vest_created = dynamic_extension::cast<asset>(
+                                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting",
+                                                                                                 get_account(references,
+                                                                                                             b.account),
+                                                                                                 benefactor_tokens));
                             references.push_virtual_operation(
                                     comment_benefactor_reward_operation(b.account, comment.author,
                                                                         to_string(comment.permlink),
@@ -46,15 +64,30 @@ namespace steemit {
                                          (2 * STEEMIT_100_PERCENT);
                         auto vesting_steem = author_tokens - sbd_steem;
 
-                        const auto &author = references.get_account(comment.author);
-                        auto vest_created =  dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("witness")->invoke("create_vesting",author, vesting_steem));
-                        auto sbd_payout =  dynamic_extension::cast<std::pair<asset, asset>>(references.dynamic_extension_worker().get("behaviour_based")->invoke("create_sbd",author, sbd_steem));
+                        const auto &author = get_account(references, comment.author);
+                        auto vest_created = dynamic_extension::cast<asset>(
+                                references.dynamic_extension_worker().get("witness")->invoke("create_vesting", author,
+                                                                                             vesting_steem));
+                        auto sbd_payout = dynamic_extension::cast<std::pair<asset, asset>>(
+                                references.dynamic_extension_worker().get("behaviour_based")->invoke("create_sbd",
+                                                                                                     author,
+                                                                                                     sbd_steem));
 
                         adjust_total_payout(
                                 comment,
-                                sbd_payout.first + dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",sbd_payout.second + asset(vesting_steem, STEEM_SYMBOL))),
-                                dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",asset(curation_tokens, STEEM_SYMBOL))),
-                                dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",asset(total_beneficiary, STEEM_SYMBOL)))
+                                sbd_payout.first + dynamic_extension::cast<asset>(
+                                        references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",
+                                                                                                             sbd_payout.second +
+                                                                                                             asset(vesting_steem,
+                                                                                                                   STEEM_SYMBOL))),
+                                dynamic_extension::cast<asset>(
+                                        references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",
+                                                                                                             asset(curation_tokens,
+                                                                                                                   STEEM_SYMBOL))),
+                                dynamic_extension::cast<asset>(
+                                        references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",
+                                                                                                             asset(total_beneficiary,
+                                                                                                                   STEEM_SYMBOL)))
                         );
 
 
@@ -66,17 +99,23 @@ namespace steemit {
 
 
                         references.push_virtual_operation(
-                                author_reward_operation(comment.author, to_string(comment.permlink),
-                                                        sbd_payout.first, sbd_payout.second, vest_created));
+                                author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first,
+                                                        sbd_payout.second, vest_created)
+                        );
                         references.push_virtual_operation(
-                                comment_reward_operation(comment.author, to_string(comment.permlink), dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",asset(claimed_reward, STEEM_SYMBOL)))));
+                                comment_reward_operation(comment.author, to_string(comment.permlink),
+                                                         dynamic_extension::cast<asset>(
+                                                                 references.dynamic_extension_worker().get(
+                                                                         "behaviour_based")->invoke("to_sbd",
+                                                                                                    asset(claimed_reward,
+                                                                                                          STEEM_SYMBOL)))));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                         references.modify(comment, [&](comment_object &c) {
                             c.author_rewards += author_tokens;
                         });
 
-                        references.modify(references.get_account(comment.author), [&](account_object &a) {
+                        references.modify(get_account(references, comment.author), [&](account_object &a) {
                             a.posting_rewards += author_tokens;
                         });
 #endif
@@ -125,7 +164,8 @@ namespace steemit {
                     c.last_payout = references.head_block_time();
                 });
 
-                references.push_virtual_operation(comment_payout_update_operation(comment.author, to_string(comment.permlink)));
+                references.push_virtual_operation(
+                        comment_payout_update_operation(comment.author, to_string(comment.permlink)));
 
                 const auto &vote_idx = references.get_index<comment_vote_index>().indices().get<by_comment_voter>();
                 auto vote_itr = vote_idx.lower_bound(comment.id);
@@ -198,8 +238,9 @@ namespace steemit {
                 while (current != cidx.end() &&
                        current->cashout_time <= references.head_block_time()) {
                     if (current->net_rshares > 0) {
-                        const auto &rf = references.get_reward_fund(*current);
-                        funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value, rf);
+                        const auto &rf = get_reward_fund(references, *current);
+                        funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(current->net_rshares.value,
+                                                                                         rf);
                         FC_ASSERT(funds[rf.id._id].recent_rshares2 <
                                   std::numeric_limits<uint64_t>::max());
                     }
@@ -226,7 +267,7 @@ namespace steemit {
 
             while (current != cidx.end() && current->cashout_time <= references.head_block_time()) {
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_17__89)) {
-                    auto fund_id = references.get_reward_fund(*current).id._id;
+                    auto fund_id = get_reward_fund(references, *current).id._id;
                     ctx.total_reward_shares2 = funds[fund_id].recent_rshares2;
                     ctx.total_reward_fund_steem = funds[fund_id].reward_balance;
                     funds[fund_id].steem_awarded += cashout_comment_helper(ctx, *current);
@@ -243,16 +284,18 @@ namespace steemit {
                         // recent rshares 2 to prevent any downtime in payouts at HF 17. After HF 17, we can capture
                         // the value of recent rshare 2 and set it at the hardfork instead of computing it every reindex
                         if (funds.size() && comment.net_rshares > 0) {
-                            const auto &rf = references.get_reward_fund(comment);
-                            funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(comment.net_rshares.value, rf);
+                            const auto &rf = get_reward_fund(references, comment);
+                            funds[rf.id._id].recent_rshares2 += utilities::calculate_vshares(comment.net_rshares.value,
+                                                                                             rf);
                         }
 
                         auto reward = cashout_comment_helper(ctx, comment);
 
                         if (reward > 0) {
-                            references.modify(references.get_dynamic_global_properties(), [&](dynamic_global_property_object &p) {
-                                p.total_reward_fund_steem.amount -= reward;
-                            });
+                            references.modify(references.get_dynamic_global_properties(),
+                                              [&](dynamic_global_property_object &p) {
+                                                  p.total_reward_fund_steem.amount -= reward;
+                                              });
                         }
                     }
                 }
@@ -261,16 +304,18 @@ namespace steemit {
 
             if (funds.size()) {
                 for (size_t i = 0; i < funds.size(); i++) {
-                    references.modify(references.get<reward_fund_object, by_id>(reward_fund_id_type(i)), [&](reward_fund_object &rfo) {
-                        rfo.recent_rshares2 = funds[i].recent_rshares2;
-                        rfo.reward_balance -= funds[i].steem_awarded;
-                    });
+                    references.modify(references.get<reward_fund_object, by_id>(reward_fund_id_type(i)),
+                                      [&](reward_fund_object &rfo) {
+                                          rfo.recent_rshares2 = funds[i].recent_rshares2;
+                                          rfo.reward_balance -= funds[i].steem_awarded;
+                                      });
                 }
             }
         }
 
         void
-        comment_policy::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+        comment_policy::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2,
+                                        fc::uint128_t new_rshares2) {
             update_children_rshares2(c, old_rshares2, new_rshares2);
 
             const auto &dgpo = references.get_dynamic_global_properties();
@@ -298,14 +343,14 @@ namespace steemit {
                         c.children++;
                     });
 #else
-                    const comment_object *parent = &references.get_comment(itr->parent_author, itr->parent_permlink);
+                    const comment_object *parent = &get_comment(itr->parent_author, itr->parent_permlink);
                     while (parent) {
                         references.modify(*parent, [&](comment_object &c) {
                             c.children++;
                         });
 
                         if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
-                            parent = &references.get_comment(parent->parent_author, parent->parent_permlink);
+                            parent = &get_comment(parent->parent_author, parent->parent_permlink);
                         } else {
                             parent = nullptr;
                         }
@@ -335,9 +380,13 @@ namespace steemit {
                         {
                             unclaimed_rewards -= claim;
                             const auto &voter = references.get(itr->voter);
-                            auto reward = dynamic_extension::cast<asset>(references.dynamic_extension_worker().get("witness")->invoke("create_vesting",voter, asset(claim, STEEM_SYMBOL)));
+                            auto reward = dynamic_extension::cast<asset>(
+                                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting",
+                                                                                                 voter, asset(claim,
+                                                                                                              STEEM_SYMBOL)));
 
-                            references.push_virtual_operation(curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
+                            references.push_virtual_operation(
+                                    curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                             references.modify(voter, [&](account_object &a) {
@@ -368,7 +417,8 @@ namespace steemit {
                         a.vesting_shares.amount *= magnitude;
                         a.withdrawn *= magnitude;
                         a.to_withdraw *= magnitude;
-                        a.vesting_withdraw_rate = asset(a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16, VESTS_SYMBOL);
+                        a.vesting_withdraw_rate = asset(a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16,
+                                                        VESTS_SYMBOL);
                         if (a.vesting_withdraw_rate.amount == 0) {
                             a.vesting_withdraw_rate.amount = 1;
                         }
@@ -402,8 +452,11 @@ namespace steemit {
         time_point_sec
         comment_policy::get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const {
             FC_ASSERT(input_cost.symbol == SBD_SYMBOL, "Extension payment should be in SBD");
-            FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY > 0, "Extension payment should cover more than a day");
-            return fc::time_point::now() + fc::seconds(((input_cost.amount.value * 60 * 60 * 24 * input_comment.net_rshares.value) / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
+            FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY > 0,
+                      "Extension payment should cover more than a day");
+            return fc::time_point::now() + fc::seconds(
+                    ((input_cost.amount.value * 60 * 60 * 24 * input_comment.net_rshares.value) /
+                     STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
         }
 
         uint16_t comment_policy::get_curation_rewards_percent(const comment_object &c) const {
@@ -432,7 +485,7 @@ namespace steemit {
                     break;
                 }
 
-                current_comment = &references.get_comment(current_comment->parent_author, current_comment->parent_permlink);
+                current_comment = &get_comment(current_comment->parent_author, current_comment->parent_permlink);
             }
         }
 
@@ -463,6 +516,7 @@ namespace steemit {
             });
             /// TODO: potentially modify author's total payout numbers as well
         }
+
 /*
         const reward_fund_object &comment_policy::get_reward_fund(const comment_object &c) const {
             return references.get<reward_fund_object, by_name>(
@@ -471,7 +525,31 @@ namespace steemit {
                     : STEEMIT_COMMENT_REWARD_FUND_NAME);
         }
 */
-        comment_policy::comment_policy(database_basic &ref,int) : generic_policy(ref) {
+        comment_policy::comment_policy(database_basic &ref, int) : generic_policy(ref) {
+        }
+
+        const comment_object *
+        comment_policy::find_comment(const account_name_type &author, const shared_string &permlink) const {
+            return references.find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+        }
+
+        const comment_object &
+        comment_policy::get_comment(const account_name_type &author, const shared_string &permlink) const {
+            try {
+                return references.get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+            } FC_CAPTURE_AND_RETHROW((author)(permlink))
+        }
+
+        const comment_object &
+        comment_policy::get_comment(const account_name_type &author, const string &permlink) const {
+            try {
+                return references.get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+            } FC_CAPTURE_AND_RETHROW((author)(permlink))
+        }
+
+        const comment_object *
+        comment_policy::find_comment(const account_name_type &author, const string &permlink) const {
+            return references.find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
     }
 }

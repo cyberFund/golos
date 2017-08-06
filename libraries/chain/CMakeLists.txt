@@ -14,6 +14,15 @@ endif(MSVC)
 set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp" PROPERTIES GENERATED TRUE)
 
 list(APPEND CURRENT_TARGET_HEADERS
+        include/steemit/chain/chain_objects/steem_object_types.hpp
+        include/steemit/chain/chain_objects/steem_objects.hpp
+        include/steemit/chain/chain_objects/transaction_object.hpp
+        include/steemit/chain/chain_objects/witness_objects.hpp
+        include/steemit/chain/chain_objects/block_summary_object.hpp
+        include/steemit/chain/chain_objects/account_object.hpp
+        include/steemit/chain/chain_objects/global_property_object.hpp
+        include/steemit/chain/chain_objects/history_object.hpp
+
         include/steemit/chain/database/policies/account_policy.hpp
         include/steemit/chain/database/policies/asset_policy.hpp
         include/steemit/chain/database/policies/behaviour_based_policy.hpp
@@ -38,7 +47,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/database/database_worker.hpp
         include/steemit/chain/database/dynamic_context.hpp
         include/steemit/chain/database/hard_fork_transformer.hpp
-        include/steemit/chain/database/transformer.hpp
 
         include/steemit/chain/dynamic_extension/smart_worker.hpp
         include/steemit/chain/dynamic_extension/worker_storage.hpp
@@ -92,9 +100,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/evaluators/withdraw_vesting_evaluator.hpp
         include/steemit/chain/evaluators/witness_update_evaluator.hpp
 
-        include/steemit/chain/account_object.hpp
         include/steemit/chain/block_log.hpp
-        include/steemit/chain/block_summary_object.hpp
         include/steemit/chain/comment_object.hpp
         include/steemit/chain/compound.hpp
         include/steemit/chain/custom_operation_interpreter.hpp
@@ -103,8 +109,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/fork_database.hpp
         include/steemit/chain/generic_custom_operation_interpreter.hpp
         include/steemit/chain/genesis_state.hpp
-        include/steemit/chain/global_property_object.hpp
-        include/steemit/chain/history_object.hpp
         include/steemit/chain/immutable_chain_parameters.hpp
         include/steemit/chain/index.hpp
 
@@ -112,10 +116,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp
-        include/steemit/chain/steem_object_types.hpp
-        include/steemit/chain/steem_objects.hpp
-        include/steemit/chain/transaction_object.hpp
-        include/steemit/chain/witness_objects.hpp
 
         include/steemit/chain/utilities/asset.hpp
         include/steemit/chain/utilities/reward.hpp
@@ -141,6 +141,10 @@ list(APPEND CURRENT_TARGET_SOURCES
         database/worker/behaviour_based_worker.cpp
         database/worker/reward_worker.cpp
         database/worker/witness_worker.cpp
+
+        database/database.cpp
+        database/database_basic.cpp
+        database/generic_policy.cpp
 
         dynamic_extension/worker_storage.cpp
         dynamic_extension/smart_worker.cpp
@@ -189,20 +193,13 @@ list(APPEND CURRENT_TARGET_SOURCES
         evaluators/withdraw_vesting_evaluator.cpp
         evaluators/witness_update_evaluator.cpp
 
-
-
+        utilities/reward.cpp
         block_log.cpp
-        database/database.cpp
-        database/database_basic.cpp
         fork_database.cpp
         forward.cpp
         shared_authority.cpp
         steem_objects.cpp
-
-        utilities/reward.cpp
-
-        database/generic_policy.cpp
-
+        #transaction_object.cpp
 )
 
 if(BUILD_SHARED_LIBRARIES)

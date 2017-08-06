@@ -1,7 +1,7 @@
 #pragma once
 
 #include <steemit/chain/utilities/asset.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
 
 #include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/config.hpp>

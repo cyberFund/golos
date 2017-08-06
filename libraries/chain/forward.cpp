@@ -3,8 +3,8 @@
 
 #include <steemit/protocol/steem_operations.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/chain_objects/steem_objects.hpp>
+#include <steemit/chain/chain_objects/block_summary_object.hpp>
 #include <steemit/chain/utilities/reward.hpp>
 
 #ifndef IS_LOW_MEM

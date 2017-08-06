@@ -1,4 +1,4 @@
-#include <steemit/chain/transaction_object.hpp>
+#include <steemit/chain/chain_objects/transaction_object.hpp>
 
 namespace steemit {
     namespace chain {
@@ -14,8 +14,7 @@ namespace steemit {
             return &*result.first;
         }
 
-        void transaction_index::modify(const object *obj,
-                const std::function<void(object *)> &m) {
+        void transaction_index::modify(const object *obj, const std::function<void(object *)> &m) {
             assert(obj != nullptr);
             FC_ASSERT(obj->id < _index.size());
 

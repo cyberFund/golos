@@ -70,6 +70,14 @@ public:
 
     void perform_vesting_share_split(uint32_t magnitude);
 
+    const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
+
+    const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
+
+    const comment_object &get_comment(const account_name_type &author, const string &permlink) const;
+
+    const comment_object *find_comment(const account_name_type &author, const string &permlink) const;
+
 };
 }}
 

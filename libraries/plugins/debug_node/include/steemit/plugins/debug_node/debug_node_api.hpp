@@ -10,7 +10,7 @@
 
 #include <steemit/protocol/block.hpp>
 
-#include <steemit/chain/witness_objects.hpp>
+#include <steemit/chain/chain_objects/witness_objects.hpp>
 
 namespace steemit {
     namespace application {
