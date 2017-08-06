@@ -126,11 +126,6 @@ namespace steemit {
                         adjust_rshares2(comment, utilities::calculate_vshares(comment.net_rshares.value), 0);
                     }
 
-                    references.modify(references.get_dynamic_global_properties(),
-                                      [&](dynamic_global_property_object &p) {
-                                          p.total_reward_fund_steem.amount -= reward;
-                                      });
-
                     fc::uint128_t old_rshares2 = utilities::calculate_vshares(comment.net_rshares.value);
                     adjust_rshares2(comment, old_rshares2, 0);
                 }
