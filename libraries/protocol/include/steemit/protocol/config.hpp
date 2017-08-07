@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2016 Golos, Inc., and contributors.
+ * Copyright (c) 2017 Golos, Inc., and contributors.
  */
 #pragma once
 
-#define STEEMIT_BLOCKCHAIN_VERSION              (version(0, 16, 4))
+#define STEEMIT_BLOCKCHAIN_VERSION              (version(0, 16, 5))
 #define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     (hardfork_version(STEEMIT_BLOCKCHAIN_VERSION))
 
 #ifdef STEEMIT_BUILD_TESTNET
