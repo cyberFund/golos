@@ -43,6 +43,13 @@
 #include <steemit/chain/evaluators/witness_update_evaluator.hpp>
 #include <steemit/chain/evaluators/challenge_authority_evaluator.hpp>
 
+
+#include <steemit/chain/database/worker/account_worker.hpp>
+#include <steemit/chain/database/worker/asset_worker.hpp>
+#include <steemit/chain/database/worker/behaviour_based_worker.hpp>
+#include <steemit/chain/database/worker/reward_worker.hpp>
+#include <steemit/chain/database/worker/witness_worker.hpp>
+
 namespace steemit {
     namespace chain {
 
@@ -96,6 +103,7 @@ namespace steemit {
             evaluator_registry_.register_evaluator<database_tag, pow2_evaluator>(*this);
             evaluator_registry_.register_evaluator<database_tag, report_over_production_evaluator>(*this);
             evaluator_registry_.register_evaluator<database_tag, feed_publish_evaluator>(*this);
+            evaluator_registry_.register_evaluator<database_tag, comment_payout_extension_evaluator>(*this);
             evaluator_registry_.register_evaluator<database_tag, convert_evaluator>(*this);
             evaluator_registry_.register_evaluator<database_tag, challenge_authority_evaluator>(*this);
             evaluator_registry_.register_evaluator<database_tag, prove_authority_evaluator>(*this);
@@ -134,13 +142,16 @@ namespace steemit {
             notify_post_apply_operation(note);
         }
 
-        database::database(dynamic_extension::worker_storage &&storage, hard_fork_transformer &&hft): database_tag(std::move(storage), std::move(hft)) {}
+        void database::initialize_workers() {
+            dynamic_extension_worker().add(new account_worker(*this) );
+            dynamic_extension_worker().add(new asset_worker(*this) );
+            dynamic_extension_worker().add(new behaviour_based_worker(*this) );
+            dynamic_extension_worker().add(new reward_worker(*this) );
+            dynamic_extension_worker().add(new witness_worker(*this));
+        }
 
         shared_ptr<database> make_database() {
-            hard_fork_transformer hft;
-            dynamic_extension::worker_storage ws;
-            auto *tmp = new database(std::move(ws), std::move(hft));
-            return shared_ptr<database>(tmp);
+            return shared_ptr<database>(new database);
         }
     }
 }

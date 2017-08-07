@@ -1,5 +1,6 @@
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "steemit/chain/dynamic_extension/worker_storage.hpp"
 
@@ -7,6 +8,8 @@ namespace steemit {
     namespace chain {
         namespace dynamic_extension {
             struct worker_storage::impl final {
+                impl()= default;
+                ~impl()= default;
                 std::unordered_map<std::string, smart_worker> storage;
             };
 
@@ -20,6 +23,9 @@ namespace steemit {
 
             view_t worker_storage::get(const std::string &key) {
                 return pimpl->storage.at(key).view();
+            }
+
+            worker_storage::worker_storage():pimpl(new impl) {
             }
 
         }

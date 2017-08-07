@@ -37,7 +37,7 @@ public:
 
     void old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
-    bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
+    //bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
     const account_object &get_account(const account_name_type &name) const;
 

@@ -5,7 +5,6 @@
 #include <steemit/chain/index.hpp>
 
 #include "database_police.hpp"
-#include "hard_fork_transformer.hpp"
 #include <steemit/chain/dynamic_extension/worker_storage.hpp>
 
 
@@ -13,13 +12,15 @@ namespace steemit {
     namespace chain {
         class database final : public database_tag {
         public:
-            database(dynamic_extension::worker_storage&& storage, hard_fork_transformer &&hft);
+            database()= default;
             ~database() = default;
 
         protected:
             void initialize_indexes();
 
             void initialize_evaluators();
+
+            void initialize_workers();
 
             void apply_operation(const operation &op);
 

@@ -45,8 +45,6 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/database/database_exceptions.hpp
         include/steemit/chain/database/database_police.hpp
         include/steemit/chain/database/database_worker.hpp
-        include/steemit/chain/database/dynamic_context.hpp
-        include/steemit/chain/database/hard_fork_transformer.hpp
 
         include/steemit/chain/dynamic_extension/smart_worker.hpp
         include/steemit/chain/dynamic_extension/worker_storage.hpp
@@ -112,7 +110,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/immutable_chain_parameters.hpp
         include/steemit/chain/index.hpp
 
-        include/steemit/chain/node_property_object.hpp
+        include/steemit/chain/chain_objects/node_property_object.hpp
         include/steemit/chain/operation_notification.hpp
         include/steemit/chain/shared_authority.hpp
         include/steemit/chain/shared_db_merkle.hpp

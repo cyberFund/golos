@@ -9,11 +9,12 @@ namespace steemit {
         namespace dynamic_extension {
             class worker_storage final {
             public:
-                worker_storage()= default;
+                worker_storage();
                 worker_storage(const worker_storage&)= default;
                 worker_storage&operator=(const worker_storage&)= default;
                 worker_storage(worker_storage&&)= default;
                 worker_storage&operator=(worker_storage&&)= default;
+                ~worker_storage()= default;
 
                 void add(worker_t *);
 
@@ -28,4 +29,5 @@ namespace steemit {
         }
     }
 }
+
 #endif //GOLOS_SMART_WORKER_HPP

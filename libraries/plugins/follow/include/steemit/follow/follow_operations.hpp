@@ -64,10 +64,6 @@ namespace steemit {
         };
 
 
-        //DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, follow);
-
-        //DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, reblog);
-
     }
 } // steemit::follow
 

@@ -25,8 +25,7 @@ namespace steemit {
         template<typename... Policies>
         class database_police : public database_basic, public Policies ... {
         public:
-            database_police(dynamic_extension::worker_storage storage, hard_fork_transformer &&hft)
-                    :database_basic(storage,std::move(hft)), Policies(*this)... {
+            database_police() :database_basic(), Policies(*this,1)... {
 
 
             }

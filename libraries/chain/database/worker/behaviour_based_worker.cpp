@@ -3,7 +3,7 @@
 namespace steemit {
     namespace chain {
 
-        behaviour_based::behaviour_based(database_tag &db) : database_worker_t(db, "behaviour_based") {
+        behaviour_based_worker::behaviour_based_worker(database_tag &db) : database_worker_t(db, "behaviour_based") {
             add("pay_reward_funds", [&](std::vector<boost::any> args) -> boost::any {
                     share_type reward = boost::any_cast<share_type>(args[0]);
                     const auto &reward_idx = database.get_index<reward_fund_index, by_id>();

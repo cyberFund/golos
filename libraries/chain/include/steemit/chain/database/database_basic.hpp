@@ -2,7 +2,7 @@
 
 #include <steemit/chain/chain_objects/global_property_object.hpp>
 #include <steemit/chain/hardfork.hpp>
-#include <steemit/chain/node_property_object.hpp>
+#include <steemit/chain/chain_objects/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
 
@@ -12,7 +12,6 @@
 #include <fc/log/logger.hpp>
 
 #include <steemit/chain/dynamic_extension/worker_storage.hpp>
-#include "hard_fork_transformer.hpp"
 
 namespace steemit {
     namespace chain {
@@ -57,8 +56,7 @@ namespace steemit {
         class database_basic : public chainbase::database {
         public:
 
-            database_basic(dynamic_extension::worker_storage storage,hard_fork_transformer&&);
-            database_basic()=delete;
+            database_basic();
             virtual ~database_basic();
 
             bool is_producing() const {
@@ -130,6 +128,7 @@ namespace steemit {
             dynamic_extension::worker_storage& dynamic_extension_worker();
 
 ////Todo Nex Refactoring
+            virtual void initialize_workers()=0;
             const hardfork_property_object &get_hardfork_property_object() const;
             void process_hardforks();
             bool has_hardfork(uint32_t hardfork) const;
@@ -499,8 +498,6 @@ namespace steemit {
             std::string _json_schema;
 
             dynamic_extension::worker_storage storage;
-            hard_fork_transformer table_hard_fork;
-
         };
     }
 }

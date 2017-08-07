@@ -215,8 +215,7 @@ namespace steemit {
             references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -fee);
         }
 
-        void account_policy::old_update_account_bandwidth(const account_object &a, uint32_t trx_size,
-                                                          const bandwidth_type type) {
+        void account_policy::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
             try {
                 const auto &props = references.get_dynamic_global_properties();
                 if (props.total_vesting_shares.amount > 0) {
@@ -272,9 +271,8 @@ namespace steemit {
                 }
             } FC_CAPTURE_AND_RETHROW()
         }
-
-        bool
-        account_policy::update_account_bandwidth(const account_object &a, uint32_t trx_size,
+/*
+        bool account_policy::update_account_bandwidth(const account_object &a, uint32_t trx_size,
                                                  const bandwidth_type type) {
             const auto &props = references.get_dynamic_global_properties();
             bool has_bandwidth = true;
@@ -291,18 +289,13 @@ namespace steemit {
                 }
 
                 share_type new_bandwidth;
-                share_type trx_bandwidth =
-                        trx_size * STEEMIT_BANDWIDTH_PRECISION;
+                share_type trx_bandwidth = trx_size * STEEMIT_BANDWIDTH_PRECISION;
                 auto delta_time = (references.head_block_time() - band->last_bandwidth_update).to_seconds();
 
                 if (delta_time > STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
                     new_bandwidth = 0;
                 } else {
-                    new_bandwidth = (
-                            ((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) *
-                             fc::uint128(band->average_bandwidth.value))
-                            /
-                            STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
+                    new_bandwidth = (((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) * fc::uint128(band->average_bandwidth.value)) / STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
                 }
 
                 new_bandwidth += trx_bandwidth;
@@ -332,7 +325,7 @@ namespace steemit {
 
             return has_bandwidth;
         }
-
+*/
         void account_policy::expire_escrow_ratification() {
             const auto &escrow_idx = references.get_index<escrow_index>().indices().get<by_ratification_deadline>();
             auto escrow_itr = escrow_idx.lower_bound(false);
@@ -369,16 +362,14 @@ namespace steemit {
                 int64_t inflation_rate_floor = int64_t(STEEMIT_INFLATION_RATE_STOP_PERCENT);
 
                 // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-                int64_t current_inflation_rate = std::max(start_inflation_rate -
-                                                          inflation_rate_adjustment, inflation_rate_floor);
+                int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor);
 
                 auto new_steem = (props.virtual_supply.amount * current_inflation_rate) / (int64_t(STEEMIT_100_PERCENT) * int64_t(STEEMIT_BLOCKS_PER_YEAR));
                 auto content_reward = (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) / STEEMIT_100_PERCENT;
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                     content_reward = dynamic_extension::cast<share_type>(references.dynamic_extension_worker().get("behaviour_based")->invoke("pay_reward_funds", content_reward));
                 } /// 75% to content creator
-                auto vesting_reward =
-                        (new_steem * STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+                auto vesting_reward = (new_steem * STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT; /// 15% to vesting fund
                 auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
                 const auto &cwit = get_witness(references, props.current_witness);
@@ -519,9 +510,7 @@ namespace steemit {
             const auto &hist_idx = references.get_index<owner_authority_history_index>().indices(); //by id
             auto hist = hist_idx.begin();
 
-            while (hist != hist_idx.end() &&
-                   time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) <
-                   references.head_block_time()) {
+            while (hist != hist_idx.end() && time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) < references.head_block_time()) {
                 references.remove(*hist);
                 hist = hist_idx.begin();
             }
