@@ -56,12 +56,9 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
-)
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
-)
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
-)
+FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
+FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
+FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
 
 namespace steemit {
     namespace chain {
@@ -295,7 +292,7 @@ namespace steemit {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr <fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
@@ -310,7 +307,7 @@ namespace steemit {
             return bid;
         }
 
-        optional <signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -328,9 +325,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        optional <signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
             try {
-                optional <signed_block> b;
+                optional<signed_block> b;
 
                 auto results = _fork_db.fetch_block_by_number(block_num);
                 if (results.size() == 1) {
@@ -354,9 +351,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        vector <block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
+                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
                         head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)(head_block_id())(branches.first.size())(branches.second.size()));
@@ -684,7 +681,7 @@ namespace steemit {
             return uint64_t(STEEMIT_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map <uint32_t, block_id_type> &checkpts) {
+        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
@@ -724,7 +721,7 @@ namespace steemit {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector <std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -741,7 +738,7 @@ namespace steemit {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr <fork_item> new_head = _fork_db.push_block(new_block);
+                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -759,7 +756,7 @@ namespace steemit {
                             // push all blocks on the new fork
                             for (auto ritr = branches.first.rbegin(); ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
-                                optional <fc::exception> except;
+                                optional<fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
@@ -1010,7 +1007,7 @@ namespace steemit {
                 auto head_id = head_block_id();
 
                 /// save the head block so we can recover its transactions
-                optional <signed_block> head_block = fetch_block_by_id(head_id);
+                optional<signed_block> head_block = fetch_block_by_id(head_id);
                 STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
 
                 _fork_db.pop_block();
@@ -1180,46 +1177,6 @@ namespace steemit {
             } else {
                 return (0xFC00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;
             }
-        }
-
-        void database::update_median_witness_props() {
-            const witness_schedule_object &wso = get_witness_schedule_object();
-
-            /// fetch all witness objects
-            vector<const witness_object *> active;
-            active.reserve(wso.num_scheduled_witnesses);
-            for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-                active.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
-            }
-
-            /// sort them by account_creation_fee
-            std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
-                return a->props.account_creation_fee.amount < b->props.account_creation_fee.amount;
-            });
-            asset median_account_creation_fee = active[active.size() / 2]->props.account_creation_fee;
-
-            /// sort them by maximum_block_size
-            std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
-                return a->props.maximum_block_size < b->props.maximum_block_size;
-            });
-            uint32_t median_maximum_block_size = active[active.size() / 2]->props.maximum_block_size;
-
-            /// sort them by sbd_interest_rate
-            std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
-                return a->props.sbd_interest_rate < b->props.sbd_interest_rate;
-            });
-            uint16_t median_sbd_interest_rate = active[active.size() / 2]->props.sbd_interest_rate;
-
-            modify(wso, [&](witness_schedule_object &_wso) {
-                _wso.median_props.account_creation_fee = median_account_creation_fee;
-                _wso.median_props.maximum_block_size = median_maximum_block_size;
-                _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
-            });
-
-            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
-                _dgpo.maximum_block_size = median_maximum_block_size;
-                _dgpo.sbd_interest_rate = median_sbd_interest_rate;
-            });
         }
 
         void database::adjust_proxied_witness_votes(const account_object &a, const std::array<share_type,
@@ -1611,7 +1568,6 @@ namespace steemit {
                     if (reward_tokens > 0) {
                         share_type curation_tokens = ((reward_tokens * get_curation_rewards_percent(comment)) /
                                                       STEEMIT_100_PERCENT).to_uint64();
-
                         share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
 
                         author_tokens += pay_curators(comment, curation_tokens);
@@ -1738,8 +1694,8 @@ namespace steemit {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector <reward_fund_context> funds;
-            vector <share_type> steem_awarded;
+            vector<reward_fund_context> funds;
+            vector<share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
@@ -2875,7 +2831,7 @@ namespace steemit {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector <price> feeds;
+                vector<price> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
@@ -2977,7 +2933,7 @@ namespace steemit {
                     }
                 }
                 flat_set<account_name_type> required;
-                vector <authority> other;
+                vector<authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -3279,7 +3235,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr <fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block,
                                       "Current fork in the fork database does not contain the last_irreversible_block");
@@ -3534,7 +3490,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional <asset> collateral_freed;
+                optional<asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -4184,8 +4140,6 @@ namespace steemit {
                         b.asset_name = delta.symbol_name();
 
                         if (delta.symbol == SBD_SYMBOL) {
-                            b.balance = 0;
-
                             adjust_sbd_balance(a, b);
                         } else {
                             b.balance = delta.amount.value;
@@ -4521,21 +4475,21 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_12: {
                     const auto &comment_idx = get_index<comment_index>().indices();
 
-                    for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr) {
+                    for (const auto &itr : comment_idx) {
                         // At the hardfork time, all new posts with no votes get their cashout time set to +12 hrs from head block time.
                         // All posts with a payout get their cashout time set to +30 days. This hardfork takes place within 30 days
                         // initial payout so we don't have to handle the case of posts that should be frozen that aren't
-                        if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
+                        if (itr.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
-                            if (itr->last_payout == fc::time_point_sec::min() &&
-                                itr->cashout_time == fc::time_point_sec::maximum()) {
-                                modify(*itr, [&](comment_object &c) {
+                            if (itr.last_payout == fc::time_point_sec::min() &&
+                                    itr.cashout_time == fc::time_point_sec::maximum()) {
+                                modify(itr, [&](comment_object &c) {
                                     c.cashout_time = head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                                 });
                             }
                                 // Has been paid out, needs to be on second cashout window
-                            else if (itr->last_payout > fc::time_point_sec()) {
-                                modify(*itr, [&](comment_object &c) {
+                            else if (itr.last_payout > fc::time_point_sec()) {
+                                modify(itr, [&](comment_object &c) {
                                     c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
                                 });
                             }

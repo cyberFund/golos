@@ -696,8 +696,6 @@ namespace steemit {
 
             void create_block_summary(const signed_block &next_block);
 
-            void update_median_witness_props();
-
             void clear_null_account_balance();
 
             void update_global_dynamic_data(const signed_block &b);
