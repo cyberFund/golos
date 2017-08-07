@@ -5003,7 +5003,7 @@ namespace steemit {
                 }
             }
 
-            if (asset_obj.options.whitelist_authorities.size() == 0) {
+            if (asset_obj.options.whitelist_authorities.empty()) {
                 return true;
             }
 
