@@ -4746,9 +4746,9 @@ namespace steemit {
                 }
 
                 for (const auto &itr : account_idx) {
-                    total_supply += itr.balance;
+                    total_supply += get_balance(itr.name, STEEM_SYMBOL_NAME).amount;
                     total_supply += itr.savings_balance;
-                    total_sbd += itr.sbd_balance;
+                    total_sbd += get_balance(itr.name, SBD_SYMBOL_NAME).amount;
                     total_sbd += itr.savings_sbd_balance;
                     total_vesting += itr.vesting_shares;
                     total_vsf_votes += (itr.proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr.witness_vote_weight() : (
