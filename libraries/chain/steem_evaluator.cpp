@@ -579,7 +579,6 @@ namespace steemit {
                             }
                         }
 #endif
-
                     });
 
                 } // end EDIT case

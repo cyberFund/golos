@@ -2148,8 +2148,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test adding a grandchild proxy");
-            // alice \
-      // bob->  sam->dave
+            // alice->bob->sam->dave
 
             tx.operations.clear();
             tx.signatures.clear();
