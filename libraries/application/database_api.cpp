@@ -1431,7 +1431,7 @@ namespace steemit {
                         discussion,
                         languages::by_parent_trending
                 > map_result_ = select<languages::language_object, languages::language_index, languages::by_parent_trending, languages::by_comment>(
-                        query.select_language,
+                        query.select_languages,
                         query,
                         parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
@@ -2018,7 +2018,7 @@ namespace steemit {
                 std::vector<discussion> languages_ = feed<
                         languages::language_index,
                         languages::by_comment
-                >(query.select_language, query, start_author, start_permlink);
+                >(query.select_languages, query, start_author, start_permlink);
 
                 std::vector<discussion> result = merge(tags_, languages_);
 
@@ -2105,7 +2105,7 @@ namespace steemit {
 
                 std::vector<discussion> tags_ = blog<tags::tag_index, tags::by_comment>(query.select_tags, query, start_author, start_permlink);
 
-                std::vector<discussion> languages_ = blog<languages::language_index, languages::by_comment>(query.select_language, query, start_author, start_permlink);
+                std::vector<discussion> languages_ = blog<languages::language_index, languages::by_comment>(query.select_languages, query, start_author, start_permlink);
 
                 std::vector<discussion> result = merge(tags_, languages_);
 
