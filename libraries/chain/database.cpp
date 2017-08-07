@@ -56,9 +56,12 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
+)
+FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
+)
+FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
+)
 
 namespace steemit {
     namespace chain {
@@ -292,7 +295,7 @@ namespace steemit {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                shared_ptr <fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
@@ -307,7 +310,7 @@ namespace steemit {
             return bid;
         }
 
-        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional <signed_block> database::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -325,9 +328,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional <signed_block> database::fetch_block_by_number(uint32_t block_num) const {
             try {
-                optional<signed_block> b;
+                optional <signed_block> b;
 
                 auto results = _fork_db.fetch_block_by_number(block_num);
                 if (results.size() == 1) {
@@ -351,9 +354,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        vector <block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
+                pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
                         head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)(head_block_id())(branches.first.size())(branches.second.size()));
@@ -681,7 +684,7 @@ namespace steemit {
             return uint64_t(STEEMIT_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
+        void database::add_checkpoints(const flat_map <uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
@@ -721,7 +724,7 @@ namespace steemit {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                vector <std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -738,7 +741,7 @@ namespace steemit {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
+                    shared_ptr <fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -756,7 +759,7 @@ namespace steemit {
                             // push all blocks on the new fork
                             for (auto ritr = branches.first.rbegin(); ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
-                                optional<fc::exception> except;
+                                optional <fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
@@ -1007,7 +1010,7 @@ namespace steemit {
                 auto head_id = head_block_id();
 
                 /// save the head block so we can recover its transactions
-                optional<signed_block> head_block = fetch_block_by_id(head_id);
+                optional <signed_block> head_block = fetch_block_by_id(head_id);
                 STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
 
                 _fork_db.pop_block();
@@ -1125,7 +1128,7 @@ namespace steemit {
                     adjust_supply(asset(-to_sbd, STEEM_SYMBOL));
                     adjust_supply(sbd);
                     assets.first = sbd;
-                    assets.second = asset(to_steem, STEEM_SYMBOL);
+                    assets.second = to_steem;
                 } else {
                     adjust_balance(to_account, steem);
                     assets.second = steem;
@@ -1579,7 +1582,6 @@ namespace steemit {
                         ++itr;
                     }
                 }
-
                 max_rewards -= unclaimed_rewards;
 
                 return unclaimed_rewards;
@@ -1736,8 +1738,8 @@ namespace steemit {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector<reward_fund_context> funds;
-            vector<share_type> steem_awarded;
+            vector <reward_fund_context> funds;
+            vector <share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
@@ -2163,7 +2165,7 @@ namespace steemit {
             });
 
             modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &a) {
-                a.current_supply -= net_steem.amount;
+                a.current_supply -= net_sbd.amount;
             });
         }
 
@@ -2865,7 +2867,6 @@ namespace steemit {
             }
         }
 
-
         void database::update_median_feed() {
             try {
                 if ((head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0) {
@@ -2874,7 +2875,7 @@ namespace steemit {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector<price> feeds;
+                vector <price> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
@@ -2976,7 +2977,7 @@ namespace steemit {
                     }
                 }
                 flat_set<account_name_type> required;
-                vector<authority> other;
+                vector <authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -3278,7 +3279,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr <fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block,
                                       "Current fork in the fork database does not contain the last_irreversible_block");
@@ -3339,7 +3340,6 @@ namespace steemit {
                 return find<limit_order_object>(order_id) == nullptr;
             }
 
-
             const auto &limit_price_idx = get_index<limit_order_index>().indices().get<by_price>();
 
             auto max_price = ~new_order_object.sell_price;
@@ -3355,7 +3355,6 @@ namespace steemit {
             }
 
             return find<limit_order_object>(order_id) == nullptr;
-
         }
 
         asset database::match(const call_order_object &call, const force_settlement_object &settle,
@@ -3535,7 +3534,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional<asset> collateral_freed;
+                optional <asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -4324,7 +4323,8 @@ namespace steemit {
 
         asset database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
             try {
-                const account_balance_object &b = get<account_balance_object, by_account_asset>(boost::make_tuple(a.name, asset_name));
+                const account_balance_object &b = get<account_balance_object, by_account_asset>(
+                        boost::make_tuple(a.name, asset_name));
                 return {b.balance, b.asset_name};
             } FC_CAPTURE_AND_RETHROW((asset_name))
         }
