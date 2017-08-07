@@ -1722,32 +1722,6 @@ namespace steemit {
             });
         }
 
-        void convert_evaluator::do_apply(const convert_operation &o) {
-
-            const auto &owner = this->db.get_account(o.owner);
-            FC_ASSERT(this->db.get_balance(owner, o.amount.symbol_name()) >=
-                      o.amount, "Account does not have sufficient balance for conversion.");
-
-            this->db.adjust_balance(owner, -o.amount);
-
-            const auto &fhistory = this->db.get_feed_history();
-            FC_ASSERT(!fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed.");
-
-            auto steem_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF16;
-            if (this->db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                steem_conversion_delay = STEEMIT_CONVERSION_DELAY;
-            }
-
-            this->db.create<convert_request_object>([&](convert_request_object &obj) {
-                obj.owner = o.owner;
-                obj.requestid = o.request_id;
-                obj.amount = o.amount;
-                obj.conversion_date =
-                        this->db.head_block_time() + steem_conversion_delay;
-            });
-
-        }
-
         void report_over_production_evaluator::do_apply(const report_over_production_operation &o) {
 
             FC_ASSERT(!this->db.has_hardfork(STEEMIT_HARDFORK_0_4), "report_over_production_operation is disabled.");

@@ -198,18 +198,6 @@ namespace steemit {
             void do_apply(const protocol::feed_publish_operation &o);
         };
 
-        class convert_evaluator
-                : public steemit::chain::evaluator<convert_evaluator> {
-        public:
-            typedef protocol::convert_operation operation_type;
-
-            convert_evaluator(database &db)
-                    : steemit::chain::evaluator<convert_evaluator>(db) {
-            }
-
-            void do_apply(const protocol::convert_operation &o);
-        };
-
         class report_over_production_evaluator
                 : public steemit::chain::evaluator<report_over_production_evaluator> {
         public:

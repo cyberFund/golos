@@ -16,6 +16,18 @@ namespace steemit {
 
         class call_order_object;
 
+        class convert_evaluator
+                : public steemit::chain::evaluator<convert_evaluator> {
+        public:
+            typedef protocol::convert_operation operation_type;
+
+            convert_evaluator(database &db)
+                    : steemit::chain::evaluator<convert_evaluator>(db) {
+            }
+
+            void do_apply(const protocol::convert_operation &o);
+        };
+
         class limit_order_create_evaluator
                 : public evaluator<limit_order_create_evaluator> {
         public:
@@ -81,7 +93,6 @@ namespace steemit {
             void do_apply(const protocol::call_order_update_operation &op);
 
         protected:
-            bool _closing_order = false;
             const asset_object *_debt_asset = nullptr;
             const account_object *_paying_account = nullptr;
             const call_order_object *_order = nullptr;

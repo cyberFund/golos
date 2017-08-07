@@ -4215,6 +4215,8 @@ namespace steemit {
         }
 
         void database::adjust_sbd_balance(const account_object &a, account_balance_object &b) {
+            FC_ASSERT(a.name == b.owner);
+
             if (a.sbd_seconds_last_update != head_block_time()) {
                 modify(get_account(a.name), [&](account_object &accnt) {
                     accnt.sbd_seconds +=
@@ -4322,9 +4324,8 @@ namespace steemit {
 
         asset database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
             try {
-                const account_balance_object &b = get<account_balance_object, by_account_asset>(
-                        boost::make_tuple(a.name, asset_name));
-                return asset(b.balance, b.asset_name);
+                const account_balance_object &b = get<account_balance_object, by_account_asset>(boost::make_tuple(a.name, asset_name));
+                return {b.balance, b.asset_name};
             } FC_CAPTURE_AND_RETHROW((asset_name))
         }
 
