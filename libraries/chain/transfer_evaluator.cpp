@@ -93,8 +93,7 @@ namespace steemit {
                 from_string(s.memo, op.memo);
 #endif
                 s.request_id = op.request_id;
-                s.complete =
-                        this->db.head_block_time() +
+                s.complete = this->db.head_block_time() +
                         STEEMIT_SAVINGS_WITHDRAW_TIME;
             });
 
