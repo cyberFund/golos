@@ -2847,9 +2847,9 @@ namespace steemit {
 
                     modify(get_feed_history(), [&](feed_history_object &fho) {
                         fho.price_history.push_back(median_feed);
-                        size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
+                        size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF16;
                         if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                            steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
+                            steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
                         }
 
                         if (fho.price_history.size() > steemit_feed_history_window) {
