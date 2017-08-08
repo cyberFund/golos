@@ -1,6 +1,7 @@
 # Introducing Golos (beta)
 
 [![Build Status](https://travis-ci.org/GolosChain/golos.svg?branch=master)](https://travis-ci.org/GolosChain/golos)
+[![Stories in Ready](https://badge.waffle.io/GolosChain/golos.svg?label=ready&title=Ready)](http://waffle.io/GolosChain/golos)
 
 Golos is an experimental Proof of Work blockchain with an unproven consensus
 algorithm.
