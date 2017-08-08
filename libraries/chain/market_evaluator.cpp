@@ -36,7 +36,7 @@ namespace steemit {
 
             const auto &owner = db.get_account(o.owner);
             FC_ASSERT(db.get_balance(owner, o.amount.symbol_name()) >=
-                      o.amount, "Account does not have sufficient balance for conversion.");
+                      o.amount, "Account ${n} does not have sufficient balance for conversion. Balance: ${b}. Required: ${r}", ("n", o.owner)("b", db.get_balance(owner, o.amount.symbol_name()))("r", o.amount));
 
             db.adjust_balance(owner, -o.amount);
 
