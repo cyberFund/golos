@@ -4216,36 +4216,36 @@ namespace steemit {
 
         void database::adjust_sbd_balance(const account_object &a, account_balance_object &b) {
             if (a.sbd_seconds_last_update != head_block_time()) {
-                modify(get_account(a.name), [&](account_object &accnt) {
-                    accnt.sbd_seconds +=
-                            uint128_t(b.balance.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
-                    accnt.sbd_seconds_last_update = head_block_time();
+                modify(a, [&](account_object &acnt) {
+
+                    acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) *
+                                        (head_block_time() - a.sbd_seconds_last_update).to_seconds();
+                    acnt.sbd_seconds_last_update = head_block_time();
+
+                    if (acnt.sbd_seconds > 0 &&
+                        (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() >
+                        STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                        auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+                        interest *= get_dynamic_global_properties().sbd_interest_rate;
+                        interest /= STEEMIT_100_PERCENT;
+                        asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                        b.balance += interest_paid.amount;
+                        acnt.sbd_seconds = 0;
+                        acnt.sbd_last_interest_payment = head_block_time();
+
+                        push_virtual_operation(interest_operation(a.name, interest_paid));
+
+                        modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                            props.current_sbd_supply += interest_paid;
+                            props.virtual_supply += interest_paid * get_feed_history().current_median_history;
+                        });
+
+
+                        modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &asset) {
+                            asset.current_supply += interest_paid.amount;
+                        });
+                    }
                 });
-
-                if (a.sbd_seconds > 0 && (a.sbd_seconds_last_update - a.sbd_last_interest_payment).to_seconds() >
-                                         STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                    auto interest = a.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
-                    interest *= get_dynamic_global_properties().sbd_interest_rate;
-                    interest /= STEEMIT_100_PERCENT;
-                    asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                    b.balance += interest_paid.amount;
-
-                    modify(get_account(a.name), [&](account_object &accnt) {
-                        accnt.sbd_seconds = 0;
-                        accnt.sbd_last_interest_payment = head_block_time();
-                    });
-
-                    push_virtual_operation(interest_operation(a.name, interest_paid));
-
-                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                        props.current_sbd_supply += interest_paid;
-                        props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                    });
-
-                    modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &asset) {
-                        asset.current_supply += interest_paid.amount;
-                    });
-                }
             }
         }
 
