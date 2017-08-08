@@ -37,7 +37,7 @@ namespace steemit {
             uint64_t get_vote_weight(uint64_t vote_rshares, const reward_fund_object &rf);
 
             inline uint128_t get_content_constant_s() {
-                return {uint64_t(2000000000000ll)}; // looking good for posters
+                return {2000000000000ull}; // looking good for posters
             }
 
             uint128_t calculate_claims(const uint128_t &rshares);
