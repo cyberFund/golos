@@ -4218,7 +4218,7 @@ namespace steemit {
             if (a.sbd_seconds_last_update != head_block_time()) {
                 modify(a, [&](account_object &acnt) {
 
-                    acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) *
+                    acnt.sbd_seconds += fc::uint128_t(b.balance) *
                                         (head_block_time() - a.sbd_seconds_last_update).to_seconds();
                     acnt.sbd_seconds_last_update = head_block_time();
 
