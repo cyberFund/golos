@@ -4141,8 +4141,6 @@ namespace steemit {
 
                         if (delta.symbol == SBD_SYMBOL) {
                             adjust_sbd_balance(a, b);
-                        } else {
-                            b.balance = delta.amount.value;
                         }
 
                         b.adjust_balance(delta);
