@@ -1154,7 +1154,7 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 std::vector<discussion> result;
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 FC_ASSERT(limit <= 100);
                 const auto &last_update_idx = my->_db.get_index<comment_index>().indices().get<by_last_update>();
                 auto itr = last_update_idx.begin();
@@ -2116,7 +2116,7 @@ namespace steemit {
         std::vector<discussion> database_api::get_discussions_by_comments(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 std::vector<discussion> result;
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 query.validate();
                 FC_ASSERT(query.start_author, "Must get comments for a specific author");
                 auto start_author = *(query.start_author);
@@ -2287,7 +2287,7 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 try {
                     std::vector<discussion> result;
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                     FC_ASSERT(limit <= 100);
                     result.reserve(limit);
                     uint32_t count = 0;
@@ -2489,7 +2489,7 @@ namespace steemit {
                             }
                         } else if (part[1] == "posts" ||
                                    part[1] == "comments") {
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                             int count = 0;
                             const auto &pidx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
                             auto itr = pidx.lower_bound(acnt);

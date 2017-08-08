@@ -2002,8 +2002,8 @@ namespace steemit {
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() < STEEMIT_CASHOUT_WINDOW_SECONDS,
                       "Extension time should be less or equal than a week");
 
-            return asset(((input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
-                          (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL));
+            return {((input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
+                     (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL)};
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
@@ -2048,8 +2048,8 @@ namespace steemit {
         }
 
         uint16_t database::get_curation_rewards_percent(const comment_object &c) const {
-            if (has_hardfork(STEEMIT_HARDFORK_0_17__86) && c.parent_author != STEEMIT_ROOT_POST_PARENT) {
-                return 0;
+            if (has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
+                return get_reward_fund(c).percent_curation_rewards;
             }
 
             if (has_hardfork(STEEMIT_HARDFORK_0_8__116)) {
@@ -2063,16 +2063,17 @@ namespace steemit {
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
             share_type used_rewards = 0;
 
-            for (const auto &itr : reward_idx) {
+            for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr) {
                 // reward is a per block reward and the percents are 16-bit. This should never overflow
-                auto r = (reward * itr.percent_content_rewards) / STEEMIT_100_PERCENT;
+                auto r = (reward * itr->percent_content_rewards) / STEEMIT_100_PERCENT;
 
-                modify(itr, [&](reward_fund_object &rfo) {
+                modify(*itr, [&](reward_fund_object &rfo) {
                     rfo.reward_balance += asset(r, STEEM_SYMBOL);
                 });
 
                 used_rewards += r;
 
+                // Sanity check to ensure we aren't printing more STEEM than has been allocated through inflation
                 FC_ASSERT(used_rewards <= reward);
             }
 
@@ -2846,12 +2847,12 @@ namespace steemit {
 
                     modify(get_feed_history(), [&](feed_history_object &fho) {
                         fho.price_history.push_back(median_feed);
-                        size_t steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF16;
+                        size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
                         if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                             steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
                         }
 
-                        if (fho.price_history.size() > steem_feed_history_window) {
+                        if (fho.price_history.size() > steemit_feed_history_window) {
                             fho.price_history.pop_front();
                         }
 
@@ -3287,11 +3288,6 @@ namespace steemit {
                 //Do I need to check both assets?
                 check_call_orders(sell_asset, allow_black_swan);
                 check_call_orders(receive_asset, allow_black_swan);
-
-                const limit_order_object *updated_order_object = find<limit_order_object>(order_id);
-                if (updated_order_object == nullptr) {
-                    return true;
-                }
 
                 return find<limit_order_object>(order_id) == nullptr;
             }
@@ -4171,8 +4167,8 @@ namespace steemit {
             if (a.sbd_seconds_last_update != head_block_time()) {
                 modify(a, [&](account_object &acnt) {
 
-                    acnt.sbd_seconds += fc::uint128_t(b.balance) *
-                                        (head_block_time() - a.sbd_seconds_last_update).to_seconds();
+                    acnt.sbd_seconds +=
+                            fc::uint128_t(b.balance) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
                     acnt.sbd_seconds_last_update = head_block_time();
 
                     if (acnt.sbd_seconds > 0 &&
@@ -4480,7 +4476,7 @@ namespace steemit {
                         if (itr.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
                             if (itr.last_payout == fc::time_point_sec::min() &&
-                                    itr.cashout_time == fc::time_point_sec::maximum()) {
+                                itr.cashout_time == fc::time_point_sec::maximum()) {
                                 modify(itr, [&](comment_object &c) {
                                     c.cashout_time = head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                                 });
@@ -4544,19 +4540,26 @@ namespace steemit {
                                });
                     }
 
-                    create<reward_fund_object>([&](reward_fund_object &rfo) {
+                    auto post_rf = create<reward_fund_object>([&](reward_fund_object &rfo) {
                         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
+                        rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
                         rfo.content_constant = utilities::get_content_constant_s().to_uint64();
                     });
 
-                    create<reward_fund_object>([&](reward_fund_object &rfo) {
+                    auto comment_rf = create<reward_fund_object>([&](reward_fund_object &rfo) {
                         rfo.name = STEEMIT_COMMENT_REWARD_FUND_NAME;
                         rfo.last_update = head_block_time();
                         rfo.percent_content_rewards = 0;
+                        rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
                         rfo.content_constant = utilities::get_content_constant_s().to_uint64();
                     });
+
+                    // As a shortcut in payout processing, we use the id as an array index.
+                    // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
+                    FC_ASSERT(post_rf.id._id == 0);
+                    FC_ASSERT(comment_rf.id._id == 1);
                 }
                     break;
 

@@ -89,7 +89,7 @@ namespace steemit {
                 s.from = op.from;
                 s.to = op.to;
                 s.amount = op.amount;
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 from_string(s.memo, op.memo);
 #endif
                 s.request_id = op.request_id;

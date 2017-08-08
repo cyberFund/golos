@@ -64,7 +64,7 @@ namespace steemit {
                 }
 
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 from_string(acc.json_metadata, o.json_metadata);
 #endif
             });
@@ -180,7 +180,7 @@ namespace steemit {
 
                 acc.received_vesting_shares = o.delegation;
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 from_string(acc.json_metadata, o.json_metadata);
 #endif
             });
@@ -298,7 +298,7 @@ namespace steemit {
 
                 acc.last_account_update = db.head_block_time();
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 if (o.json_metadata.size() > 0) {
                     from_string(acc.json_metadata, o.json_metadata);
                 }

@@ -6,7 +6,7 @@
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/utilities/reward.hpp>
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
 
 #include <diff_match_patch.h>
 #include <boost/locale/encoding_utf.hpp>
@@ -159,7 +159,7 @@ namespace steemit {
                         p.children--;
                         p.active = now;
                     });
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                     if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
                         parent = &this->db.get_comment(parent->parent_author, parent->parent_permlink);
                     } else
@@ -441,7 +441,7 @@ namespace steemit {
                             com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
                         }
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                         from_string(com.title, o.title);
                         if (o.body.size() < 1024 * 1024 * 128) {
                             from_string(com.body, o.body);
@@ -477,7 +477,7 @@ namespace steemit {
                             p.children++;
                             p.active = now;
                         });
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                         if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
                             parent = &this->db.get_comment(parent->parent_author, parent->parent_permlink);
                         } else
@@ -523,7 +523,7 @@ namespace steemit {
                                       "The permlink of a comment cannot change.");
                         }
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                         if (o.title.size()) {
                             from_string(com.title, o.title);
                         }
@@ -995,7 +995,8 @@ namespace steemit {
                 if (this->db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                     this->db.calculate_discussion_payout_time(comment) == fc::time_point_sec::maximum()) {
 #ifndef CLEAR_VOTES
-                    const auto &comment_vote_idx = this->db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+                    const auto &comment_vote_idx = this->db.get_index<comment_vote_index>().indices().get<
+                            by_comment_voter>();
                     auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
 
                     if (itr == comment_vote_idx.end()) {
@@ -1111,11 +1112,11 @@ namespace steemit {
 
                         if (db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                             !db.has_hardfork(STEEMIT_HARDFORK_0_13__257)) {
-                            new_cashout_time_sec = db.head_block_time().sec_since_epoch() +
-                                                   STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                            new_cashout_time_sec =
+                                    db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                         } else {
-                            new_cashout_time_sec = db.head_block_time().sec_since_epoch() +
-                                                   STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+                            new_cashout_time_sec =
+                                    db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
                         }
 
                         avg_cashout_sec =
@@ -1155,7 +1156,8 @@ namespace steemit {
                             }
 
                             if (c.max_cashout_time == fc::time_point_sec::maximum()) {
-                                    c.max_cashout_time = db.head_block_time() + fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
+                                c.max_cashout_time =
+                                        db.head_block_time() + fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
                             }
                         }
                     });
@@ -1229,21 +1231,21 @@ namespace steemit {
                                     uint64_t new_weight = utilities::get_vote_weight(comment.vote_rshares.value,
                                                                                      reward_fund);
                                     cv.weight = new_weight - old_weight;
-                                } else if (this->db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                                } else if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     uint64_t old_weight = ((std::numeric_limits<uint64_t>::max() *
                                                             fc::uint128_t(old_vote_rshares.value)) /
-                                                           (2 * two_s + old_vote_rshares.value)).to_uint64();
+                                                           (two_s + old_vote_rshares.value)).to_uint64();
                                     uint64_t new_weight = ((std::numeric_limits<uint64_t>::max() *
                                                             fc::uint128_t(comment.vote_rshares.value)) /
-                                                           (2 * two_s + comment.vote_rshares.value)).to_uint64();
+                                                           (two_s + comment.vote_rshares.value)).to_uint64();
                                     cv.weight = new_weight - old_weight;
                                 } else {
                                     uint64_t old_weight = ((std::numeric_limits<uint64_t>::max() *
                                                             fc::uint128_t(10000 * old_vote_rshares.value)) /
-                                                           (2 * two_s + (10000 * old_vote_rshares.value))).to_uint64();
+                                                           (two_s + (10000 * old_vote_rshares.value))).to_uint64();
                                     uint64_t new_weight = ((std::numeric_limits<uint64_t>::max() *
                                                             fc::uint128_t(10000 * comment.vote_rshares.value)) /
-                                                           (2 * two_s +
+                                                           (two_s +
                                                             (10000 * comment.vote_rshares.value))).to_uint64();
                                     cv.weight = new_weight - old_weight;
                                 }
@@ -1268,8 +1270,7 @@ namespace steemit {
                         }
                     });
 
-                    if (max_vote_weight) // Optimization
-                    {
+                    if (max_vote_weight) {
                         db.modify(comment, [&](comment_object &c) {
                             c.total_vote_weight += max_vote_weight;
                         });
