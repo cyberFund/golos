@@ -607,7 +607,7 @@ namespace steemit {
                         b.last_bandwidth_update = now;
                     });
 
-                    fc::uint128 account_vshares(a.effective_vesting_shares().amount.value);
+                    fc::uint128 account_vshares(a.vesting_shares.amount.value);
                     fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
 
                     fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
@@ -657,20 +657,19 @@ namespace steemit {
                     b.last_bandwidth_update = head_block_time();
                 });
 
-                fc::uint128 account_vshares(a.vesting_shares.amount.value);
+                fc::uint128 account_vshares(a.effective_vesting_shares().amount.value);
                 fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
                 fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
                 fc::uint128 max_virtual_bandwidth(props.max_virtual_bandwidth);
 
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
 
-                if (is_producing()) {
+                if (is_producing())
                     FC_ASSERT(has_bandwidth, "Account exceeded maximum allowed bandwidth per vesting share.",
                               ("account_vshares", account_vshares)("account_average_bandwidth",
                                                                    account_average_bandwidth)("max_virtual_bandwidth",
                                                                                               max_virtual_bandwidth)(
                                       "total_vesting_shares", total_vshares));
-                }
             }
 
             return has_bandwidth;
@@ -1941,22 +1940,13 @@ namespace steemit {
 
             const auto &witness_account = get_account(props.current_witness);
 
+            asset pay;
+
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
-                auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
-
-                /// pay witness in vesting shares
-                if (props.head_block_number >= STEEMIT_START_MINER_VOTING_BLOCK ||
-                    (witness_account.vesting_shares.amount.value == 0)) {
-                    // const auto& witness_obj = get_witness( props.current_witness );
-                    create_vesting(witness_account, pay);
-                } else {
-                    adjust_balance(witness_account, pay);
-                }
-
-                return pay;
+                pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
+            } else {
+                pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16);
             }
-
-            auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16);
 
             /// pay witness in vesting shares
             if (props.head_block_number >= STEEMIT_START_MINER_VOTING_BLOCK ||
