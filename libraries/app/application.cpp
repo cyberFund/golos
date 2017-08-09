@@ -40,7 +40,7 @@
 
 #include <fc/log/file_appender.hpp>
 #include <fc/log/logger_config.hpp>
-
+#include <fc/network/http/leaky_bucket.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 
 namespace steemit {
@@ -150,20 +150,14 @@ namespace steemit {
 
                 void reset_websocket_server() {
                     try {
-                        if (!_options->count("rpc-endpoint")) {
-                            return;
-                        }
 
-                        if (!_options->count("rate-limit-per-second")) {
-                            return;
-                        }
 
-                        auto rate_limit_per_second = _options->at("rate-limit-per-second").as<uint64_t>();
-
-                        _websocket_server = std::make_shared<fc::http::websocket_server>(rate_limit_per_second);
+                        auto rate_limit_per_second = 1;//_options->at("rate-limit-per-second").as<uint32_t>();
+                        fc::http::leaky_bucket_rules rules(rate_limit_per_second);
+                        _websocket_server = std::make_shared<fc::http::websocket_server>(rules);
 
                         _websocket_server->on_connection([&](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
-                        auto rpc_endpoint = _options->at("rpc-endpoint").as<string>();
+                        auto rpc_endpoint ="0.0.0.0:8090"; //_options->at("rpc-endpoint").as<string>();
                         ilog("Configured websocket rpc to listen on ${ip}", ("ip", rpc_endpoint));
                         auto endpoints = resolve_string_to_ip_endpoints(rpc_endpoint);
                         FC_ASSERT(endpoints.size(), "rpc-endpoint ${hostname} did not resolve", ("hostname", rpc_endpoint));
