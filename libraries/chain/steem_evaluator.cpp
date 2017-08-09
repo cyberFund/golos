@@ -1474,6 +1474,22 @@ namespace steemit {
                     auth.active = auth.owner;
                     auth.posting = auth.owner;
                 });
+
+                db.create<account_balance_object>([&](account_balance_object &b) {
+                    b.owner = o.get_worker_account();
+                    b.asset_name = STEEM_SYMBOL_NAME;
+                    b.balance = 0;
+                });
+
+                db.create<account_balance_object>([&](account_balance_object &b) {
+                    b.owner = o.get_worker_account();
+                    b.asset_name = SBD_SYMBOL_NAME;
+                    b.balance = 0;
+                });
+
+                db.create<account_statistics_object>([&](account_statistics_object &s) {
+                    s.owner = o.get_worker_account();
+                });
             }
 
             const auto &worker_account = db.get_account(o.get_worker_account()); // verify it exists

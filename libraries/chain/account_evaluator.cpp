@@ -15,26 +15,25 @@ namespace steemit {
 
             const auto &props = db.get_dynamic_global_properties();
 
-            FC_ASSERT(db.get_balance(creator.name, STEEM_SYMBOL_NAME) >=
-                      o.fee, "Insufficient balance to create account.", ("creator.balance", db.get_balance(creator.name, STEEM_SYMBOL_NAME))("required", o.fee));
+            FC_ASSERT(db.get_balance(creator.name, STEEM_SYMBOL_NAME) >= o.fee,
+                      "Insufficient balance to create account.",
+                      ("creator.balance", db.get_balance(creator.name, STEEM_SYMBOL_NAME))("required", o.fee));
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >=
-                          asset(wso.median_props.account_creation_fee.amount *
-                                STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
-                        ("f", asset(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
-                                ("p", o.fee));
+                FC_ASSERT(o.fee >= asset(wso.median_props.account_creation_fee.amount *
+                                         STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL),
+                          "Insufficient Fee: ${f} required, ${p} provided.", ("f", asset(
+                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                        STEEM_SYMBOL))("p", o.fee));
             } else if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >=
-                          wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
-                        ("f", wso.median_props.account_creation_fee)
-                                ("p", o.fee));
+                FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
+                          "Insufficient Fee: ${f} required, ${p} provided.",
+                          ("f", wso.median_props.account_creation_fee)("p", o.fee));
             }
 
-            if (db.is_producing() ||
-                db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
+            if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
                 for (auto &a : o.owner.account_auths) {
                     db.get_account(a.first);
                 }
@@ -69,24 +68,17 @@ namespace steemit {
 #endif
             });
 
-            auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
-            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL_NAME));
-            if (itr == index.end()) {
-                db.create<account_balance_object>([new_account](account_balance_object &b) {
-                    b.owner = new_account.name;
-                    b.asset_name = STEEM_SYMBOL_NAME;
-                    b.balance = 0;
-                });
-            }
+            db.create<account_balance_object>([new_account](account_balance_object &b) {
+                b.owner = new_account.name;
+                b.asset_name = STEEM_SYMBOL_NAME;
+                b.balance = 0;
+            });
 
-            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL_NAME));
-            if (itr == index.end()) {
-                db.create<account_balance_object>([new_account](account_balance_object &b) {
-                    b.owner = new_account.name;
-                    b.asset_name = SBD_SYMBOL_NAME;
-                    b.balance = 0;
-                });
-            }
+            db.create<account_balance_object>([new_account](account_balance_object &b) {
+                b.owner = new_account.name;
+                b.asset_name = SBD_SYMBOL_NAME;
+                b.balance = 0;
+            });
 
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
@@ -107,49 +99,39 @@ namespace steemit {
 
         void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation &o) {
 
-            FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101), "Account creation with delegation is not enabled until hardfork 17");
+            FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101),
+                      "Account creation with delegation is not enabled until hardfork 17");
 
             const auto &creator = db.get_account(o.creator);
             asset creator_balance = db.get_balance(o.creator, STEEM_SYMBOL_NAME);
             const auto &props = db.get_dynamic_global_properties();
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
-            FC_ASSERT(creator_balance >=
-                      o.fee, "Insufficient balance to create account.",
-                    ("creator.balance", creator_balance)
-                            ("required", o.fee));
+            FC_ASSERT(creator_balance >= o.fee, "Insufficient balance to create account.",
+                      ("creator.balance", creator_balance)("required", o.fee));
 
-            FC_ASSERT(
-                    creator.vesting_shares - creator.delegated_vesting_shares -
-                    asset(creator.to_withdraw -
-                          creator.withdrawn, VESTS_SYMBOL) >=
-                    o.delegation, "Insufficient vesting shares to delegate to new account.",
-                    ("creator.vesting_shares", creator.vesting_shares)
-                            ("creator.delegated_vesting_shares", creator.delegated_vesting_shares)("required", o.delegation));
+            FC_ASSERT(creator.vesting_shares - creator.delegated_vesting_shares -
+                      asset(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL) >= o.delegation,
+                      "Insufficient vesting shares to delegate to new account.",
+                      ("creator.vesting_shares", creator.vesting_shares)("creator.delegated_vesting_shares",
+                                                                         creator.delegated_vesting_shares)("required",
+                                                                                                           o.delegation));
 
             auto target_delegation =
-                    asset(wso.median_props.account_creation_fee.amount *
-                          STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
-                          STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL) *
-                    props.get_vesting_share_price();
+                    asset(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                          STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL) * props.get_vesting_share_price();
 
-            auto current_delegation = asset(o.fee.amount *
-                                            STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL) *
-                                      props.get_vesting_share_price() +
-                                      o.delegation;
+            auto current_delegation = asset(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL) *
+                                      props.get_vesting_share_price() + o.delegation;
 
-            FC_ASSERT(current_delegation >=
-                      target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
-                    ("f", target_delegation)
-                            ("p", current_delegation)
-                            ("account_creation_fee", wso.median_props.account_creation_fee)
-                            ("o.fee", o.fee)
-                            ("o.delegation", o.delegation));
+            FC_ASSERT(current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
+                      ("f", target_delegation)("p", current_delegation)("account_creation_fee",
+                                                                        wso.median_props.account_creation_fee)("o.fee",
+                                                                                                               o.fee)(
+                              "o.delegation", o.delegation));
 
-            FC_ASSERT(o.fee >=
-                      wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
-                    ("f", wso.median_props.account_creation_fee)
-                            ("p", o.fee));
+            FC_ASSERT(o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
+                      ("f", wso.median_props.account_creation_fee)("p", o.fee));
 
             for (auto &a : o.owner.account_auths) {
                 db.get_account(a.first);
@@ -185,24 +167,17 @@ namespace steemit {
 #endif
             });
 
-            auto &index = db.get_index<account_balance_index>().indices().get<by_account_asset>();
-            auto itr = index.find(boost::make_tuple(new_account.name, STEEM_SYMBOL_NAME));
-            if (itr == index.end()) {
-                db.create<account_balance_object>([new_account](account_balance_object &b) {
-                    b.owner = new_account.name;
-                    b.asset_name = STEEM_SYMBOL_NAME;
-                    b.balance = 0;
-                });
-            }
+            db.create<account_balance_object>([new_account](account_balance_object &b) {
+                b.owner = new_account.name;
+                b.asset_name = STEEM_SYMBOL_NAME;
+                b.balance = 0;
+            });
 
-            itr = index.find(boost::make_tuple(new_account.name, SBD_SYMBOL_NAME));
-            if (itr == index.end()) {
-                db.create<account_balance_object>([new_account](account_balance_object &b) {
-                    b.owner = new_account.name;
-                    b.asset_name = SBD_SYMBOL_NAME;
-                    b.balance = 0;
-                });
-            }
+            db.create<account_balance_object>([new_account](account_balance_object &b) {
+                b.owner = new_account.name;
+                b.asset_name = SBD_SYMBOL_NAME;
+                b.balance = 0;
+            });
 
             db.create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
@@ -217,8 +192,7 @@ namespace steemit {
                     vdo.delegator = o.creator;
                     vdo.delegatee = o.new_account_name;
                     vdo.vesting_shares = o.delegation;
-                    vdo.min_delegation_time = db.head_block_time() +
-                                              STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
+                    vdo.min_delegation_time = db.head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
                 });
             }
 
@@ -234,12 +208,10 @@ namespace steemit {
         void account_update_evaluator::do_apply(const account_update_operation &o) {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                FC_ASSERT(o.account !=
-                          STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
+                FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
             }
 
-            if ((db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                 db.is_producing()) && o.posting) { // TODO: Add HF 15
+            if ((db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || db.is_producing()) && o.posting) { // TODO: Add HF 15
                 o.posting->validate();
             }
 
@@ -249,15 +221,13 @@ namespace steemit {
             if (o.owner) {
 #ifndef STEEMIT_BUILD_TESTNET
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
-                    FC_ASSERT(db.head_block_time() -
-                              account_auth.last_owner_update >
-                              STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
+                    FC_ASSERT(db.head_block_time() - account_auth.last_owner_update > STEEMIT_OWNER_UPDATE_LIMIT,
+                              "Owner authority can only be updated once an hour.");
                 }
 
 #endif
 
-                if ((db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                     db.is_producing())) // TODO: Add HF 15
+                if ((db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || db.is_producing())) // TODO: Add HF 15
                 {
                     for (auto a: o.owner->account_auths) {
                         db.get_account(a.first);
@@ -268,18 +238,14 @@ namespace steemit {
                 db.update_owner_authority(account, *o.owner);
             }
 
-            if (o.active &&
-                (db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                 db.is_producing())) // TODO: Add HF 15
+            if (o.active && (db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || db.is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.active->account_auths) {
                     db.get_account(a.first);
                 }
             }
 
-            if (o.posting &&
-                (db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                 db.is_producing())) // TODO: Add HF 15
+            if (o.posting && (db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || db.is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.posting->account_auths) {
                     db.get_account(a.first);
