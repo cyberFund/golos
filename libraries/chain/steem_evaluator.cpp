@@ -1605,6 +1605,22 @@ namespace steemit {
                     auth.posting = auth.owner;
                 });
 
+                db.create<account_balance_object>([&](account_balance_object &b) {
+                    b.owner = worker_account;
+                    b.asset_name = STEEM_SYMBOL_NAME;
+                    b.balance = 0;
+                });
+
+                db.create<account_balance_object>([&](account_balance_object &b) {
+                    b.owner = worker_account;
+                    b.asset_name = SBD_SYMBOL_NAME;
+                    b.balance = 0;
+                });
+
+                db.create<account_statistics_object>([&](account_statistics_object &s) {
+                    s.owner = worker_account;
+                });
+
                 db.create<witness_object>([&](witness_object &w) {
                     w.owner = worker_account;
                     w.props = o.props;
