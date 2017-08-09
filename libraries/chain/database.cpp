@@ -1465,7 +1465,6 @@ namespace steemit {
 
                 auto converted_steem = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
 
-                adjust_balance(from_account, converted_steem);
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;
                     a.withdrawn += to_withdraw;
@@ -1477,6 +1476,8 @@ namespace steemit {
                         a.next_vesting_withdrawal += fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
                     }
                 });
+
+                adjust_balance(from_account, converted_steem);
 
                 modify(cprops, [&](dynamic_global_property_object &o) {
                     o.total_vesting_fund_steem -= converted_steem;

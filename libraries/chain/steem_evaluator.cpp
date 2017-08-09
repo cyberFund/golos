@@ -1034,6 +1034,7 @@ namespace steemit {
                 FC_ASSERT(max_vote_denom > 0);
 
                 if (!db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
+                    FC_ASSERT(max_vote_denom == 200);   // TODO: Remove this assert
                     used_power = (used_power / max_vote_denom) + 1;
                 } else {
                     used_power = (used_power + max_vote_denom - 1) / max_vote_denom;
@@ -1048,10 +1049,10 @@ namespace steemit {
 
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0,
-                              "Voting weight is too small, please accumulate more voting power or steem power.");
+                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}. Threshold: ${t}", ("r", abs_rshares));
                 } else if (db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1,
-                              "Voting weight is too small, please accumulate more voting power or steem power.");
+                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}. Threshold: ${t}", ("r", abs_rshares));
                 }
 
                 // Lazily delete vote
@@ -1069,15 +1070,13 @@ namespace steemit {
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (rshares > 0 && db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                        if (db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
+                        if (db.has_hardfork(STEEMIT_HARDFORK_0_17__91))
                             FC_ASSERT(db.head_block_time() < comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT,
                                       "Cannot increase reward of post within the last minute before payout.");
-                        } else {
+                        else
                             FC_ASSERT(db.head_block_time() <
                                       db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
                                       "Cannot increase reward of post within the last minute before payout.");
-                        }
-
                     }
 
                     //used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread their votes around over 50+ posts day for a week
@@ -1129,13 +1128,13 @@ namespace steemit {
                         } else {
                             c.net_votes--;
                         }
-                        if (!db.has_hardfork(STEEMIT_HARDFORK_0_6__114) && c.net_rshares == -c.abs_rshares) {
+                        if (!db.has_hardfork(STEEMIT_HARDFORK_0_6__114) && c.net_rshares == -c.abs_rshares)
                             FC_ASSERT(c.net_votes < 0, "Comment has negative net votes?");
-                        }
                     });
 
                     db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
+
                         if (!db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                             if (db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                                 c.last_payout > fc::time_point_sec::min()) {
@@ -1183,7 +1182,7 @@ namespace steemit {
                      *
                      *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit integer.
                      *
-      **/
+                     */
                     db.create<comment_vote_object>([&](comment_vote_object &cv) {
                         cv.voter = voter.id;
                         cv.comment = comment.id;
@@ -1272,18 +1271,16 @@ namespace steemit {
                     FC_ASSERT(itr->num_changes < STEEMIT_MAX_VOTE_CHANGES,
                               "Voter has used the maximum number of vote changes on this comment.");
 
-                    if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_6__112)) {
+                    if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_6__112))
                         FC_ASSERT(itr->vote_percent != o.weight, "You have already voted in a similar way.");
-                    }
 
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
-                    if (itr->rshares < rshares && db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
+                    if (itr->rshares < rshares && db.has_hardfork(STEEMIT_HARDFORK_0_7))
                         FC_ASSERT(db.head_block_time() <
                                   db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
                                   "Cannot increase payout within last minute before payout.");
-                    }
 
                     db.modify(voter, [&](account_object &a) {
                         a.voting_power = current_power - used_power;
@@ -1380,7 +1377,6 @@ namespace steemit {
                     if (!db.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                         db.adjust_rshares2(comment, old_rshares, new_rshares);
                     }
-
                 }
 
             } FC_CAPTURE_AND_RETHROW((o))
