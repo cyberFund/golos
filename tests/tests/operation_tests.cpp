@@ -136,7 +136,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(acct.id._id == acct_auth.id._id);
 
             /* This is being moved out of consensus...
-      #ifndef IS_LOW_MEM
+      #ifndef STEEMIT_BUILD_LOW_MEMORY
          BOOST_REQUIRE( acct.json_metadata == op.json_metadata );
       #else
          BOOST_REQUIRE( acct.json_metadata == "" );
@@ -343,7 +343,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(acct.memo_key == new_private_key.get_public_key());
 
             /* This is being moved out of consensus
-      #ifndef IS_LOW_MEM
+      #ifndef STEEMIT_BUILD_LOW_MEMORY
          BOOST_REQUIRE( acct.json_metadata == "{\"bar\":\"foo\"}" );
       #else
          BOOST_REQUIRE( acct.json_metadata == "" );
@@ -474,7 +474,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                     db.head_block_time() +
                     fc::seconds(STEEMIT_CASHOUT_WINDOW_SECONDS)));
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
             BOOST_REQUIRE(to_string(alice_comment.title) == op.title);
             BOOST_REQUIRE(to_string(alice_comment.body) == op.body);
             //BOOST_REQUIRE( alice_comment.json_metadata == op.json_metadata );
@@ -2148,8 +2148,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test adding a grandchild proxy");
-            // alice \
-      // bob->  sam->dave
+            // alice->bob->sam->dave
 
             tx.operations.clear();
             tx.signatures.clear();

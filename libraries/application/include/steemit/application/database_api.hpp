@@ -555,9 +555,6 @@ namespace steemit {
 FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
 FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
 
-FC_REFLECT(steemit::application::discussion_query, (select_tags)(filter_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(select_language)(filter_language));
-
-
 FC_REFLECT_ENUM(steemit::application::withdraw_route_type, (incoming)(outgoing)(all));
 
 FC_API(steemit::application::database_api,

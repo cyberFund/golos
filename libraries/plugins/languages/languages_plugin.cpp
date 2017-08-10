@@ -451,13 +451,13 @@ namespace steemit {
         bool languages_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
             std::string language = get_language(c);
 
-            if (query.filter_language.size()) {
+            if (query.filter_languages.size()) {
                 if (language.empty()) {
                     return true;
                 }
             }
 
-            if (query.filter_language.count(language)) {
+            if (query.filter_languages.count(language)) {
                 return true;
             }
 

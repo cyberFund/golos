@@ -27,16 +27,16 @@ namespace steemit {
         using chainbase::object_id;
         using chainbase::allocator;
 
-//
-// Plugins should #define their SPACE_ID's so plugins with
-// conflicting SPACE_ID assignments can be compiled into the
-// same binary (by simply re-assigning some of the conflicting #defined
-// SPACE_ID's in a build script).
-//
-// Assignment of SPACE_ID's cannot be done at run-time because
-// various template automagic depends on them being known at compile
-// time.
-//
+        //
+        // Plugins should #define their SPACE_ID's so plugins with
+        // conflicting SPACE_ID assignments can be compiled into the
+        // same binary (by simply re-assigning some of the conflicting #defined
+        // SPACE_ID's in a build script).
+        //
+        // Assignment of SPACE_ID's cannot be done at run-time because
+        // various template automagic depends on them being known at compile
+        // time.
+        //
 #ifndef LANGUAGES_SPACE_ID
 #define LANGUAGES_SPACE_ID 12
 #endif
@@ -45,31 +45,33 @@ namespace steemit {
 
         typedef fc::fixed_string<fc::sha256> language_name_type;
 
-// Plugins need to define object type IDs such that they do not conflict
-// globally. If each plugin uses the upper 8 bits as a space identifier,
-// with 0 being for chain, then the lower 8 bits are free for each plugin
-// to define as they see fit.
-        enum {
+        // Plugins need to define object type IDs such that they do not conflict
+        // globally. If each plugin uses the upper 8 bits as a space identifier,
+        // with 0 being for chain, then the lower 8 bits are free for each plugin
+        // to define as they see fit.
+        enum languages_object_types {
             language_object_type = (LANGUAGES_SPACE_ID << 8),
             language_stats_object_type = (LANGUAGES_SPACE_ID << 8) + 1,
             peer_stats_object_type = (LANGUAGES_SPACE_ID << 8) + 2,
             author_language_stats_object_type = (LANGUAGES_SPACE_ID << 8) + 3
         };
 
-        namespace detail { class languages_plugin_impl; }
+        namespace detail {
+            class languages_plugin_impl;
+        }
 
 
-/**
- *  The purpose of the tag object is to allow the generation and listing of
- *  all top level posts by a string tag.  The desired sort orders include:
- *
- *  1. created - time of creation
- *  2. maturing - about to receive a payout
- *  3. active - last reply the post or any child of the post
- *  4. netvotes - individual accounts voting for post minus accounts voting against it
- *
- *  When ever a comment is modified, all language_objects for that comment are updated to match.
- */
+        /**
+         *  The purpose of the tag object is to allow the generation and listing of
+         *  all top level posts by a string tag.  The desired sort orders include:
+         *
+         *  1. created - time of creation
+         *  2. maturing - about to receive a payout
+         *  3. active - last reply the post or any child of the post
+         *  4. netvotes - individual accounts voting for post minus accounts voting against it
+         *
+         *  When ever a comment is modified, all language_objects for that comment are updated to match.
+         */
         class language_object : public object<language_object_type, language_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -111,8 +113,7 @@ namespace steemit {
 
         typedef object_id<language_object> language_id_type;
 
-        template<typename T, typename C = std::less<T>>
-        class comparable_index {
+        template<typename T, typename C = std::less<T>> class comparable_index {
         public:
             typedef T value_type;
 
@@ -181,8 +182,7 @@ namespace steemit {
             }
         }; /// all top level posts by direct votes
 
-        class by_parent_children_rshares2
-                : public comparable_index<language_object> {
+        class by_parent_children_rshares2 : public comparable_index<language_object> {
         public:
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<comment_object::id_type>()(first.parent, second.parent) &&
@@ -218,8 +218,7 @@ namespace steemit {
             }
         };
 
-        class by_author_parent_created
-                : public comparable_index<language_object> {
+        class by_author_parent_created : public comparable_index<language_object> {
         public:
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<account_object::id_type>()(first.author, second.author) &&
@@ -237,8 +236,7 @@ namespace steemit {
             }
         };
 
-        class by_reward_fund_net_rshares
-                : public comparable_index<language_object> {
+        class by_reward_fund_net_rshares : public comparable_index<language_object> {
         public:
             virtual bool operator()(const language_object &first, const language_object &second) const override {
                 return std::less<bool>()(first.is_post(), second.is_post()) &&
@@ -250,144 +248,112 @@ namespace steemit {
         struct by_comment;
         struct by_tag;
 
-        typedef multi_index_container<
-                language_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>, member<language_object, language_id_type, &language_object::id>>,
-                        ordered_non_unique<tag<by_comment>, member<language_object, comment_object::id_type, &language_object::comment>>,
-                        ordered_unique<tag<by_author_comment>,
-                                composite_key<language_object,
-                                        member<language_object, account_object::id_type, &language_object::author>,
-                                        member<language_object, comment_object::id_type, &language_object::comment>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<account_object::id_type>, std::less<comment_object::id_type>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_created>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, time_point_sec, &language_object::created>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<time_point_sec>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_active>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, time_point_sec, &language_object::active>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<time_point_sec>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_promoted>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, share_type, &language_object::promoted_balance>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<share_type>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_net_rshares>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, int64_t, &language_object::net_rshares>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<int64_t>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_net_votes>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, int32_t, &language_object::net_votes>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<int32_t>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_children>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, int32_t, &language_object::children>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<int32_t>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_hot>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, double, &language_object::hot>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<double>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_trending>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, double, &language_object::trending>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<double>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_parent_children_rshares2>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, comment_object::id_type, &language_object::parent>,
-                                        member<language_object, fc::uint128_t, &language_object::children_rshares2>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>, std::greater<fc::uint128_t>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_cashout>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        member<language_object, time_point_sec, &language_object::cashout>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<time_point_sec>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_net_rshares>,
+        typedef multi_index_container<language_object,
+                indexed_by<ordered_unique<tag<by_id>, member<language_object, language_id_type, &language_object::id>>,
+                        ordered_non_unique<tag<by_comment>,
+                                member<language_object, comment_object::id_type, &language_object::comment>>,
+                        ordered_unique<tag<by_author_comment>, composite_key<language_object,
+                                member<language_object, account_object::id_type, &language_object::author>,
+                                member<language_object, comment_object::id_type, &language_object::comment>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<account_object::id_type>,
+                                        std::less<comment_object::id_type>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_created>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, time_point_sec, &language_object::created>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<time_point_sec>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_active>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, time_point_sec, &language_object::active>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<time_point_sec>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_promoted>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, share_type, &language_object::promoted_balance>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<share_type>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_net_rshares>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, int64_t, &language_object::net_rshares>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<int64_t>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_net_votes>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, int32_t, &language_object::net_votes>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<int32_t>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_children>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, int32_t, &language_object::children>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<int32_t>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_hot>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, double, &language_object::hot>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<double>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_trending>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, double, &language_object::trending>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<double>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_parent_children_rshares2>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, comment_object::id_type, &language_object::parent>,
+                                member<language_object, fc::uint128_t, &language_object::children_rshares2>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<comment_object::id_type>,
+                                        std::greater<fc::uint128_t>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_cashout>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                member<language_object, time_point_sec, &language_object::cashout>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<time_point_sec>,
+                                        std::less<language_id_type>>>, ordered_unique<tag<by_net_rshares>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, int64_t, &language_object::net_rshares>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::greater<int64_t>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_author_parent_created>,
+                                        member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::greater<int64_t>,
+                                        std::less<language_id_type>>>, ordered_unique<tag<by_author_parent_created>,
                                 composite_key<language_object,
                                         member<language_object, language_name_type, &language_object::name>,
                                         member<language_object, account_object::id_type, &language_object::author>,
                                         member<language_object, time_point_sec, &language_object::created>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<account_object::id_type>, std::greater<time_point_sec>, std::less<language_id_type>>
-                        >,
-                        ordered_unique<tag<by_reward_fund_net_rshares>,
-                                composite_key<language_object,
-                                        member<language_object, language_name_type, &language_object::name>,
-                                        const_mem_fun<language_object, bool, &language_object::is_post>,
-                                        member<language_object, int64_t, &language_object::net_rshares>,
-                                        member<language_object, language_id_type, &language_object::id>
-                                >,
-                                composite_key_compare<std::less<language_name_type>, std::less<bool>, std::greater<int64_t>, std::less<language_id_type>>
-                        >
-                >,
-                allocator<language_object>
-        > language_index;
+                                        member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<account_object::id_type>,
+                                        std::greater<time_point_sec>, std::less<language_id_type>>>,
+                        ordered_unique<tag<by_reward_fund_net_rshares>, composite_key<language_object,
+                                member<language_object, language_name_type, &language_object::name>,
+                                const_mem_fun<language_object, bool, &language_object::is_post>,
+                                member<language_object, int64_t, &language_object::net_rshares>,
+                                member<language_object, language_id_type, &language_object::id> >,
+                                composite_key_compare<std::less<language_name_type>, std::less<bool>,
+                                        std::greater<int64_t>, std::less<language_id_type>>> >,
+                allocator<language_object> > language_index;
 
-/**
- *  The purpose of this index is to quickly identify how popular various tags by maintaining various sums over
- *  all posts under a particular tag
- */
-        class language_stats_object
-                : public object<language_stats_object_type, language_stats_object> {
+        /**
+         *  The purpose of this index is to quickly identify how popular various tags by maintaining various sums over
+         *  all posts under a particular tag
+         */
+        class language_stats_object : public object<language_stats_object_type, language_stats_object> {
         public:
             template<typename Constructor, typename Allocator>
             language_stats_object(Constructor &&c, allocator<Allocator>) {
@@ -413,29 +379,22 @@ namespace steemit {
         struct by_top_posts;
         struct by_trending;
 
-        typedef multi_index_container<
-                language_stats_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>, member<language_stats_object, language_stats_id_type, &language_stats_object::id>>,
-                        ordered_unique<tag<by_tag>, member<language_stats_object, language_name_type, &language_stats_object::language>>,
-                        ordered_non_unique<tag<by_trending>,
-                                composite_key<language_stats_object,
-                                        member<language_stats_object, fc::uint128_t, &language_stats_object::total_children_rshares2>,
-                                        member<language_stats_object, language_name_type, &language_stats_object::language>
-                                >,
-                                composite_key_compare<std::greater<uint128_t>, std::less<language_name_type>>
-                        >
-                >,
-                allocator<language_stats_object>
-        > language_stats_index;
+        typedef multi_index_container<language_stats_object, indexed_by<ordered_unique<tag<by_id>,
+                member<language_stats_object, language_stats_id_type, &language_stats_object::id>>,
+                ordered_unique<tag<by_tag>,
+                        member<language_stats_object, language_name_type, &language_stats_object::language>>,
+                ordered_non_unique<tag<by_trending>, composite_key<language_stats_object,
+                        member<language_stats_object, fc::uint128_t, &language_stats_object::total_children_rshares2>,
+                        member<language_stats_object, language_name_type, &language_stats_object::language> >,
+                        composite_key_compare<std::greater<uint128_t>, std::less<language_name_type>>> >,
+                allocator<language_stats_object> > language_stats_index;
 
 
-/**
- *  The purpose of this object is to track the relationship between accounts based upon how a user votes. Every time
- *  a user votes on a post, the relationship between voter and author increases direct rshares.
- */
-        class peer_stats_object
-                : public object<peer_stats_object_type, peer_stats_object> {
+        /**
+         *  The purpose of this object is to track the relationship between accounts based upon how a user votes. Every time
+         *  a user votes on a post, the relationship between voter and author increases direct rshares.
+         */
+        class peer_stats_object : public object<peer_stats_object_type, peer_stats_object> {
         public:
             template<typename Constructor, typename Allocator>
             peer_stats_object(Constructor &&c, allocator<Allocator> a) {
@@ -482,37 +441,28 @@ namespace steemit {
 
         struct by_rank;
         struct by_voter_peer;
-        typedef multi_index_container<
-                peer_stats_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>, member<peer_stats_object, peer_stats_id_type, &peer_stats_object::id>>,
-                        ordered_unique<tag<by_rank>,
-                                composite_key<peer_stats_object,
-                                        member<peer_stats_object, account_object::id_type, &peer_stats_object::voter>,
-                                        member<peer_stats_object, float, &peer_stats_object::rank>,
-                                        member<peer_stats_object, account_object::id_type, &peer_stats_object::peer>
-                                >,
-                                composite_key_compare<std::less<account_object::id_type>, std::greater<float>, std::less<account_object::id_type>>
-                        >,
-                        ordered_unique<tag<by_voter_peer>,
-                                composite_key<peer_stats_object,
-                                        member<peer_stats_object, account_object::id_type, &peer_stats_object::voter>,
-                                        member<peer_stats_object, account_object::id_type, &peer_stats_object::peer>
-                                >,
-                                composite_key_compare<std::less<account_object::id_type>, std::less<account_object::id_type>>
-                        >
-                >,
-                allocator<peer_stats_object>
-        > peer_stats_index;
+        typedef multi_index_container<peer_stats_object, indexed_by<
+                ordered_unique<tag<by_id>, member<peer_stats_object, peer_stats_id_type, &peer_stats_object::id>>,
+                ordered_unique<tag<by_rank>, composite_key<peer_stats_object,
+                        member<peer_stats_object, account_object::id_type, &peer_stats_object::voter>,
+                        member<peer_stats_object, float, &peer_stats_object::rank>,
+                        member<peer_stats_object, account_object::id_type, &peer_stats_object::peer> >,
+                        composite_key_compare<std::less<account_object::id_type>, std::greater<float>,
+                                std::less<account_object::id_type>>>, ordered_unique<tag<by_voter_peer>,
+                        composite_key<peer_stats_object,
+                                member<peer_stats_object, account_object::id_type, &peer_stats_object::voter>,
+                                member<peer_stats_object, account_object::id_type, &peer_stats_object::peer> >,
+                        composite_key_compare<std::less<account_object::id_type>,
+                                std::less<account_object::id_type>>> >, allocator<peer_stats_object> > peer_stats_index;
 
-/**
- *  This purpose of this object is to maintain stats about which tags an author uses, how frequnetly, and
- *  how many total earnings of all posts by author in tag.  It also allows us to answer the question of which
- *  authors earn the most in each tag category.  This helps users to discover the best bloggers to follow for
- *  particular tags.
- */
-        class author_language_stats_object
-                : public object<author_language_stats_object_type, author_language_stats_object> {
+        /**
+         *  This purpose of this object is to maintain stats about which tags an author uses, how frequnetly, and
+         *  how many total earnings of all posts by author in tag.  It also allows us to answer the question of which
+         *  authors earn the most in each tag category.  This helps users to discover the best bloggers to follow for
+         *  particular tags.
+         */
+        class author_language_stats_object : public object<author_language_stats_object_type,
+                author_language_stats_object> {
         public:
             template<typename Constructor, typename Allocator>
             author_language_stats_object(Constructor &&c, allocator<Allocator>) {
@@ -535,59 +485,56 @@ namespace steemit {
         using std::less;
         using std::greater;
 
-        typedef chainbase::shared_multi_index_container<
-                author_language_stats_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>,
-                                member<author_language_stats_object, author_tag_stats_id_type, &author_language_stats_object::id>
-                        >,
-                        ordered_unique<tag<by_author_posts_tag>,
-                                composite_key<author_language_stats_object,
-                                        member<author_language_stats_object, account_object::id_type, &author_language_stats_object::author>,
-                                        member<author_language_stats_object, uint32_t, &author_language_stats_object::total_posts>,
-                                        member<author_language_stats_object, language_name_type, &author_language_stats_object::language>
-                                >,
-                                composite_key_compare<less<account_object::id_type>, greater<uint32_t>, less<language_name_type>>
-                        >,
-                        ordered_unique<tag<by_author_tag_posts>,
-                                composite_key<author_language_stats_object,
-                                        member<author_language_stats_object, account_object::id_type, &author_language_stats_object::author>,
-                                        member<author_language_stats_object, language_name_type, &author_language_stats_object::language>,
-                                        member<author_language_stats_object, uint32_t, &author_language_stats_object::total_posts>
-                                >,
-                                composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<uint32_t>>
-                        >,
-                        ordered_unique<tag<by_author_tag_rewards>,
-                                composite_key<author_language_stats_object,
-                                        member<author_language_stats_object, account_object::id_type, &author_language_stats_object::author>,
-                                        member<author_language_stats_object, language_name_type, &author_language_stats_object::language>,
-                                        member<author_language_stats_object, asset, &author_language_stats_object::total_rewards>
-                                >,
-                                composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset>>
-                        >,
-                        ordered_unique<tag<by_tag_rewards_author>,
-                                composite_key<author_language_stats_object,
-                                        member<author_language_stats_object, language_name_type, &author_language_stats_object::language>,
-                                        member<author_language_stats_object, asset, &author_language_stats_object::total_rewards>,
-                                        member<author_language_stats_object, account_object::id_type, &author_language_stats_object::author>
-                                >,
-                                composite_key_compare<less<language_name_type>, greater<asset>, less<account_object::id_type>>
-                        >
-                >
-        > author_language_stats_index;
+        typedef chainbase::shared_multi_index_container<author_language_stats_object, indexed_by<
+                ordered_unique<tag<by_id>, member<author_language_stats_object, author_tag_stats_id_type,
+                        &author_language_stats_object::id> >, ordered_unique<tag<by_author_posts_tag>,
+                        composite_key<author_language_stats_object,
+                                member<author_language_stats_object, account_object::id_type,
+                                        &author_language_stats_object::author>,
+                                member<author_language_stats_object, uint32_t,
+                                        &author_language_stats_object::total_posts>,
+                                member<author_language_stats_object, language_name_type,
+                                        &author_language_stats_object::language> >,
+                        composite_key_compare<less<account_object::id_type>, greater<uint32_t>,
+                                less<language_name_type>>>, ordered_unique<tag<by_author_tag_posts>,
+                        composite_key<author_language_stats_object,
+                                member<author_language_stats_object, account_object::id_type,
+                                        &author_language_stats_object::author>,
+                                member<author_language_stats_object, language_name_type,
+                                        &author_language_stats_object::language>,
+                                member<author_language_stats_object, uint32_t,
+                                        &author_language_stats_object::total_posts> >,
+                        composite_key_compare<less<account_object::id_type>, less<language_name_type>,
+                                greater<uint32_t>>>, ordered_unique<tag<by_author_tag_rewards>,
+                        composite_key<author_language_stats_object,
+                                member<author_language_stats_object, account_object::id_type,
+                                        &author_language_stats_object::author>,
+                                member<author_language_stats_object, language_name_type,
+                                        &author_language_stats_object::language>,
+                                member<author_language_stats_object, asset,
+                                        &author_language_stats_object::total_rewards> >,
+                        composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset>>>,
+                ordered_unique<tag<by_tag_rewards_author>, composite_key<author_language_stats_object,
+                        member<author_language_stats_object, language_name_type,
+                                &author_language_stats_object::language>,
+                        member<author_language_stats_object, asset, &author_language_stats_object::total_rewards>,
+                        member<author_language_stats_object, account_object::id_type,
+                                &author_language_stats_object::author> >,
+                        composite_key_compare<less<language_name_type>, greater<asset>,
+                                less<account_object::id_type>>> > > author_language_stats_index;
 
 
-/**
- * Used to parse the metadata from the comment json_meta field.
- */
-struct comment_metadata {
-    string language;
-};
+        /**
+         * Used to parse the metadata from the comment json_meta field.
+         */
+        struct comment_metadata {
+            string language;
+        };
 
-/**
- *  This plugin will scan all changes to posts and/or their meta data and
- *
- */
+        /**
+         *  This plugin will scan all changes to posts and/or their meta data and
+         *
+         */
         class languages_plugin : public steemit::application::plugin {
         public:
             languages_plugin(application *app);
@@ -598,26 +545,27 @@ struct comment_metadata {
                 return LANGUAGES_PLUGIN_NAME;
             }
 
-            virtual void plugin_set_program_options(
-                    boost::program_options::options_description &cli,
-                    boost::program_options::options_description &cfg) override;
+            virtual void plugin_set_program_options(boost::program_options::options_description &cli,
+                                                    boost::program_options::options_description &cfg) override;
 
             virtual void plugin_initialize(const boost::program_options::variables_map &options) override;
 
             virtual void plugin_startup() override;
 
-            static bool filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &confition);
+            static bool filter(const steemit::application::discussion_query &query,
+                               const steemit::application::comment_api_obj &c,
+                               const std::function<bool(const steemit::application::comment_api_obj &)> &confition);
 
-            const std::set<std::string> get_languages()const;
+            const std::set<std::string> get_languages() const;
 
             friend class detail::languages_plugin_impl;
 
             std::unique_ptr<detail::languages_plugin_impl> my;
         };
 
-/**
- *  This API is used to query data maintained by the languages_plugin
- */
+        /**
+         *  This API is used to query data maintained by the languages_plugin
+         */
         class language_api : public std::enable_shared_from_this<language_api> {
         public:
 
@@ -628,28 +576,31 @@ struct comment_metadata {
             void on_api_startup();
 
             std::vector<std::string> get_languages() const;
+
         private:
             struct impl;
-            std::unique_ptr<impl>pimpl;
+            std::unique_ptr<impl> pimpl;
         };
     }
 } //steemit::language
 
-FC_REFLECT(steemit::languages::comment_metadata,(language));
+FC_REFLECT(steemit::languages::comment_metadata, (language));
 
-FC_API(steemit::languages::language_api,(get_languages));
+FC_API(steemit::languages::language_api, (get_languages));
 
 FC_REFLECT(steemit::languages::language_object,
-        (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(children_rshares2)(author)(parent)(comment))
+           (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(
+                   children_rshares2)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_object, steemit::languages::language_index)
 
 FC_REFLECT(steemit::languages::language_stats_object,
-        (id)(language)(total_children_rshares2)(total_payout)(net_votes)(top_posts)(comments));
+           (id)(language)(total_children_rshares2)(total_payout)(net_votes)(top_posts)(comments));
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_stats_object, steemit::languages::language_stats_index)
 
 FC_REFLECT(steemit::languages::peer_stats_object,
-        (id)(voter)(peer)(direct_positive_votes)(direct_votes)(indirect_positive_votes)(indirect_votes)(rank));
+           (id)(voter)(peer)(direct_positive_votes)(direct_votes)(indirect_positive_votes)(indirect_votes)(rank));
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::peer_stats_object, steemit::languages::peer_stats_index)
 
 FC_REFLECT(steemit::languages::author_language_stats_object, (id)(author)(language)(total_posts)(total_rewards))
-CHAINBASE_SET_INDEX_TYPE(steemit::languages::author_language_stats_object, steemit::languages::author_language_stats_index)
+CHAINBASE_SET_INDEX_TYPE(steemit::languages::author_language_stats_object,
+                         steemit::languages::author_language_stats_index)

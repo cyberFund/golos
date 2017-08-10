@@ -80,8 +80,6 @@ namespace steemit {
             price exchange_rate;
             time_point_sec expiration = time_point_sec::maximum();
 
-            extensions_type extensions;
-
             void validate() const;
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
@@ -110,7 +108,6 @@ namespace steemit {
         struct limit_order_cancel_operation : public base_operation {
             account_name_type owner;
             integral_id_type order_id = 0;
-            extensions_type extensions;
 
             void validate() const;
 
@@ -136,11 +133,6 @@ namespace steemit {
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset delta_collateral; ///< the amount of collateral to add to the margin position
             asset delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt
-            extensions_type extensions;
-
-            account_name_type fee_payer() const {
-                return funding_account;
-            }
 
             void validate() const;
 

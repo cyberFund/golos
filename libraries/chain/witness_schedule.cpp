@@ -459,6 +459,5 @@ namespace steemit {
                 update_median_witness_props(db);
             }
         }
-
     }
 }

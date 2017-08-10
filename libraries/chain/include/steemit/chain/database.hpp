@@ -696,8 +696,6 @@ namespace steemit {
 
             void create_block_summary(const signed_block &next_block);
 
-            void update_median_witness_props();
-
             void clear_null_account_balance();
 
             void update_global_dynamic_data(const signed_block &b);
@@ -715,8 +713,6 @@ namespace steemit {
             void clear_expired_orders();
 
             string to_pretty_string(const asset &a) const;
-
-            void adjust_sbd_balance(const account_object &a);
 
             void update_expired_feeds();
 
@@ -771,6 +767,8 @@ namespace steemit {
 
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
+
+            void adjust_sbd_balance(const account_object &a, account_balance_object &b);
         };
     }
 }

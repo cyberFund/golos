@@ -18,7 +18,8 @@ namespace steemit {
                     rs2 = (rs2 * ctx.reward_weight) / STEEMIT_100_PERCENT;
 
                     boost::multiprecision::uint256_t payout_u256 = (rf * rs2) / total_rshares2;
-                    FC_ASSERT(payout_u256 <= boost::multiprecision::uint256_t(uint64_t(std::numeric_limits<int64_t>::max())));
+                    FC_ASSERT(payout_u256 <=
+                              boost::multiprecision::uint256_t(uint64_t(std::numeric_limits<int64_t>::max())));
                     uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
                     if (is_comment_payout_dust(ctx.current_steem_price, payout)) {
@@ -62,6 +63,18 @@ namespace steemit {
 
                     return payout;
                 } FC_CAPTURE_AND_RETHROW((ctx))
+            }
+
+            uint64_t get_vote_weight(uint64_t vote_rshares, const reward_fund_object &rf) {
+                uint64_t result = 0;
+                if (rf.name == STEEMIT_POST_REWARD_FUND_NAME || rf.name == STEEMIT_COMMENT_REWARD_FUND_NAME) {
+                    uint128_t two_alpha = rf.content_constant * 2;
+                    result = (uint128_t(vote_rshares, 0) / (two_alpha + vote_rshares)).to_uint64();
+                } else {
+                    wlog("Unknown reward fund type ${rf}", ("rf", rf.name));
+                }
+
+                return result;
             }
 
             uint128_t calculate_claims(const uint128_t &rshares) {
