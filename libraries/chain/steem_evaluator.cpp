@@ -1049,10 +1049,10 @@ namespace steemit {
 
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0,
-                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}. Threshold: ${t}", ("r", abs_rshares));
+                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}", ("r", abs_rshares));
                 } else if (db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1,
-                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}. Threshold: ${t}", ("r", abs_rshares));
+                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}", ("r", abs_rshares));
                 }
 
                 // Lazily delete vote
