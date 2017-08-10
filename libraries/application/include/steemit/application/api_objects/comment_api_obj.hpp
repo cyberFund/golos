@@ -21,7 +21,6 @@ namespace steemit {
             comment_api_obj(const chain::comment_object &o) :
                     id(o.id),
                     category(to_string(o.category)),
-                    languages(to_string(o.languages)),
                     parent_author(o.parent_author),
                     parent_permlink(to_string(o.parent_permlink)),
                     author(o.author),
@@ -64,7 +63,6 @@ namespace steemit {
 
             comment_object::id_type id;
             string category;
-            string languages;
             account_name_type parent_author;
             string parent_permlink;
             account_name_type author;
@@ -117,7 +115,7 @@ namespace steemit {
 
 FC_REFLECT(steemit::application::comment_api_obj,
         (id)(author)(permlink)
-                (languages)(category)(parent_author)(parent_permlink)
+                (category)(parent_author)(parent_permlink)
                 (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
                 (depth)(children)(children_rshares2)
                 (net_rshares)(abs_rshares)(vote_rshares)

@@ -15,7 +15,6 @@ namespace steemit {
          *  Fees are paid by the "from" account
          *
          *  @pre amount.amount > 0
-         *  @pre fee.amount >= 0
          *  @pre from != to
          *  @post from account's balance will be reduced by fee and amount
          *  @post to account's balance will be increased by amount
@@ -107,19 +106,13 @@ namespace steemit {
 
         /**
          *  @class override_transfer_operation
-         *  @brief Allows the issuer of an asset to transfer an asset from any account to any account if they have ove     rride_authority
+         *  @brief Allows the issuer of an asset to transfer an asset from any account to any account if they have override_authority
          *  @ingroup operations
          *
          *  @pre amount.asset_id->issuer == issuer
          *  @pre issuer != from  because this is pointless, use a normal transfer operation
          */
         struct override_transfer_operation : public base_operation {
-            struct fee_parameters_type {
-                uint64_t fee = 20 * STEEMIT_BLOCKCHAIN_PRECISION;
-                uint32_t price_per_kbyte = 10; /// only required for large memos.
-            };
-
-            asset fee;
             account_name_type issuer;
             /// Account to transfer asset from
             account_name_type from;
@@ -132,13 +125,7 @@ namespace steemit {
             string memo;
             extensions_type extensions;
 
-            account_name_type fee_payer() const {
-                return issuer;
-            }
-
             void validate() const;
-
-            share_type calculate_fee(const fee_parameters_type &k) const;
         };
     }
 }
@@ -150,7 +137,6 @@ FC_REFLECT(steemit::protocol::transfer_to_savings_operation, (from)(to)(amount)(
 FC_REFLECT(steemit::protocol::transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo))
 FC_REFLECT(steemit::protocol::cancel_transfer_from_savings_operation, (from)(request_id))
 
-FC_REFLECT(steemit::protocol::override_transfer_operation::fee_parameters_type, (fee)(price_per_kbyte))
-FC_REFLECT(steemit::protocol::override_transfer_operation, (fee)(issuer)(from)(to)(amount)(memo)(extensions))
+FC_REFLECT(steemit::protocol::override_transfer_operation, (issuer)(from)(to)(amount)(memo)(extensions))
 
 #endif //GOLOS_TRANSFER_OPERATIONS_HPP

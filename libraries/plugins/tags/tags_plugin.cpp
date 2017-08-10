@@ -109,17 +109,16 @@ namespace steemit {
                 comment_metadata filter_tags(const comment_object &c) const {
                     comment_metadata meta;
 
-                    if (c.json_metadata.size()) {
+                    if (!c.json_metadata.empty()) {
                         try {
                             meta = fc::json::from_string(to_string(c.json_metadata)).as<comment_metadata>();
-                        }
-                        catch (const fc::exception &e) {
+                        } catch (const fc::exception &e) {
                             // Do nothing on malformed json_metadata
                         }
                     }
 
                     set<string> lower_tags;
-                    if (c.category != "") {
+                    if (!c.category.empty()) {
                         meta.tags.insert(fc::to_lower(to_string(c.category)));
                     }
 
@@ -131,7 +130,7 @@ namespace steemit {
                             lower_tags.size() > tag_limit) {
                             break;
                         }
-                        if (tag == "") {
+                        if (tag.empty()) {
                             continue;
                         }
                         lower_tags.insert(fc::to_lower(tag));
@@ -473,7 +472,7 @@ namespace steemit {
 
             tags::comment_metadata meta;
 
-            if (c.json_metadata.size()) {
+            if (!c.json_metadata.empty()) {
                 try {
                     meta = fc::json::from_string(c.json_metadata).as<tags::comment_metadata>();
                 } catch (const fc::exception &e) {

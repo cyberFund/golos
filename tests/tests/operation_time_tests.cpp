@@ -516,11 +516,11 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       auto bob_comment_sbd_reward = asset( bob_comment_payout.amount / 2, STEEM_SYMBOL ) * exchange_rate;
       auto bob_comment_vesting_reward = ( bob_comment_payout - asset( bob_comment_payout.amount / 2, STEEM_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price();
       auto unclaimed_payments = bob_comment_vote_rewards;
-      auto alice_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
+      auto alice_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
       auto alice_vote_vesting = alice_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      auto bob_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
+      auto bob_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
       auto bob_vote_vesting = bob_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      auto sam_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
+      auto sam_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
       auto sam_vote_vesting = sam_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
       unclaimed_payments -= ( alice_vote_reward + bob_vote_reward + sam_vote_reward );
 
@@ -579,9 +579,9 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       sam_vest_shares = db.get_account( "sam" ).vesting_shares;
       dave_vest_shares = db.get_account( "dave" ).vesting_shares;
 
-      u256 rs( alice_comment_rshares.value );
-      u256 rf( reward_steem.amount.value );
-      u256 trs2 = total_rshares2.hi;
+      boost::multiprecision::uint256_t rs( alice_comment_rshares.value );
+      boost::multiprecision::uint256_t rf( reward_steem.amount.value );
+      boost::multiprecision::uint256_t trs2 = total_rshares2.hi;
       trs2 = ( trs2 << 64 ) + total_rshares2.lo;
       auto rs2 = rs*rs;
 
@@ -591,13 +591,13 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       auto alice_comment_sbd_reward = asset( alice_comment_payout.amount / 2, STEEM_SYMBOL ) * exchange_rate;
       auto alice_comment_vesting_reward = ( alice_comment_payout - asset( alice_comment_payout.amount / 2, STEEM_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price();
       unclaimed_payments = alice_comment_vote_rewards;
-      alice_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      alice_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
       alice_vote_vesting = alice_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      bob_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      bob_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
       bob_vote_vesting = bob_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      sam_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      sam_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
       sam_vote_vesting = sam_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      auto dave_vote_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "dave" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      auto dave_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "dave" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
       auto dave_vote_vesting = dave_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
       unclaimed_payments -= ( alice_vote_reward + bob_vote_reward + sam_vote_reward + dave_vote_reward );
 
@@ -798,8 +798,8 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto alice_comment_vote_rewards = alice_comment_reward / 2;
       alice_comment_reward -= alice_comment_vote_rewards;
 
-      auto alice_vote_alice_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
-      auto bob_vote_alice_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto alice_vote_alice_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto bob_vote_alice_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
       reward_steem += alice_comment_vote_rewards - ( alice_vote_alice_reward + bob_vote_alice_reward ).amount.value;
 
       auto bob_comment_reward = ( ( reward_steem * bob_comment.net_rshares.value * bob_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
@@ -808,9 +808,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto bob_comment_vote_rewards = bob_comment_reward / 2;
       bob_comment_reward -= bob_comment_vote_rewards;
 
-      auto alice_vote_bob_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
-      auto bob_vote_bob_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
-      auto sam_vote_bob_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto alice_vote_bob_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto bob_vote_bob_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto sam_vote_bob_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
       reward_steem += bob_comment_vote_rewards - ( alice_vote_bob_reward + bob_vote_bob_reward + sam_vote_bob_reward ).amount.value;
 
       auto dave_comment_reward = ( ( reward_steem * dave_comment.net_rshares.value * dave_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto dave_comment_vote_rewards = dave_comment_reward / 2;
       dave_comment_reward -= dave_comment_vote_rewards;
 
-      auto bob_vote_dave_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "dave", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * dave_comment_vote_rewards ) / dave_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto bob_vote_dave_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "dave", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * dave_comment_vote_rewards ) / dave_comment.total_vote_weight ), STEEM_SYMBOL );
       reward_steem += dave_comment_vote_rewards - bob_vote_dave_reward.amount.value;
 
       // Calculate rewards paid to parent posts
@@ -3211,7 +3211,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            auto alice_vshares = utilities::calculate_vshares(db.get_comment("alice", string("test")).net_rshares.value, db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
+            auto alice_vshares = utilities::calculate_claims(db.get_comment("alice", string("test")).net_rshares.value, db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
 
             generate_blocks(5);
 
@@ -3229,12 +3229,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             {
                 const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
-                BOOST_REQUIRE(post_rf.recent_rshares2 == alice_vshares);
+                BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
                 validate_database();
             }
 
             auto bob_cashout_time = db.get_comment("bob", string("test")).cashout_time;
-            auto bob_vshares = utilities::calculate_vshares(db.get_comment("bob", string("test")).net_rshares.value, db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
+            auto bob_vshares = utilities::calculate_claims(db.get_comment("bob", string("test")).net_rshares.value, db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
 
             generate_block();
 
@@ -3242,7 +3242,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 alice_vshares -= (alice_vshares * STEEMIT_BLOCK_INTERVAL);
                 const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
-                BOOST_REQUIRE(post_rf.recent_rshares2 == alice_vshares);
+                BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
 
                 generate_block();
 
@@ -3253,7 +3253,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 const auto &post_rf = db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
                 BOOST_REQUIRE(
-                        post_rf.recent_rshares2 == alice_vshares + bob_vshares);
+                        post_rf.recent_claims == alice_vshares + bob_vshares);
                 validate_database();
             }
         }

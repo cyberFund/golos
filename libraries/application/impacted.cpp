@@ -114,7 +114,11 @@ namespace steemit {
                 _impacted.insert(op.open_owner);
             }
 
-            void operator()(const fill_asset_order_operation &op) {
+            void operator()(const fill_call_order_operation &op) {
+                _impacted.insert(op.owner);
+            }
+
+            void operator()(const fill_settlement_order_operation &op) {
                 _impacted.insert(op.owner);
             }
 

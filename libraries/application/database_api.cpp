@@ -1035,8 +1035,8 @@ namespace steemit {
             });
         }
 
-        u256 to256(const fc::uint128 &t) {
-            u256 result(t.high_bits());
+        boost::multiprecision::uint256_t to256(const fc::uint128 &t) {
+            boost::multiprecision::uint256_t result(t.high_bits());
             result <<= 65;
             result += t.low_bits();
             return result;
@@ -1062,9 +1062,9 @@ namespace steemit {
                 pot = pot * hist.current_median_history;
             }
 
-            u256 total_r2 = 0;
+            boost::multiprecision::uint256_t total_r2 = 0;
             if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_rshares2);
+                total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_claims);
             } else {
                 total_r2 = to256(props.total_reward_shares2);
             }
@@ -1072,22 +1072,22 @@ namespace steemit {
             if (props.total_reward_shares2 > 0) {
                 uint128_t vshares;
                 if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                    vshares = steemit::chain::utilities::calculate_vshares(
-                            d.net_rshares.value > 0 ? d.net_rshares.value
-                                                    : 0, my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
+                    vshares = steemit::chain::utilities::calculate_claims(
+                            d.net_rshares.value > 0 ? d.net_rshares.value : 0,
+                            my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
                 } else {
-                    vshares = steemit::chain::utilities::calculate_vshares(
+                    vshares = steemit::chain::utilities::calculate_claims(
                             d.net_rshares.value > 0 ? d.net_rshares.value : 0);
                 }
 
-                u256 r2 = to256(vshares); //to256(abs_net_rshares);
+                boost::multiprecision::uint256_t r2 = to256(vshares); //to256(abs_net_rshares);
                 /*
       r2 *= r2;
       */
                 r2 *= pot.amount.value;
                 r2 /= total_r2;
 
-                u256 tpp = to256(d.children_rshares2);
+                boost::multiprecision::uint256_t tpp = to256(d.children_rshares2);
                 tpp *= pot.amount.value;
                 tpp /= total_r2;
 
@@ -1154,7 +1154,7 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 std::vector<discussion> result;
 
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 FC_ASSERT(limit <= 100);
                 const auto &last_update_idx = my->_db.get_index<comment_index>().indices().get<by_last_update>();
                 auto itr = last_update_idx.begin();
@@ -1289,10 +1289,6 @@ namespace steemit {
 
                 if (!fc::is_utf8(d.json_metadata)) {
                     d.json_metadata = fc::prune_invalid_utf8(d.json_metadata);
-                }
-
-                if (!fc::is_utf8(d.languages)) {
-                    d.languages = fc::prune_invalid_utf8(d.languages);
                 }
 
             }
@@ -1435,7 +1431,7 @@ namespace steemit {
                         discussion,
                         languages::by_parent_trending
                 > map_result_ = select<languages::language_object, languages::language_index, languages::by_parent_trending, languages::by_comment>(
-                        query.select_language,
+                        query.select_languages,
                         query,
                         parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
@@ -2022,7 +2018,7 @@ namespace steemit {
                 std::vector<discussion> languages_ = feed<
                         languages::language_index,
                         languages::by_comment
-                >(query.select_language, query, start_author, start_permlink);
+                >(query.select_languages, query, start_author, start_permlink);
 
                 std::vector<discussion> result = merge(tags_, languages_);
 
@@ -2109,7 +2105,7 @@ namespace steemit {
 
                 std::vector<discussion> tags_ = blog<tags::tag_index, tags::by_comment>(query.select_tags, query, start_author, start_permlink);
 
-                std::vector<discussion> languages_ = blog<languages::language_index, languages::by_comment>(query.select_language, query, start_author, start_permlink);
+                std::vector<discussion> languages_ = blog<languages::language_index, languages::by_comment>(query.select_languages, query, start_author, start_permlink);
 
                 std::vector<discussion> result = merge(tags_, languages_);
 
@@ -2120,7 +2116,7 @@ namespace steemit {
         std::vector<discussion> database_api::get_discussions_by_comments(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 std::vector<discussion> result;
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                 query.validate();
                 FC_ASSERT(query.start_author, "Must get comments for a specific author");
                 auto start_author = *(query.start_author);
@@ -2291,7 +2287,7 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 try {
                     std::vector<discussion> result;
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                     FC_ASSERT(limit <= 100);
                     result.reserve(limit);
                     uint32_t count = 0;
@@ -2493,7 +2489,7 @@ namespace steemit {
                             }
                         } else if (part[1] == "posts" ||
                                    part[1] == "comments") {
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
                             int count = 0;
                             const auto &pidx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
                             auto itr = pidx.lower_bound(acnt);

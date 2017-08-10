@@ -20,10 +20,9 @@ namespace steemit {
 
             }
 
-            fill_order_operation(const string &c_o, uint32_t c_id, const asset &c_p, const string &o_o, uint32_t o_id, const asset &o_p)
-                    : current_owner(c_o), current_order_id(c_id),
-                      current_pays(c_p), open_owner(o_o), open_order_id(o_id),
-                      open_pays(o_p) {
+            fill_order_operation(const string &c_o, uint32_t c_id, const asset &c_p, const string &o_o, uint32_t o_id,
+                                 const asset &o_p) : current_owner(c_o), current_order_id(c_id), current_pays(c_p),
+                                                     open_owner(o_o), open_order_id(o_id), open_pays(o_p) {
             }
 
             account_name_type current_owner;
@@ -34,14 +33,20 @@ namespace steemit {
             asset open_pays;
         };
 
-
-        struct fill_asset_order_operation : public virtual_operation {
-            fill_asset_order_operation() {
+        /**
+         * @ingroup operations
+         *
+         * @note This is a virtual operation that is created while matching call orders and
+         * emitted for the purpose of accurately tracking account history, accelerating
+         * a reindex.
+         */
+        struct fill_call_order_operation : public virtual_operation {
+            fill_call_order_operation() {
 
             }
 
-            fill_asset_order_operation(integral_id_type o, account_name_type a, asset p, asset r, asset f)
-                    : order_id(o), owner(a), pays(p), receives(r), fee(f) {
+            fill_call_order_operation(integral_id_type o, const account_name_type &a, const asset &p, const asset &r,
+                                      const asset &f) : order_id(o), owner(a), pays(p), receives(r), fee(f) {
             }
 
             integral_id_type order_id;
@@ -50,17 +55,51 @@ namespace steemit {
             asset receives;
             asset fee; // paid by receiving account
 
-            pair <asset_symbol_type, asset_symbol_type> get_market() const {
-                return pays.symbol < receives.symbol ?
-                       std::make_pair(pays.symbol, receives.symbol) :
-                       std::make_pair(receives.symbol, pays.symbol);
+            pair <asset_name_type, asset_name_type> get_market() const {
+                return pays.symbol < receives.symbol ? std::make_pair(pays.symbol_name(), receives.symbol_name())
+                                                     : std::make_pair(receives.symbol_name(), pays.symbol_name());
             }
         };
+
+        /**
+         * @ingroup operations
+         *
+         * @note This is a virtual operation that is created while matching call orders and
+         * emitted for the purpose of accurately tracking account history, accelerating
+         * a reindex.
+         */
+        struct fill_settlement_order_operation : public virtual_operation {
+            fill_settlement_order_operation() {
+
+            }
+
+            fill_settlement_order_operation(integral_id_type o, const account_name_type &a, const asset &p,
+                                            const asset &r, const asset &f) : order_id(o), owner(a), pays(p),
+                                                                              receives(r) {
+            }
+
+            integral_id_type order_id;
+            account_name_type owner;
+            asset pays;
+            asset receives;
+            asset fee; // paid by receiving account
+
+            pair <asset_name_type, asset_name_type> get_market() const {
+                return pays.symbol < receives.symbol ? std::make_pair(pays.symbol_name(), receives.symbol_name())
+                                                     : std::make_pair(receives.symbol_name(), pays.symbol_name());
+            }
+        };
+
+        typedef fc::static_variant<protocol::fill_order_operation, protocol::fill_call_order_operation,
+                protocol::fill_settlement_order_operation> market_virtual_operations;
     }
 }
 
-FC_REFLECT(steemit::protocol::fill_order_operation, (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
+FC_REFLECT_TYPENAME(steemit::protocol::market_virtual_operations)
 
-FC_REFLECT(steemit::protocol::fill_asset_order_operation, (order_id)(owner)(pays)(receives)(fee))
+FC_REFLECT(steemit::protocol::fill_order_operation,
+           (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
+FC_REFLECT(steemit::protocol::fill_call_order_operation, (order_id)(owner)(pays)(receives)(fee))
+FC_REFLECT(steemit::protocol::fill_settlement_order_operation, (order_id)(owner)(pays)(receives)(fee))
 
 #endif //GOLOS_MARKET_VIRTUAL_OPERATIONS_HPP

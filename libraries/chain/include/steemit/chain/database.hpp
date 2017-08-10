@@ -62,30 +62,21 @@ namespace steemit {
             bool _log_hardforks = true;
 
             enum validation_steps {
-                skip_nothing = 0,
-                skip_witness_signature = 1 << 0,  ///< used while reindexing
-                skip_transaction_signatures =
-                1 << 1,  ///< used by non-witness nodes
-                skip_transaction_dupe_check =
-                1 << 2,  ///< used while reindexing
+                skip_nothing = 0, skip_witness_signature = 1 << 0,  ///< used while reindexing
+                skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
+                skip_transaction_dupe_check = 1 << 2,  ///< used while reindexing
                 skip_fork_db = 1 << 3,  ///< used while reindexing
-                skip_block_size_check =
-                1 << 4,  ///< used when applying locally generated transactions
-                skip_tapos_check = 1
-                        << 5,  ///< used while reindexing -- note this skips expiration check as well
-                skip_authority_check = 1
-                        << 6,  ///< used while reindexing -- disables any checking of authority on transactions
+                skip_block_size_check = 1 << 4,  ///< used when applying locally generated transactions
+                skip_tapos_check = 1 << 5,  ///< used while reindexing -- note this skips expiration check as well
+                skip_authority_check =
+                1 << 6,  ///< used while reindexing -- disables any checking of authority on transactions
                 skip_merkle_check = 1 << 7,  ///< used while reindexing
                 skip_undo_history_check = 1 << 8,  ///< used while reindexing
-                skip_witness_schedule_check =
-                1 << 9,  ///< used while reindexing
-                skip_validate = 1
-                        << 10, ///< used prior to checkpoint, skips validate() call on transaction
-                skip_validate_invariants = 1
-                        << 11, ///< used to skip database invariant check on block application
+                skip_witness_schedule_check = 1 << 9,  ///< used while reindexing
+                skip_validate = 1 << 10, ///< used prior to checkpoint, skips validate() call on transaction
+                skip_validate_invariants = 1 << 11, ///< used to skip database invariant check on block application
                 skip_undo_block = 1 << 12, ///< used to skip undo db on reindex
-                skip_block_log =
-                1 << 13  ///< used to skip block logging on reindex
+                skip_block_log = 1 << 13  ///< used to skip block logging on reindex
             };
 
             /**
@@ -96,7 +87,9 @@ namespace steemit {
              *
              * @param data_dir Path to open or create database in
              */
-            void open(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t initial_supply = STEEMIT_INIT_SUPPLY, uint64_t shared_file_size = 0, uint32_t chainbase_flags = 0);
+            void open(const fc::path &data_dir, const fc::path &shared_mem_dir,
+                      uint64_t initial_supply = STEEMIT_INIT_SUPPLY, uint64_t shared_file_size = 0,
+                      uint32_t chainbase_flags = 0);
 
             /**
              * @brief Rebuild object graph from block history and open detabase
@@ -104,8 +97,8 @@ namespace steemit {
              * This method may be called after or instead of @ref database::open, and will rebuild the object graph by
              * replaying blockchain history. When this method exits successfully, the database will be open.
              */
-            void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size = (
-                    1024l * 1024l * 1024l * 8l));
+            void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir,
+                         uint64_t shared_file_size = (1024l * 1024l * 1024l * 8l));
 
             /**
              * @brief wipe Delete database from disk, and potentially the raw chain as well.
@@ -204,9 +197,11 @@ namespace steemit {
 
             const limit_order_object *find_limit_order(const account_name_type &owner, integral_id_type id) const;
 
-            const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
+            const savings_withdraw_object &get_savings_withdraw(const account_name_type &owner,
+                                                                uint32_t request_id) const;
 
-            const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const;
+            const savings_withdraw_object *find_savings_withdraw(const account_name_type &owner,
+                                                                 uint32_t request_id) const;
 
             const dynamic_global_property_object &get_dynamic_global_properties() const;
 
@@ -252,6 +247,15 @@ namespace steemit {
 
             bool push_block(const signed_block &b, uint32_t skip = skip_nothing);
 
+            /**
+             * Attempts to push the transaction into the pending queue
+             *
+             * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument    . This
+             * will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block si    ze.
+             * Although the transaction will probably not propagate further now, as the peers are likely to have their pe    nding
+             * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pend    ing
+             * queues.
+             */
             void push_transaction(const signed_transaction &trx, uint32_t skip = skip_nothing);
 
             void _maybe_warn_multiple_production(uint32_t height) const;
@@ -263,19 +267,16 @@ namespace steemit {
             ///@throws fc::exception if the proposed transaction fails to apply.
             void push_proposal(const proposal_object &proposal);
 
-            signed_block generate_block(
-                    const fc::time_point_sec when,
-                    const account_name_type &witness_owner,
-                    const fc::ecc::private_key &block_signing_private_key,
-                    uint32_t skip
-            );
+            signed_block generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
+                                        const fc::ecc::private_key &block_signing_private_key, uint32_t skip);
 
-            signed_block _generate_block(
-                    const fc::time_point_sec when,
-                    const account_name_type &witness_owner,
-                    const fc::ecc::private_key &block_signing_private_key
-            );
+            signed_block _generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
+                                         const fc::ecc::private_key &block_signing_private_key);
 
+            /**
+             * Removes the most recent block from the database and
+             * undoes any changes it made.
+             */
             void pop_block();
 
             void clear_pending();
@@ -290,7 +291,8 @@ namespace steemit {
 
             void notify_post_apply_operation(const operation_notification &note);
 
-            inline const void push_virtual_operation(const operation &op, bool force = false); // vops are not needed for low mem. Force will push them on low mem.
+            inline const void push_virtual_operation(const operation &op,
+                                                     bool force = false); // vops are not needed for low mem. Force will push them on low mem.
             void notify_applied_block(const signed_block &block);
 
             void notify_on_pending_transaction(const signed_transaction &tx);
@@ -374,12 +376,34 @@ namespace steemit {
              */
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
-            /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
+            /**
+             *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
+             *  by STEEM and increasing the sbd supply by the specified amount.
+             *  @return the sbd created and deposited to_account, may return STEEM if there is no median feed
+             */
             std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
 
+            /**
+             *  Creates vesting steem values
+             *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+             *  change as the result of the user adding funds
+             *
+             *  V / C  = (V+Vn) / (C+Cn)
+             *
+             *  Simplifies to Vn = (V * Cn ) / C
+             *
+             *  If Cn equals o.amount, then we must solve for Vn to know how many new vesting shares
+             *  the user should receive.
+             *
+             *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
+             *
+             * @param to_account - the account to receive the new vesting shares
+             * @param STEEM - STEEM to be converted to vesting shares
+             */
             asset create_vesting(const account_object &to_account, asset steem);
 
-            void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value, const asset &beneficiary_value);
+            void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value,
+                                     const asset &beneficiary_value);
 
             void adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_bid);
 
@@ -389,6 +413,11 @@ namespace steemit {
 
             void adjust_supply(const asset &delta, bool adjust_vesting = false);
 
+            /**
+             * This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's             rshares2 changes
+             * from old_rshares2 to new_rshares2.  Maintaining invariants that children_rshares2 is the sum of all             descendants' rshares2,
+ * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
+ */
             void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);
@@ -398,10 +427,8 @@ namespace steemit {
             asset get_savings_balance(const account_object &a, const asset_name_type &asset_name) const;
 
             /** this updates the votes for witnesses as a result of account voting proxy changing */
-            void adjust_proxied_witness_votes(const account_object &a,
-                    const std::array<share_type,
-                            STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
-                    int depth = 0);
+            void adjust_proxied_witness_votes(const account_object &a, const std::array<share_type,
+                    STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta, int depth = 0);
 
             /** this updates the votes for all witnesses as a result of account VESTS changing */
             void adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth = 0);
@@ -420,14 +447,35 @@ namespace steemit {
 
             void process_vesting_withdrawals();
 
+            /**
+             *  This method will iterate through all comment_vote_objects and give them
+             *  (max_rewards * weight) / c.total_vote_weight.
+             *
+             *  @returns unclaimed rewards.
+             */
             share_type pay_curators(const comment_object &c, share_type &max_rewards);
 
             share_type cashout_comment_helper(utilities::comment_reward_context &ctx, const comment_object &comment);
 
             void process_comment_cashout();
 
+            /**
+             *  Overall the network has an inflation rate of 102% of virtual steem per year
+             *  90% of inflation is directed to vesting shares
+             *  10% of inflation is directed to subjective proof of work voting
+             *  1% of inflation is directed to liquidity providers
+             *  1% of inflation is directed to block producers
+             *
+             *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
+             *  This method does not pay out witnesses.
+             */
             void process_funds();
 
+            /**
+             *  Iterates over all conversion requests with a conversion date before
+             *  the head block time and then converts them to/from steem/sbd at the
+             *  current median price feed history price times the premium
+             */
             void process_conversions();
 
             void process_savings_withdraws();
@@ -454,9 +502,11 @@ namespace steemit {
 
             share_type pay_reward_funds(share_type reward);
 
-            asset get_payout_extension_cost(const comment_object &input_comment, const fc::time_point_sec &input_time) const;
+            asset get_payout_extension_cost(const comment_object &input_comment,
+                                            const fc::time_point_sec &input_time) const;
 
-            time_point_sec get_payout_extension_time(const comment_object &input_comment, const asset &input_cost) const;
+            time_point_sec get_payout_extension_time(const comment_object &input_comment,
+                                                     const asset &input_cost) const;
 
             void pay_liquidity_reward();
 
@@ -481,7 +531,8 @@ namespace steemit {
 
             void initialize_evaluators();
 
-            void set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry);
+            void set_custom_operation_interpreter(const std::string &id,
+                                                  std::shared_ptr<custom_operation_interpreter> registry);
 
             std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
 
@@ -503,6 +554,14 @@ namespace steemit {
             std::deque<signed_transaction> _popped_tx;
 
             /// @{ @group Market Helpers
+            /**
+             * All margin positions are force closed at the swan price
+             * Collateral received goes into a force-settlement fund
+             * No new margin positions can be created for this asset
+             * No more price feed updates
+             * Force settlement happens without delay at the swan price, deducting from force-settlement fund
+             * No more asset updates may be issued.
+             */
             void globally_settle_asset(const asset_object &bitasset, const price &settle_price);
 
             void cancel_order(const force_settlement_object &order, bool create_virtual_op = true);
@@ -530,13 +589,11 @@ namespace steemit {
              * 3 - both were filled
              */
             ///@{
-            template<typename OrderType>
-            int match(const limit_order_object &bid, const OrderType &ask, const price &match_price);
-
             int match(const limit_order_object &bid, const limit_order_object &ask, const price &trade_price);
 
             /// @return the amount of asset settled
-            asset match(const call_order_object &call, const force_settlement_object &settle, const price &match_price, asset max_settlement);
+            asset match(const call_order_object &call, const force_settlement_object &settle, const price &match_price,
+                        asset max_settlement);
             ///@}
 
             /**
@@ -548,6 +605,18 @@ namespace steemit {
 
             bool fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives);
 
+            /**
+             *  Starting with the least collateralized orders, fill them if their
+             *  call price is above the max(lowest bid,call_limit).
+             *
+             *  This method will return true if it filled a short or limit
+             *
+             *  @param mia - the market issued asset that should be called.
+             *  @param enable_black_swan - when adjusting collateral, triggering a black swan is invalid and will throw
+             *                             if enable_black_swan is not set to true.
+             *
+             *  @return true if a margin call was executed.
+             */
             bool check_call_orders(const asset_object &mia, bool enable_black_swan = true);
 
             // helpers to fill_order
@@ -593,8 +662,7 @@ namespace steemit {
             bool skip_transaction_delta_check = true;
 #endif
 
-            template<typename MultiIndexType>
-            void add_plugin_index() {
+            template<typename MultiIndexType> void add_plugin_index() {
                 _plugin_index_signal.connect([&]() {
                     add_index<MultiIndexType>();
                 });
@@ -628,8 +696,6 @@ namespace steemit {
 
             void create_block_summary(const signed_block &next_block);
 
-            void update_median_witness_props();
-
             void clear_null_account_balance();
 
             void update_global_dynamic_data(const signed_block &b);
@@ -648,10 +714,17 @@ namespace steemit {
 
             string to_pretty_string(const asset &a) const;
 
-            void adjust_sbd_balance(const account_object &a);
-
             void update_expired_feeds();
 
+            /**
+             *  let HB = the highest bid for the collateral  (aka who will pay the most DEBT for the least collateral)
+             *  let SP = current median feed's Settlement Price
+             *  let LC = the least collateralized call order's swan price (debt/collateral)
+             *
+             *  If there is no valid price feed or no bids then there is no black swan.
+             *
+             *  A black swan occurs if MAX(HB,SP) <= LC
+             */
             bool check_for_blackswan(const asset_object &mia, bool enable_black_swan = true);
 
             void process_header_extensions(const signed_block &next_block);
@@ -671,8 +744,7 @@ namespace steemit {
             vector<signed_transaction> _pending_tx;
             fork_database _fork_db;
             fc::time_point_sec _hardfork_times[STEEMIT_NUM_HARDFORKS + 1];
-            protocol::hardfork_version _hardfork_versions[
-                    STEEMIT_NUM_HARDFORKS + 1];
+            protocol::hardfork_version _hardfork_versions[STEEMIT_NUM_HARDFORKS + 1];
 
             block_log _block_log;
 
@@ -695,7 +767,8 @@ namespace steemit {
 
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
-        };
 
+            void adjust_sbd_balance(const account_object &a, account_balance_object &b);
+        };
     }
 }

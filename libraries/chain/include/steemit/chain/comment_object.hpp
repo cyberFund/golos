@@ -100,8 +100,7 @@ namespace steemit {
 
             template<typename Constructor, typename Allocator>
             comment_object(Constructor &&c, allocator <Allocator> a)
-                    : languages(a),
-                      category(a),
+                    : category(a),
                       parent_permlink(a),
                       permlink(a),
                       title(a),
@@ -113,7 +112,6 @@ namespace steemit {
 
             id_type id;
 
-            shared_string languages;
             shared_string category;
             account_name_type parent_author;
             shared_string parent_permlink;
@@ -299,7 +297,7 @@ namespace steemit {
         composite_key_compare <std::less<account_name_type>, strcmp_less, std::less<comment_object::id_type>>
         >
         /// NON_CONSENSUS INDICIES - used by APIs
-#ifndef IS_LOW_MEM
+#ifndef STEEMIT_BUILD_LOW_MEMORY
         ,
         ordered_unique <tag<by_last_update>,
         composite_key<comment_object,
@@ -331,22 +329,19 @@ namespace steemit {
 FC_REFLECT(steemit::chain::comment_object,
         (id)(author)(permlink)
                 (category)(parent_author)(parent_permlink)
-                (languages)(title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
+                (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
                 (depth)(children)(children_rshares2)
                 (net_rshares)(abs_rshares)(vote_rshares)
                 (children_abs_rshares)(cashout_time)(max_cashout_time)
                 (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)
                 (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
-                (beneficiaries)
-)
+                (beneficiaries))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::comment_object, steemit::chain::comment_index)
 
 FC_REFLECT(steemit::chain::comment_vote_object,
-        (id)(voter)(comment)(weight)(rshares)(vote_percent)(last_update)(num_changes)
-)
+        (id)(voter)(comment)(weight)(rshares)(vote_percent)(last_update)(num_changes))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::comment_vote_object, steemit::chain::comment_vote_index)
 
 FC_REFLECT(steemit::chain::category_object,
-        (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update)
-)
+        (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::category_object, steemit::chain::category_index)

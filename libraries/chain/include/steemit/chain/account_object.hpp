@@ -110,7 +110,7 @@ namespace steemit {
             share_type balance = 0; ///< total liquid shares held by this account
 
             protocol::asset get_balance() const {
-                return protocol::asset(balance, asset_name);
+                return {balance, asset_name};
             }
 
             void adjust_balance(const protocol::asset &delta);

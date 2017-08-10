@@ -188,6 +188,14 @@ namespace steemit {
                                 });
                             }
 
+                            auto &stats_index = db.get_index<chain::account_statistics_index>().indices().get<chain::by_name>();
+                            auto stats_itr = stats_index.find(new_account.name);
+                            if (stats_itr == stats_index.end()) {
+                                db.create<chain::account_statistics_object>([&](chain::account_statistics_object& s){
+                                    s.owner = new_account.name;
+                                });
+                            }
+
                             impl->update_key_lookup(db.create<chain::account_authority_object>([&](chain::account_authority_object &auth) {
                                 auth.account = account.name;
                                 auth.owner.weight_threshold = 1;
