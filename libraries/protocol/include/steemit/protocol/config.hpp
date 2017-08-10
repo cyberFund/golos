@@ -86,7 +86,7 @@
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
-#define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
+#define STEEMIT_VOTE_DUST_THRESHOLD             (30000000)
 
 #define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC            (60*60*24*7*4) // Four weeks
 
