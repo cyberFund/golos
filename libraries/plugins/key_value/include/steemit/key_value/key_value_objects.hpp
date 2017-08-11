@@ -18,6 +18,8 @@ namespace steemit {
 
         enum key_value_object_types {
             first_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 8)
+            second_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 9)
+            third_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 10)
         };
 
         class first_key_value_object
@@ -45,6 +47,24 @@ namespace steemit {
             protocol::extensions_type extensions;
         };
 
+        class second_key_value_object_type
+                : public object<second_key_value_object_type, second_key_value_object> {
+        public:
+            template<typename Constructor, typename Allocator>
+            second_key_value_object(Constructor &&c, allocator<Allocator> a) {
+                c(*this);
+            }
+
+            id_type id;
+
+            string system;
+            string address;
+            fc::time_point_sec timestamp;
+            account_name_type owner;
+
+            protocol::extensions_type extensions;
+        };
+
         using namespace boost::multi_index;
 
         struct by_system;
@@ -54,6 +74,7 @@ namespace steemit {
         struct by_block_timestamp;
         struct by_timestamp;
         struct by_owner;
+        struct by_address;
 
         typedef multi_index_container<
                 first_key_value_object,
@@ -69,6 +90,18 @@ namespace steemit {
                 >,
                 allocator<first_key_value_object>
         > key_value_first_index;
+
+        typedef multi_index_container<
+                second_key_value_object,
+                indexed_by<
+                        ordered_unique<tag<by_id>, member<second_key_value_object, second_key_value_object::id_type, &second_key_value_object::id>>,
+                        ordered_non_unique<tag<by_system>, member<first_key_value_object, string, &first_key_value_object::system>>,
+                        ordered_non_unique<tag<by_address>, member<second_key_value_object, string, &second_key_value_object::address>>,
+                        ordered_non_unique<tag<by_timestamp>, member<second_key_value_object, fc::time_point_sec, &second_key_value_object::timestamp>>,
+                        ordered_unique<tag<by_owner>, member<second_key_value_object, account_name_type, &second_key_value_object::owner>>
+                >,
+                allocator<second_key_value_object>
+        > key_value_second_index;
 
     }
 } // steemit::key_value
