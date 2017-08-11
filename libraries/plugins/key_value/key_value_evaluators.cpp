@@ -19,7 +19,7 @@ namespace steemit {
         void update_first_key_value_evaluator::do_apply(const update_first_key_value_operation &o) {
             FC_ASSERT(db.find_account(o.owner));
 
-            db.modify(db.get_account(o.owner), [&](first_key_value_object &c) {
+            db.modify(db.get<first_key_value_object, by_owner>(o.owner), [&](first_key_value_object &c) {
                 c.owner = o.owner;
                 c.block_hash = o.block_hash;
                 c.block_number = o.block_number;
@@ -31,7 +31,7 @@ namespace steemit {
         }
 
         void delete_first_key_value_evaluator::do_apply(const delete_first_key_value_operation &o) {
-            FC_ASSERT(db.find_account(o.owner));
+            FC_ASSERT(db.get<first_key_value_object, by_owner>(o.owner));
 
             db.remove(db.get_account(o.owner));
         }
