@@ -17,8 +17,8 @@ namespace steemit {
 #endif
 
         enum key_value_object_types {
-            first_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 8)
-            second_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 9)
+            first_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 8),
+            second_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 9),
             third_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 10)
         };
 
@@ -47,7 +47,7 @@ namespace steemit {
             protocol::extensions_type extensions;
         };
 
-        class second_key_value_object_type
+        class second_key_value_object
                 : public object<second_key_value_object_type, second_key_value_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -107,5 +107,8 @@ namespace steemit {
 } // steemit::key_value
 
 
-FC_REFLECT(steemit::key_value::key_lookup_object, (id)(key)(account))
-CHAINBASE_SET_INDEX_TYPE(steemit::key_value::key_lookup_object, steemit::key_value::key_lookup_index)
+FC_REFLECT(steemit::key_value::first_key_value_object, (id)(system)(block_number)(block_hash)(ipfs_hash_link)(block_timestamp)(timestamp)(owner))
+CHAINBASE_SET_INDEX_TYPE(steemit::key_value::first_key_value_object, steemit::key_value::key_value_first_index)
+
+FC_REFLECT(steemit::key_value::first_key_value_object, (id)(system)(address)(timestamp)(owner))
+CHAINBASE_SET_INDEX_TYPE(steemit::key_value::second_key_value_object, steemit::key_value::key_value_second_index)
