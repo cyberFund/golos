@@ -1,7 +1,7 @@
-#include <steemit/key_value_store/account_by_key_api.hpp>
+#include <steemit/key_value/key_value_api.hpp>
 
 namespace steemit {
-    namespace key_value_store {
+    namespace key_value {
 
         namespace detail {
 
@@ -45,12 +45,6 @@ namespace steemit {
         }
 
         void account_by_key_api::on_api_startup() {
-        }
-
-        vector<vector<account_name_type>> account_by_key_api::get_key_references(vector<public_key_type> keys) const {
-            return my->_app.chain_database()->with_read_lock([&]() {
-                return my->get_key_references(keys);
-            });
         }
 
     }

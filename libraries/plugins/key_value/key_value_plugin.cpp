@@ -6,7 +6,7 @@
 #include <steemit/application/plugin.hpp>
 
 namespace steemit {
-    namespace key_value_store {
+    namespace key_value {
 
         namespace detail {
 
@@ -102,52 +102,7 @@ namespace steemit {
         void key_value_plugin::plugin_startup() {
             app().register_api_factory<key_value_api>("key_value_api");
         }
-
-        void key_value_plugin::update_key_lookup(const account_authority_object &a) {
-            auto &db = database();
-            flat_set<public_key_type> new_keys;
-
-            // Construct the set of keys in the account's authority
-            for (const auto &item : a.owner.key_auths) {
-                new_keys.insert(item.first);
-            }
-            for (const auto &item : a.active.key_auths) {
-                new_keys.insert(item.first);
-            }
-            for (const auto &item : a.posting.key_auths) {
-                new_keys.insert(item.first);
-            }
-
-            // For each key that needs a lookup
-            for (const auto &key : new_keys) {
-                // If the key was not in the authority, add it to the lookup
-                if (my->cached_keys.find(key) == my->cached_keys.end()) {
-                    auto lookup_itr = db.find<key_lookup_object, by_key>(std::make_tuple(key, a.account));
-
-                    if (lookup_itr == nullptr) {
-                        db.create<key_lookup_object>([&](key_lookup_object &o) {
-                            o.key = key;
-                            o.account = a.account;
-                        });
-                    }
-                } else {
-                    // If the key was already in the auths, remove it from the set so we don't delete it
-                    my->cached_keys.erase(key);
-                }
-            }
-
-            // Loop over the keys that were in authority but are no longer and remove them from the lookup
-            for (const auto &key : my->cached_keys) {
-                auto lookup_itr = db.find<key_lookup_object, by_key>(std::make_tuple(key, a.account));
-
-                if (lookup_itr != nullptr) {
-                    db.remove(*lookup_itr);
-                }
-            }
-
-            my->cached_keys.clear();
-        }
     }
 } // steemit::key_value
 
-STEEMIT_DEFINE_PLUGIN(key_value_store, steemit::key_value_store::key_value_plugin)
+STEEMIT_DEFINE_PLUGIN(key_value, steemit::key_value::key_value_plugin)

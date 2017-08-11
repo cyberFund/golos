@@ -18,9 +18,6 @@ namespace steemit {
             key_value_api(const application::api_context &ctx);
 
             void on_api_startup();
-
-            vector<vector<account_name_type>> get_key_references(vector<public_key_type> keys) const;
-
         private:
             std::shared_ptr<detail::key_value_api_impl> my;
         };
