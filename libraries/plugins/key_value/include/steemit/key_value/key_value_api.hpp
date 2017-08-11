@@ -25,4 +25,4 @@ namespace steemit {
     }
 } // steemit::key_value
 
-FC_API(steemit::key_value::key_value_api, (get_key_references))
+FC_API(steemit::key_value::key_value_api, )
