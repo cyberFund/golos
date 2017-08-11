@@ -23,6 +23,10 @@ namespace steemit {
         class first_key_value_object
                 : public object<first_key_value_object_type, first_key_value_object> {
         public:
+            first_key_value_object() {
+
+            }
+
             template<typename Constructor, typename Allocator>
             first_key_value_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
