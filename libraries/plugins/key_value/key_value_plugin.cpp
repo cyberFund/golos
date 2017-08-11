@@ -12,8 +12,7 @@ namespace steemit {
 
             class key_value_plugin_impl {
             public:
-                key_value_plugin_impl(key_value_plugin &_plugin)
-                        : self(_plugin) {
+                key_value_plugin_impl(key_value_plugin &_plugin) : self(_plugin) {
                 }
 
                 steemit::chain::database &database() {
@@ -23,19 +22,19 @@ namespace steemit {
                 void pre_operation(const operation_notification &op_obj);
 
                 void post_operation(const operation_notification &op_obj);
+
+                key_value_plugin &self;
             };
 
             struct pre_operation_visitor {
-                key_value_plugin &_plugin;
+                key_value_plugin &plugin;
 
-                pre_operation_visitor(key_value_plugin &plugin)
-                        : _plugin(plugin) {
+                pre_operation_visitor(key_value_plugin &input_plugin) : plugin(input_plugin) {
                 }
 
                 typedef void result_type;
 
-                template<typename T>
-                void operator()(const T &) const {
+                template<typename T> void operator()(const T &) const {
                 }
 
                 void operator()(const create_first_key_value_operation &op) const {
@@ -48,16 +47,14 @@ namespace steemit {
             };
 
             struct post_operation_visitor {
-                key_value_plugin &_plugin;
+                key_value_plugin &plugin;
 
-                post_operation_visitor(key_value_plugin &plugin)
-                        : _plugin(plugin) {
+                post_operation_visitor(key_value_plugin &input_plugin) : plugin(input_plugin) {
                 }
 
                 typedef void result_type;
 
-                template<typename T>
-                void operator()(const T &) const {
+                template<typename T> void operator()(const T &) const {
                 }
 
                 void operator()(const create_first_key_value_operation &op) const {
@@ -75,15 +72,11 @@ namespace steemit {
 
         } // detail
 
-        key_value_plugin::key_value_plugin(steemit::application::application *app)
-                : plugin(app),
-                  my(new detail::key_value_plugin_impl(*this)) {
+        key_value_plugin::key_value_plugin(steemit::application::application *app) : plugin(app), my(new detail::key_value_plugin_impl(*this)) {
         }
 
-        void key_value_plugin::plugin_set_program_options(
-                boost::program_options::options_description &cli,
-                boost::program_options::options_description &cfg
-        ) {
+        void key_value_plugin::plugin_set_program_options(boost::program_options::options_description &cli,
+                                                          boost::program_options::options_description &cfg) {
         }
 
         void key_value_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
@@ -91,12 +84,15 @@ namespace steemit {
                 ilog("Initializing key_value plugin");
                 chain::database &db = database();
 
-                db.pre_apply_operation.connect([&](const operation_notification &o) { my->pre_operation(o); });
-                db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
+                db.pre_apply_operation.connect([&](const operation_notification &o) {
+                    my->pre_operation(o);
+                });
+                db.post_apply_operation.connect([&](const operation_notification &o) {
+                    my->post_operation(o);
+                });
 
                 db.add_plugin_index<key_lookup_index>();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void key_value_plugin::plugin_startup() {
