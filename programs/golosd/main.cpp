@@ -5,6 +5,7 @@
 
 #include <fc/interprocess/signals.hpp>
 #include <fc/log/console_appender.hpp>
+#include <fc/log/json_console_appender.hpp>
 #include <fc/log/file_appender.hpp>
 #include <fc/log/logger_config.hpp>
 
@@ -255,10 +256,30 @@ fc::optional<fc::logging_config> load_logging_config_from_ini_file(const fc::pat
             const boost::property_tree::ptree &section_tree = section.second;
 
             const std::string console_appender_section_prefix = "log.console_appender.";
+            const std::string json_console_appender_section_prefix = "log.json_console_appender.";
             const std::string file_appender_section_prefix = "log.file_appender.";
             const std::string logger_section_prefix = "logger.";
 
-            if (boost::starts_with(section_name, console_appender_section_prefix)) {
+            if (boost::starts_with(section_name, json_console_appender_section_prefix)) {
+                std::string console_appender_name = section_name.substr(json_console_appender_section_prefix.length());
+                std::string stream_name = section_tree.get<std::string>("stream");
+
+                // construct a default json console appender config here
+                // stdout/stderr will be taken from ini file, everything else hard-coded here
+                fc::json_console_appender::j_config console_appender_config;
+                console_appender_config.level_colors.emplace_back(
+                        fc::json_console_appender::j_level_color(fc::log_level::debug,
+                                fc::json_console_appender::j_color::green));
+                console_appender_config.level_colors.emplace_back(
+                        fc::json_console_appender::j_level_color(fc::log_level::warn,
+                                fc::json_console_appender::j_color::brown));
+                console_appender_config.level_colors.emplace_back(
+                        fc::json_console_appender::j_level_color(fc::log_level::error,
+                                fc::json_console_appender::j_color::cyan));
+                console_appender_config.stream = fc::variant(stream_name).as<fc::json_console_appender::j_stream::type>();
+                logging_config.appenders.push_back(fc::appender_config(console_appender_name, "json_console", fc::variant(console_appender_config)));
+                found_logging_config = true;
+            } else if (boost::starts_with(section_name, console_appender_section_prefix)) {
                 std::string console_appender_name = section_name.substr(console_appender_section_prefix.length());
                 std::string stream_name = section_tree.get<std::string>("stream");
 
