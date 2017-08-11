@@ -1,26 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #include <steemit/app/api.hpp>
 
 #include <steemit/chain/database_exceptions.hpp>
@@ -151,13 +128,30 @@ namespace steemit {
                 void reset_websocket_server() {
                     try {
 
+                        std::string rpc_endpoint = "0.0.0.0:8090";
+                        if(_options->count("rpc-endpoint")) {
+                          rpc_endpoint   = _options->at("rpc-endpoint").as<string>();
+                        }
 
-                        auto rate_limit_per_second = 1;//_options->at("rate-limit-per-second").as<uint32_t>();
-                        fc::http::leaky_bucket_rules rules(rate_limit_per_second);
+                        uint64_t rate_limit=1;
+                        if( _options->count("rate-limit")) {
+                            rate_limit = _options->at("rate-limit").as<uint64_t>();
+                        }
+
+                        uint64_t per_second=1;
+                        if( _options->count("per-second")) {
+                            per_second = _options->at("per-second").as<uint64_t>();
+                        }
+
+                        std::vector<std::string> white_list;
+                        if( _options->count("white_list")) {
+                            white_list = _options->at("white_list").as<std::vector<std::string>>();
+                        }
+
+                        fc::http::leaky_bucket_rules rules(rate_limit,per_second,std::set<std::string>(white_list.begin(),white_list.end()));
                         _websocket_server = std::make_shared<fc::http::websocket_server>(rules);
 
                         _websocket_server->on_connection([&](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
-                        auto rpc_endpoint ="0.0.0.0:8090"; //_options->at("rpc-endpoint").as<string>();
                         ilog("Configured websocket rpc to listen on ${ip}", ("ip", rpc_endpoint));
                         auto endpoints = resolve_string_to_ip_endpoints(rpc_endpoint);
                         FC_ASSERT(endpoints.size(), "rpc-endpoint ${hostname} did not resolve", ("hostname", rpc_endpoint));
@@ -890,6 +884,9 @@ namespace steemit {
             default_plugins.push_back("witness");
             default_plugins.push_back("account_history");
             default_plugins.push_back("account_by_key");
+            std::vector<std::string>white_list;
+            std::string str_default_white_list="";
+
             std::string str_default_plugins = boost::algorithm::join(default_plugins, " ");
 
             configuration_file_options.add_options()
@@ -901,6 +898,9 @@ namespace steemit {
                     ("shared-file-size", bpo::value<string>()->default_value("8G"), "Size of the shared memory file. Default: 8G")
                     ("rpc-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8090"), "Endpoint for websocket RPC to listen on")
                     ("rpc-tls-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8089"), "Endpoint for TLS websocket RPC to listen on")
+                    ("rate-limit",bpo::value<uint64_t>()->default_value(1),"")
+                    ("per-second",bpo::value<uint64_t>()->default_value(1),"")
+                    ("white_list",bpo::value<vector<string>>()->composing()->default_value(white_list,str_default_white_list),"")
                     ("read-forward-rpc", bpo::value<string>(), "Endpoint to forward write API calls to for a read node")
                     ("server-pem,p", bpo::value<string>()->implicit_value("server.pem"), "The TLS certificate file for this server")
                     ("server-pem-password,P", bpo::value<string>()->implicit_value(""), "Password for this certificate")
@@ -916,6 +916,7 @@ namespace steemit {
                     ("force-validate", "Force validation of all transactions")
                     ("read-only", "Node will not connect to p2p network and can only read from the chain state")
                     ("check-locks", "Check correctness of chainbase locking");
+
             command_line_options.add(_cli_options);
             configuration_file_options.add(_cfg_options);
         }
