@@ -49,6 +49,7 @@
 
 #include <steemit/account_by_key/account_by_key_api.hpp>
 
+#include <steemit/key_value/key_value_plugin.hpp>
 #include <steemit/key_value/key_value_objects.hpp>
 #include <steemit/key_value/key_value_api.hpp>
 
@@ -1004,12 +1005,12 @@ namespace steemit {
                 }
 
                 void use_key_value_api() {
-                    if (_key_value_api.valid()) {
+                    if (_remote_key_value_api.valid()) {
                         return;
                     }
 
                     try {
-                        _key_value_api = _remote_api->get_api_by_name("key_value_api")->as<key_value_api>();
+                        _remote_key_value_api = _remote_api->get_api_by_name("key_value_api")->as<key_value::key_value_api>();
                     } catch (const fc::exception &e) {
                         elog("Couldn't get key value API");
                         throw (e);
