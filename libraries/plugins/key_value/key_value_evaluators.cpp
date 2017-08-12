@@ -31,9 +31,9 @@ namespace steemit {
         }
 
         void delete_first_key_value_evaluator::do_apply(const delete_first_key_value_operation &o) {
-            FC_ASSERT(db.get<first_key_value_object, by_owner>(o.owner));
+            FC_ASSERT(db.find_account(o.owner));
 
-            db.remove(db.get_account(o.owner));
+            db.remove(db.get<first_key_value_object, by_owner>(o.owner));
         }
     }
 }

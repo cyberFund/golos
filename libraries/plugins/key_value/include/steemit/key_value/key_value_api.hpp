@@ -19,17 +19,18 @@ namespace steemit {
 
             void on_api_startup();
 
-            first_key_value_object get_first_object_by_system(const std::string &system);
+            vector <first_key_value_object> get_first_object_by_system(const std::string &system);
 
-            first_key_value_object get_first_object_by_block_number(fc::uint128_t number);
+            vector <first_key_value_object> get_first_object_by_block_number(fc::uint128_t number);
 
-            first_key_value_object get_first_object_by_hash(const std::string &hash);
+            vector <first_key_value_object> get_first_object_by_hash(const std::string &hash);
 
-            first_key_value_object get_first_object_by_ipfs_hash(const std::string &ipfs_hash);
+            vector <first_key_value_object> get_first_object_by_ipfs_hash(const std::string &ipfs_hash);
 
-            first_key_value_object get_first_object_by_account(const std::string &account);
+            vector <first_key_value_object> get_first_object_by_account(const std::string &account);
 
-            first_key_value_object get_first_object_by_time_range(const fc::time_point_sec &start, const fc::time_point_sec &end);
+            vector <first_key_value_object> get_first_object_by_time_range(const fc::time_point_sec &start,
+                                                                           const fc::time_point_sec &end);
         private:
             std::shared_ptr<detail::key_value_api_impl> my;
         };

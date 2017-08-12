@@ -95,7 +95,7 @@ namespace steemit {
                 second_key_value_object,
                 indexed_by<
                         ordered_unique<tag<by_id>, member<second_key_value_object, second_key_value_object::id_type, &second_key_value_object::id>>,
-                        ordered_non_unique<tag<by_system>, member<first_key_value_object, string, &first_key_value_object::system>>,
+                        ordered_non_unique<tag<by_system>, member<second_key_value_object, string, &second_key_value_object::system>>,
                         ordered_non_unique<tag<by_address>, member<second_key_value_object, string, &second_key_value_object::address>>,
                         ordered_non_unique<tag<by_timestamp>, member<second_key_value_object, fc::time_point_sec, &second_key_value_object::timestamp>>,
                         ordered_unique<tag<by_owner>, member<second_key_value_object, account_name_type, &second_key_value_object::owner>>

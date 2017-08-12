@@ -91,7 +91,8 @@ namespace steemit {
                     my->post_operation(o);
                 });
 
-                db.add_plugin_index<key_lookup_index>();
+                db.add_plugin_index<key_value_first_index>();
+                db.add_plugin_index<key_value_second_index>();
             } FC_CAPTURE_AND_RETHROW()
         }
 
