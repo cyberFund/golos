@@ -52,6 +52,7 @@
 #include <steemit/key_value/key_value_plugin.hpp>
 #include <steemit/key_value/key_value_objects.hpp>
 #include <steemit/key_value/key_value_api.hpp>
+#include <steemit/key_value/key_value_operations.hpp>
 
 #ifndef WIN32
 
@@ -625,7 +626,7 @@ namespace steemit {
                         tx.validate();
 
                         return sign_transaction(tx, broadcast);
-                    } FC_CAPTURE_AND_RETHROW((account_name)(creator_account_name)(broadcast));
+                    } FC_CAPTURE_AND_RETHROW();
                 }
 
                 signed_transaction set_voting_proxy(string account_to_modify, string proxy,
