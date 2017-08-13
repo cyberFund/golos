@@ -1010,7 +1010,8 @@ namespace steemit {
                     }
 
                     try {
-                        _remote_key_value_api = _remote_api->get_api_by_name("key_value_api")->as<key_value::key_value_api>();
+                        _remote_key_value_api = _remote_api->get_api_by_name("key_value_api")->as<
+                                key_value::key_value_api>();
                     } catch (const fc::exception &e) {
                         elog("Couldn't get key value API");
                         throw (e);
@@ -1973,6 +1974,7 @@ namespace steemit {
                                                                                fc::time_point_sec block_timestamp,
                                                                                fc::time_point_sec timestamp,
                                                                                account_name_type owner,
+                                                                               bool broadcast) {
             FC_ASSERT(!is_locked());
 
             try {
