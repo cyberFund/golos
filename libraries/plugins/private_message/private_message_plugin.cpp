@@ -146,4 +146,4 @@ namespace steemit {
 
 STEEMIT_DEFINE_PLUGIN(private_message, steemit::private_message::private_message_plugin)
 
-DEFINE_OPERATION_TYPE(steemit::private_message::private_message_plugin_operation)
+STEEMIT_DEFINE_OPERATION_TYPE(steemit::private_message::private_message_plugin_operation)

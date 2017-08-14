@@ -137,7 +137,7 @@ if( options.count(name) ) { \
    { return std::make_shared< plugin_class >( application ); } \
    } }
 
-#define DEFINE_PLUGIN_EVALUATOR(PLUGIN, OPERATION, X)                     \
+#define STEEMIT_DEFINE_PLUGIN_EVALUATOR(PLUGIN, OPERATION, X)                     \
 class X ## _evaluator : public steemit::chain::evaluator< X ## _evaluator, OPERATION > \
 {                                                                           \
    public:                                                                  \

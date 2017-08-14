@@ -39,9 +39,9 @@ namespace steemit {
                 reblog_operation
         > follow_plugin_operation;
 
-        DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, follow);
+        STEEMIT_DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, follow);
 
-        DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, reblog);
+        STEEMIT_DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, reblog);
 
     }
 } // steemit::follow

@@ -59,11 +59,11 @@ namespace steemit {
 
         typedef fc::static_variant<create_first_key_value_operation, update_first_key_value_operation, delete_first_key_value_operation> key_value_plugin_operation;
 
-        DEFINE_PLUGIN_EVALUATOR(key_value_plugin, key_value_plugin_operation, create_first_key_value);
+        STEEMIT_DEFINE_PLUGIN_EVALUATOR(key_value_plugin, key_value_plugin_operation, create_first_key_value);
 
-        DEFINE_PLUGIN_EVALUATOR(key_value_plugin, key_value_plugin_operation, update_first_key_value);
+        STEEMIT_DEFINE_PLUGIN_EVALUATOR(key_value_plugin, key_value_plugin_operation, update_first_key_value);
 
-        DEFINE_PLUGIN_EVALUATOR(key_value_plugin, key_value_plugin_operation, delete_first_key_value);
+        STEEMIT_DEFINE_PLUGIN_EVALUATOR(key_value_plugin, key_value_plugin_operation, delete_first_key_value);
     }
 }
 

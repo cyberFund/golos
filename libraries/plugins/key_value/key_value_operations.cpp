@@ -1,5 +1,7 @@
 #include <steemit/key_value/key_value_operations.hpp>
 
+#include <steemit/protocol/operations/operation_utilities_impl.hpp>
+
 namespace steemit {
     namespace key_value {
         inline void validate_account_name(const string &name) {
@@ -19,3 +21,5 @@ namespace steemit {
         }
     }
 }
+
+STEEMIT_DEFINE_OPERATION_TYPE(steemit::key_value::key_value_plugin_operation)

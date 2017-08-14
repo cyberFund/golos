@@ -16,4 +16,4 @@ namespace steemit {
     }
 } //steemit::follow
 
-DEFINE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)
+STEEMIT_DEFINE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)

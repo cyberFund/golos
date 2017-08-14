@@ -44,8 +44,8 @@ class test_plugin : public plugin
       std::shared_ptr< generic_custom_operation_interpreter< test_op > > _evaluator_registry;
 };
 
-DEFINE_PLUGIN_EVALUATOR( test_plugin, test_a_operation, test_a );
-DEFINE_PLUGIN_EVALUATOR( test_plugin, test_b_operation, test_b );
+STEEMIT_DEFINE_PLUGIN_EVALUATOR( test_plugin, test_a_operation, test_a );
+STEEMIT_DEFINE_PLUGIN_EVALUATOR( test_plugin, test_b_operation, test_b );
 
 void test_a_evaluator::do_apply( const test_a_operation& o )
 {
@@ -86,7 +86,7 @@ FC_REFLECT( steemit::plugin_tests::test_b_operation, (account) )
 
 STEEMIT_DECLARE_OPERATION_TYPE( steemit::plugin_tests::test_op );
 FC_REFLECT_TYPENAME( steemit::plugin_tests::test_op );
-DEFINE_OPERATION_TYPE( steemit::plugin_tests::test_op );
+STEEMIT_DEFINE_OPERATION_TYPE( steemit::plugin_tests::test_op );
 */
 
 BOOST_FIXTURE_TEST_SUITE(plugin_ops, clean_database_fixture);

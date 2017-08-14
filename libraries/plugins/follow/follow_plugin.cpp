@@ -385,4 +385,4 @@ namespace steemit {
 
 STEEMIT_DEFINE_PLUGIN(follow, steemit::follow::follow_plugin)
 
-//DEFINE_OPERATION_TYPE( steemit::follow::follow_plugin_operation )
+//STEEMIT_DEFINE_OPERATION_TYPE( steemit::follow::follow_plugin_operation )

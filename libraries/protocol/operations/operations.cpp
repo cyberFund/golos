@@ -50,4 +50,4 @@ namespace steemit {
     }
 } // steemit::protocol
 
-DEFINE_OPERATION_TYPE(steemit::protocol::operation)
+STEEMIT_DEFINE_OPERATION_TYPE(steemit::protocol::operation)
