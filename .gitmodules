@@ -7,3 +7,6 @@
 [submodule "libraries/libcds"]
 	path = libraries/libcds
 	url = https://github.com/khizmax/libcds.git
+[submodule "libraries/cld2"]
+	path = libraries/cld2
+	url = https://github.com/CLD2Owners/cld2.git
