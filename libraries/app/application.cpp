@@ -148,7 +148,7 @@ namespace steemit {
                             white_list = _options->at("white_list").as<std::vector<std::string>>();
                         }
 
-                        fc::http::leaky_bucket_rules rules(rate_limit,per_second,std::set<std::string>(white_list.begin(),white_list.end()));
+                        fc::http::leaky_bucket_rules rules(rate_limit,per_second);
                         _websocket_server = std::make_shared<fc::http::websocket_server>(rules);
 
                         _websocket_server->on_connection([&](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
@@ -163,26 +163,19 @@ namespace steemit {
 
                 void reset_websocket_tls_server() {
                     try {
-                        if (!_options->count("rpc-tls-endpoint")) {
-                            return;
-                        }
-                        if (!_options->count("server-pem")) {
-                            wlog("Please specify a server-pem to use rpc-tls-endpoint");
-                            return;
-                        }
 
-                        string password = _options->count("server-pem-password")
-                                          ? _options->at("server-pem-password").as<string>()
-                                          : "";
-                        _websocket_tls_server = std::make_shared<fc::http::websocket_tls_server>(_options->at("server-pem").as<string>(), password);
-
-                        _websocket_tls_server->on_connection([this](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
-                        auto rpc_tls_endpoint = _options->at("rpc-tls-endpoint").as<string>();
-                        ilog("Configured websocket TLS rpc to listen on ${ip}", ("ip", rpc_tls_endpoint));
-                        auto endpoints = resolve_string_to_ip_endpoints(rpc_tls_endpoint);
-                        FC_ASSERT(endpoints.size(), "rpc-tls-endpoint ${hostname} did not resolve", ("hostname", rpc_tls_endpoint));
-                        _websocket_tls_server->listen(endpoints[0]);
-                        _websocket_tls_server->start_accept();
+                        std::string rpc_endpoint = "0.0.0.0:8091";
+                        if(_options->count("rpc-endpoint")) {
+                            rpc_endpoint   = _options->at("rpc-endpoint").as<string>();
+                        }
+                        fc::http::leaky_bucket_rules rules;
+                        _websocket_no_limit_server = std::make_shared<fc::http::websocket_server>(rules);
+                        _websocket_no_limit_server->on_connection([&](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
+                        ilog("Configured websocket rpc to listen on ${ip}", ("ip", rpc_endpoint));
+                        auto endpoints = resolve_string_to_ip_endpoints(rpc_endpoint);
+                        FC_ASSERT(endpoints.size(), "rpc-endpoint ${hostname} did not resolve", ("hostname", rpc_endpoint));
+                        _websocket_no_limit_server->listen(endpoints[0]);
+                        _websocket_no_limit_server->start_accept();
                     } FC_CAPTURE_AND_RETHROW()
                 }
 
@@ -838,7 +831,7 @@ namespace steemit {
                 std::shared_ptr<steemit::chain::database> _chain_db;
                 std::shared_ptr<graphene::net::node> _p2p_network;
                 std::shared_ptr<fc::http::websocket_server> _websocket_server;
-                std::shared_ptr<fc::http::websocket_tls_server> _websocket_tls_server;
+                std::shared_ptr<fc::http::websocket_server> _websocket_no_limit_server;
 
                 std::map<string, std::shared_ptr<abstract_plugin>> _plugins_available;
                 std::map<string, std::shared_ptr<abstract_plugin>> _plugins_enabled;
