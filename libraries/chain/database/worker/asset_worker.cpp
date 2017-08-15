@@ -39,9 +39,7 @@ namespace steemit {
                         }
                     });
                 }
-
             );
-
         }
     }
 }

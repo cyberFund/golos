@@ -149,8 +149,7 @@ namespace steemit {
             fc::ecc::private_key init_account_priv_key;
             string debug_key = graphene::utilities::key_to_wif(init_account_priv_key);
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
-            uint32_t default_skip = 0 | database::skip_undo_history_check |
-                                    database::skip_authority_check;
+            uint32_t default_skip = 0 | skip_undo_history_check | skip_authority_check;
 
             std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> db_plugin;
 

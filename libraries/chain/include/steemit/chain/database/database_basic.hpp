@@ -31,7 +31,7 @@ namespace steemit {
             struct comment_reward_context;
         }
 
-        enum class validation_steps {
+        enum validation_steps {
             skip_nothing = 0, skip_witness_signature = 1 << 0,  ///< used while reindexing
             skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
             skip_transaction_dupe_check = 1 << 2,  ///< used while reindexing
