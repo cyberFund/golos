@@ -21,9 +21,10 @@
 namespace steemit {
     namespace chain {
 
-        template<typename... Policies> class database_policy : public database_basic, public Policies ... {
+        template<typename... Policies>
+        class database_policy : public database_basic, public Policies ... {
         public:
-            database_policy() : database_basic(), Policies(*this, 1)... {
+            database_policy() : database_basic(), Policies(*this)... {
 
 
             }
@@ -32,7 +33,16 @@ namespace steemit {
 
         };
 
-        using database_tag = database_policy<account_policy, asset_policy, behaviour_based_policy, comment_policy,
-                order_policy, reward_policy, withdrawal_policy, witness_policy, witness_schedule_policy>;
+        using database_tag = database_policy<
+                account_policy,
+                asset_policy,
+                behaviour_based_policy,
+                comment_policy,
+                order_policy,
+                reward_policy,
+                withdrawal_policy,
+                witness_policy,
+                witness_schedule_policy
+        >;
     }
 }

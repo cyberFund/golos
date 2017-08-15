@@ -34,9 +34,7 @@ namespace steemit {
                 return *eval;
             }
 
-            std::vector<std::unique_ptr<evaluator < OperationType>>>
-            _op_evaluators;
+            std::vector<std::unique_ptr<evaluator <OperationType>>> _op_evaluators;
         };
-
     }
 }

@@ -25,7 +25,7 @@ namespace steemit {
 
             void apply_operation(const operation &op);
 
-            evaluator_registry<operation> evaluator_registry_;
+            evaluator_registry<operation> registry;
         };
 
 
