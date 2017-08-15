@@ -20,8 +20,4 @@ namespace steemit {
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::immutable_chain_parameters,
-        (min_committee_member_count)
-                (min_witness_count)
-                (num_special_accounts)
-                (num_special_assets)
-)
+           (min_committee_member_count)(min_witness_count)(num_special_accounts)(num_special_assets))

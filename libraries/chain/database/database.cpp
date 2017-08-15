@@ -143,10 +143,10 @@ namespace steemit {
         }
 
         void database::initialize_workers() {
-            dynamic_extension_worker().add(new account_worker(*this) );
-            dynamic_extension_worker().add(new asset_worker(*this) );
-            dynamic_extension_worker().add(new behaviour_based_worker(*this) );
-            dynamic_extension_worker().add(new reward_worker(*this) );
+            dynamic_extension_worker().add(new account_worker(*this));
+            dynamic_extension_worker().add(new asset_worker(*this));
+            dynamic_extension_worker().add(new behaviour_based_worker(*this));
+            dynamic_extension_worker().add(new reward_worker(*this));
             dynamic_extension_worker().add(new witness_worker(*this));
         }
 

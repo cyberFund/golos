@@ -6,14 +6,16 @@
 namespace steemit {
     namespace chain {
 
-        class vote_evaluator : public evaluator_impl<database_tag,vote_evaluator> {
+        class vote_evaluator : public evaluator_impl<database_tag, vote_evaluator> {
         public:
             typedef protocol::vote_operation operation_type;
+
             template<typename DataBase>
-            vote_evaluator(DataBase &db) : evaluator_impl<database_tag,vote_evaluator>(db) {
+            vote_evaluator(DataBase &db) : evaluator_impl<database_tag, vote_evaluator>(db) {
             }
 
             void do_apply(const protocol::vote_operation &o);
         };
-    }}
+    }
+}
 #endif //GOLOS_VOTE_EVALUATOR_HPP

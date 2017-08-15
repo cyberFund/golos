@@ -26,17 +26,17 @@ namespace steemit {
             _head = item;
         }
 
-/**
- * Pushes the block into the fork database and caches it if it doesn't link
- *
- */
+        /**
+         * Pushes the block into the fork database and caches it if it doesn't link
+         *
+         */
         shared_ptr<fork_item> fork_database::push_block(const signed_block &b) {
             auto item = std::make_shared<fork_item>(b);
             try {
                 _push_block(item);
-            }
-            catch (const unlinkable_block_exception &e) {
-                wlog("Pushing block to fork database that failed to link: ${id}, ${num}", ("id", b.id())("num", b.block_num()));
+            } catch (const unlinkable_block_exception &e) {
+                wlog("Pushing block to fork database that failed to link: ${id}, ${num}",
+                     ("id", b.id())("num", b.block_num()));
                 wlog("Head: ${num}, ${id}", ("num", _head->data.block_num())("id", _head->data.id()));
                 throw;
                 _unlinked_index.insert(item);
@@ -47,17 +47,15 @@ namespace steemit {
         void fork_database::_push_block(const item_ptr &item) {
             if (_head) // make sure the block is within the range that we are caching
             {
-                FC_ASSERT(item->num > std::max<int64_t>(0,
-                        int64_t(_head->num) - (_max_size)),
-                        "attempting to push a block that is too old",
-                        ("item->num", item->num)("head", _head->num)("max_size", _max_size));
+                FC_ASSERT(item->num > std::max<int64_t>(0, int64_t(_head->num) - (_max_size)),
+                          "attempting to push a block that is too old",
+                          ("item->num", item->num)("head", _head->num)("max_size", _max_size));
             }
 
             if (_head && item->previous_id() != block_id_type()) {
                 auto &index = _index.get<block_id>();
                 auto itr = index.find(item->previous_id());
-                STEEMIT_ASSERT(itr !=
-                               index.end(), unlinkable_block_exception, "block does not link to known chain");
+                STEEMIT_ASSERT(itr != index.end(), unlinkable_block_exception, "block does not link to known chain");
                 FC_ASSERT(!(*itr)->invalid);
                 item->prev = *itr;
             }
@@ -68,12 +66,12 @@ namespace steemit {
             }
         }
 
-/**
- *  Iterate through the unlinked cache and insert anything that
- *  links to the newly inserted item.  This will start a recursive
- *  set of calls performing a depth-first insertion of pending blocks as
- *  _push_next(..) calls _push_block(...) which will in turn call _push_next
- */
+        /**
+         *  Iterate through the unlinked cache and insert anything that
+         *  links to the newly inserted item.  This will start a recursive
+         *  set of calls performing a depth-first insertion of pending blocks as
+         *  _push_next(..) calls _push_block(...) which will in turn call _push_next
+         */
         void fork_database::_push_next(const item_ptr &new_item) {
             auto &prev_idx = _unlinked_index.get<by_previous>();
 
@@ -97,8 +95,7 @@ namespace steemit {
                 auto &by_num_idx = _index.get<block_num>();
                 auto itr = by_num_idx.begin();
                 while (itr != by_num_idx.end()) {
-                    if ((*itr)->num <
-                        std::max(int64_t(0), int64_t(_head->num) - _max_size)) {
+                    if ((*itr)->num < std::max(int64_t(0), int64_t(_head->num) - _max_size)) {
                         by_num_idx.erase(itr);
                     } else {
                         break;
@@ -110,8 +107,7 @@ namespace steemit {
                 auto &by_num_idx = _unlinked_index.get<block_num>();
                 auto itr = by_num_idx.begin();
                 while (itr != by_num_idx.end()) {
-                    if ((*itr)->num <
-                        std::max(int64_t(0), int64_t(_head->num) - _max_size)) {
+                    if ((*itr)->num < std::max(int64_t(0), int64_t(_head->num) - _max_size)) {
                         by_num_idx.erase(itr);
                     } else {
                         break;
@@ -159,12 +155,11 @@ namespace steemit {
                     ++itr;
                 }
                 return result;
-            }
-            FC_LOG_AND_RETHROW()
+            } FC_LOG_AND_RETHROW()
         }
 
-        pair<fork_database::branch_type, fork_database::branch_type>
-        fork_database::fetch_branch_from(block_id_type first, block_id_type second) const {
+        pair<fork_database::branch_type, fork_database::branch_type> fork_database::fetch_branch_from(
+                block_id_type first, block_id_type second) const {
             try {
                 // This function gets a branch (i.e. vector<fork_item>) leading
                 // back to the most recent common ancestor.
@@ -178,20 +173,17 @@ namespace steemit {
                 auto second_branch = *second_branch_itr;
 
 
-                while (first_branch->data.block_num() >
-                       second_branch->data.block_num()) {
+                while (first_branch->data.block_num() > second_branch->data.block_num()) {
                     result.first.push_back(first_branch);
                     first_branch = first_branch->prev.lock();
                     FC_ASSERT(first_branch);
                 }
-                while (second_branch->data.block_num() >
-                       first_branch->data.block_num()) {
+                while (second_branch->data.block_num() > first_branch->data.block_num()) {
                     result.second.push_back(second_branch);
                     second_branch = second_branch->prev.lock();
                     FC_ASSERT(second_branch);
                 }
-                while (first_branch->data.previous !=
-                       second_branch->data.previous) {
+                while (first_branch->data.previous != second_branch->data.previous) {
                     result.first.push_back(first_branch);
                     result.second.push_back(second_branch);
                     first_branch = first_branch->prev.lock();

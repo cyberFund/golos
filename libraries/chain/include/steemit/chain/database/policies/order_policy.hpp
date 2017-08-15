@@ -27,8 +27,8 @@ namespace steemit {
 
             void cancel_order(const limit_order_object &order);
 
-            int
-            match(const limit_order_object &new_order, const limit_order_object &old_order, const price &match_price);
+            int match(const limit_order_object &new_order, const limit_order_object &old_order,
+                      const price &match_price);
 
             const limit_order_object &get_limit_order(const account_name_type &name, uint32_t orderid) const;
 

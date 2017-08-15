@@ -66,32 +66,43 @@ namespace steemit {
 
         FC_DECLARE_EXCEPTION(chain_exception, 4000000, "blockchain exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(database_query_exception, steemit::chain::chain_exception, 4010000, "database query exception")
+        FC_DECLARE_DERIVED_EXCEPTION(database_query_exception, steemit::chain::chain_exception, 4010000,
+                                     "database query exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(block_validate_exception, steemit::chain::chain_exception, 4020000, "block validation exception")
+        FC_DECLARE_DERIVED_EXCEPTION(block_validate_exception, steemit::chain::chain_exception, 4020000,
+                                     "block validation exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(transaction_exception, steemit::chain::chain_exception, 4030000, "transaction validation exception")
+        FC_DECLARE_DERIVED_EXCEPTION(transaction_exception, steemit::chain::chain_exception, 4030000,
+                                     "transaction validation exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(operation_validate_exception, steemit::chain::chain_exception, 4040000, "operation validation exception")
+        FC_DECLARE_DERIVED_EXCEPTION(operation_validate_exception, steemit::chain::chain_exception, 4040000,
+                                     "operation validation exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(operation_evaluate_exception, steemit::chain::chain_exception, 4050000, "operation evaluation exception")
+        FC_DECLARE_DERIVED_EXCEPTION(operation_evaluate_exception, steemit::chain::chain_exception, 4050000,
+                                     "operation evaluation exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(utility_exception, steemit::chain::chain_exception, 4060000, "utility method exception")
+        FC_DECLARE_DERIVED_EXCEPTION(utility_exception, steemit::chain::chain_exception, 4060000,
+                                     "utility method exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(undo_database_exception, steemit::chain::chain_exception, 4070000, "undo database exception")
+        FC_DECLARE_DERIVED_EXCEPTION(undo_database_exception, steemit::chain::chain_exception, 4070000,
+                                     "undo database exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(unlinkable_block_exception, steemit::chain::chain_exception, 4080000, "unlinkable block")
+        FC_DECLARE_DERIVED_EXCEPTION(unlinkable_block_exception, steemit::chain::chain_exception, 4080000,
+                                     "unlinkable block")
 
-        FC_DECLARE_DERIVED_EXCEPTION(unknown_hardfork_exception, steemit::chain::chain_exception, 4090000, "chain attempted to apply unknown hardfork")
+        FC_DECLARE_DERIVED_EXCEPTION(unknown_hardfork_exception, steemit::chain::chain_exception, 4090000,
+                                     "chain attempted to apply unknown hardfork")
 
         FC_DECLARE_DERIVED_EXCEPTION(plugin_exception, steemit::chain::chain_exception, 4100000, "plugin exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(block_log_exception, steemit::chain::chain_exception, 4110000, "block log exception")
+        FC_DECLARE_DERIVED_EXCEPTION(block_log_exception, steemit::chain::chain_exception, 4110000,
+                                     "block log exception")
 
-        FC_DECLARE_DERIVED_EXCEPTION(pop_empty_chain, steemit::chain::undo_database_exception, 4070001, "there are no blocks to pop")
+        FC_DECLARE_DERIVED_EXCEPTION(pop_empty_chain, steemit::chain::undo_database_exception, 4070001,
+                                     "there are no blocks to pop")
 
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(transfer);
-//   STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
+        //   STEEMIT_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
 
         STEEMIT_DECLARE_OP_BASE_EXCEPTIONS(account_create);
 

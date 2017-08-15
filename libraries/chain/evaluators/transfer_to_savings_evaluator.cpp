@@ -1,4 +1,5 @@
 #include <steemit/chain/evaluators/transfer_to_savings_evaluator.hpp>
+
 void steemit::chain::transfer_to_savings_evaluator::do_apply(const transfer_to_savings_operation &op) {
 
     const auto &from = this->_db.get_account(op.from);

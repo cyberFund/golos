@@ -24,12 +24,10 @@ namespace steemit {
 
         protocol::asset behaviour_based_policy::get_payout_extension_cost(const comment_object &input_comment,
                                                                           const fc::time_point_sec &input_time) const {
-            FC_ASSERT(
-                    (input_time - fc::time_point::now()).to_seconds() /
-                    (3600 * 24) >
-                    0, "Extension time should be equal or greater than a day");
-            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() <
-                      STEEMIT_CASHOUT_WINDOW_SECONDS, "Extension time should be less or equal than a week");
+            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() / (3600 * 24) > 0,
+                      "Extension time should be equal or greater than a day");
+            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() < STEEMIT_CASHOUT_WINDOW_SECONDS,
+                      "Extension time should be less or equal than a week");
 
             return asset(((input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
                           (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL));
@@ -58,9 +56,7 @@ namespace steemit {
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(references, wso.current_shuffled_witnesses[i]);
-                    if (wit.last_sbd_exchange_update <
-                        now + STEEMIT_MAX_FEED_AGE &&
-                        !wit.sbd_exchange_rate.is_null()) {
+                    if (wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE && !wit.sbd_exchange_rate.is_null()) {
                         feeds.push_back(wit.sbd_exchange_rate);
                     }
                 }
@@ -76,8 +72,7 @@ namespace steemit {
                             steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
                         }
 
-                        if (fho.price_history.size() >
-                            steem_feed_history_window) {
+                        if (fho.price_history.size() > steem_feed_history_window) {
                             fho.price_history.pop_front();
                         }
 
@@ -97,8 +92,7 @@ namespace steemit {
 #endif
                             if (references.has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
                                 const auto &gpo = references.get_dynamic_global_properties();
-                                price min_price(asset(9 *
-                                                      gpo.current_sbd_supply.amount, SBD_SYMBOL),
+                                price min_price(asset(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL),
                                                 gpo.current_supply); // This price limits SBD to 10% market cap
 
                                 if (min_price > fho.current_median_history) {

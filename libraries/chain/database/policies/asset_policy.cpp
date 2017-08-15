@@ -19,7 +19,8 @@ namespace steemit {
         void asset_policy::process_conversions() {
 
             auto now = references.head_block_time();
-            const auto &request_by_date = references.get_index<convert_request_index>().indices().get<by_conversion_date>();
+            const auto &request_by_date = references.get_index<convert_request_index>().indices().get<
+                    by_conversion_date>();
             auto itr = request_by_date.begin();
 
             const auto &fhistory = references.get_feed_history();

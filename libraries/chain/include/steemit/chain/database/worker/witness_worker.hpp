@@ -2,7 +2,7 @@
 #define GOLOS_WITNESS_WORKER_HPP
 
 #include <steemit/chain/database/database_worker.hpp>
-#include <steemit/chain/database/database_police.hpp>
+#include <steemit/chain/database/database_policy.hpp>
 
 namespace steemit {
     namespace chain {

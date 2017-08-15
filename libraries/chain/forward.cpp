@@ -72,9 +72,9 @@ namespace steemit {
                     case '-':
                         break;
                     default:
-                        FC_ASSERT(false, "Invalid permlink character: ${s}", ("s",
-                                std::string() + c));
+                        FC_ASSERT(false, "Invalid permlink character: ${s}", ("s", std::string() + c));
                 }
             }
         }
-    }}
+    }
+}

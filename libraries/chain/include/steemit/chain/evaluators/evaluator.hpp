@@ -6,15 +6,14 @@
 namespace steemit {
     namespace chain {
 
-        template<typename OperationType=steemit::protocol::operation>
-        class evaluator {
+        template<typename OperationType=steemit::protocol::operation> class evaluator {
         public:
             virtual void apply(const OperationType &op) = 0;
 
             virtual int get_type() const = 0;
         };
 
-        template<typename DataBase,typename EvaluatorType, typename OperationType=steemit::protocol::operation>
+        template<typename DataBase, typename EvaluatorType, typename OperationType=steemit::protocol::operation>
         class evaluator_impl : public evaluator<OperationType> {
         public:
             typedef OperationType operation_sv_type;

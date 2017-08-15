@@ -20,12 +20,11 @@ namespace steemit {
 
                 abstract_worker_t &operator=(const abstract_worker_t &) = delete;
 
-                explicit abstract_worker_t(const std::string& name);
+                explicit abstract_worker_t(const std::string &name);
 
                 const std::string &name() const;
 
-                template<typename ...Args>
-                boost::any invoke(const std::string &command, Args... args) {
+                template<typename ...Args> boost::any invoke(const std::string &command, Args... args) {
                     std::vector<boost::any> tmp = {(args)...};
                     return invoke_raw(command, tmp);
                 }
@@ -39,20 +38,19 @@ namespace steemit {
                 std::string name_;
             };
 
-            template<typename T>
-            inline T cast(boost::any r) {
+            template<typename T> inline T cast(boost::any r) {
                 return boost::any_cast<T>(r);
             }
 
             class worker_t : public abstract_worker_t {
             public:
 
-                explicit worker_t(const std::string& name);
+                explicit worker_t(const std::string &name);
+
             protected:
                 virtual ~worker_t() = default;
 
-                template<int N, typename F>
-                void add(const char (&key)[N], F &&f) {
+                template<int N, typename F> void add(const char (&key)[N], F &&f) {
                     dispather_.emplace(key, f);
                 };
 

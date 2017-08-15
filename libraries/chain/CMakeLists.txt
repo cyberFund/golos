@@ -43,7 +43,7 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/database/database.hpp
         include/steemit/chain/database/database_basic.hpp
         include/steemit/chain/database/database_exceptions.hpp
-        include/steemit/chain/database/database_police.hpp
+     include/steemit/chain/database/database_policy.hpp
         include/steemit/chain/database/database_worker.hpp
 
         include/steemit/chain/dynamic_extension/smart_worker.hpp

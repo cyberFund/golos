@@ -6,17 +6,17 @@
 namespace steemit {
     namespace chain {
 
-        template<typename DataBase>
-        class database_worker_t : public  dynamic_extension::worker_t {
+        template<typename DataBase> class database_worker_t : public dynamic_extension::worker_t {
         public:
 
-            database_worker_t(DataBase& db,const std::string& name):worker_t(name),database(db){}
+            database_worker_t(DataBase &db, const std::string &name) : worker_t(name), database(db) {
+            }
 
             virtual ~database_worker_t() = default;
 
         protected:
 
-            DataBase& database;
+            DataBase &database;
         };
 
     }

@@ -22,8 +22,7 @@ namespace steemit {
             shared_authority() = delete;
 
         public:
-            template<typename Allocator>
-            shared_authority(const authority &a, const Allocator &alloc) :
+            template<typename Allocator> shared_authority(const authority &a, const Allocator &alloc) :
                     account_auths(account_pair_allocator_type(alloc.get_segment_manager())),
                     key_auths(key_pair_allocator_type(alloc.get_segment_manager())) {
                 account_auths.reserve(a.account_auths.size());
@@ -37,13 +36,11 @@ namespace steemit {
                 weight_threshold = a.weight_threshold;
             }
 
-            shared_authority(const shared_authority &cpy) :
-                    weight_threshold(cpy.weight_threshold),
-                    account_auths(cpy.account_auths), key_auths(cpy.key_auths) {
+            shared_authority(const shared_authority &cpy) : weight_threshold(cpy.weight_threshold),
+                                                            account_auths(cpy.account_auths), key_auths(cpy.key_auths) {
             }
 
-            template<typename Allocator>
-            shared_authority(const Allocator &alloc) :
+            template<typename Allocator> shared_authority(const Allocator &alloc) :
                     account_auths(account_pair_allocator_type(alloc.get_segment_manager())),
                     key_auths(key_pair_allocator_type(alloc.get_segment_manager())) {
             }
@@ -65,18 +62,16 @@ namespace steemit {
 
             void add_authority(const account_name_type &k, weight_type w);
 
-            template<typename AuthType>
-            void add_authorities(AuthType k, weight_type w) {
+            template<typename AuthType> void add_authorities(AuthType k, weight_type w) {
                 add_authority(k, w);
             }
 
-            template<typename AuthType, class ...Args>
-            void add_authorities(AuthType k, weight_type w, Args... auths) {
+            template<typename AuthType, class ...Args> void add_authorities(AuthType k, weight_type w, Args... auths) {
                 add_authority(k, w);
                 add_authorities(auths...);
             }
 
-            vector<public_key_type> get_keys() const;
+            vector <public_key_type> get_keys() const;
 
             bool is_impossible() const;
 
@@ -88,11 +83,15 @@ namespace steemit {
 
             typedef bip::allocator<shared_authority, bip::managed_mapped_file::segment_manager> allocator_type;
 
-            typedef bip::allocator<std::pair<account_name_type, weight_type>, bip::managed_mapped_file::segment_manager> account_pair_allocator_type;
-            typedef bip::allocator<std::pair<public_key_type, weight_type>, bip::managed_mapped_file::segment_manager> key_pair_allocator_type;
+            typedef bip::allocator<std::pair<account_name_type, weight_type>,
+                    bip::managed_mapped_file::segment_manager> account_pair_allocator_type;
+            typedef bip::allocator<std::pair<public_key_type, weight_type>,
+                    bip::managed_mapped_file::segment_manager> key_pair_allocator_type;
 
-            typedef bip::flat_map<account_name_type, weight_type, protocol::string_less, account_pair_allocator_type> account_authority_map;
-            typedef bip::flat_map<public_key_type, weight_type, std::less<public_key_type>, key_pair_allocator_type> key_authority_map;
+            typedef bip::flat_map<account_name_type, weight_type, protocol::string_less,
+                    account_pair_allocator_type> account_authority_map;
+            typedef bip::flat_map<public_key_type, weight_type, std::less<public_key_type>,
+                    key_pair_allocator_type> key_authority_map;
 
             uint32_t weight_threshold = 0;
             account_authority_map account_auths;

@@ -6,7 +6,7 @@ namespace steemit {
         namespace dynamic_extension {
 
             smart_worker::smart_worker(abstract_worker_t *ptr) : ptr(ptr) {
-                    assert(ptr!= nullptr);
+                assert(ptr != nullptr);
             }
 
             view_t smart_worker::view() const {

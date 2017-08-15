@@ -51,8 +51,10 @@ namespace steemit {
                         auto sbd = asset(to_sbd, STEEM_SYMBOL) * median_price;
 
                         database.dynamic_extension_worker().get("account")->invoke("adjust_balance", to_account, sbd);
-                        database.dynamic_extension_worker().get("account")->invoke("adjust_balance", to_account, asset(to_steem, STEEM_SYMBOL));
-                        database.dynamic_extension_worker().get("asset")->invoke("adjust_supply", asset(-to_sbd, STEEM_SYMBOL));
+                        database.dynamic_extension_worker().get("account")->invoke("adjust_balance", to_account,
+                                                                                   asset(to_steem, STEEM_SYMBOL));
+                        database.dynamic_extension_worker().get("asset")->invoke("adjust_supply",
+                                                                                 asset(-to_sbd, STEEM_SYMBOL));
                         database.dynamic_extension_worker().get("asset")->invoke("adjust_supply", sbd);
                         assets.first = sbd;
                         assets.second = to_steem;
@@ -60,8 +62,7 @@ namespace steemit {
                         database.dynamic_extension_worker().get("account")->invoke("adjust_balance", to_account, steem);
                         assets.second = steem;
                     }
-                }
-                FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
+                } FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
 
                 return assets;
             });

@@ -6,16 +6,18 @@
 namespace steemit {
     namespace chain {
 
-        class limit_order_create2_evaluator : public evaluator_impl<database_tag,limit_order_create2_evaluator> {
+        class limit_order_create2_evaluator : public evaluator_impl<database_tag, limit_order_create2_evaluator> {
         public:
             typedef protocol::limit_order_create2_operation operation_type;
 
             template<typename DataBase>
-            limit_order_create2_evaluator(DataBase &db) : evaluator_impl<database_tag,limit_order_create2_evaluator>(db) {
+            limit_order_create2_evaluator(DataBase &db) : evaluator_impl<database_tag, limit_order_create2_evaluator>(
+                    db) {
             }
 
             void do_apply(const limit_order_create2_operation &o);
 
         };
-    }}
+    }
+}
 #endif //GOLOS_LIMIT_ORDER_CREATE2_EVALUATOR_HPP

@@ -9,14 +9,16 @@ namespace steemit {
                 if (it != dispather_.end()) {
                     return dispather_.at(command)(args);
                 } else {
-                    std::cerr<<"Trash"<<std::endl;
+                    std::cerr << "Trash" << std::endl;
                 }
 
             }
 
-            worker_t::worker_t(const std::string &name) : abstract_worker_t(name) {}
+            worker_t::worker_t(const std::string &name) : abstract_worker_t(name) {
+            }
 
-            abstract_worker_t::abstract_worker_t(const std::string &name) : name_(name) {}
+            abstract_worker_t::abstract_worker_t(const std::string &name) : name_(name) {
+            }
 
             const std::string &abstract_worker_t::name() const {
                 return name_;

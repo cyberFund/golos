@@ -40,15 +40,13 @@ namespace steemit {
 
             /// sort them by account_creation_fee
             std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
-                return a->props.account_creation_fee.amount <
-                       b->props.account_creation_fee.amount;
+                return a->props.account_creation_fee.amount < b->props.account_creation_fee.amount;
             });
             asset median_account_creation_fee = active[active.size() / 2]->props.account_creation_fee;
 
             /// sort them by maximum_block_size
             std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
-                return a->props.maximum_block_size <
-                       b->props.maximum_block_size;
+                return a->props.maximum_block_size < b->props.maximum_block_size;
             });
             uint32_t median_maximum_block_size = active[active.size() / 2]->props.maximum_block_size;
 
@@ -80,16 +78,15 @@ namespace steemit {
             selected_voted.reserve(wso.max_voted_witnesses);
 
             const auto &widx = references.get_index<witness_index>().indices().get<by_vote_name>();
-            for (auto itr = widx.begin();
-                 itr != widx.end() &&
-                 selected_voted.size() < wso.max_voted_witnesses;
-                 ++itr) {
+            for (auto itr = widx.begin(); itr != widx.end() && selected_voted.size() < wso.max_voted_witnesses; ++itr) {
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_14__278) && (itr->signing_key == public_key_type())) {
                     continue;
                 }
                 selected_voted.insert(itr->id);
                 active_witnesses.push_back(itr->owner);
-                references.modify(*itr, [&](witness_object &wo) { wo.schedule = witness_object::top19; });
+                references.modify(*itr, [&](witness_object &wo) {
+                    wo.schedule = witness_object::top19;
+                });
             }
 
             auto num_elected = active_witnesses.size();
@@ -100,8 +97,7 @@ namespace steemit {
             const auto &gprops = references.get_dynamic_global_properties();
             const auto &pow_idx = references.get_index<witness_index>().indices().get<by_pow>();
             auto mitr = pow_idx.upper_bound(0);
-            while (mitr != pow_idx.end() &&
-                   selected_miners.size() < wso.max_miner_witnesses) {
+            while (mitr != pow_idx.end() && selected_miners.size() < wso.max_miner_witnesses) {
                 // Only consider a miner who is not a top voted witness
                 if (selected_voted.find(mitr->id) == selected_voted.end()) {
                     // Only consider a miner who has a valid block signing key
@@ -109,7 +105,9 @@ namespace steemit {
                           get_witness(references, mitr->owner).signing_key == public_key_type())) {
                         selected_miners.insert(mitr->id);
                         active_witnesses.push_back(mitr->owner);
-                        references.modify(*mitr, [&](witness_object &wo) { wo.schedule = witness_object::miner; });
+                        references.modify(*mitr, [&](witness_object &wo) {
+                            wo.schedule = witness_object::miner;
+                        });
                     }
                 }
                 // Remove processed miner from the queue
@@ -130,23 +128,21 @@ namespace steemit {
             const auto &schedule_idx = references.get_index<witness_index>().indices().get<by_schedule_time>();
             auto sitr = schedule_idx.begin();
             vector<decltype(sitr)> processed_witnesses;
-            for (auto witness_count =
-                    selected_voted.size() + selected_miners.size();
-                 sitr != schedule_idx.end() &&
-                 witness_count < STEEMIT_MAX_WITNESSES;
-                 ++sitr) {
+            for (auto witness_count = selected_voted.size() + selected_miners.size();
+                 sitr != schedule_idx.end() && witness_count < STEEMIT_MAX_WITNESSES; ++sitr) {
                 new_virtual_time = sitr->virtual_scheduled_time; /// everyone advances to at least this time
                 processed_witnesses.push_back(sitr);
 
-                if (references.has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
-                    sitr->signing_key == public_key_type()) {
+                if (references.has_hardfork(STEEMIT_HARDFORK_0_14__278) && sitr->signing_key == public_key_type()) {
                     continue;
                 } /// skip witnesses without a valid block signing key
 
-                if (selected_miners.find(sitr->id) == selected_miners.end()
-                    && selected_voted.find(sitr->id) == selected_voted.end()) {
+                if (selected_miners.find(sitr->id) == selected_miners.end() &&
+                    selected_voted.find(sitr->id) == selected_voted.end()) {
                     active_witnesses.push_back(sitr->owner);
-                    references.modify(*sitr, [&](witness_object &wo) { wo.schedule = witness_object::timeshare; });
+                    references.modify(*sitr, [&](witness_object &wo) {
+                        wo.schedule = witness_object::timeshare;
+                    });
                     ++witness_count;
                 }
             }
@@ -155,8 +151,7 @@ namespace steemit {
 
             /// Update virtual schedule of processed witnesses
             bool reset_virtual_time = false;
-            for (auto itr = processed_witnesses.begin();
-                 itr != processed_witnesses.end(); ++itr) {
+            for (auto itr = processed_witnesses.begin(); itr != processed_witnesses.end(); ++itr) {
                 auto new_virtual_scheduled_time =
                         new_virtual_time + VIRTUAL_SCHEDULE_LAP_LENGTH2 / ((*itr)->votes.value + 1);
                 if (new_virtual_scheduled_time < new_virtual_time) {
@@ -175,8 +170,7 @@ namespace steemit {
             }
 
             size_t expected_active_witnesses = std::min(size_t(STEEMIT_MAX_WITNESSES), widx.size());
-            FC_ASSERT(active_witnesses.size() ==
-                      expected_active_witnesses,
+            FC_ASSERT(active_witnesses.size() == expected_active_witnesses,
                       "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
                       ("active_witnesses.size()", active_witnesses.size())("STEEMIT_MAX_WITNESSES",
                                                                            STEEMIT_MAX_WITNESSES)(
@@ -190,16 +184,14 @@ namespace steemit {
 
                 for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i++) {
                     auto witness = get_witness(references, wso.current_shuffled_witnesses[i]);
-                    if (witness_versions.find(witness.running_version) ==
-                        witness_versions.end()) {
+                    if (witness_versions.find(witness.running_version) == witness_versions.end()) {
                         witness_versions[witness.running_version] = 1;
                     } else {
                         witness_versions[witness.running_version] += 1;
                     }
 
                     auto version_vote = std::make_tuple(witness.hardfork_version_vote, witness.hardfork_time_vote);
-                    if (hardfork_version_votes.find(version_vote) ==
-                        hardfork_version_votes.end()) {
+                    if (hardfork_version_votes.find(version_vote) == hardfork_version_votes.end()) {
                         hardfork_version_votes[version_vote] = 1;
                     } else {
                         hardfork_version_votes[version_vote] += 1;
@@ -213,8 +205,7 @@ namespace steemit {
                 while (ver_itr != witness_versions.end()) {
                     witnesses_on_version += ver_itr->second;
 
-                    if (witnesses_on_version >=
-                        wso.hardfork_required_witnesses) {
+                    if (witnesses_on_version >= wso.hardfork_required_witnesses) {
                         majority_version = ver_itr->first;
                         break;
                     }
@@ -228,8 +219,7 @@ namespace steemit {
                     if (hf_itr->second >= wso.hardfork_required_witnesses) {
                         const auto &hfp = references.get_hardfork_property_object();
                         if (hfp.next_hardfork != std::get<0>(hf_itr->first) ||
-                            hfp.next_hardfork_time !=
-                            std::get<1>(hf_itr->first)) {
+                            hfp.next_hardfork_time != std::get<1>(hf_itr->first)) {
 
                             references.modify(hfp, [&](hardfork_property_object &hpo) {
                                 hpo.next_hardfork = std::get<0>(hf_itr->first);
@@ -258,8 +248,7 @@ namespace steemit {
                     _wso.current_shuffled_witnesses[i] = active_witnesses[i];
                 }
 
-                for (size_t i = active_witnesses.size();
-                     i < STEEMIT_MAX_WITNESSES; i++) {
+                for (size_t i = active_witnesses.size(); i < STEEMIT_MAX_WITNESSES; i++) {
                     _wso.current_shuffled_witnesses[i] = account_name_type();
                 }
 
@@ -269,8 +258,7 @@ namespace steemit {
                         _wso.timeshare_weight * num_timeshare;
 
                 /// shuffle current shuffled witnesses
-                auto now_hi =
-                        uint64_t(references.head_block_time().sec_since_epoch()) << 32;
+                auto now_hi = uint64_t(references.head_block_time().sec_since_epoch()) << 32;
                 for (uint32_t i = 0; i < _wso.num_scheduled_witnesses; ++i) {
                     /// High performance random generator
                     /// http://xorshift.di.unimi.it/
@@ -282,13 +270,11 @@ namespace steemit {
 
                     uint32_t jmax = _wso.num_scheduled_witnesses - i;
                     uint32_t j = i + k % jmax;
-                    std::swap(_wso.current_shuffled_witnesses[i],
-                              _wso.current_shuffled_witnesses[j]);
+                    std::swap(_wso.current_shuffled_witnesses[i], _wso.current_shuffled_witnesses[j]);
                 }
 
                 _wso.current_virtual_time = new_virtual_time;
-                _wso.next_shuffle_block_num =
-                        references.head_block_num() + _wso.num_scheduled_witnesses;
+                _wso.next_shuffle_block_num = references.head_block_num() + _wso.num_scheduled_witnesses;
                 _wso.majority_version = majority_version;
             });
 
@@ -316,10 +302,8 @@ namespace steemit {
                 if (props.num_pow_witnesses == 0 || references.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK) {
                     const auto &widx = references.get_index<witness_index>().indices().get<by_vote_name>();
 
-                    for (auto itr = widx.begin(); itr != widx.end() &&
-                                                  (active_witnesses.size() <
-                                                   (STEEMIT_MAX_WITNESSES -
-                                                    2)); ++itr) {
+                    for (auto itr = widx.begin();
+                         itr != widx.end() && (active_witnesses.size() < (STEEMIT_MAX_WITNESSES - 2)); ++itr) {
                         if (itr->pow_worker) {
                             continue;
                         }
@@ -355,13 +339,9 @@ namespace steemit {
 
                             /// this witness will produce again here
                             if (references.has_hardfork(STEEMIT_HARDFORK_0_2)) {
-                                wo.virtual_scheduled_time +=
-                                        VIRTUAL_SCHEDULE_LAP_LENGTH2 /
-                                        (wo.votes.value + 1);
+                                wo.virtual_scheduled_time += VIRTUAL_SCHEDULE_LAP_LENGTH2 / (wo.votes.value + 1);
                             } else {
-                                wo.virtual_scheduled_time +=
-                                        VIRTUAL_SCHEDULE_LAP_LENGTH /
-                                        (wo.votes.value + 1);
+                                wo.virtual_scheduled_time += VIRTUAL_SCHEDULE_LAP_LENGTH / (wo.votes.value + 1);
                             }
                         });
                     }
@@ -389,8 +369,7 @@ namespace steemit {
                 while (itr != pow_idx.end()) {
                     active_witnesses.push_back(itr->owner);
 
-                    if (references.head_block_num() >
-                        STEEMIT_START_MINER_VOTING_BLOCK ||
+                    if (references.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK ||
                         active_witnesses.size() >= STEEMIT_MAX_WITNESSES) {
                         break;
                     }
@@ -430,8 +409,7 @@ namespace steemit {
 
                         uint32_t jmax = _wso.num_scheduled_witnesses - i;
                         uint32_t j = i + k % jmax;
-                        std::swap(_wso.current_shuffled_witnesses[i],
-                                  _wso.current_shuffled_witnesses[j]);
+                        std::swap(_wso.current_shuffled_witnesses[i], _wso.current_shuffled_witnesses[j]);
                     }
 
                     if (props.num_pow_witnesses == 0 ||
@@ -445,7 +423,8 @@ namespace steemit {
             }
         }
 
-        witness_schedule_policy::witness_schedule_policy(database_basic &ref, int) : generic_policy(ref) {}
+        witness_schedule_policy::witness_schedule_policy(database_basic &ref, int) : generic_policy(ref) {
+        }
 
         account_name_type witness_schedule_policy::get_scheduled_witness(uint32_t slot_num) const {
             const dynamic_global_property_object &dpo = references.get_dynamic_global_properties();
@@ -454,15 +433,15 @@ namespace steemit {
             return wso.current_shuffled_witnesses[current_aslot % wso.num_scheduled_witnesses];
         }
 
-        const escrow_object &
-        witness_schedule_policy::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
+        const escrow_object &witness_schedule_policy::get_escrow(const account_name_type &name,
+                                                                 uint32_t escrow_id) const {
             try {
                 return references.get<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
             } FC_CAPTURE_AND_RETHROW((name)(escrow_id))
         }
 
-        const escrow_object *
-        witness_schedule_policy::find_escrow(const account_name_type &name, uint32_t escrow_id) const {
+        const escrow_object *witness_schedule_policy::find_escrow(const account_name_type &name,
+                                                                  uint32_t escrow_id) const {
             return references.find<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
         }
 

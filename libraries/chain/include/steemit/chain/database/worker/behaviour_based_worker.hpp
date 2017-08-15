@@ -4,16 +4,17 @@
 #include <steemit/chain/database/database_worker.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
 #include <steemit/chain/utilities/asset.hpp>
-#include <steemit/chain/database/database_police.hpp>
+#include <steemit/chain/database/database_policy.hpp>
 
 
 namespace steemit {
     namespace chain {
         class behaviour_based_worker : public database_worker_t<database_tag> {
         public:
-            behaviour_based_worker(database_tag&);
+            behaviour_based_worker(database_tag &);
         };
-    }}
+    }
+}
 
 
 /**

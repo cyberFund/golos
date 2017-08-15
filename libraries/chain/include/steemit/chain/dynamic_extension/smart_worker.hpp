@@ -9,12 +9,17 @@ namespace steemit {
         namespace dynamic_extension {
             class smart_worker {
             public:
-                smart_worker()= delete;
-                smart_worker(const smart_worker&)= default;
-                smart_worker&operator=(const smart_worker&)= default;
-                smart_worker(smart_worker&&)= default;
-                smart_worker&operator=(smart_worker&&)= default;
-                ~smart_worker()= default;
+                smart_worker() = delete;
+
+                smart_worker(const smart_worker &) = default;
+
+                smart_worker &operator=(const smart_worker &)= default;
+
+                smart_worker(smart_worker &&) = default;
+
+                smart_worker &operator=(smart_worker &&)= default;
+
+                ~smart_worker() = default;
 
                 smart_worker(abstract_worker_t *);
 

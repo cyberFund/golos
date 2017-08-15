@@ -4,7 +4,7 @@
 #include <steemit/chain/evaluators/evaluator_registry.hpp>
 #include <steemit/chain/index.hpp>
 
-#include "database_police.hpp"
+#include "database_policy.hpp"
 #include <steemit/chain/dynamic_extension/worker_storage.hpp>
 
 
@@ -12,7 +12,8 @@ namespace steemit {
     namespace chain {
         class database final : public database_tag {
         public:
-            database()= default;
+            database() = default;
+
             ~database() = default;
 
         protected:
@@ -29,8 +30,6 @@ namespace steemit {
 
 
         shared_ptr<database> make_database();
-
-
     }
 }
 #endif //GOLOS_DATABASE_HPP

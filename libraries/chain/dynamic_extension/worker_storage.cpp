@@ -8,8 +8,10 @@ namespace steemit {
     namespace chain {
         namespace dynamic_extension {
             struct worker_storage::impl final {
-                impl()= default;
-                ~impl()= default;
+                impl() = default;
+
+                ~impl() = default;
+
                 std::unordered_map<std::string, smart_worker> storage;
             };
 
@@ -25,7 +27,7 @@ namespace steemit {
                 return pimpl->storage.at(key).view();
             }
 
-            worker_storage::worker_storage():pimpl(new impl) {
+            worker_storage::worker_storage() : pimpl(new impl) {
             }
 
         }

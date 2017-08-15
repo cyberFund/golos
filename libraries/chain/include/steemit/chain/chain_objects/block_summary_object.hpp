@@ -16,8 +16,7 @@ namespace steemit {
          *  so we can calculate whether the current transaction is valid and at
          *  what time it should expire.
          */
-        class block_summary_object
-                : public object<block_summary_object_type, block_summary_object> {
+        class block_summary_object : public object<block_summary_object_type, block_summary_object> {
         public:
             template<typename Constructor, typename Allocator>
             block_summary_object(Constructor &&c, allocator <Allocator> a) {
@@ -31,11 +30,8 @@ namespace steemit {
             block_id_type block_id;
         };
 
-        typedef multi_index_container <
-        block_summary_object,
-        indexed_by<
-                ordered_unique < tag < by_id>,
-        member<block_summary_object, block_summary_object::id_type, &block_summary_object::id>>
+        typedef multi_index_container <block_summary_object, indexed_by<ordered_unique < tag < by_id>, member<
+                block_summary_object, block_summary_object::id_type, &block_summary_object::id>>
         >,
         allocator <block_summary_object>
         >

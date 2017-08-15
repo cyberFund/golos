@@ -4,7 +4,7 @@
 #include <steemit/chain/chain_objects/steem_objects.hpp>
 #include <steemit/chain/chain_objects/block_summary_object.hpp>
 #include <steemit/chain/utilities/reward.hpp>
-#include <steemit/chain/database/database_police.hpp>
+#include <steemit/chain/database/database_policy.hpp>
 
 #ifndef IS_LOW_MEM
 

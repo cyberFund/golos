@@ -8,7 +8,9 @@ namespace steemit {
 
         using namespace steemit::protocol;
 
-        namespace detail { class block_log_impl; }
+        namespace detail {
+            class block_log_impl;
+        }
 
         /* The block log is an external append only log of the blocks. Blocks should only be written
          * to the log after they irreverisble as the log is append only. The log is a doubly linked
