@@ -6,16 +6,16 @@
 namespace steemit {
     namespace chain {
 
-        class comment_options_evaluator : public evaluator_impl<database_tag, comment_options_evaluator> {
+        class comment_options_evaluator : public evaluator_impl<database_set, comment_options_evaluator> {
         private:
             struct comment_options_extension_visitor {
-                comment_options_extension_visitor(const comment_object &c, database_tag &db) : _c(c), _db(db) {
+                comment_options_extension_visitor(const comment_object &c, database_set &db) : _c(c), _db(db) {
                 }
 
                 typedef void result_type;
 
                 const comment_object &_c;
-                database_tag &_db;
+                database_set &_db;
 
                 void operator()(const comment_payout_beneficiaries &cpb) const {
                     if (this->_db.is_producing()) {
@@ -40,7 +40,7 @@ namespace steemit {
             typedef protocol::comment_options_operation operation_type;
 
             template<typename Database>
-            comment_options_evaluator(Database &db) : evaluator_impl<database_tag, comment_options_evaluator>(db) {
+            comment_options_evaluator(Database &db) : evaluator_impl<database_set, comment_options_evaluator>(db) {
             }
 
             void do_apply(const protocol::comment_options_operation &o);

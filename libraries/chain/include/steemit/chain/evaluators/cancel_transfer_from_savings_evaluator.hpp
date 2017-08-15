@@ -6,13 +6,13 @@
 namespace steemit {
     namespace chain {
 
-        class cancel_transfer_from_savings_evaluator : public evaluator_impl<database_tag,
+        class cancel_transfer_from_savings_evaluator : public evaluator_impl<database_set,
                 cancel_transfer_from_savings_evaluator> {
         public:
             typedef protocol::cancel_transfer_from_savings_operation operation_type;
 
             template<typename Database>
-            cancel_transfer_from_savings_evaluator(Database &db) :evaluator_impl<database_tag,
+            cancel_transfer_from_savings_evaluator(Database &db) :evaluator_impl<database_set,
                     cancel_transfer_from_savings_evaluator>(db) {
             }
 

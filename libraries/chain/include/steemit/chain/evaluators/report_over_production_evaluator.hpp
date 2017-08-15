@@ -6,11 +6,11 @@
 namespace steemit {
     namespace chain {
 
-        class report_over_production_evaluator : public evaluator_impl<database_tag, report_over_production_evaluator> {
+        class report_over_production_evaluator : public evaluator_impl<database_set, report_over_production_evaluator> {
         public:
             typedef protocol::report_over_production_operation operation_type;
 
-            template<typename Database> report_over_production_evaluator(Database &db) : evaluator_impl<database_tag,
+            template<typename Database> report_over_production_evaluator(Database &db) : evaluator_impl<database_set,
                     report_over_production_evaluator>(db) {
             }
 

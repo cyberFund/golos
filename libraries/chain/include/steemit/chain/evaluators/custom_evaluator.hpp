@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class custom_evaluator : public evaluator_impl<database_tag, custom_evaluator> {
+        class custom_evaluator : public evaluator_impl<database_set, custom_evaluator> {
         public:
             typedef protocol::custom_operation operation_type;
 
             template<typename Database>
-            custom_evaluator(Database &db) : evaluator_impl<database_tag, custom_evaluator>(db) {
+            custom_evaluator(Database &db) : evaluator_impl<database_set, custom_evaluator>(db) {
             }
 
             void do_apply(const protocol::custom_operation &o);

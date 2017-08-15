@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class transfer_to_savings_evaluator : public evaluator_impl<database_tag, transfer_to_savings_evaluator> {
+        class transfer_to_savings_evaluator : public evaluator_impl<database_set, transfer_to_savings_evaluator> {
         public:
             typedef protocol::transfer_to_savings_operation operation_type;
 
             template<typename Database>
-            transfer_to_savings_evaluator(Database &db) : evaluator_impl<database_tag, transfer_to_savings_evaluator>(
+            transfer_to_savings_evaluator(Database &db) : evaluator_impl<database_set, transfer_to_savings_evaluator>(
                     db) {
             }
 

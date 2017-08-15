@@ -3,7 +3,7 @@
 namespace steemit {
     namespace chain {
 
-        account_worker::account_worker(database_tag &db) : database_worker_t(db, "account") {
+        account_worker::account_worker(database_set &db) : database_worker_t(db, "account") {
             add("adjust_balance", [&](std::vector<boost::any> args) -> boost::any {
                 const account_object a = boost::any_cast<account_object>(args[0]);
                 const asset delta = boost::any_cast<asset &&>(args[1]);

@@ -7,10 +7,10 @@
 namespace steemit {
     namespace chain {
 
-        class witness_worker final : public database_worker_t<database_tag> {
+        class witness_worker final : public database_worker_t<database_set> {
         public:
 
-            witness_worker(database_tag &db);
+            witness_worker(database_set &db);
 
         };
 

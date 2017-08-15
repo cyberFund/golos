@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class limit_order_create2_evaluator : public evaluator_impl<database_tag, limit_order_create2_evaluator> {
+        class limit_order_create2_evaluator : public evaluator_impl<database_set, limit_order_create2_evaluator> {
         public:
             typedef protocol::limit_order_create2_operation operation_type;
 
             template<typename Database>
-            limit_order_create2_evaluator(Database &db) : evaluator_impl<database_tag, limit_order_create2_evaluator>(
+            limit_order_create2_evaluator(Database &db) : evaluator_impl<database_set, limit_order_create2_evaluator>(
                     db) {
             }
 

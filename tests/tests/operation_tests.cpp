@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure of duplicate account creation");
-            BOOST_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+            BOOST_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_REQUIRE(acct.name == "alice");
             BOOST_REQUIRE(acct_auth.owner ==
@@ -273,7 +273,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test success on owner key alone");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_TEST_MESSAGE("  Tests when owner authority is updated ---");
             BOOST_TEST_MESSAGE("--- Test failure when updating the owner authority with an active key");
@@ -423,12 +423,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_irrelevant_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_posting_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_posting_auth);
 
             validate_database();
         }
@@ -1270,7 +1270,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_REQUIRE(new_alice.balance.amount.value ==
                           ASSET("0.000 TESTS").amount.value);
@@ -1285,7 +1285,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_REQUIRE(new_alice.balance.amount.value ==
                           ASSET("0.000 TESTS").amount.value);
@@ -1425,7 +1425,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                           shares.amount.value);
             validate_database();
 
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_REQUIRE(alice.balance.amount.value ==
                           ASSET("0.500 TESTS").amount.value);
@@ -1471,26 +1471,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_duplicate_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_irrelevant_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             validate_database();
         }
@@ -1628,7 +1628,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 });
 
                 db.update_virtual_supply();
-            }, database::skip_witness_signature);
+            }, validation_steps::skip_witness_signature);
 
             withdraw_vesting_operation op;
             signed_transaction tx;
@@ -1702,7 +1702,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             tx.signatures.clear();
             tx.sign(signing_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
             validate_database();
         }
         FC_LOG_AND_RETHROW()
@@ -1859,7 +1859,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             proxy("bob", "sam");
             tx.signatures.clear();
             tx.sign(sam_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             validate_database();
         }
@@ -1916,7 +1916,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
 
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), fc::exception);
             BOOST_REQUIRE(sam_witness.votes.value == 0);
             BOOST_REQUIRE(
                     witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) ==
@@ -1948,7 +1948,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.account = "alice";
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_REQUIRE(sam_witness.votes == (bob.proxied_vsf_votes_total() +
                                                 bob.vesting_shares.amount));
@@ -2052,7 +2052,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test failure with proxy signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             validate_database();
         }
@@ -2116,7 +2116,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when changing proxy to existing proxy");
 
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_REQUIRE(bob.proxy == "sam");
             BOOST_REQUIRE(bob.proxied_vsf_votes_total().value == 0);
@@ -2339,28 +2339,28 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_duplicate_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_irrelevant_sig);
 
             BOOST_TEST_MESSAGE("--- Test success with witness account signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             validate_database();
         }
@@ -2620,26 +2620,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_duplicate_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_irrelevant_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             validate_database();
         }
@@ -3013,26 +3013,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_duplicate_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_irrelevant_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             validate_database();
         }
@@ -3421,26 +3421,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            db.push_transaction(tx, database::skip_transaction_dupe_check);
+            db.push_transaction(tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_duplicate_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_irrelevant_sig);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, validation_steps::skip_transaction_dupe_check), tx_missing_active_auth);
 
             validate_database();
         }

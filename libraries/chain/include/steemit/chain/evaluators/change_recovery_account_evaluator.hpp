@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class change_recovery_account_evaluator : public evaluator_impl<database_tag,
+        class change_recovery_account_evaluator : public evaluator_impl<database_set,
                 change_recovery_account_evaluator> {
         public:
             typedef protocol::change_recovery_account_operation operation_type;
 
-            template<typename Database> change_recovery_account_evaluator(Database &db) : evaluator_impl<database_tag,
+            template<typename Database> change_recovery_account_evaluator(Database &db) : evaluator_impl<database_set,
                     change_recovery_account_evaluator>(db) {
             }
 

@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class delete_comment_evaluator : public evaluator_impl<database_tag, delete_comment_evaluator> {
+        class delete_comment_evaluator : public evaluator_impl<database_set, delete_comment_evaluator> {
         public:
             typedef protocol::delete_comment_operation operation_type;
 
             template<typename Database>
-            delete_comment_evaluator(Database &db) : evaluator_impl<database_tag, delete_comment_evaluator>(db) {
+            delete_comment_evaluator(Database &db) : evaluator_impl<database_set, delete_comment_evaluator>(db) {
             }
 
             /**

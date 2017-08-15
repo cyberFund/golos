@@ -9,9 +9,9 @@
 
 namespace steemit {
     namespace chain {
-        class behaviour_based_worker : public database_worker_t<database_tag> {
+        class behaviour_based_worker : public database_worker_t<database_set> {
         public:
-            behaviour_based_worker(database_tag &);
+            behaviour_based_worker(database_set &);
         };
     }
 }

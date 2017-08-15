@@ -10,7 +10,7 @@
 
 namespace steemit {
     namespace chain {
-        class database final : public database_tag {
+        class database final : public database_set {
         public:
             database() = default;
 

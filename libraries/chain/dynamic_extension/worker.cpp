@@ -8,10 +8,11 @@ namespace steemit {
                 auto it = dispatcher.find(command);
                 if (it != dispatcher.end()) {
                     return dispatcher.at(command)(args);
-                } else {
-                    std::cerr << "Trash" << std::endl;
                 }
 
+                std::cerr << "Trash" << std::endl;
+
+                return;
             }
 
             worker_t::worker_t(const std::string &name) : abstract_worker_t(name) {
