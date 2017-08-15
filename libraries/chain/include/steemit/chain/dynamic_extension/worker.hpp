@@ -51,13 +51,13 @@ namespace steemit {
                 virtual ~worker_t() = default;
 
                 template<int N, typename F> void add(const char (&key)[N], F &&f) {
-                    dispather_.emplace(key, f);
+                    dispatcher.emplace(key, f);
                 };
 
             private:
                 boost::any invoke_raw(const std::string &, std::vector<boost::any>) override final;
 
-                std::unordered_map<std::string, std::function<boost::any(std::vector<boost::any>)>> dispather_;
+                std::unordered_map<std::string, std::function<boost::any(std::vector<boost::any>)>> dispatcher;
             };
 
         }

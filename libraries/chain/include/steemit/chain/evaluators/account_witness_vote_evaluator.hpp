@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::account_witness_vote_operation operation_type;
 
-            template<typename DataBase>
-            account_witness_vote_evaluator(DataBase &db) : evaluator_impl<database_tag, account_witness_vote_evaluator>(
+            template<typename Database>
+            account_witness_vote_evaluator(Database &db) : evaluator_impl<database_tag, account_witness_vote_evaluator>(
                     db) {
             }
 

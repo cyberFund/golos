@@ -11,8 +11,8 @@ namespace steemit {
         public:
             typedef protocol::account_create_operation operation_type;
 
-            template<typename DataBase>
-            account_create_evaluator(DataBase &db) : evaluator_impl<database_tag, account_create_evaluator>(db) {
+            template<typename Database>
+            account_create_evaluator(Database &db) : evaluator_impl<database_tag, account_create_evaluator>(db) {
             }
 
             void do_apply(const account_create_operation &o);

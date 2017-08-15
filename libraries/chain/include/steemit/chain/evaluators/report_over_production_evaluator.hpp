@@ -10,7 +10,7 @@ namespace steemit {
         public:
             typedef protocol::report_over_production_operation operation_type;
 
-            template<typename DataBase> report_over_production_evaluator(DataBase &db) : evaluator_impl<database_tag,
+            template<typename Database> report_over_production_evaluator(Database &db) : evaluator_impl<database_tag,
                     report_over_production_evaluator>(db) {
             }
 

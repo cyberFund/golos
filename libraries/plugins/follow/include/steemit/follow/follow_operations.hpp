@@ -43,8 +43,8 @@ namespace steemit {
         public:
             using operation_type = follow_operation ;
 
-            template<typename DataBase>
-            follow_evaluator(DataBase &db, follow_plugin* plugin) : chain::evaluator_impl<database,follow_evaluator,follow_plugin_operation>(db),_plugin(plugin) {}
+            template<typename Database>
+            follow_evaluator(Database &db, follow_plugin* plugin) : chain::evaluator_impl<database,follow_evaluator,follow_plugin_operation>(db),_plugin(plugin) {}
 
             void do_apply(const follow_operation &o);
 
@@ -55,8 +55,8 @@ namespace steemit {
         public:
             using operation_type = reblog_operation ;
 
-            template<typename DataBase>
-            reblog_evaluator(DataBase &db, follow_plugin* plugin) : chain::evaluator_impl<database,reblog_evaluator,follow_plugin_operation>(db),_plugin(plugin) {}
+            template<typename Database>
+            reblog_evaluator(Database &db, follow_plugin* plugin) : chain::evaluator_impl<database,reblog_evaluator,follow_plugin_operation>(db),_plugin(plugin) {}
 
             void do_apply(const reblog_operation &o);
 

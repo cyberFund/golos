@@ -16,13 +16,13 @@
 namespace steemit {
     namespace chain {
 
-        template<typename DataBase, typename CustomOperationType> class generic_custom_operation_interpreter
+        template<typename Database, typename CustomOperationType> class generic_custom_operation_interpreter
                 : public custom_operation_interpreter, public evaluator_registry<CustomOperationType> {
         public:
-            generic_custom_operation_interpreter(DataBase &db) : evaluator_registry<CustomOperationType>(), _db(db) {
+            generic_custom_operation_interpreter(Database &db) : evaluator_registry<CustomOperationType>(), _db(db) {
             }
 
-            DataBase &_db;
+            Database &_db;
 
             void apply_operations(const vector<CustomOperationType> &custom_operations, const operation &outer_o) {
                 auto plugin_session = _db.start_undo_session(true);

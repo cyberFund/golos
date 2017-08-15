@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::delete_comment_operation operation_type;
 
-            template<typename DataBase>
-            delete_comment_evaluator(DataBase &db) : evaluator_impl<database_tag, delete_comment_evaluator>(db) {
+            template<typename Database>
+            delete_comment_evaluator(Database &db) : evaluator_impl<database_tag, delete_comment_evaluator>(db) {
             }
 
             /**

@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::escrow_dispute_operation operation_type;
 
-            template<typename DataBase>
-            escrow_dispute_evaluator(DataBase &db) : evaluator_impl<database_tag, escrow_dispute_evaluator>(db) {
+            template<typename Database>
+            escrow_dispute_evaluator(Database &db) : evaluator_impl<database_tag, escrow_dispute_evaluator>(db) {
             }
 
             void do_apply(const protocol::escrow_dispute_operation &o);

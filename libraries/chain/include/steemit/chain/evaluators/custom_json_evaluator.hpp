@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::custom_json_operation operation_type;
 
-            template<typename DataBase>
-            custom_json_evaluator(DataBase &db) : evaluator_impl<database_tag, custom_json_evaluator>(db) {
+            template<typename Database>
+            custom_json_evaluator(Database &db) : evaluator_impl<database_tag, custom_json_evaluator>(db) {
             }
 
             void do_apply(const protocol::custom_json_operation &o);

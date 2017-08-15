@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::transfer_operation operation_type;
 
-            template<typename DataBase>
-            transfer_evaluator(DataBase &db) : evaluator_impl<database_tag, transfer_evaluator>(db) {
+            template<typename Database>
+            transfer_evaluator(Database &db) : evaluator_impl<database_tag, transfer_evaluator>(db) {
             }
 
             void do_apply(const transfer_operation &o);

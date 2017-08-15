@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::convert_operation operation_type;
 
-            template<typename DataBase>
-            convert_evaluator(DataBase &db) : evaluator_impl<database_tag, convert_evaluator>(db) {
+            template<typename Database>
+            convert_evaluator(Database &db) : evaluator_impl<database_tag, convert_evaluator>(db) {
             }
 
             void do_apply(const protocol::convert_operation &o);

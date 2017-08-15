@@ -10,7 +10,7 @@ namespace steemit {
         public:
             typedef protocol::pow_operation operation_type;
 
-            template<typename DataBase> pow_evaluator(DataBase &db) : evaluator_impl<database_tag, pow_evaluator>(db) {
+            template<typename Database> pow_evaluator(Database &db) : evaluator_impl<database_tag, pow_evaluator>(db) {
             }
 
             template<typename Operation> void pow_apply(database_tag &db, Operation o) {

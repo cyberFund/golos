@@ -15,8 +15,8 @@ namespace steemit {
                 }
             }
 
-            template<typename DataBase, typename EvaluatorType, typename ...Args>
-            void register_evaluator(DataBase &db, Args... args) {
+            template<typename Database, typename EvaluatorType, typename ...Args>
+            void register_evaluator(Database &db, Args... args) {
                 _op_evaluators[OperationType::template tag<typename EvaluatorType::operation_type>::value].reset(
                         new EvaluatorType(db, (args)...));
             }

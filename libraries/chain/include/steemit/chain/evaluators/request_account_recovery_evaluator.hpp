@@ -11,7 +11,7 @@ namespace steemit {
         public:
             typedef protocol::request_account_recovery_operation operation_type;
 
-            template<typename DataBase> request_account_recovery_evaluator(DataBase &db) : evaluator_impl<database_tag,
+            template<typename Database> request_account_recovery_evaluator(Database &db) : evaluator_impl<database_tag,
                     request_account_recovery_evaluator>(db) {
             }
 

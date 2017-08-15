@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::withdraw_vesting_operation operation_type;
 
-            template<typename DataBase>
-            withdraw_vesting_evaluator(DataBase &db) : evaluator_impl<database_tag, withdraw_vesting_evaluator>(db) {
+            template<typename Database>
+            withdraw_vesting_evaluator(Database &db) : evaluator_impl<database_tag, withdraw_vesting_evaluator>(db) {
             }
 
             void do_apply(const protocol::withdraw_vesting_operation &o);

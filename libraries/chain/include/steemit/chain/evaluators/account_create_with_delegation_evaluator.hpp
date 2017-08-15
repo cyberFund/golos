@@ -11,8 +11,8 @@ namespace steemit {
         public:
             typedef protocol::account_create_with_delegation_operation operation_type;
 
-            template<typename DataBase>
-            account_create_with_delegation_evaluator(DataBase &db) : evaluator_impl<database_tag,
+            template<typename Database>
+            account_create_with_delegation_evaluator(Database &db) : evaluator_impl<database_tag,
                     account_create_with_delegation_evaluator>(db) {
             }
 

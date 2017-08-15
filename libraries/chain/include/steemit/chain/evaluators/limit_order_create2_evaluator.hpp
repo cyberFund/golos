@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::limit_order_create2_operation operation_type;
 
-            template<typename DataBase>
-            limit_order_create2_evaluator(DataBase &db) : evaluator_impl<database_tag, limit_order_create2_evaluator>(
+            template<typename Database>
+            limit_order_create2_evaluator(Database &db) : evaluator_impl<database_tag, limit_order_create2_evaluator>(
                     db) {
             }
 

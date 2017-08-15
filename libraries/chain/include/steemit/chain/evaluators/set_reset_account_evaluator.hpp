@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::set_reset_account_operation operation_type;
 
-            template<typename DataBase>
-            set_reset_account_evaluator(DataBase &db) : evaluator_impl<database_tag, set_reset_account_evaluator>(db) {
+            template<typename Database>
+            set_reset_account_evaluator(Database &db) : evaluator_impl<database_tag, set_reset_account_evaluator>(db) {
             }
 
             void do_apply(const protocol::set_reset_account_operation &op);

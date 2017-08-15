@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::transfer_to_savings_operation operation_type;
 
-            template<typename DataBase>
-            transfer_to_savings_evaluator(DataBase &db) : evaluator_impl<database_tag, transfer_to_savings_evaluator>(
+            template<typename Database>
+            transfer_to_savings_evaluator(Database &db) : evaluator_impl<database_tag, transfer_to_savings_evaluator>(
                     db) {
             }
 

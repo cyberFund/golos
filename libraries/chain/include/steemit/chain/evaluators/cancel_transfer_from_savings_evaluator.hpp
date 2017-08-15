@@ -11,8 +11,8 @@ namespace steemit {
         public:
             typedef protocol::cancel_transfer_from_savings_operation operation_type;
 
-            template<typename DataBase>
-            cancel_transfer_from_savings_evaluator(DataBase &db) :evaluator_impl<database_tag,
+            template<typename Database>
+            cancel_transfer_from_savings_evaluator(Database &db) :evaluator_impl<database_tag,
                     cancel_transfer_from_savings_evaluator>(db) {
             }
 

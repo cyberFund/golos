@@ -11,7 +11,7 @@ namespace steemit {
         public:
             typedef protocol::delegate_vesting_shares_operation operation_type;
 
-            template<typename DataBase> delegate_vesting_shares_evaluator(DataBase &db) : evaluator_impl<database_tag,
+            template<typename Database> delegate_vesting_shares_evaluator(Database &db) : evaluator_impl<database_tag,
                     delegate_vesting_shares_evaluator>(db) {
             }
 

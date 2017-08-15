@@ -39,8 +39,8 @@ namespace steemit {
         public:
             typedef protocol::comment_options_operation operation_type;
 
-            template<typename DataBase>
-            comment_options_evaluator(DataBase &db) : evaluator_impl<database_tag, comment_options_evaluator>(db) {
+            template<typename Database>
+            comment_options_evaluator(Database &db) : evaluator_impl<database_tag, comment_options_evaluator>(db) {
             }
 
             void do_apply(const protocol::comment_options_operation &o);

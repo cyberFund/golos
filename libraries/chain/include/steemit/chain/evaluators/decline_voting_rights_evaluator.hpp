@@ -10,7 +10,7 @@ namespace steemit {
         public:
             typedef protocol::decline_voting_rights_operation operation_type;
 
-            template<typename DataBase> decline_voting_rights_evaluator(DataBase &db) : evaluator_impl<database_tag,
+            template<typename Database> decline_voting_rights_evaluator(Database &db) : evaluator_impl<database_tag,
                     decline_voting_rights_evaluator>(db) {
             }
 

@@ -494,7 +494,7 @@ namespace steemit {
             block_log _block_log;
 
             // this function needs access to _plugin_index_signal
-            template<typename DataBase, typename MultiIndexType> friend void add_plugin_index(DataBase &db);
+            template<typename Database, typename MultiIndexType> friend void add_plugin_index(Database &db);
 
             transaction_id_type _current_trx_id;
             uint32_t _current_block_num = 0;

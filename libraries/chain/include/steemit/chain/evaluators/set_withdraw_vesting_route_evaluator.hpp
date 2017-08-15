@@ -11,8 +11,8 @@ namespace steemit {
         public:
             typedef protocol::set_withdraw_vesting_route_operation operation_type;
 
-            template<typename DataBase>
-            set_withdraw_vesting_route_evaluator(DataBase &db) : evaluator_impl<database_tag,
+            template<typename Database>
+            set_withdraw_vesting_route_evaluator(Database &db) : evaluator_impl<database_tag,
                     set_withdraw_vesting_route_evaluator>(db) {
             }
 

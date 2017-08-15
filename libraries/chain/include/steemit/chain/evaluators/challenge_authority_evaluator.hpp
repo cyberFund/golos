@@ -10,8 +10,8 @@ namespace steemit {
         public:
             typedef protocol::challenge_authority_operation operation_type;
 
-            template<typename DataBase>
-            challenge_authority_evaluator(DataBase &db) :evaluator_impl<database_tag, challenge_authority_evaluator>(
+            template<typename Database>
+            challenge_authority_evaluator(Database &db) :evaluator_impl<database_tag, challenge_authority_evaluator>(
                     db) {
             }
 
