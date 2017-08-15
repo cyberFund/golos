@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class account_witness_vote_evaluator : public evaluator_impl<database_set, account_witness_vote_evaluator> {
+        class account_witness_vote_evaluator : public evaluator_impl<database_t, account_witness_vote_evaluator> {
         public:
             typedef protocol::account_witness_vote_operation operation_type;
 
             template<typename Database>
-            account_witness_vote_evaluator(Database &db) : evaluator_impl<database_set, account_witness_vote_evaluator>(
+            account_witness_vote_evaluator(Database &db) : evaluator_impl<database_t, account_witness_vote_evaluator>(
                     db) {
             }
 

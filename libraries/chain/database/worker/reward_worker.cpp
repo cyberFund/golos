@@ -3,7 +3,7 @@
 namespace steemit {
     namespace chain {
 
-        reward_worker::reward_worker(database_set &db) : database_worker_t(db, "reward") {
+        reward_worker::reward_worker(database_t &db) : database_worker_t(db, "reward") {
             add("adjust_liquidity_reward", [&](std::vector<boost::any> args) -> boost::any {
                 const account_object owner = boost::any_cast<account_object>(args[0]);
                 const asset volume = boost::any_cast<asset>(args[1]);

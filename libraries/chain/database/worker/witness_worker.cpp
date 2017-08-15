@@ -3,7 +3,7 @@
 namespace steemit {
     namespace chain {
 
-        void adjust_witness_vote(database_set &db, const witness_object &witness, share_type delta) {
+        void adjust_witness_vote(database_t &db, const witness_object &witness, share_type delta) {
             db.modify(witness, [&](witness_object &w) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
                 auto delta_pos = w.votes.value * (wso.current_virtual_time - w.virtual_last_update);
@@ -33,7 +33,7 @@ namespace steemit {
         }
 
 
-        void adjust_witness_votes(database_set &db, const account_object &a, share_type delta) {
+        void adjust_witness_votes(database_t &db, const account_object &a, share_type delta) {
             const auto &vidx = db.get_index<witness_vote_index>().indices().get<by_account_witness>();
             auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
             while (itr != vidx.end() && itr->account == a.id) {
@@ -44,7 +44,7 @@ namespace steemit {
 
 
         /** this updates the votes for all witnesses as a result of account VESTS changing */
-        void adjust_proxied_witness_votes(database_set &db, const account_object &a, share_type delta, int depth = 0) {
+        void adjust_proxied_witness_votes(database_t &db, const account_object &a, share_type delta, int depth = 0) {
             if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
                 /// nested proxies are not supported, vote will not propagate
                 if (depth >= STEEMIT_MAX_PROXY_RECURSION_DEPTH) {
@@ -64,7 +64,7 @@ namespace steemit {
         }
 
         /** this updates the votes for witnesses as a result of account voting proxy changing */
-        void adjust_proxied_witness_votes(database_set &db, const account_object &a,
+        void adjust_proxied_witness_votes(database_t &db, const account_object &a,
                                           const std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
                                           int depth = 0) {
             if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
@@ -91,7 +91,7 @@ namespace steemit {
             }
         }
 
-        witness_worker::witness_worker(database_set &db) : database_worker_t(db, "witness") {
+        witness_worker::witness_worker(database_t &db) : database_worker_t(db, "witness") {
             add("create_vesting", [&](std::vector<boost::any> args) -> boost::any {
                 const account_object to_account = boost::any_cast<account_object>(args[0]);
                 asset steem = boost::any_cast<asset>(args[1]);

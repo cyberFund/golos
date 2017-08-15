@@ -33,7 +33,7 @@ namespace steemit {
 
         };
 
-        using database_set = database_policy<
+        using database_t = database_policy<
                 account_policy,
                 asset_policy,
                 behaviour_based_policy,

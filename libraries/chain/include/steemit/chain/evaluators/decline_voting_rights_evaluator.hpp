@@ -6,11 +6,11 @@
 namespace steemit {
     namespace chain {
 
-        class decline_voting_rights_evaluator : public evaluator_impl<database_set, decline_voting_rights_evaluator> {
+        class decline_voting_rights_evaluator : public evaluator_impl<database_t, decline_voting_rights_evaluator> {
         public:
             typedef protocol::decline_voting_rights_operation operation_type;
 
-            template<typename Database> decline_voting_rights_evaluator(Database &db) : evaluator_impl<database_set,
+            template<typename Database> decline_voting_rights_evaluator(Database &db) : evaluator_impl<database_t,
                     decline_voting_rights_evaluator>(db) {
             }
 

@@ -8,9 +8,9 @@
 namespace steemit {
     namespace chain {
 
-        class account_worker final : public database_worker_t<database_set> {
+        class account_worker final : public database_worker_t<database_t> {
         public:
-            account_worker(database_set &db);
+            account_worker(database_t &db);
         };
     }
 }

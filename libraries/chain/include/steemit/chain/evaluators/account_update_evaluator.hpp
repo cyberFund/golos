@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class account_update_evaluator : public evaluator_impl<database_set, account_update_evaluator> {
+        class account_update_evaluator : public evaluator_impl<database_t, account_update_evaluator> {
         public:
             typedef protocol::account_update_operation operation_type;
 
             template<typename Database>
-            account_update_evaluator(Database &db) : evaluator_impl<database_set, account_update_evaluator>(db) {
+            account_update_evaluator(Database &db) : evaluator_impl<database_t, account_update_evaluator>(db) {
             }
 
             void do_apply(const account_update_operation &o);

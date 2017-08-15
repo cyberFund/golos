@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class challenge_authority_evaluator : public evaluator_impl<database_set, challenge_authority_evaluator> {
+        class challenge_authority_evaluator : public evaluator_impl<database_t, challenge_authority_evaluator> {
         public:
             typedef protocol::challenge_authority_operation operation_type;
 
             template<typename Database>
-            challenge_authority_evaluator(Database &db) :evaluator_impl<database_set, challenge_authority_evaluator>(
+            challenge_authority_evaluator(Database &db) :evaluator_impl<database_t, challenge_authority_evaluator>(
                     db) {
             }
 

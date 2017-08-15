@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class escrow_transfer_evaluator : public evaluator_impl<database_set, escrow_transfer_evaluator> {
+        class escrow_transfer_evaluator : public evaluator_impl<database_t, escrow_transfer_evaluator> {
         public:
             typedef protocol::escrow_transfer_operation operation_type;
 
             template<typename Database>
-            escrow_transfer_evaluator(Database &db) : evaluator_impl<database_set, escrow_transfer_evaluator>(db) {
+            escrow_transfer_evaluator(Database &db) : evaluator_impl<database_t, escrow_transfer_evaluator>(db) {
             }
 
             void do_apply(const protocol::escrow_transfer_operation &o);

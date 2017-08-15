@@ -6,14 +6,14 @@
 namespace steemit {
     namespace chain {
 
-        class pow_evaluator : public evaluator_impl<database_set, pow_evaluator> {
+        class pow_evaluator : public evaluator_impl<database_t, pow_evaluator> {
         public:
             typedef protocol::pow_operation operation_type;
 
-            template<typename Database> pow_evaluator(Database &db) : evaluator_impl<database_set, pow_evaluator>(db) {
+            template<typename Database> pow_evaluator(Database &db) : evaluator_impl<database_t, pow_evaluator>(db) {
             }
 
-            template<typename Operation> void pow_apply(database_set &db, Operation o) {
+            template<typename Operation> void pow_apply(database_t &db, Operation o) {
                 const auto &dgp = db.get_dynamic_global_properties();
 
                 if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {

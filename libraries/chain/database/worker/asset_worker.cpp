@@ -4,7 +4,7 @@ namespace steemit {
     namespace chain {
 
 
-        asset_worker::asset_worker(database_set &db) : database_worker_t(db, "asset") {
+        asset_worker::asset_worker(database_t &db) : database_worker_t(db, "asset") {
 
             add("adjust_supply", [&](std::vector<boost::any> args) -> boost::any {
 
