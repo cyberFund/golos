@@ -1,6 +1,7 @@
 #include <steemit/chain/database/policies/asset_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 
 namespace steemit {
     namespace chain {
@@ -34,7 +35,7 @@ namespace steemit {
                 const auto &user = get_account(references, itr->owner);
                 auto amount_to_issue = itr->amount * fhistory.current_median_history;
 
-                references.dynamic_extension_worker().get("account")->invoke("adjust_balance", user, amount_to_issue);
+                database_helper::big_helper::adjust_balance(references, user, amount_to_issue);
 
                 net_sbd += itr->amount;
                 net_steem += amount_to_issue;
@@ -56,7 +57,7 @@ namespace steemit {
         }
 
         void asset_policy::adjust_supply(const asset &delta, bool adjust_vesting) {
-            references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", delta, adjust_vesting);
+            database_helper::big_helper::adjust_supply(references, delta, adjust_vesting);
         }
     }
 }

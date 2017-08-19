@@ -1,6 +1,7 @@
 #include <steemit/chain/database/policies/withdrawal_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 namespace steemit {
     namespace chain {
 
@@ -52,7 +53,7 @@ namespace steemit {
                                 a.vesting_shares.amount += to_deposit;
                             });
 
-                            references.dynamic_extension_worker().get("witness")->invoke("adjust_proxied_witness_votes",to_account, to_deposit);
+                            database_helper::big_helper::adjust_proxied_witness_votes(references,to_account, to_deposit);
 
                             references.push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), asset(to_deposit, VESTS_SYMBOL)));
                         }
@@ -112,7 +113,7 @@ namespace steemit {
                 });
 
                 if (to_withdraw > 0) {
-                    references.dynamic_extension_worker().get("witness")->invoke("adjust_proxied_witness_votes",from_account, -to_withdraw);
+                    database_helper::big_helper::adjust_proxied_witness_votes(references,from_account, -to_withdraw);
                 }
 
                 references.push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));

@@ -1,6 +1,7 @@
 #include <steemit/chain/database/policies/account_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/compound.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 
 namespace steemit {
     namespace chain {
@@ -128,7 +129,7 @@ namespace steemit {
         }
 
         void account_policy::adjust_balance(const account_object &a, const asset &delta) {
-            references.dynamic_extension_worker().get("account")->invoke("adjust_balance", a, delta);
+            database_helper::big_helper::adjust_balance(references, a, delta);
         }
 
         void account_policy::update_owner_authority(const account_object &account, const authority &owner_authority) {
@@ -195,11 +196,11 @@ namespace steemit {
             }
 
             if (total_steem.amount > 0) {
-                references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -total_steem);
+                database_helper::big_helper::adjust_supply( references,-total_steem);
             }
 
             if (total_sbd.amount > 0) {
-                references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -total_sbd);
+                database_helper::big_helper::adjust_supply(references, -total_sbd);
             }
         }
 
@@ -212,7 +213,7 @@ namespace steemit {
 
             FC_ASSERT(account.balance >= fee);
             adjust_balance(account, -fee);
-            references.dynamic_extension_worker().get("asset")->invoke("adjust_supply", -fee);
+            database_helper::big_helper::adjust_supply(references, -fee);
         }
 
         void account_policy::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
@@ -367,7 +368,7 @@ namespace steemit {
                 auto new_steem = (props.virtual_supply.amount * current_inflation_rate) / (int64_t(STEEMIT_100_PERCENT) * int64_t(STEEMIT_BLOCKS_PER_YEAR));
                 auto content_reward = (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) / STEEMIT_100_PERCENT;
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                    content_reward = dynamic_extension::cast<share_type>(references.dynamic_extension_worker().get("behaviour_based")->invoke("pay_reward_funds", content_reward));
+                    content_reward = database_helper::big_helper::pay_reward_funds(references,content_reward);
                 } /// 75% to content creator
                 auto vesting_reward = (new_steem * STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT; /// 15% to vesting fund
                 auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
@@ -398,7 +399,7 @@ namespace steemit {
 
                 });
 
-                references.dynamic_extension_worker().get("witness")->invoke("create_vesting", get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
+                database_helper::big_helper::create_vesting(references, get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
             } else {
                 auto content_reward = get_content_reward(references);
                 auto curate_reward = get_curation_reward(references);
@@ -466,8 +467,7 @@ namespace steemit {
                     STEEMIT_START_MINER_VOTING_BLOCK ||
                     (witness_account.vesting_shares.amount.value == 0)) {
                     // const auto& witness_obj = get_witness( props.current_witness );
-                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting", witness_account,
-                                                                                 pay);
+                    database_helper::big_helper::create_vesting( references,witness_account, pay);
                 } else {
                     references.modify(get_account(witness_account.name), [&](account_object &a) {
                         a.balance += pay;
@@ -483,8 +483,7 @@ namespace steemit {
                     STEEMIT_START_MINER_VOTING_BLOCK ||
                     (witness_account.vesting_shares.amount.value == 0)) {
                     // const auto& witness_obj = get_witness( props.current_witness );
-                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting", witness_account,
-                                                                                 pay);
+                    database_helper::big_helper::create_vesting(references,witness_account, pay);
                 } else {
                     references.modify(get_account(witness_account.name), [&](account_object &a) {
                         a.balance += pay;

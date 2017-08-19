@@ -1,6 +1,7 @@
 #include <steemit/chain/database/policies/order_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 namespace steemit {
     namespace chain {
 
@@ -49,7 +50,7 @@ namespace steemit {
 
                 const account_object &seller = get_account(references,order.seller);
 
-                references.dynamic_extension_worker().get("account")->invoke("adjust_balance",seller, receives);
+                database_helper::big_helper::adjust_balance(references,seller, receives);
 
                 if (pays == order.amount_for_sale()) {
                     references.remove(order);
@@ -75,7 +76,7 @@ namespace steemit {
         }
 
         void order_policy::cancel_order(const limit_order_object &order) {
-            references.dynamic_extension_worker().get("account")->invoke("adjust_balance",get_account(references,order.seller), order.amount_for_sale());
+            database_helper::big_helper::adjust_balance(references,get_account(references,order.seller), order.amount_for_sale());
             references.remove(order);
         }
 
@@ -116,11 +117,11 @@ namespace steemit {
                  (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 &&
                   references.has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
                 if (old_order_receives.symbol == STEEM_SYMBOL) {
-                    references.dynamic_extension_worker().get("reward")->invoke("adjust_liquidity_reward",get_account(references,old_order.seller), old_order_receives, false);
-                    references.dynamic_extension_worker().get("reward")->invoke("adjust_liquidity_reward",get_account(references,new_order.seller), -old_order_receives, false);
+                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,old_order.seller), old_order_receives, false);
+                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,new_order.seller), -old_order_receives, false);
                 } else {
-                    references.dynamic_extension_worker().get("reward")->invoke("adjust_liquidity_reward",get_account(references,old_order.seller), new_order_receives, true);
-                    references.dynamic_extension_worker().get("reward")->invoke("adjust_liquidity_reward",get_account(references,new_order.seller), -new_order_receives, true);
+                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,old_order.seller), new_order_receives, true);
+                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,new_order.seller), -new_order_receives, true);
                 }
             }
 

@@ -5,13 +5,13 @@
 
 namespace steemit {
     namespace chain {
-        template <typename DataBase>
-        class comment_payout_extension_evaluator
-                : public evaluator_impl<DataBase,comment_payout_extension_evaluator<DataBase>> {
+
+        class comment_payout_extension_evaluator : public evaluator_impl<database_tag ,comment_payout_extension_evaluator> {
         public:
             typedef protocol::comment_payout_extension_operation operation_type;
 
-            comment_payout_extension_evaluator(DataBase &db) : evaluator_impl<DataBase,comment_payout_extension_evaluator<DataBase>>(db) {
+            template <typename DataBase>
+            comment_payout_extension_evaluator(DataBase &db) : evaluator_impl<database_tag ,comment_payout_extension_evaluator>(db) {
             }
 
             void do_apply(const protocol::comment_payout_extension_operation &o) {

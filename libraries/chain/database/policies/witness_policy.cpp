@@ -2,6 +2,7 @@
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
 #include <fc/time.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 
 namespace steemit {
     namespace chain {
@@ -45,9 +46,7 @@ namespace steemit {
                 const auto &vidx = references.get_index<witness_vote_index>().indices().get<by_account_witness>();
                 auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_id_type()));
                 while (wit_itr != vidx.end() && wit_itr->account == a.id) {
-                    references.dynamic_extension_worker().get("witness")->invoke("adjust_witness_vote",
-                                                                                 references.get(wit_itr->witness),
-                                                                                 a.witness_vote_weight());
+                    database_helper::big_helper::adjust_witness_vote(references,references.get(wit_itr->witness), a.witness_vote_weight());
                     ++wit_itr;
                 }
             }
@@ -90,8 +89,7 @@ namespace steemit {
                     delta[i + 1] = -account.proxied_vsf_votes[i];
                 }
 
-                references.dynamic_extension_worker().get("witness")->invoke("adjust_proxied_witness_votes", account,
-                                                                             delta);
+                database_helper::big_helper::adjust_proxied_witness_votes(references, account,delta);
 
                 clear_witness_votes(account);
 
@@ -192,27 +190,23 @@ namespace steemit {
         }
 
         steemit::protocol::asset witness_policy::create_vesting(const account_object &to_account, asset steem) {
-            return dynamic_extension::cast<asset>(
-                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting", to_account, steem));
+            return database_helper::big_helper::create_vesting(references, to_account, steem);
         }
 
         void witness_policy::adjust_witness_votes(const account_object &a, share_type delta) {
-            references.dynamic_extension_worker().get("witness")->invoke("adjust_witness_votes", a, delta);
+            database_helper::big_helper::adjust_witness_votes(references, a, delta);
         }
 
         void witness_policy::adjust_witness_vote(const witness_object &witness, share_type delta) {
-            references.dynamic_extension_worker().get("witness")->invoke("adjust_witness_vote", witness, delta);
+            database_helper::big_helper::adjust_witness_vote(references, witness, delta);
         }
 
         void witness_policy::adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth) {
-            references.dynamic_extension_worker().get("witness")->invoke("adjust_proxied_witness_votese", a, delta,
-                                                                         depth);
+            database_helper::big_helper::adjust_proxied_witness_votes(references, a, delta, depth);
         }
 
-        void witness_policy::adjust_proxied_witness_votes(const account_object &a, const std::array<share_type,
-                STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta, int depth) {
-            references.dynamic_extension_worker().get("witness")->invoke("adjust_proxied_witness_votese_1", a, delta,
-                                                                         depth);
+        void witness_policy::adjust_proxied_witness_votes(const account_object &a, const std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta, int depth) {
+            database_helper::big_helper::adjust_proxied_witness_votes(references, a, delta, depth);
         }
 
         const witness_object &witness_policy::get_witness(const account_name_type &name) const {

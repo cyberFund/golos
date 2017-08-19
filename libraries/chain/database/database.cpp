@@ -43,13 +43,6 @@
 #include <steemit/chain/evaluators/witness_update_evaluator.hpp>
 #include <steemit/chain/evaluators/challenge_authority_evaluator.hpp>
 
-
-#include <steemit/chain/database/worker/account_worker.hpp>
-#include <steemit/chain/database/worker/asset_worker.hpp>
-#include <steemit/chain/database/worker/behaviour_based_worker.hpp>
-#include <steemit/chain/database/worker/reward_worker.hpp>
-#include <steemit/chain/database/worker/witness_worker.hpp>
-
 namespace steemit {
     namespace chain {
 
@@ -142,13 +135,6 @@ namespace steemit {
             notify_post_apply_operation(note);
         }
 
-        void database::initialize_workers() {
-            dynamic_extension_worker().add(new account_worker(*this) );
-            dynamic_extension_worker().add(new asset_worker(*this) );
-            dynamic_extension_worker().add(new behaviour_based_worker(*this) );
-            dynamic_extension_worker().add(new reward_worker(*this) );
-            dynamic_extension_worker().add(new witness_worker(*this));
-        }
 
         shared_ptr<database> make_database() {
             return shared_ptr<database>(new database);

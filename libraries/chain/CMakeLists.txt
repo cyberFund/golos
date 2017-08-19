@@ -34,22 +34,12 @@ list(APPEND CURRENT_TARGET_HEADERS
         include/steemit/chain/database/policies/witness_policy.hpp
         include/steemit/chain/database/policies/witness_schedule_policy.hpp
 
-        include/steemit/chain/database/worker/account_worker.hpp
-        include/steemit/chain/database/worker/behaviour_based_worker.hpp
-        include/steemit/chain/database/worker/asset_worker.hpp
-        include/steemit/chain/database/worker/reward_worker.hpp
-        include/steemit/chain/database/worker/witness_worker.hpp
-
+        include/steemit/chain/database/big_helper.hpp
         include/steemit/chain/database/database.hpp
         include/steemit/chain/database/database_basic.hpp
         include/steemit/chain/database/database_exceptions.hpp
         include/steemit/chain/database/database_police.hpp
-        include/steemit/chain/database/database_worker.hpp
 
-        include/steemit/chain/dynamic_extension/smart_worker.hpp
-        include/steemit/chain/dynamic_extension/worker_storage.hpp
-        include/steemit/chain/dynamic_extension/view.hpp
-        include/steemit/chain/dynamic_extension/worker.hpp
 
         include/steemit/chain/evaluators/evaluator.hpp
         include/steemit/chain/evaluators/evaluator_registry.hpp
@@ -134,19 +124,12 @@ list(APPEND CURRENT_TARGET_SOURCES
         database/policies/witness_policy.cpp
         database/policies/witness_schedule_policy.cpp
 
-        database/worker/account_worker.cpp
-        database/worker/asset_worker.cpp
-        database/worker/behaviour_based_worker.cpp
-        database/worker/reward_worker.cpp
-        database/worker/witness_worker.cpp
+        database/big_helper.cpp
+
 
         database/database.cpp
         database/database_basic.cpp
         database/generic_policy.cpp
-
-        dynamic_extension/worker_storage.cpp
-        dynamic_extension/smart_worker.cpp
-        dynamic_extension/worker.cpp
 
         evaluators/account_create_evaluator.cpp
         evaluators/account_create_with_delegation_evaluator.cpp

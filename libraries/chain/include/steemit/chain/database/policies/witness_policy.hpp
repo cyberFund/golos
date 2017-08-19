@@ -4,7 +4,6 @@
 #include <algorithm>
 
 #include "steemit/chain/database/generic_policy.hpp"
-#include "steemit/chain/dynamic_extension/worker.hpp"
 #include <steemit/protocol/block.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
 

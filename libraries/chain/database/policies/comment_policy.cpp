@@ -1,7 +1,7 @@
 #include <steemit/chain/database/policies/comment_policy.hpp>
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
-
+#include <steemit/chain/database/big_helper.hpp>
 namespace steemit {
     namespace chain {
 
@@ -45,49 +45,25 @@ namespace steemit {
 
                         for (auto &b : comment.beneficiaries) {
                             auto benefactor_tokens = (author_tokens * b.weight) / STEEMIT_100_PERCENT;
-                            auto vest_created = dynamic_extension::cast<asset>(
-                                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting",
-                                                                                                 get_account(references,
-                                                                                                             b.account),
-                                                                                                 benefactor_tokens));
-                            references.push_virtual_operation(
-                                    comment_benefactor_reward_operation(b.account, comment.author,
-                                                                        to_string(comment.permlink),
-                                                                        vest_created));
+                            auto vest_created = database_helper::big_helper::create_vesting(references,get_account(references, b.account), benefactor_tokens);
+                            references.push_virtual_operation(comment_benefactor_reward_operation(b.account, comment.author, to_string(comment.permlink), vest_created));
                             total_beneficiary += benefactor_tokens;
                         }
 
                         author_tokens -= total_beneficiary;
 
-                        auto sbd_steem = (author_tokens *
-                                          comment.percent_steem_dollars) /
-                                         (2 * STEEMIT_100_PERCENT);
+                        auto sbd_steem = (author_tokens * comment.percent_steem_dollars) / (2 * STEEMIT_100_PERCENT);
                         auto vesting_steem = author_tokens - sbd_steem;
 
                         const auto &author = get_account(references, comment.author);
-                        auto vest_created = dynamic_extension::cast<asset>(
-                                references.dynamic_extension_worker().get("witness")->invoke("create_vesting", author,
-                                                                                             vesting_steem));
-                        auto sbd_payout = dynamic_extension::cast<std::pair<asset, asset>>(
-                                references.dynamic_extension_worker().get("behaviour_based")->invoke("create_sbd",
-                                                                                                     author,
-                                                                                                     sbd_steem));
+                        auto vest_created =database_helper::big_helper::create_vesting(references,author,vesting_steem);
+                        auto sbd_payout = database_helper::big_helper::create_sbd(references,author,sbd_steem);
 
                         adjust_total_payout(
                                 comment,
-                                sbd_payout.first + dynamic_extension::cast<asset>(
-                                        references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",
-                                                                                                             sbd_payout.second +
-                                                                                                             asset(vesting_steem,
-                                                                                                                   STEEM_SYMBOL))),
-                                dynamic_extension::cast<asset>(
-                                        references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",
-                                                                                                             asset(curation_tokens,
-                                                                                                                   STEEM_SYMBOL))),
-                                dynamic_extension::cast<asset>(
-                                        references.dynamic_extension_worker().get("behaviour_based")->invoke("to_sbd",
-                                                                                                             asset(total_beneficiary,
-                                                                                                                   STEEM_SYMBOL)))
+                                sbd_payout.first + database_helper::big_helper::to_sbd(references,sbd_payout.second + asset(vesting_steem, STEEM_SYMBOL)),
+                                database_helper::big_helper::to_sbd(references,asset(curation_tokens, STEEM_SYMBOL)),
+                                database_helper::big_helper::to_sbd(references,asset(total_beneficiary, STEEM_SYMBOL))
                         );
 
 
@@ -99,16 +75,19 @@ namespace steemit {
 
 
                         references.push_virtual_operation(
-                                author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first,
-                                                        sbd_payout.second, vest_created)
+                                author_reward_operation(
+                                        comment.author,
+                                        to_string(comment.permlink),
+                                        sbd_payout.first, sbd_payout.second, vest_created
+                                )
                         );
                         references.push_virtual_operation(
-                                comment_reward_operation(comment.author, to_string(comment.permlink),
-                                                         dynamic_extension::cast<asset>(
-                                                                 references.dynamic_extension_worker().get(
-                                                                         "behaviour_based")->invoke("to_sbd",
-                                                                                                    asset(claimed_reward,
-                                                                                                          STEEM_SYMBOL)))));
+                                comment_reward_operation(
+                                        comment.author,
+                                        to_string(comment.permlink),
+                                        database_helper::big_helper::to_sbd(references,asset(claimed_reward, STEEM_SYMBOL))
+                                )
+                        );
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                         references.modify(comment, [&](comment_object &c) {
@@ -375,18 +354,17 @@ namespace steemit {
                         {
                             unclaimed_rewards -= claim;
                             const auto &voter = references.get(itr->voter);
-                            auto reward = dynamic_extension::cast<asset>(
-                                    references.dynamic_extension_worker().get("witness")->invoke("create_vesting",
-                                                                                                 voter, asset(claim,
-                                                                                                              STEEM_SYMBOL)));
+                            auto reward = database_helper::big_helper::create_vesting(references,voter, asset(claim, STEEM_SYMBOL));
 
-                            references.push_virtual_operation(
-                                    curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
+                            references.push_virtual_operation(curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
-                            references.modify(voter, [&](account_object &a) {
-                                a.curation_rewards += claim;
-                            });
+                            references.modify(
+                                    voter,
+                                    [&](account_object &a) {
+                                        a.curation_rewards += claim;
+                                    }
+                            );
 #endif
                         }
                         ++itr;
@@ -500,8 +478,11 @@ namespace steemit {
             }
         }
 
-        void comment_policy::adjust_total_payout(const comment_object &cur, const asset &sbd_created,
-                                                 const asset &curator_sbd_value, const asset &beneficiary_value) {
+        void comment_policy::adjust_total_payout(
+                const comment_object &cur,
+                const asset &sbd_created,
+                const asset &curator_sbd_value,
+                const asset &beneficiary_value) {
             references.modify(cur, [&](comment_object &c) {
                 if (c.total_payout_value.symbol == sbd_created.symbol) {
                     c.total_payout_value += sbd_created;

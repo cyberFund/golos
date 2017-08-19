@@ -22,6 +22,7 @@
 
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 
 namespace steemit {
     namespace chain {
@@ -52,36 +53,7 @@ FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(cust
 
 namespace steemit {
     namespace chain {
-namespace {
-    const witness_schedule_object &get_witness_schedule_object(database_basic &db) {
-        try {
-            return db.get<witness_schedule_object>();
-        } FC_CAPTURE_AND_RETHROW()
-    }
 
-
-    account_name_type get_scheduled_witness(database_basic &db, uint32_t slot_num) {
-        const dynamic_global_property_object &dpo = db.get_dynamic_global_properties();
-        const witness_schedule_object &wso = get_witness_schedule_object(db);
-        uint64_t current_aslot = dpo.current_aslot + slot_num;
-        return wso.current_shuffled_witnesses[current_aslot % wso.num_scheduled_witnesses];
-    }
-
-
-    const witness_object &get_witness(database_basic &db, const account_name_type &name) {
-        try {
-            return db.get<witness_object, by_name>(name);
-        } FC_CAPTURE_AND_RETHROW((name))
-    }
-
-    const account_object &get_account(database_basic &db, const account_name_type &name) {
-        try {
-            return db.get<account_object, by_name>(name);
-        } FC_CAPTURE_AND_RETHROW((name))
-    }
-
-
-}
         using boost::container::flat_set;
 
         database_basic::database_basic(){
@@ -98,7 +70,6 @@ namespace {
                 chainbase::database::open(shared_mem_dir, chainbase_flags, shared_file_size);
 
                 initialize_indexes();
-                initialize_workers();
                 initialize_evaluators();
 
                 if (chainbase_flags & chainbase::database::read_write) {
@@ -329,8 +300,7 @@ namespace {
         std::vector<block_id_type> database_basic::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
                 pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(head_block_id(), head_of_fork);
-                if (!((branches.first.back()->previous_id() ==
-                       branches.second.back()->previous_id()))) {
+                if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)
                             (head_block_id())
                             (branches.first.size())
@@ -570,10 +540,10 @@ namespace {
             uint32_t skip = get_node_properties().skip_flags;
             uint32_t slot_num = get_slot_at_time(when);
             FC_ASSERT(slot_num > 0);
-            string scheduled_witness = get_scheduled_witness(*this,slot_num);
+            string scheduled_witness = database_helper::big_helper::get_scheduled_witness(*this,slot_num);
             FC_ASSERT(scheduled_witness == witness_owner);
 
-            const auto &witness_obj = get_witness(*this,witness_owner);
+            const auto &witness_obj = database_helper::big_helper::get_witness(*this,witness_owner);
 
             if (!(skip & static_cast<uint32_t >(validation_steps::skip_witness_signature)))
                 FC_ASSERT(witness_obj.signing_key == block_signing_private_key.get_public_key());
@@ -651,7 +621,7 @@ namespace {
             pending_block.transaction_merkle_root = pending_block.calculate_merkle_root();
             pending_block.witness = witness_owner;
             if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                const auto &witness = get_witness(*this,witness_owner);
+                const auto &witness = database_helper::big_helper::get_witness(*this,witness_owner);
 
                 if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
                     pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
@@ -1145,7 +1115,7 @@ namespace {
 
                 if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) // Cannot remove after hardfork
                 {
-                    const auto &witness = get_witness(*this,next_block.witness);
+                    const auto &witness = database_helper::big_helper::get_witness(*this,next_block.witness);
                     const auto &hardfork_state = get_hardfork_property_object();
                     FC_ASSERT(witness.running_version >=
                               hardfork_state.current_hardfork_version,
@@ -1165,36 +1135,36 @@ namespace {
                     ++_current_trx_in_block;
                 }
                 //TODO Big problem
-/*
+
                 update_global_dynamic_data(next_block);
-                update_signing_witness(signing_witness, next_block);
+                //update_signing_witness(signing_witness, next_block);
 
                 update_last_irreversible_block();
 
                 create_block_summary(next_block);
                 clear_expired_transactions();
-                clear_expired_orders();
-                clear_expired_delegations();
-                update_witness_schedule(*this);
+                //clear_expired_orders();
+                //clear_expired_delegations();
+                //update_witness_schedule(*this);
 
-                update_median_feed();
+                //update_median_feed();
                 update_virtual_supply();
 
-                clear_null_account_balance();
-                process_funds();
-                process_conversions();
-                process_comment_cashout();
-                process_vesting_withdrawals();
-                process_savings_withdraws();
-                pay_liquidity_reward();
+                //clear_null_account_balance();
+                //process_funds();
+                //process_conversions();
+                //process_comment_cashout();
+                //process_vesting_withdrawals();
+                //process_savings_withdraws();
+                //pay_liquidity_reward();
                 update_virtual_supply();
 
-                account_recovery_processing();
-                expire_escrow_ratification();
-                process_decline_voting_rights();
+                //account_recovery_processing();
+                //expire_escrow_ratification();
+                //process_decline_voting_rights();
 
                 process_hardforks();
-*/
+
                 // notify observers that the block has been applied
                 notify_applied_block(next_block);
 
@@ -1213,7 +1183,7 @@ namespace {
                     case 1: // version
                     {
                         auto reported_version = itr->get<version>();
-                        const auto &signing_witness = get_witness(*this,next_block.witness);
+                        const auto &signing_witness = database_helper::big_helper::get_witness(*this,next_block.witness);
                         //idump( (next_block.witness)(signing_witness.running_version)(reported_version) );
 
                         if (reported_version !=
@@ -1227,7 +1197,7 @@ namespace {
                     case 2: // hardfork_version vote
                     {
                         auto hfv = itr->get<hardfork_version_vote>();
-                        const auto &signing_witness = get_witness(*this,next_block.witness);
+                        const auto &signing_witness = database_helper::big_helper::get_witness(*this,next_block.witness);
                         //idump( (next_block.witness)(signing_witness.running_version)(hfv) );
 
                         if (hfv.hf_version !=
@@ -1296,20 +1266,20 @@ namespace {
 
 
                 for (const auto &auth : required) {
-                    const auto &acnt = get_account(*this,auth);
+                    const auto &acnt = database_helper::big_helper::get_account(*this,auth);
 
                     if (!has_hardfork(STEEMIT_HARDFORK_0_17__79)) {
-                        dynamic_extension_worker().get("account")->invoke("old_update_account_bandwidth",acnt, trx_size, bandwidth_type::old_forum);
+                        database_helper::big_helper::old_update_account_bandwidth(*this,acnt, trx_size, bandwidth_type::old_forum);
                     }
 
-                    dynamic_extension_worker().get("account")->invoke("update_account_bandwidth",acnt, trx_size, bandwidth_type::forum);
+                    database_helper::big_helper::update_account_bandwidth(*this,acnt, trx_size, bandwidth_type::forum);
                     for (const auto &op : trx.operations) {
                         if (is_market_operation(op)) {
                             if (!has_hardfork(STEEMIT_HARDFORK_0_17__79)) {
-                                dynamic_extension_worker().get("account")->invoke("old_update_account_bandwidth",acnt, trx_size, bandwidth_type::old_market);
+                                database_helper::big_helper::old_update_account_bandwidth(*this,acnt, trx_size, bandwidth_type::old_market);
                             }
 
-                            dynamic_extension_worker().get("account")->invoke("update_account_bandwidth",acnt, trx_size * 10, bandwidth_type::market);
+                            database_helper::big_helper::update_account_bandwidth(*this,acnt, trx_size * 10, bandwidth_type::market);
                             break;
                         }
                     }
@@ -1364,7 +1334,7 @@ namespace {
             try {
                 FC_ASSERT(head_block_id() == next_block.previous, "", ("head_block_id", head_block_id())("next.prev", next_block.previous));
                 FC_ASSERT(head_block_time() < next_block.timestamp, "", ("head_block_time", head_block_time())("next", next_block.timestamp)("blocknum", next_block.block_num()));
-                const witness_object &witness = get_witness(const_cast<database_basic&>(*this),next_block.witness);
+                const witness_object &witness = database_helper::big_helper::get_witness(const_cast<database_basic&>(*this),next_block.witness);
 
                 if (!(skip & static_cast<uint32_t >(validation_steps::skip_witness_signature)))
                     FC_ASSERT(next_block.validate_signee(witness.signing_key));
@@ -1373,7 +1343,7 @@ namespace {
                     uint32_t slot_num = get_slot_at_time(next_block.timestamp);
                     FC_ASSERT(slot_num > 0);
 
-                    string scheduled_witness = get_scheduled_witness(const_cast<database_basic&>(*this),slot_num);
+                    string scheduled_witness = database_helper::big_helper::get_scheduled_witness(const_cast<database_basic&>(*this),slot_num);
 
                     FC_ASSERT(witness.owner ==
                               scheduled_witness, "Witness produced block at wrong time",
@@ -1411,12 +1381,12 @@ namespace {
                         }
                     });
                 } else {
-                    const witness_schedule_object &wso = get_witness_schedule_object(*this);
+                    const witness_schedule_object &wso = database_helper::big_helper::get_witness_schedule_object(*this);
 
                     vector<const witness_object *> wit_objs;
                     wit_objs.reserve(wso.num_scheduled_witnesses);
                     for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-                        wit_objs.push_back(&get_witness(*this,wso.current_shuffled_witnesses[i]));
+                        wit_objs.push_back(&database_helper::big_helper::get_witness(*this,wso.current_shuffled_witnesses[i]));
                     }
 
                     static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero");
@@ -1865,7 +1835,7 @@ namespace {
                     assert(missed_blocks != 0);
                     missed_blocks--;
                     for (uint32_t i = 0; i < missed_blocks; ++i) {
-                        const auto &witness_missed = get_witness(const_cast<database_basic&>(*this),get_scheduled_witness(const_cast<database_basic&>(*this),i + 1));
+                        const auto &witness_missed = database_helper::big_helper::get_witness(const_cast<database_basic&>(*this),database_helper::big_helper::get_scheduled_witness(const_cast<database_basic&>(*this),i + 1));
                         if (witness_missed.owner != b.witness) {
                             modify(witness_missed, [&](witness_object &w) {
                                 w.total_missed++;
@@ -2133,9 +2103,6 @@ namespace {
             return get_dynamic_global_properties().last_irreversible_block_num;
         }
 
-        dynamic_extension::worker_storage &database_basic::dynamic_extension_worker() {
-            return storage;
-        }
 
         const dynamic_global_property_object &database_basic::get_dynamic_global_properties() const {
             try {

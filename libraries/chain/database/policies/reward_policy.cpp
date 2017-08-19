@@ -2,6 +2,7 @@
 #include <steemit/chain/database/database_basic.hpp>
 #include <steemit/chain/chain_objects/steem_objects.hpp>
 #include <steemit/chain/compound.hpp>
+#include <steemit/chain/database/big_helper.hpp>
 
 namespace steemit {
     namespace chain {
@@ -49,8 +50,8 @@ namespace steemit {
                 const auto &ridx = references.get_index<liquidity_reward_balance_index>().indices().get<by_volume_weight>();
                 auto itr = ridx.begin();
                 if (itr != ridx.end() && itr->volume_weight() > 0) {
-                    references.dynamic_extension_worker().get("account")->invoke("adjust_balance",reward, true);
-                    references.dynamic_extension_worker().get("account")->invoke("adjust_balance",references.get(itr->owner), reward);
+                    database_helper::big_helper::adjust_supply(references,reward, true);
+                    database_helper::big_helper::adjust_balance(references,references.get(itr->owner), reward);
                     references.modify(*itr, [&](liquidity_reward_balance_object &obj) {
                         obj.steem_volume = 0;
                         obj.sbd_volume = 0;

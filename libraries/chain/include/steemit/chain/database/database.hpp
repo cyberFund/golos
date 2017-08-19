@@ -5,7 +5,6 @@
 #include <steemit/chain/index.hpp>
 
 #include "database_police.hpp"
-#include <steemit/chain/dynamic_extension/worker_storage.hpp>
 
 
 namespace steemit {
@@ -19,8 +18,6 @@ namespace steemit {
             void initialize_indexes();
 
             void initialize_evaluators();
-
-            void initialize_workers();
 
             void apply_operation(const operation &op);
 

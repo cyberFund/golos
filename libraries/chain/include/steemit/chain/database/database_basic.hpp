@@ -11,8 +11,6 @@
 
 #include <fc/log/logger.hpp>
 
-#include <steemit/chain/dynamic_extension/worker_storage.hpp>
-
 namespace steemit {
     namespace chain {
 
@@ -125,10 +123,7 @@ namespace steemit {
 
             const node_property_object &get_node_properties() const;
 
-            dynamic_extension::worker_storage& dynamic_extension_worker();
-
 ////Todo Nex Refactoring
-            virtual void initialize_workers()=0;
             const hardfork_property_object &get_hardfork_property_object() const;
             void process_hardforks();
             bool has_hardfork(uint32_t hardfork) const;
@@ -497,7 +492,6 @@ namespace steemit {
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
 
-            dynamic_extension::worker_storage storage;
         };
     }
 }
