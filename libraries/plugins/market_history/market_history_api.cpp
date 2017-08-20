@@ -706,7 +706,7 @@ namespace steemit {
                 std::vector<call_order_object> result;
                 const auto &idx = my->app.chain_database()->get_index<call_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
-                while (itr != idx.end() && itr->seller == owner) {
+                while (itr != idx.end() && itr->borrower == owner) {
                     result.emplace_back(*itr);
                     ++itr;
                 }
@@ -719,7 +719,7 @@ namespace steemit {
                 std::vector<force_settlement_object> result;
                 const auto &idx = my->app.chain_database()->get_index<force_settlement_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
-                while (itr != idx.end() && itr->seller == owner) {
+                while (itr != idx.end() && itr->owner == owner) {
                     result.emplace_back(*itr);
                     ++itr;
                 }
