@@ -53,14 +53,12 @@ namespace steemit {
             }
 
             friend bool operator==(const asset &a, const asset &b) {
-                return std::tie(a.symbol, a.amount) ==
-                       std::tie(b.symbol, b.amount);
+                return std::tie(a.symbol, a.amount) == std::tie(b.symbol, b.amount);
             }
 
             friend bool operator<(const asset &a, const asset &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return std::tie(a.amount, a.symbol) <
-                       std::tie(b.amount, b.symbol);
+                return std::tie(a.amount, a.symbol) < std::tie(b.amount, b.symbol);
             }
 
             friend bool operator<=(const asset &a, const asset &b) {
@@ -96,8 +94,8 @@ namespace steemit {
         };
 
         struct price {
-            price(const asset &base = asset(0, STEEM_SYMBOL), const asset &quote = asset(0, STEEM_SYMBOL))
-                    : base(base), quote(quote) {
+            price(const asset &base = asset(0, STEEM_SYMBOL), const asset &quote = asset(0, STEEM_SYMBOL)) : base(base),
+                                                                                                             quote(quote) {
             }
 
             asset base;

@@ -31,7 +31,8 @@ namespace steemit {
                     };
 
                     /** do nothing for other operation types */
-                    template<typename T> market_trade operator()(const T &) const {
+                    template<typename T>
+                    market_trade operator()(const T &) const {
                         return {};
                     }
 
@@ -230,7 +231,10 @@ namespace steemit {
 
                 try {
                     const fc::time_point_sec now = fc::time_point::now();
-                    const fc::time_point_sec yesterday = fc::time_point_sec(now.sec_since_epoch() - 86400);
+                    const fc::time_point_sec yesterday = app.chain_database()->fetch_block_by_number(0)->timestamp <
+                                                         fc::time_point_sec(now.sec_since_epoch() - 86400)
+                                                         ? fc::time_point_sec(now.sec_since_epoch() - 86400)
+                                                         : app.chain_database()->fetch_block_by_number(0)->timestamp;
                     const auto batch_size = 100;
 
                     vector<market_trade> trades = get_trade_history(base, quote, now, yesterday, batch_size);
@@ -303,7 +307,8 @@ namespace steemit {
                     return double(a.amount.value) / std::pow(10, p);
                 };
 
-                std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
+                std::function<double( const price
+                &)> price_to_real = [&](const price &p) -> double {
                     if (p.base.symbol_name() == base_id) {
                         return asset_to_real(p.base, assets[0]->precision) /
                                asset_to_real(p.quote, assets[1]->precision);
@@ -408,8 +413,9 @@ namespace steemit {
                 auto itr = history_idx.lower_bound(hkey);
                 vector<order_history_object> result;
                 while (itr != history_idx.end() && count < limit) {
-                    if (itr->key.base != a_name || itr->key.quote != b_name)
+                    if (itr->key.base != a_name || itr->key.quote != b_name) {
                         break;
+                    }
                     result.emplace_back(*itr);
                     ++itr;
                     ++count;
@@ -675,14 +681,14 @@ namespace steemit {
             my->unsubscribe_from_market(a, b);
         }
 
-        std::vector<steemit::application::extended_limit_order> market_history_api::get_open_orders(
+        std::vector<steemit::application::extended_limit_order> market_history_api::get_limit_orders_by_owner(
                 const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 std::vector<steemit::application::extended_limit_order> result;
                 const auto &idx = my->app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
                 while (itr != idx.end() && itr->seller == owner) {
-                    result.push_back(*itr);
+                    result.emplace_back(*itr);
 
                     if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
                         result.back().real_price = (~result.back().sell_price).to_real();
@@ -695,9 +701,35 @@ namespace steemit {
             });
         }
 
-        void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, string a,
-                                                     string b) {
-            my->subscribe_to_market(callback, a, b);
+        std::vector<call_order_object> market_history_api::get_call_orders_by_owner(const string &owner) const {
+            return my->app.chain_database()->with_read_lock([&]() {
+                std::vector<call_order_object> result;
+                const auto &idx = my->app.chain_database()->get_index<call_order_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->seller == owner) {
+                    result.emplace_back(*itr);
+                    ++itr;
+                }
+                return result;
+            });
+        }
+
+        std::vector<force_settlement_object> market_history_api::get_settle_orders_by_owner(const string &owner) const {
+            return my->app.chain_database()->with_read_lock([&]() {
+                std::vector<force_settlement_object> result;
+                const auto &idx = my->app.chain_database()->get_index<force_settlement_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->seller == owner) {
+                    result.emplace_back(*itr);
+                    ++itr;
+                }
+                return result;
+            });
+        }
+
+        void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, const string &a,
+                                                     const string &b) {
+            my->subscribe_to_market(std::move(callback), a, b);
         }
     }
 } // steemit::market_history

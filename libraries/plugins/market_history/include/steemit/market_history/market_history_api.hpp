@@ -101,7 +101,7 @@ namespace steemit {
              * Callback will be passed a variant containing a vector<pair<operation, operation_result>>. The vector will
              * contain, in order, the operations which changed the market, and their results.
              */
-            void subscribe_to_market(std::function<void(const variant &)> callback, string a, string b);
+            void subscribe_to_market(std::function<void(const variant &)> callback, const string &a, const string &b);
 
             /**
              * @brief Unsubscribe from updates to a given market
@@ -110,7 +110,11 @@ namespace steemit {
              */
             void unsubscribe_from_market(string a, string b);
 
-            std::vector<steemit::application::extended_limit_order> get_open_orders(const string &owner) const;
+            std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(const string &owner) const;
+
+            std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
+
+            std::vector<force_settlement_object> get_settle_orders_by_owner(const string &owner) const;
 
             /**
              * @brief Returns the ticker for the market assetA:assetB
@@ -229,4 +233,4 @@ FC_API(steemit::market_history::market_history_api,
                //Market
                (get_ticker)(get_volume)(get_order_book)(get_trade_history)(get_market_history)(
                get_market_history_buckets)(get_limit_orders)(get_call_orders)(get_settle_orders)(get_margin_positions)(
-               get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_open_orders)(get_fill_order_history));
+               get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_limit_orders_by_owner)(get_call_orders_by_owner)(get_settle_orders_by_owner)(get_fill_order_history));

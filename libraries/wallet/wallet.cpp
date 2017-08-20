@@ -888,7 +888,7 @@ namespace steemit {
                             }
                             return ss.str();
                         };
-                        m["get_open_orders"] = [](variant result, const fc::variants &a) {
+                        m["get_limit_orders_by_owner"] = [](variant result, const fc::variants &a) {
                             auto orders = result.as<vector<extended_limit_order>>();
 
                             std::stringstream ss;
@@ -898,8 +898,7 @@ namespace steemit {
                             ss << ' ' << setw(10) << "Price";
                             ss << ' ' << setw(10) << "Quantity";
                             ss << ' ' << setw(10) << "Type";
-                            ss
-                                << "\n=====================================================================================================\n";
+                            ss << "\n=====================================================================================================\n";
                             for (const auto &o : orders) {
                                 ss << ' ' << setw(10) << o.order_id;
                                 ss << ' ' << setw(10) << o.real_price;
@@ -2340,7 +2339,7 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        vector<convert_request_api_obj> wallet_api::get_conversion_requests(string owner_account) {
+        vector<convert_request_object> wallet_api::get_conversion_requests(string owner_account) {
             return my->_remote_db->get_conversion_requests(owner_account);
         }
 
@@ -2441,7 +2440,7 @@ namespace steemit {
             return (*my->_remote_market_history_api)->get_order_book(base, quote, limit);
         }
 
-        vector<extended_limit_order> wallet_api::get_open_orders(string account_name) {
+        vector<extended_limit_order> wallet_api::get_limit_orders_by_owner(string account_name) {
             try {
                 my->use_remote_market_history_api();
             } catch (fc::exception &e) {
@@ -2449,7 +2448,29 @@ namespace steemit {
                 return {};
             }
 
-            return (*my->_remote_market_history_api)->get_open_orders(account_name);
+            return (*my->_remote_market_history_api)->get_limit_orders_by_owner(account_name);
+        }
+
+        vector<call_order_object> wallet_api::get_call_orders_by_owner(string account_name) {
+            try {
+                my->use_remote_market_history_api();
+            } catch (fc::exception &e) {
+                elog("Connected node needs to enable market_history");
+                return {};
+            }
+
+            return (*my->_remote_market_history_api)->get_call_orders_by_owner(account_name);
+        }
+
+        vector<force_settlement_object> wallet_api::get_settle_orders_by_owner(string account_name) {
+            try {
+                my->use_remote_market_history_api();
+            } catch (fc::exception &e) {
+                elog("Connected node needs to enable market_history");
+                return {};
+            }
+
+            return (*my->_remote_market_history_api)->get_settle_orders_by_owner(account_name);
         }
 
         annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset amount_to_sell, asset min_to_receive, bool fill_or_kill, uint32_t expiration_sec, bool broadcast) {

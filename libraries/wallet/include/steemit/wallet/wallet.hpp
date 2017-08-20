@@ -230,7 +230,7 @@ namespace steemit {
              * @see \c get_global_properties() for less-frequently changing properties
              * @returns the dynamic global properties
              */
-            dynamic_global_property_api_obj get_dynamic_global_properties() const;
+            dynamic_global_property_object get_dynamic_global_properties() const;
 
             /** Returns information about the given account.
              *
@@ -619,7 +619,7 @@ namespace steemit {
              *
              * @returns All pending conversion requests by account
              */
-            vector<convert_request_api_obj> get_conversion_requests(string owner);
+            vector<convert_request_object> get_conversion_requests(string owner);
 
 
             /**
@@ -898,7 +898,7 @@ namespace steemit {
              */
             market_history::order_book get_order_book(const string &base, const string &quote, unsigned limit = 50);
 
-            vector<extended_limit_order> get_open_orders(string account_name);
+            vector<extended_limit_order> get_limit_orders_by_owner(string account_name);
 
             /**
              *  Creates a limit order at the price amount_to_sell / min_to_receive and will deduct amount_to_sell from account

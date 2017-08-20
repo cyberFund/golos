@@ -53,7 +53,7 @@ namespace steemit {
             // Globals
             fc::variant_object get_config() const;
 
-            dynamic_global_property_api_obj get_dynamic_global_properties() const;
+            dynamic_global_property_object get_dynamic_global_properties() const;
 
             // Accounts
             std::vector<extended_account> get_accounts(std::vector<std::string> names) const;
@@ -334,7 +334,7 @@ namespace steemit {
             return steemit::protocol::get_config();
         }
 
-        dynamic_global_property_api_obj database_api::get_dynamic_global_properties() const {
+        dynamic_global_property_object database_api::get_dynamic_global_properties() const {
             return my->_db.with_read_lock([&]() {
                 return my->get_dynamic_global_properties();
             });
@@ -358,11 +358,11 @@ namespace steemit {
             });
         }
 
-        dynamic_global_property_api_obj database_api_impl::get_dynamic_global_properties() const {
+        dynamic_global_property_object database_api_impl::get_dynamic_global_properties() const {
             return _db.get(dynamic_global_property_object::id_type());
         }
 
-        witness_schedule_api_obj database_api::get_witness_schedule() const {
+        witness_schedule_object database_api::get_witness_schedule() const {
             return my->_db.with_read_lock([&]() {
                 return my->_db.get(witness_schedule_object::id_type());
             });
@@ -505,9 +505,9 @@ namespace steemit {
             });
         }
 
-        optional<escrow_api_obj> database_api::get_escrow(std::string from, uint32_t escrow_id) const {
+        optional<escrow_object> database_api::get_escrow(std::string from, uint32_t escrow_id) const {
             return my->_db.with_read_lock([&]() {
-                optional<escrow_api_obj> result;
+                optional<escrow_object> result;
 
                 try {
                     result = my->_db.get_escrow(from, escrow_id);
@@ -565,8 +565,8 @@ namespace steemit {
             });
         }
 
-        optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(std::string account, bandwidth_type type) const {
-            optional<account_bandwidth_api_obj> result;
+        optional<account_bandwidth_object> database_api::get_account_bandwidth(std::string account, bandwidth_type type) const {
+            optional<account_bandwidth_object> result;
             auto band = my->_db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(account, type));
             if (band != nullptr) {
                 result = *band;
@@ -953,10 +953,10 @@ namespace steemit {
             return verify_authority(trx);
         }
 
-        std::vector<convert_request_api_obj> database_api::get_conversion_requests(const std::string &account) const {
+        std::vector<convert_request_object> database_api::get_conversion_requests(const std::string &account) const {
             return my->_db.with_read_lock([&]() {
                 const auto &idx = my->_db.get_index<convert_request_index>().indices().get<by_owner>();
-                std::vector<convert_request_api_obj> result;
+                std::vector<convert_request_object> result;
                 auto itr = idx.lower_bound(account);
                 while (itr != idx.end() && itr->owner == account) {
                     result.emplace_back(*itr);
@@ -2352,11 +2352,11 @@ namespace steemit {
             });
         }
 
-        vector<vesting_delegation_api_obj> database_api::get_vesting_delegations(string account, string from, uint32_t limit) const {
+        vector<vesting_delegation_object> database_api::get_vesting_delegations(string account, string from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
-                vector<vesting_delegation_api_obj> result;
+                vector<vesting_delegation_object> result;
                 result.reserve(limit);
 
                 const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_delegation>();
@@ -2371,11 +2371,11 @@ namespace steemit {
             });
         }
 
-        vector<vesting_delegation_expiration_api_obj> database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const {
+        vector<vesting_delegation_expiration_object> database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
-                vector<vesting_delegation_expiration_api_obj> result;
+                vector<vesting_delegation_expiration_object> result;
                 result.reserve(limit);
 
                 const auto &exp_idx = my->_db.get_index<vesting_delegation_expiration_index, by_account_expiration>();
@@ -2839,7 +2839,7 @@ namespace steemit {
             return map_result;
         }
 
-        reward_fund_api_obj database_api::get_reward_fund(string name) const {
+        reward_fund_object database_api::get_reward_fund(string name) const {
             return my->_db.with_read_lock([&]() {
                 auto fund = my->_db.find<reward_fund_object, by_name>(name);
                 FC_ASSERT(fund != nullptr, "Invalid reward fund name");
