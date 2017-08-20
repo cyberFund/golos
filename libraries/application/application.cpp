@@ -135,8 +135,7 @@ namespace steemit {
                             return;
                         }
 
-                        _websocket_server = std::make_shared<fc::http::websocket_server>(-1);
-
+                        _websocket_server = std::make_shared<fc::http::websocket_server>();
                         _websocket_server->on_connection([&](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
                         auto rpc_endpoint = _options->at("rpc-endpoint").as<string>();
                         ilog("Configured websocket rpc to listen on ${ip}", ("ip", rpc_endpoint));

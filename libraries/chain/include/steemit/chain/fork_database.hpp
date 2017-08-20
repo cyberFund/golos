@@ -18,8 +18,7 @@ namespace steemit {
         using steemit::protocol::block_id_type;
 
         struct fork_item {
-            fork_item(signed_block d)
-                    : num(d.block_num()), id(d.id()), data(std::move(d)) {
+            fork_item(signed_block d) : num(d.block_num()), id(d.id()), data(std::move(d)) {
             }
 
             block_id_type previous_id() const {
@@ -87,8 +86,7 @@ namespace steemit {
              *  Given two head blocks, return two branches of the fork graph that
              *  end with a common ancestor (same prior block)
              */
-            pair<branch_type, branch_type> fetch_branch_from(block_id_type first,
-                    block_id_type second) const;
+            pair<branch_type, branch_type> fetch_branch_from(block_id_type first, block_id_type second) const;
 
             shared_ptr<fork_item> walk_main_branch_to_num(uint32_t block_num) const;
 
@@ -97,14 +95,12 @@ namespace steemit {
             struct block_id;
             struct block_num;
             struct by_previous;
-            typedef multi_index_container<
-                    item_ptr,
-                    indexed_by<
-                            hashed_unique<tag<block_id>, member<fork_item, block_id_type, &fork_item::id>, std::hash<fc::ripemd160>>,
-                            hashed_non_unique<tag<by_previous>, const_mem_fun<fork_item, block_id_type, &fork_item::previous_id>, std::hash<fc::ripemd160>>,
-                            ordered_non_unique<tag<block_num>, member<fork_item, uint32_t, &fork_item::num>>
-                    >
-            > fork_multi_index_type;
+            typedef multi_index_container<item_ptr, indexed_by<
+                    hashed_unique<tag<block_id>, member<fork_item, block_id_type, &fork_item::id>,
+                            std::hash<fc::ripemd160>>, hashed_non_unique<tag<by_previous>,
+                            const_mem_fun<fork_item, block_id_type, &fork_item::previous_id>, std::hash<fc::ripemd160>>,
+                    ordered_non_unique<tag<block_num>,
+                            member<fork_item, uint32_t, &fork_item::num>>> > fork_multi_index_type;
 
             void set_max_size(uint32_t s);
 

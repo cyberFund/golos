@@ -83,7 +83,7 @@ namespace steemit {
                 // This way, boost test's last checkpoint tells us approximately where the error was.
                 if (!std::uncaught_exception()) {
                     BOOST_CHECK(db.get_node_properties().skip_flags ==
-                                database::skip_nothing);
+                                validation_steps::skip_nothing);
                 }
 
                 if (data_dir) {
@@ -160,7 +160,7 @@ namespace steemit {
                 // This way, boost test's last checkpoint tells us approximately where the error was.
                 if (!std::uncaught_exception()) {
                     BOOST_CHECK(db.get_node_properties().skip_flags ==
-                                database::skip_nothing);
+                                validation_steps::skip_nothing);
                 }
 
                 db.pop_block();

@@ -43,18 +43,11 @@ namespace steemit {
             uint128_t calculate_vshares(const uint128_t &rshares, const reward_fund_object &rf);
 
             inline bool is_comment_payout_dust(const price &p, uint64_t steem_payout) {
-                return to_sbd(p, asset(steem_payout, STEEM_SYMBOL)) <
-                       STEEMIT_MIN_PAYOUT_SBD;
+                return to_sbd(p, asset(steem_payout, STEEM_SYMBOL)) < STEEMIT_MIN_PAYOUT_SBD;
             }
         }
     }
 }
 
 FC_REFLECT(steemit::chain::utilities::comment_reward_context,
-        (rshares)
-                (reward_weight)
-                (max_sbd)
-                (total_reward_shares2)
-                (total_reward_fund_steem)
-                (current_steem_price)
-)
+           (rshares)(reward_weight)(max_sbd)(total_reward_shares2)(total_reward_fund_steem)(current_steem_price))

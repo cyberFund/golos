@@ -5,14 +5,6 @@
 namespace steemit {
     namespace chain {
 
-        namespace {
-            const account_object &get_account(database_basic &db, const account_name_type &name) {
-                try {
-                    return db.get<account_object, by_name>(name);
-                } FC_CAPTURE_AND_RETHROW((name))
-            }
-        }
-
         void order_policy::clear_expired_orders() {
             auto now = references.head_block_time();
             const auto &orders_by_exp = references.get_index<limit_order_index>().indices().get<by_expiration>();
@@ -48,7 +40,7 @@ namespace steemit {
                 FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
                 FC_ASSERT(pays.symbol != receives.symbol);
 
-                const account_object &seller = get_account(references,order.seller);
+                const account_object &seller = database_helper::big_helper::get_account(references, order.seller);
 
                 database_helper::big_helper::adjust_balance(references,seller, receives);
 
@@ -71,12 +63,11 @@ namespace steemit {
                     }
                     return false;
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
+            } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
         void order_policy::cancel_order(const limit_order_object &order) {
-            database_helper::big_helper::adjust_balance(references,get_account(references,order.seller), order.amount_for_sale());
+            database_helper::big_helper::adjust_balance(references,database_helper::big_helper::get_account(references,order.seller), order.amount_for_sale());
             references.remove(order);
         }
 
@@ -117,15 +108,17 @@ namespace steemit {
                  (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 &&
                   references.has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
                 if (old_order_receives.symbol == STEEM_SYMBOL) {
-                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,old_order.seller), old_order_receives, false);
-                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,new_order.seller), -old_order_receives, false);
+                    database_helper::big_helper::adjust_liquidity_reward(references,database_helper::big_helper::get_account(references,old_order.seller), old_order_receives, false);
+                    database_helper::big_helper::adjust_liquidity_reward(references,database_helper::big_helper::get_account(references,new_order.seller), -old_order_receives, false);
                 } else {
-                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,old_order.seller), new_order_receives, true);
-                    database_helper::big_helper::adjust_liquidity_reward(references,get_account(references,new_order.seller), -new_order_receives, true);
+                    database_helper::big_helper::adjust_liquidity_reward(references,database_helper::big_helper::get_account(references,old_order.seller), new_order_receives, true);
+                    database_helper::big_helper::adjust_liquidity_reward(references,database_helper::big_helper::get_account(references,new_order.seller), -new_order_receives, true);
                 }
             }
 
-            references.push_virtual_operation(fill_order_operation(new_order.seller, new_order.orderid, new_order_pays, old_order.seller, old_order.orderid, old_order_pays));
+            references.push_virtual_operation(
+                    fill_order_operation(new_order.seller, new_order.orderid, new_order_pays, old_order.seller,
+                                         old_order.orderid, old_order_pays));
 
             int result = 0;
             result |= fill_order(new_order, new_order_pays, new_order_receives);
@@ -134,7 +127,7 @@ namespace steemit {
             return result;
         }
 
-        order_policy::order_policy(database_basic &ref,int) : generic_policy(ref) {
+        order_policy::order_policy(database_basic &ref, int) : generic_policy(ref) {
         }
 
         const limit_order_object &order_policy::get_limit_order(const account_name_type &name, uint32_t orderid) const {
@@ -144,11 +137,12 @@ namespace steemit {
                     orderid = orderid & 0x0000FFFF;
                 }
 
-                return  references.get<limit_order_object, by_account>(boost::make_tuple(name, orderid));
+                return references.get<limit_order_object, by_account>(boost::make_tuple(name, orderid));
             } FC_CAPTURE_AND_RETHROW((name)(orderid))
         }
 
-        const limit_order_object *order_policy::find_limit_order(const account_name_type &name, uint32_t orderid) const {
+        const limit_order_object *order_policy::find_limit_order(const account_name_type &name,
+                                                                 uint32_t orderid) const {
 
             if (!references.has_hardfork(STEEMIT_HARDFORK_0_6__127)) {
                 orderid = orderid & 0x0000FFFF;

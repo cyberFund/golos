@@ -4,14 +4,15 @@
 #include <steemit/chain/evaluators/evaluator_registry.hpp>
 #include <steemit/chain/index.hpp>
 
-#include "database_police.hpp"
+#include "database_policy.hpp"
 
 
 namespace steemit {
     namespace chain {
-        class database final : public database_tag {
+        class database final : public database_t {
         public:
-            database()= default;
+            database() = default;
+
             ~database() = default;
 
         protected:
@@ -21,13 +22,11 @@ namespace steemit {
 
             void apply_operation(const operation &op);
 
-            evaluator_registry<operation> evaluator_registry_;
+            evaluator_registry<operation> registry;
         };
 
 
         shared_ptr<database> make_database();
-
-
     }
 }
 #endif //GOLOS_DATABASE_HPP

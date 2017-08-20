@@ -81,60 +81,56 @@ namespace steemit {
         }
 
         void database::initialize_evaluators() {
-            evaluator_registry_.register_evaluator<database_tag, vote_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, transfer_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, transfer_to_vesting_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, withdraw_vesting_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, set_withdraw_vesting_route_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, witness_update_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, account_witness_vote_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, account_witness_proxy_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, custom_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, custom_binary_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, custom_json_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, pow_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, pow2_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, report_over_production_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, feed_publish_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, comment_payout_extension_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, convert_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, challenge_authority_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, prove_authority_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, request_account_recovery_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, recover_account_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, change_recovery_account_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, escrow_transfer_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, escrow_approve_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, escrow_dispute_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, escrow_release_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, transfer_to_savings_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, transfer_from_savings_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, cancel_transfer_from_savings_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, decline_voting_rights_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, reset_account_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, set_reset_account_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, account_create_with_delegation_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, delegate_vesting_shares_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, account_create_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, account_update_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, comment_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, comment_options_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, delete_comment_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, limit_order_create_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, limit_order_create2_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, limit_order_cancel_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, limit_order_create_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, limit_order_create2_evaluator>(*this);
-            evaluator_registry_.register_evaluator<database_tag, limit_order_cancel_evaluator>(*this);
+            registry.register_evaluator<database_t, vote_evaluator>(*this);
+            registry.register_evaluator<database_t, transfer_evaluator>(*this);
+            registry.register_evaluator<database_t, transfer_to_vesting_evaluator>(*this);
+            registry.register_evaluator<database_t, withdraw_vesting_evaluator>(*this);
+            registry.register_evaluator<database_t, set_withdraw_vesting_route_evaluator>(*this);
+            registry.register_evaluator<database_t, witness_update_evaluator>(*this);
+            registry.register_evaluator<database_t, account_witness_vote_evaluator>(*this);
+            registry.register_evaluator<database_t, account_witness_proxy_evaluator>(*this);
+            registry.register_evaluator<database_t, custom_evaluator>(*this);
+            registry.register_evaluator<database_t, custom_binary_evaluator>(*this);
+            registry.register_evaluator<database_t, custom_json_evaluator>(*this);
+            registry.register_evaluator<database_t, pow_evaluator>(*this);
+            registry.register_evaluator<database_t, pow2_evaluator>(*this);
+            registry.register_evaluator<database_t, report_over_production_evaluator>(*this);
+            registry.register_evaluator<database_t, feed_publish_evaluator>(*this);
+            registry.register_evaluator<database_t, comment_payout_extension_evaluator>(*this);
+            registry.register_evaluator<database_t, convert_evaluator>(*this);
+            registry.register_evaluator<database_t, challenge_authority_evaluator>(*this);
+            registry.register_evaluator<database_t, prove_authority_evaluator>(*this);
+            registry.register_evaluator<database_t, request_account_recovery_evaluator>(*this);
+            registry.register_evaluator<database_t, recover_account_evaluator>(*this);
+            registry.register_evaluator<database_t, change_recovery_account_evaluator>(*this);
+            registry.register_evaluator<database_t, escrow_transfer_evaluator>(*this);
+            registry.register_evaluator<database_t, escrow_approve_evaluator>(*this);
+            registry.register_evaluator<database_t, escrow_dispute_evaluator>(*this);
+            registry.register_evaluator<database_t, escrow_release_evaluator>(*this);
+            registry.register_evaluator<database_t, transfer_to_savings_evaluator>(*this);
+            registry.register_evaluator<database_t, transfer_from_savings_evaluator>(*this);
+            registry.register_evaluator<database_t, cancel_transfer_from_savings_evaluator>(*this);
+            registry.register_evaluator<database_t, decline_voting_rights_evaluator>(*this);
+            registry.register_evaluator<database_t, reset_account_evaluator>(*this);
+            registry.register_evaluator<database_t, set_reset_account_evaluator>(*this);
+            registry.register_evaluator<database_t, account_create_with_delegation_evaluator>(*this);
+            registry.register_evaluator<database_t, delegate_vesting_shares_evaluator>(*this);
+            registry.register_evaluator<database_t, account_create_evaluator>(*this);
+            registry.register_evaluator<database_t, account_update_evaluator>(*this);
+            registry.register_evaluator<database_t, comment_evaluator>(*this);
+            registry.register_evaluator<database_t, comment_options_evaluator>(*this);
+            registry.register_evaluator<database_t, delete_comment_evaluator>(*this);
+            registry.register_evaluator<database_t, limit_order_create_evaluator>(*this);
+            registry.register_evaluator<database_t, limit_order_create2_evaluator>(*this);
+            registry.register_evaluator<database_t, limit_order_cancel_evaluator>(*this);
         }
 
         void database::apply_operation(const operation &op) {
             operation_notification note(op);
             notify_pre_apply_operation(note);
-            evaluator_registry_.get_evaluator(op).apply(op);
+            registry.get_evaluator(op).apply(op);
             notify_post_apply_operation(note);
         }
-
 
         shared_ptr<database> make_database() {
             return shared_ptr<database>(new database);

@@ -1,4 +1,3 @@
-
 #include <steemit/chain/evaluators/account_create_evaluator.hpp>
 
 void steemit::chain::account_create_evaluator::do_apply(const account_create_operation &o) {
@@ -7,26 +6,23 @@ void steemit::chain::account_create_evaluator::do_apply(const account_create_ope
 
     const auto &props = this->_db.get_dynamic_global_properties();
 
-    FC_ASSERT(creator.balance >=
-              o.fee, "Insufficient balance to create account.", ("creator.balance", creator.balance)("required", o.fee));
+    FC_ASSERT(creator.balance >= o.fee, "Insufficient balance to create account.",
+              ("creator.balance", creator.balance)("required", o.fee));
 
     if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
         const witness_schedule_object &wso = this->_db.get_witness_schedule_object();
         FC_ASSERT(o.fee >= wso.median_props.account_creation_fee *
-                           asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL), "Insufficient Fee: ${f} required, ${p} provided.",
-                  ("f", wso.median_props.account_creation_fee *
-                        asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL))
-                          ("p", o.fee));
+                           asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL),
+                  "Insufficient Fee: ${f} required, ${p} provided.", ("f", wso.median_props.account_creation_fee *
+                                                                           asset(STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                                                                                 STEEM_SYMBOL))("p", o.fee));
     } else if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
         const witness_schedule_object &wso = this->_db.get_witness_schedule_object();
-        FC_ASSERT(o.fee >=
-                  wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
-                  ("f", wso.median_props.account_creation_fee)
-                          ("p", o.fee));
+        FC_ASSERT(o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
+                  ("f", wso.median_props.account_creation_fee)("p", o.fee));
     }
 
-    if (this->_db.is_producing() ||
-        this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
+    if (this->_db.is_producing() || this->_db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
         for (auto &a : o.owner.account_auths) {
             this->_db.get_account(a.first);
         }
@@ -44,7 +40,7 @@ void steemit::chain::account_create_evaluator::do_apply(const account_create_ope
         c.balance -= o.fee;
     });
 
-    const auto &new_account = this->_db. template create<account_object>([&](account_object &acc) {
+    const auto &new_account = this->_db.template create<account_object>([&](account_object &acc) {
         acc.name = o.new_account_name;
         acc.memo_key = o.memo_key;
         acc.created = props.time;
@@ -63,7 +59,7 @@ void steemit::chain::account_create_evaluator::do_apply(const account_create_ope
 #endif
     });
 
-    this->_db. template create<account_authority_object>([&](account_authority_object &auth) {
+    this->_db.template create<account_authority_object>([&](account_authority_object &auth) {
         auth.account = o.new_account_name;
         auth.owner = o.owner;
         auth.active = o.active;

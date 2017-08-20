@@ -76,7 +76,8 @@ namespace steemit {
         }
 
         void witness_policy::process_decline_voting_rights() {
-            const auto &request_idx = references.get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
+            const auto &request_idx = references.get_index<decline_voting_rights_request_index>().indices().get<
+                    by_effective_date>();
             auto itr = request_idx.begin();
 
             while (itr != request_idx.end() && itr->effective_date <= references.head_block_time()) {
@@ -145,8 +146,7 @@ namespace steemit {
             std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
                 return a->props.sbd_interest_rate < b->props.sbd_interest_rate;
             });
-            uint16_t median_sbd_interest_rate = active[active.size() /
-                                                       2]->props.sbd_interest_rate;
+            uint16_t median_sbd_interest_rate = active[active.size() / 2]->props.sbd_interest_rate;
 
             references.modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props.account_creation_fee = median_account_creation_fee;

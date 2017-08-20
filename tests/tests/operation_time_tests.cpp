@@ -2879,7 +2879,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
       BOOST_TEST_MESSAGE( "Generating blocks up to comment payout" );
 
-      db_plugin->debug_generate_blocks_until( debug_key, fc::time_point_sec( db.get_comment( comment.author, comment.permlink ).cashout_time.sec_since_epoch() - 2 * STEEMIT_BLOCK_INTERVAL ), true, database::skip_witness_signature );
+      db_plugin->debug_generate_blocks_until( debug_key, fc::time_point_sec( db.get_comment( comment.author, comment.permlink ).cashout_time.sec_since_epoch() - 2 * STEEMIT_BLOCK_INTERVAL ), true, validation_steps::skip_witness_signature );
 
       auto& gpo = db.get_dynamic_global_properties();
 
@@ -2892,7 +2892,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          {
             a.sbd_balance = sbd_balance;
          });
-      }, database::skip_witness_signature );
+      }, validation_steps::skip_witness_signature );
 
       db_plugin->debug_update( [=]( database& db )
       {
@@ -2901,11 +2901,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             gpo.current_sbd_supply = sbd_balance;
             gpo.virtual_supply = gpo.virtual_supply + sbd_balance * exchange_rate;
          });
-      }, database::skip_witness_signature );
+      }, validation_steps::skip_witness_signature );
 
       validate_database();
 
-      db_plugin->debug_generate_blocks( debug_key, 1, database::skip_witness_signature );
+      db_plugin->debug_generate_blocks( debug_key, 1, validation_steps::skip_witness_signature );
 
       auto comment_reward = ( gpo.total_reward_fund_steem.amount + 2000 ) - ( ( gpo.total_reward_fund_steem.amount + 2000 ) * 25 * STEEMIT_1_PERCENT ) / STEEMIT_100_PERCENT ;
       comment_reward /= 2;
@@ -2917,7 +2917,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       BOOST_REQUIRE( db.get_dynamic_global_properties().sbd_print_rate < STEEMIT_100_PERCENT );
 
       BOOST_TEST_MESSAGE( "Pay out comment and check rewards are paid as STEEM" );
-      db_plugin->debug_generate_blocks( debug_key, 1, database::skip_witness_signature );
+      db_plugin->debug_generate_blocks( debug_key, 1, validation_steps::skip_witness_signature );
 
       validate_database();
 
@@ -2933,7 +2933,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          {
             a.sbd_balance = asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL );
          });
-      }, database::skip_witness_signature );
+      }, validation_steps::skip_witness_signature );
 
       db_plugin->debug_update( [=]( database& db )
       {
@@ -2941,9 +2941,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          {
             gpo.current_sbd_supply = alice_sbd + asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL );
          });
-      }, database::skip_witness_signature );
+      }, validation_steps::skip_witness_signature );
 
-      db_plugin->debug_generate_blocks( debug_key, 1, database::skip_witness_signature );
+      db_plugin->debug_generate_blocks( debug_key, 1, validation_steps::skip_witness_signature );
       validate_database();
 
       BOOST_REQUIRE( db.get_dynamic_global_properties().sbd_print_rate < STEEMIT_100_PERCENT );
@@ -2956,7 +2956,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          auto& gpo = db.get_dynamic_global_properties();
          BOOST_REQUIRE( gpo.sbd_print_rate >= last_print_rate );
          last_print_rate = gpo.sbd_print_rate;
-         db_plugin->debug_generate_blocks( debug_key, 1, database::skip_witness_signature );
+         db_plugin->debug_generate_blocks( debug_key, 1, validation_steps::skip_witness_signature );
          validate_database();
       }
 

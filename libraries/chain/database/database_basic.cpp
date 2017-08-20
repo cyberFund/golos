@@ -53,10 +53,9 @@ FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(cust
 
 namespace steemit {
     namespace chain {
-
         using boost::container::flat_set;
 
-        database_basic::database_basic(){
+        database_basic::database_basic() {
 
         }
 
@@ -64,7 +63,8 @@ namespace steemit {
             clear_pending();
         }
 
-        void database_basic::open(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t initial_supply, uint64_t shared_file_size, uint32_t chainbase_flags) {
+        void database_basic::open(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t initial_supply,
+                                  uint64_t shared_file_size, uint32_t chainbase_flags) {
             try {
                 init_schema();
                 chainbase::database::open(shared_mem_dir, chainbase_flags, shared_file_size);
@@ -87,14 +87,14 @@ namespace steemit {
                     with_write_lock([&]() {
                         undo_all();
                         FC_ASSERT(revision() == head_block_num(), "Chainbase revision does not match head block num",
-                                ("rev", revision())("head_block", head_block_num()));
+                                  ("rev", revision())("head_block", head_block_num()));
                     });
 
                     if (head_block_num()) {
                         auto head_block = _block_log.read_block_by_num(head_block_num());
                         // This assertion should be caught and a reindex should occur
-                        FC_ASSERT(head_block.valid() && head_block->id() ==
-                                                        head_block_id(), "Chain state does not match block log. Please reindex blockchain.");
+                        FC_ASSERT(head_block.valid() && head_block->id() == head_block_id(),
+                                  "Chain state does not match block log. Please reindex blockchain.");
 
                         _fork_db.start_block(*head_block);
                     }
@@ -104,11 +104,11 @@ namespace steemit {
                     init_hardforks(); // Writes to local state, but reads from db
                 });
 
-            }
-            FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
+            } FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
         }
 
-        void database_basic::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size) {
+        void database_basic::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir,
+                                     uint64_t shared_file_size) {
             try {
                 ilog("Reindexing Blockchain");
                 wipe(data_dir, shared_mem_dir, false);
@@ -116,22 +116,23 @@ namespace steemit {
                 _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
                 auto start = fc::time_point::now();
-                STEEMIT_ASSERT(_block_log.head(), block_log_exception, "No blocks in block log. Cannot reindex an empty chain.");
+                STEEMIT_ASSERT(_block_log.head(), block_log_exception,
+                               "No blocks in block log. Cannot reindex an empty chain.");
 
                 ilog("Replaying blocks...");
 
 
-                uint64_t skip_flags =
-                        static_cast<uint64_t >(validation_steps::skip_witness_signature) |
-                        static_cast<uint64_t >(validation_steps::skip_transaction_signatures) |
-                        static_cast<uint64_t >(validation_steps::skip_transaction_dupe_check) |
-                        static_cast<uint64_t >(validation_steps::skip_tapos_check) |
-                        static_cast<uint64_t >(validation_steps::skip_merkle_check) |
-                        static_cast<uint64_t >(validation_steps::skip_witness_schedule_check) |
-                        static_cast<uint64_t >(validation_steps::skip_authority_check) |
-                        static_cast<uint64_t >(validation_steps::skip_validate) | /// no need to validate operations
-                        static_cast<uint64_t >(validation_steps::skip_validate_invariants) |
-                        static_cast<uint64_t >(validation_steps::skip_block_log);
+                uint64_t skip_flags = static_cast<uint64_t >(validation_steps::skip_witness_signature) |
+                                      static_cast<uint64_t >(validation_steps::skip_transaction_signatures) |
+                                      static_cast<uint64_t >(validation_steps::skip_transaction_dupe_check) |
+                                      static_cast<uint64_t >(validation_steps::skip_tapos_check) |
+                                      static_cast<uint64_t >(validation_steps::skip_merkle_check) |
+                                      static_cast<uint64_t >(validation_steps::skip_witness_schedule_check) |
+                                      static_cast<uint64_t >(validation_steps::skip_authority_check) |
+                                      static_cast<uint64_t >(validation_steps::skip_validate) |
+                                      /// no need to validate operations
+                                      static_cast<uint64_t >(validation_steps::skip_validate_invariants) |
+                                      static_cast<uint64_t >(validation_steps::skip_block_log);
 
                 with_write_lock([&]() {
                     auto itr = _block_log.read_block(0);
@@ -140,13 +141,9 @@ namespace steemit {
                     while (itr.first.block_num() != last_block_num) {
                         auto cur_block_num = itr.first.block_num();
                         if (cur_block_num % 100000 == 0) {
-                            std::cerr << "   " << double(cur_block_num * 100) /
-                                                  last_block_num << "%   "
-                                      << cur_block_num << " of "
-                                      << last_block_num <<
-                                      "   ("
-                                      << (get_free_memory() / (1024 * 1024))
-                                      << "M free)\n";
+                            std::cerr << "   " << double(cur_block_num * 100) / last_block_num << "%   "
+                                      << cur_block_num << " of " << last_block_num << "   ("
+                                      << (get_free_memory() / (1024 * 1024)) << "M free)\n";
                         }
                         apply_block(itr.first, skip_flags);
                         itr = _block_log.read_block(itr.second);
@@ -161,10 +158,8 @@ namespace steemit {
                 }
 
                 auto end = fc::time_point::now();
-                ilog("Done reindexing, elapsed time: ${t} sec", ("t",
-                        double((end - start).count()) / 1000000.0));
-            }
-            FC_CAPTURE_AND_RETHROW((data_dir)(shared_mem_dir))
+                ilog("Done reindexing, elapsed time: ${t} sec", ("t", double((end - start).count()) / 1000000.0));
+            } FC_CAPTURE_AND_RETHROW((data_dir)(shared_mem_dir))
 
         }
 
@@ -190,8 +185,7 @@ namespace steemit {
                 _block_log.close();
 
                 _fork_db.reset();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         bool database_basic::is_known_block(const block_id_type &id) const {
@@ -200,11 +194,11 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-/**
- * Only return true *if* the transaction has not expired or been invalidated. If this
- * method is called with a VERY old transaction we will return false, they should
- * query things by blocks if they are that old.
- */
+        /**
+         * Only return true *if* the transaction has not expired or been invalidated. If this
+         * method is called with a VERY old transaction we will return false, they should
+         * query things by blocks if they are that old.
+         */
         bool database_basic::is_known_transaction(const transaction_id_type &id) const {
             try {
                 const auto &trx_idx = get_index<transaction_index>().indices().get<by_trx_id>();
@@ -223,8 +217,7 @@ namespace steemit {
                 block_summary_id_type bsid = block_num & 0xFFFF;
                 const block_summary_object *bs = find<block_summary_object, by_id>(bsid);
                 if (bs != nullptr) {
-                    if (protocol::block_header::num_from_id(bs->block_id) ==
-                        block_num) {
+                    if (protocol::block_header::num_from_id(bs->block_id) == block_num) {
                         return bs->block_id;
                     }
                 }
@@ -243,8 +236,7 @@ namespace steemit {
                 }
 
                 return block_id_type();
-            }
-            FC_CAPTURE_AND_RETHROW((block_num))
+            } FC_CAPTURE_AND_RETHROW((block_num))
         }
 
         block_id_type database_basic::get_block_id_for_num(uint32_t block_num) const {
@@ -333,16 +325,15 @@ namespace steemit {
         }
 
         bool database_basic::before_last_checkpoint() const {
-            return (_checkpoints.size() > 0) &&
-                   (_checkpoints.rbegin()->first >= head_block_num());
+            return (_checkpoints.size() > 0) && (_checkpoints.rbegin()->first >= head_block_num());
         }
 
-/**
- * Push block "may fail" in which case every partial change is unwound.  After
- * push block is successful the block is appended to the chain database_basic on disk.
- *
- * @return true if we switched forks as a result of this push.
- */
+        /**
+         * Push block "may fail" in which case every partial change is unwound.  After
+         * push block is successful the block is appended to the chain database_basic on disk.
+         *
+         * @return true if we switched forks as a result of this push.
+         */
         bool database_basic::push_block(const signed_block &new_block, uint32_t skip) {
             //fc::time_point begin_time = fc::time_point::now();
 
@@ -352,8 +343,7 @@ namespace steemit {
                     detail::without_pending_transactions(*this, std::move(_pending_tx), [&]() {
                         try {
                             result = _push_block(new_block);
-                        }
-                        FC_CAPTURE_AND_RETHROW((new_block))
+                        } FC_CAPTURE_AND_RETHROW((new_block))
                     });
                 });
             });
@@ -373,7 +363,8 @@ namespace steemit {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
 
-                ilog("Encountered block num collision at block ${n} due to a fork, witnesses are:", ("n", height)("w", witness_time_pairs));
+                ilog("Encountered block num collision at block ${n} due to a fork, witnesses are:",
+                     ("n", height)("w", witness_time_pairs));
             }
             return;
         }
@@ -395,22 +386,19 @@ namespace steemit {
                             auto branches = _fork_db.fetch_branch_from(new_head->data.id(), head_block_id());
 
                             // pop blocks until we hit the forked block
-                            while (head_block_id() !=
-                                   branches.second.back()->data.previous) {
+                            while (head_block_id() != branches.second.back()->data.previous) {
                                 pop_block();
                             }
 
                             // push all blocks on the new fork
-                            for (auto ritr = branches.first.rbegin();
-                                 ritr != branches.first.rend(); ++ritr) {
+                            for (auto ritr = branches.first.rbegin(); ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
                                 optional<fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
                                     session.push();
-                                }
-                                catch (const fc::exception &e) {
+                                } catch (const fc::exception &e) {
                                     except = e;
                                 }
                                 if (except) {
@@ -423,15 +411,12 @@ namespace steemit {
                                     _fork_db.set_head(branches.second.front());
 
                                     // pop all blocks from the bad fork
-                                    while (head_block_id() !=
-                                           branches.second.back()->data.previous) {
+                                    while (head_block_id() != branches.second.back()->data.previous) {
                                         pop_block();
                                     }
 
                                     // restore all blocks from the good fork
-                                    for (auto ritr = branches.second.rbegin();
-                                         ritr !=
-                                         branches.second.rend(); ++ritr) {
+                                    for (auto ritr = branches.second.rbegin(); ritr != branches.second.rend(); ++ritr) {
                                         auto session = start_undo_session(true);
                                         apply_block((*ritr)->data, skip);
                                         session.push();
@@ -450,8 +435,7 @@ namespace steemit {
                     auto session = start_undo_session(true);
                     apply_block(new_block, skip);
                     session.push();
-                }
-                catch (const fc::exception &e) {
+                } catch (const fc::exception &e) {
                     elog("Failed to push new block:\n${e}", ("e", e.to_detail_string()));
                     _fork_db.remove(new_block.id());
                     throw;
@@ -461,34 +445,31 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-/**
- * Attempts to push the transaction into the pending queue
- *
- * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument. This
- * will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block size.
- * Although the transaction will probably not propagate further now, as the peers are likely to have their pending
- * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pending
- * queues.
- */
+        /**
+         * Attempts to push the transaction into the pending queue
+         *
+         * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument. This
+         * will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block size.
+         * Although the transaction will probably not propagate further now, as the peers are likely to have their pending
+         * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pending
+         * queues.
+         */
         void database_basic::push_transaction(const signed_transaction &trx, uint32_t skip) {
             try {
                 try {
                     FC_ASSERT(fc::raw::pack_size(trx) <= (get_dynamic_global_properties().maximum_block_size - 256));
                     set_producing(true);
-                    detail::with_skip_flags(*this, skip,
-                            [&]() {
-                                with_write_lock([&]() {
-                                    _push_transaction(trx);
-                                });
-                            });
+                    detail::with_skip_flags(*this, skip, [&]() {
+                        with_write_lock([&]() {
+                            _push_transaction(trx);
+                        });
+                    });
                     set_producing(false);
-                }
-                catch (...) {
+                } catch (...) {
                     set_producing(false);
                     throw;
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((trx))
+            } FC_CAPTURE_AND_RETHROW((trx))
         }
 
         void database_basic::_push_transaction(const signed_transaction &trx) {
@@ -515,31 +496,26 @@ namespace steemit {
             notify_on_pending_transaction(trx);
         }
 
-        signed_block database_basic::generate_block(
-                fc::time_point_sec when,
-                const account_name_type &witness_owner,
-                const fc::ecc::private_key &block_signing_private_key,
-                uint32_t skip /* = 0 */
+        signed_block database_basic::generate_block(fc::time_point_sec when, const account_name_type &witness_owner,
+                                                    const fc::ecc::private_key &block_signing_private_key,
+                                                    uint32_t skip /* = 0 */
         ) {
             signed_block result;
             detail::with_skip_flags(*this, skip, [&]() {
                 try {
                     result = _generate_block(when, witness_owner, block_signing_private_key);
-                }
-                FC_CAPTURE_AND_RETHROW((witness_owner))
+                } FC_CAPTURE_AND_RETHROW((witness_owner))
             });
             return result;
         }
 
 
-        signed_block database_basic::_generate_block(
-                fc::time_point_sec when,
-                const account_name_type &witness_owner,
-                const fc::ecc::private_key &block_signing_private_key
-        ) {
+        signed_block database_basic::_generate_block(fc::time_point_sec when, const account_name_type &witness_owner,
+                                                     const fc::ecc::private_key &block_signing_private_key) {
             uint32_t skip = get_node_properties().skip_flags;
             uint32_t slot_num = get_slot_at_time(when);
             FC_ASSERT(slot_num > 0);
+
             string scheduled_witness = database_helper::big_helper::get_scheduled_witness(*this,slot_num);
             FC_ASSERT(scheduled_witness == witness_owner);
 
@@ -548,8 +524,7 @@ namespace steemit {
             if (!(skip & static_cast<uint32_t >(validation_steps::skip_witness_signature)))
                 FC_ASSERT(witness_obj.signing_key == block_signing_private_key.get_public_key());
 
-            static const size_t max_block_header_size =
-                    fc::raw::pack_size(signed_block_header()) + 4;
+            static const size_t max_block_header_size = fc::raw::pack_size(signed_block_header()) + 4;
             auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //STEEMIT_MAX_BLOCK_SIZE;
             size_t total_block_size = max_block_header_size;
 
@@ -580,8 +555,7 @@ namespace steemit {
                         continue;
                     }
 
-                    uint64_t new_total_size =
-                            total_block_size + fc::raw::pack_size(tx);
+                    uint64_t new_total_size = total_block_size + fc::raw::pack_size(tx);
 
                     // postpone transaction if it would make block too big
                     if (new_total_size >= maximum_block_size) {
@@ -596,8 +570,7 @@ namespace steemit {
 
                         total_block_size += fc::raw::pack_size(tx);
                         pending_block.transactions.push_back(tx);
-                    }
-                    catch (const fc::exception &e) {
+                    } catch (const fc::exception &e) {
                         // Do nothing, transaction will not be re-applied
                         //wlog( "Transaction was not processed while generating block due to ${e}", ("e", e) );
                         //wlog( "The transaction was ${t}", ("t", tx) );
@@ -631,23 +604,23 @@ namespace steemit {
 
                 if (hfp.current_hardfork_version <
                     STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
-                    && (witness.hardfork_version_vote !=
-                        _hardfork_versions[hfp.last_hardfork + 1] ||
+                    && (witness.hardfork_version_vote != _hardfork_versions[hfp.last_hardfork + 1] ||
                         witness.hardfork_time_vote !=
-                        _hardfork_times[hfp.last_hardfork +
-                                        1])) // Witness vote does not match binary configuration
+                        _hardfork_times[hfp.last_hardfork + 1])) // Witness vote does not match binary configuration
                 {
                     // Make vote match binary configuration
-                    pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[
-                            hfp.last_hardfork + 1], _hardfork_times[
-                            hfp.last_hardfork + 1])));
+                    pending_block.extensions.insert(block_header_extensions(
+                            hardfork_version_vote(_hardfork_versions[hfp.last_hardfork + 1],
+                                                  _hardfork_times[hfp.last_hardfork + 1])));
                 } else if (hfp.current_hardfork_version ==
                            STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
                            && witness.hardfork_version_vote >
                               STEEMIT_BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
                 {
                     // Make vote match binary configuration. This is vote to not apply the new hardfork.
-                    pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
+                    pending_block.extensions.insert(block_header_extensions(
+                            hardfork_version_vote(_hardfork_versions[hfp.last_hardfork],
+                                                  _hardfork_times[hfp.last_hardfork])));
                 }
             }
 
@@ -665,10 +638,10 @@ namespace steemit {
             return pending_block;
         }
 
-/**
- * Removes the most recent block from the database_basic and
- * undoes any changes it made.
- */
+        /**
+         * Removes the most recent block from the database_basic and
+         * undoes any changes it made.
+         */
         void database_basic::pop_block() {
             try {
                 _pending_tx_session.reset();
@@ -683,18 +656,15 @@ namespace steemit {
 
                 _popped_tx.insert(_popped_tx.begin(), head_block->transactions.begin(), head_block->transactions.end());
 
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database_basic::clear_pending() {
             try {
-                assert((_pending_tx.size() == 0) ||
-                       _pending_tx_session.valid());
+                assert((_pending_tx.size() == 0) || _pending_tx_session.valid());
                 _pending_tx.clear();
                 _pending_tx_session.reset();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database_basic::notify_pre_apply_operation(operation_notification &note) {
@@ -740,8 +710,7 @@ namespace steemit {
             if (when < first_slot_time) {
                 return 0;
             }
-            return (when - first_slot_time).to_seconds() /
-                   STEEMIT_BLOCK_INTERVAL + 1;
+            return (when - first_slot_time).to_seconds() / STEEMIT_BLOCK_INTERVAL + 1;
         }
 
         fc::time_point_sec database_basic::get_slot_time(uint32_t slot_num) const {
@@ -768,11 +737,12 @@ namespace steemit {
             return head_slot_time + (slot_num * interval);
         }
 
-         node_property_object &database_basic::node_properties() {
+        node_property_object &database_basic::node_properties() {
             return _node_property_object;
         }
 
-        void database_basic::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
+        void database_basic::set_custom_operation_interpreter(const std::string &id,
+                                                              std::shared_ptr<custom_operation_interpreter> registry) {
             bool inserted = _custom_operation_interpreters.emplace(id, registry).second;
             // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
             FC_ASSERT(inserted);
@@ -855,9 +825,7 @@ namespace steemit {
         void database_basic::init_genesis(uint64_t init_supply) {
             try {
                 struct auth_inhibitor {
-                    auth_inhibitor(database_basic &db)
-                            : db(db),
-                              old_flags(db.node_properties().skip_flags) {
+                    auth_inhibitor(database_basic &db) : db(db), old_flags(db.node_properties().skip_flags) {
                         db.node_properties().skip_flags |= static_cast<uint32_t >(validation_steps::skip_authority_check);
                     }
 
@@ -902,8 +870,7 @@ namespace steemit {
 
                 for (int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i) {
                     create<account_object>([&](account_object &a) {
-                        a.name = STEEMIT_INIT_MINER_NAME +
-                                 (i ? fc::to_string(i) : std::string());
+                        a.name = STEEMIT_INIT_MINER_NAME + (i ? fc::to_string(i) : std::string());
                         a.memo_key = init_public_key;
                         a.balance = asset(i ? 0 : init_supply, STEEM_SYMBOL);
                     });
@@ -934,9 +901,11 @@ namespace steemit {
                 });
 
                 // Nothing to do
-                create<feed_history_object>([&](feed_history_object &o) {});
+                create<feed_history_object>([&](feed_history_object &o) {
+                });
                 for (int i = 0; i < 0x10000; i++) {
-                    create<block_summary_object>([&](block_summary_object &) {});
+                    create<block_summary_object>([&](block_summary_object &) {
+                    });
                 }
                 create<hardfork_property_object>([&](hardfork_property_object &hpo) {
                     hpo.processed_hardforks.push_back(STEEMIT_GENESIS_TIME);
@@ -946,8 +915,7 @@ namespace steemit {
                 create<witness_schedule_object>([&](witness_schedule_object &wso) {
                     wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
                 });
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
 
@@ -981,8 +949,7 @@ namespace steemit {
          STEEMIT_TRY_NOTIFY( changed_objects, changed_ids )
       }
       */
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
 
         }
 
@@ -991,33 +958,32 @@ namespace steemit {
             _next_flush_block = 0;
         }
 
-//////////////////// private methods ////////////////////
+        //////////////////// private methods ////////////////////
 
         void database_basic::apply_block(const signed_block &next_block, uint32_t skip) {
             try {
                 //fc::time_point begin_time = fc::time_point::now();
 
                 auto block_num = next_block.block_num();
-                if (_checkpoints.size() &&
-                    _checkpoints.rbegin()->second != block_id_type()) {
+                if (_checkpoints.size() && _checkpoints.rbegin()->second != block_id_type()) {
                     auto itr = _checkpoints.find(block_num);
                     if (itr != _checkpoints.end())
-                        FC_ASSERT(next_block.id() ==
-                                  itr->second, "Block did not match checkpoint", ("checkpoint", *itr)("block_id", next_block.id()));
+                        FC_ASSERT(next_block.id() == itr->second, "Block did not match checkpoint",
+                                  ("checkpoint", *itr)("block_id", next_block.id()));
 
                     if (_checkpoints.rbegin()->first >= block_num) {
-                        skip = static_cast<uint32_t>(validation_steps::skip_witness_signature)
-                               | static_cast<uint32_t>(validation_steps::skip_transaction_signatures)
-                               | static_cast<uint32_t>(validation_steps::skip_transaction_dupe_check)
-                               | static_cast<uint32_t>(validation_steps::skip_fork_db)
-                               | static_cast<uint32_t>(validation_steps::skip_block_size_check)
-                               | static_cast<uint32_t>(validation_steps::skip_tapos_check)
-                               | static_cast<uint32_t>(validation_steps::skip_authority_check)
+                        skip = static_cast<uint32_t>(validation_steps::skip_witness_signature) |
+                               static_cast<uint32_t>(validation_steps::skip_transaction_signatures) |
+                               static_cast<uint32_t>(validation_steps::skip_transaction_dupe_check) |
+                               static_cast<uint32_t>(validation_steps::skip_fork_db) |
+                               static_cast<uint32_t>(validation_steps::skip_block_size_check) |
+                               static_cast<uint32_t>(validation_steps::skip_tapos_check) |
+                               static_cast<uint32_t>(validation_steps::skip_authority_check)
                                /* | skip_merkle_check While blockchain is being downloaded, txs need to be validated against block headers */
-                               | static_cast<uint32_t>(validation_steps::skip_undo_history_check)
-                               | static_cast<uint32_t>( validation_steps::skip_witness_schedule_check)
-                               | static_cast<uint32_t>(validation_steps::skip_validate)
-                               | static_cast<uint32_t>(validation_steps::skip_validate_invariants);
+                               | static_cast<uint32_t>(validation_steps::skip_undo_history_check) |
+                               static_cast<uint32_t>( validation_steps::skip_witness_schedule_check) |
+                               static_cast<uint32_t>(validation_steps::skip_validate) |
+                               static_cast<uint32_t>(validation_steps::skip_validate_invariants);
                     }
                 }
 
@@ -1048,20 +1014,18 @@ namespace steemit {
                             x += now % span;
                         }
                         _next_flush_block = x;
-//                        ilog("Next flush scheduled at block ${b}", ("b", x));
+                        //                        ilog("Next flush scheduled at block ${b}", ("b", x));
                     }
 
                     if (_next_flush_block == block_num) {
                         _next_flush_block = 0;
-//                        ilog("Flushing database_basic shared memory at block ${b}", ("b", block_num));
+                        //                        ilog("Flushing database_basic shared memory at block ${b}", ("b", block_num));
                         chainbase::database::flush();
                     }
                 }
 
-                uint32_t free_gb = uint32_t(
-                        get_free_memory() / (1024 * 1024 * 1024));
-                if ((free_gb < _last_free_gb_printed) ||
-                    (free_gb > _last_free_gb_printed + 1)) {
+                uint32_t free_gb = uint32_t(get_free_memory() / (1024 * 1024 * 1024));
+                if ((free_gb < _last_free_gb_printed) || (free_gb > _last_free_gb_printed + 1)) {
                     ilog("Free memory is now ${n}G", ("n", free_gb));
                     _last_free_gb_printed = free_gb;
                 }
@@ -1080,14 +1044,15 @@ namespace steemit {
                     auto merkle_root = next_block.calculate_merkle_root();
 
                     try {
-                        FC_ASSERT(next_block.transaction_merkle_root == merkle_root, "Merkle check failed", ("next_block.transaction_merkle_root", next_block.transaction_merkle_root)("calc", merkle_root)("next_block", next_block)("id", next_block.id()));
-                    }
-                    catch (fc::assert_exception &e) {
+                        FC_ASSERT(next_block.transaction_merkle_root == merkle_root, "Merkle check failed",
+                                  ("next_block.transaction_merkle_root", next_block.transaction_merkle_root)("calc",
+                                                                                                             merkle_root)(
+                                          "next_block", next_block)("id", next_block.id()));
+                    } catch (fc::assert_exception &e) {
                         const auto &merkle_map = get_shared_db_merkle();
                         auto itr = merkle_map.find(next_block_num);
 
-                        if (itr == merkle_map.end() ||
-                            itr->second != merkle_root) {
+                        if (itr == merkle_map.end() || itr->second != merkle_root) {
                             throw e;
                         }
                     }
@@ -1101,7 +1066,9 @@ namespace steemit {
                 const auto &gprops = get_dynamic_global_properties();
                 auto block_size = fc::raw::pack_size(next_block);
                 if (has_hardfork(STEEMIT_HARDFORK_0_12)) {
-                    FC_ASSERT(block_size <= gprops.maximum_block_size, "Block Size is too Big", ("next_block_num", next_block_num)("block_size", block_size)("max", gprops.maximum_block_size));
+                    FC_ASSERT(block_size <= gprops.maximum_block_size, "Block Size is too Big",
+                              ("next_block_num", next_block_num)("block_size", block_size)("max",
+                                                                                           gprops.maximum_block_size));
                 }
 
                 /// modify current witness so transaction evaluators can know who included the transaction,
@@ -1115,13 +1082,14 @@ namespace steemit {
 
                 if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) // Cannot remove after hardfork
                 {
+
                     const auto &witness = database_helper::big_helper::get_witness(*this,next_block.witness);
+
                     const auto &hardfork_state = get_hardfork_property_object();
-                    FC_ASSERT(witness.running_version >=
-                              hardfork_state.current_hardfork_version,
-                            "Block produced by witness that is not running current hardfork",
-                            ("witness", witness)("next_block.witness", next_block.witness)("hardfork_state", hardfork_state)
-                    );
+                    FC_ASSERT(witness.running_version >= hardfork_state.current_hardfork_version,
+                              "Block produced by witness that is not running current hardfork",
+                              ("witness", witness)("next_block.witness", next_block.witness)("hardfork_state",
+                                                                                             hardfork_state));
                 }
 
                 for (const auto &trx : next_block.transactions) {
@@ -1183,11 +1151,12 @@ namespace steemit {
                     case 1: // version
                     {
                         auto reported_version = itr->get<version>();
+
                         const auto &signing_witness = database_helper::big_helper::get_witness(*this,next_block.witness);
+
                         //idump( (next_block.witness)(signing_witness.running_version)(reported_version) );
 
-                        if (reported_version !=
-                            signing_witness.running_version) {
+                        if (reported_version != signing_witness.running_version) {
                             modify(signing_witness, [&](witness_object &wo) {
                                 wo.running_version = reported_version;
                             });
@@ -1198,10 +1167,10 @@ namespace steemit {
                     {
                         auto hfv = itr->get<hardfork_version_vote>();
                         const auto &signing_witness = database_helper::big_helper::get_witness(*this,next_block.witness);
+
                         //idump( (next_block.witness)(signing_witness.running_version)(hfv) );
 
-                        if (hfv.hf_version !=
-                            signing_witness.hardfork_version_vote ||
+                        if (hfv.hf_version != signing_witness.hardfork_version_vote ||
                             hfv.hf_time != signing_witness.hardfork_time_vote) {
                             modify(signing_witness, [&](witness_object &wo) {
                                 wo.hardfork_version_vote = hfv.hf_version;
@@ -1221,7 +1190,9 @@ namespace steemit {
 
 
         void database_basic::apply_transaction(const signed_transaction &trx, uint32_t skip) {
-            detail::with_skip_flags(*this, skip, [&]() { _apply_transaction(trx); });
+            detail::with_skip_flags(*this, skip, [&]() {
+                _apply_transaction(trx);
+            });
             notify_on_applied_transaction(trx);
         }
 
@@ -1230,7 +1201,8 @@ namespace steemit {
                 _current_trx_id = trx.id();
                 uint32_t skip = get_node_properties().skip_flags;
 
-                if (!(skip & static_cast<uint32_t>(validation_steps::skip_validate))) {   /* issue #505 explains why this skip_flag is disabled */
+                if (!(skip &
+                      static_cast<uint32_t>(validation_steps::skip_validate))) {   /* issue #505 explains why this skip_flag is disabled */
                     trx.validate();
                 }
 
@@ -1239,21 +1211,25 @@ namespace steemit {
                 auto trx_id = trx.id();
                 // idump((trx_id)(skip&skip_transaction_dupe_check));
                 FC_ASSERT((skip & static_cast<uint32_t>(validation_steps::skip_transaction_dupe_check)) ||
-                          trx_idx.indices().get<by_trx_id>().find(trx_id) ==
-                          trx_idx.indices().get<by_trx_id>().end(),
-                        "Duplicate transaction check failed", ("trx_ix", trx_id));
+                          trx_idx.indices().get<by_trx_id>().find(trx_id) == trx_idx.indices().get<by_trx_id>().end(),
+                          "Duplicate transaction check failed", ("trx_ix", trx_id));
 
-                if (!(skip & (static_cast<uint32_t>(validation_steps::skip_transaction_signatures) | static_cast<uint32_t >(validation_steps::skip_authority_check)))) {
-                    auto get_active = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).active); };
-                    auto get_owner = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).owner); };
-                    auto get_posting = [&](const string &name) { return authority(get<account_authority_object, by_account>(name).posting); };
+                if (!(skip & (static_cast<uint32_t>(validation_steps::skip_transaction_signatures) |
+                              static_cast<uint32_t >(validation_steps::skip_authority_check)))) {
+                    auto get_active = [&](const string &name) {
+                        return authority(get<account_authority_object, by_account>(name).active);
+                    };
+                    auto get_owner = [&](const string &name) {
+                        return authority(get<account_authority_object, by_account>(name).owner);
+                    };
+                    auto get_posting = [&](const string &name) {
+                        return authority(get<account_authority_object, by_account>(name).posting);
+                    };
 
                     try {
                         trx.verify_authority(chain_id, get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH);
-                    }
-                    catch (protocol::tx_missing_active_auth &e) {
-                        if (get_shared_db_merkle().find(head_block_num() + 1) ==
-                            get_shared_db_merkle().end()) {
+                    } catch (protocol::tx_missing_active_auth &e) {
+                        if (get_shared_db_merkle().find(head_block_num() + 1) == get_shared_db_merkle().end()) {
                             throw e;
                         }
                     }
@@ -1292,18 +1268,18 @@ namespace steemit {
                     if (!(skip & static_cast<uint32_t>(validation_steps::skip_tapos_check))) {
                         const auto &tapos_block_summary = get<block_summary_object>(trx.ref_block_num);
                         //Verify TaPoS block summary has correct ID prefix, and that this block's time is not past the expiration
-                        FC_ASSERT(trx.ref_block_prefix ==
-                                  tapos_block_summary.block_id._hash[1],
-                                "", ("trx.ref_block_prefix", trx.ref_block_prefix)
-                                ("tapos_block_summary", tapos_block_summary.block_id._hash[1]));
+                        FC_ASSERT(trx.ref_block_prefix == tapos_block_summary.block_id._hash[1], "",
+                                  ("trx.ref_block_prefix", trx.ref_block_prefix)("tapos_block_summary",
+                                                                                 tapos_block_summary.block_id._hash[1]));
                     }
 
                     fc::time_point_sec now = head_block_time();
 
-                    FC_ASSERT(trx.expiration <= now +
-                                                fc::seconds(STEEMIT_MAX_TIME_UNTIL_EXPIRATION), "",
-                            ("trx.expiration", trx.expiration)("now", now)("max_til_exp", STEEMIT_MAX_TIME_UNTIL_EXPIRATION));
-                    if (is_producing() || has_hardfork(STEEMIT_HARDFORK_0_9)) // Simple solution to pending trx bug when now == trx.expiration
+                    FC_ASSERT(trx.expiration <= now + fc::seconds(STEEMIT_MAX_TIME_UNTIL_EXPIRATION), "",
+                              ("trx.expiration", trx.expiration)("now", now)("max_til_exp",
+                                                                             STEEMIT_MAX_TIME_UNTIL_EXPIRATION));
+                    if (is_producing() || has_hardfork(
+                            STEEMIT_HARDFORK_0_9)) // Simple solution to pending trx bug when now == trx.expiration
                         FC_ASSERT(now < trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
                     FC_ASSERT(now <= trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
                 }
@@ -1330,11 +1306,13 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((trx))
         }
 
-        const witness_object &database_basic::validate_block_header(uint32_t skip, const signed_block &next_block) const {
+        const witness_object &database_basic::validate_block_header(uint32_t skip,
+                                                                    const signed_block &next_block) const {
             try {
                 FC_ASSERT(head_block_id() == next_block.previous, "", ("head_block_id", head_block_id())("next.prev", next_block.previous));
                 FC_ASSERT(head_block_time() < next_block.timestamp, "", ("head_block_time", head_block_time())("next", next_block.timestamp)("blocknum", next_block.block_num()));
                 const witness_object &witness = database_helper::big_helper::get_witness(const_cast<database_basic&>(*this),next_block.witness);
+
 
                 if (!(skip & static_cast<uint32_t >(validation_steps::skip_witness_signature)))
                     FC_ASSERT(next_block.validate_signee(witness.signing_key));
@@ -1343,11 +1321,12 @@ namespace steemit {
                     uint32_t slot_num = get_slot_at_time(next_block.timestamp);
                     FC_ASSERT(slot_num > 0);
 
+
                     string scheduled_witness = database_helper::big_helper::get_scheduled_witness(const_cast<database_basic&>(*this),slot_num);
 
-                    FC_ASSERT(witness.owner ==
-                              scheduled_witness, "Witness produced block at wrong time",
-                            ("block witness", next_block.witness)("scheduled", scheduled_witness)("slot_num", slot_num));
+                    FC_ASSERT(witness.owner == scheduled_witness, "Witness produced block at wrong time",
+                              ("block witness", next_block.witness)("scheduled", scheduled_witness)("slot_num",
+                                                                                                    slot_num));
                 }
 
                 return witness;
@@ -1362,8 +1341,6 @@ namespace steemit {
                 });
             } FC_CAPTURE_AND_RETHROW()
         }
-
-
 
 
         void database_basic::update_last_irreversible_block() {
@@ -1387,6 +1364,7 @@ namespace steemit {
                     wit_objs.reserve(wso.num_scheduled_witnesses);
                     for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                         wit_objs.push_back(&database_helper::big_helper::get_witness(*this,wso.current_shuffled_witnesses[i]));
+
                     }
 
                     static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero");
@@ -1395,21 +1373,17 @@ namespace steemit {
                     // 1 1 1 1 1 1 1 2 2 2 -> 1
                     // 3 3 3 3 3 3 3 3 3 3 -> 3
 
-                    size_t offset = ((STEEMIT_100_PERCENT -
-                                      STEEMIT_IRREVERSIBLE_THRESHOLD) *
-                                     wit_objs.size() / STEEMIT_100_PERCENT);
+                    size_t offset = ((STEEMIT_100_PERCENT - STEEMIT_IRREVERSIBLE_THRESHOLD) * wit_objs.size() /
+                                     STEEMIT_100_PERCENT);
 
-                    std::nth_element(wit_objs.begin(),
-                            wit_objs.begin() + offset, wit_objs.end(),
-                            [](const witness_object *a, const witness_object *b) {
-                                return a->last_confirmed_block_num <
-                                       b->last_confirmed_block_num;
-                            });
+                    std::nth_element(wit_objs.begin(), wit_objs.begin() + offset, wit_objs.end(),
+                                     [](const witness_object *a, const witness_object *b) {
+                                         return a->last_confirmed_block_num < b->last_confirmed_block_num;
+                                     });
 
                     uint32_t new_last_irreversible_block_num = wit_objs[offset]->last_confirmed_block_num;
 
-                    if (new_last_irreversible_block_num >
-                        dpo.last_irreversible_block_num) {
+                    if (new_last_irreversible_block_num > dpo.last_irreversible_block_num) {
                         modify(dpo, [&](dynamic_global_property_object &_dpo) {
                             _dpo.last_irreversible_block_num = new_last_irreversible_block_num;
                         });
@@ -1429,8 +1403,10 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(log_head_num + 1);
-                            FC_ASSERT(block, "Current fork in the fork database_basic does not contain the last_irreversible_block");
+                            std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                                    log_head_num + 1);
+                            FC_ASSERT(block,
+                                      "Current fork in the fork database_basic does not contain the last_irreversible_block");
                             _block_log.append(block->data);
                             log_head_num++;
                         }
@@ -1439,8 +1415,7 @@ namespace steemit {
                     }
                 }
 
-                _fork_db.set_max_size(dpo.head_block_number -
-                                      dpo.last_irreversible_block_num + 1);
+                _fork_db.set_max_size(dpo.head_block_number - dpo.last_irreversible_block_num + 1);
             } FC_CAPTURE_AND_RETHROW()
         }
 
@@ -1453,7 +1428,7 @@ namespace steemit {
                 remove(*dedupe_index.begin());
             }
         }
-////Todo Nex Refactoring
+        ////Todo Nex Refactoring
 
         const hardfork_property_object &database_basic::get_hardfork_property_object() const {
             try {
@@ -1467,11 +1442,8 @@ namespace steemit {
                 const auto &hardforks = get_hardfork_property_object();
 
                 if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                    while (
-                            _hardfork_versions[hardforks.last_hardfork] < hardforks.next_hardfork
-                            &&
-                            hardforks.next_hardfork_time <= head_block_time()
-                            ) {
+                    while (_hardfork_versions[hardforks.last_hardfork] < hardforks.next_hardfork &&
+                           hardforks.next_hardfork_time <= head_block_time()) {
                         if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
                             apply_hardfork(hardforks.last_hardfork + 1);
                         } else {
@@ -1479,21 +1451,17 @@ namespace steemit {
                         }
                     }
                 } else {
-                    while (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS
-                           &&
-                           _hardfork_times[hardforks.last_hardfork + 1] <= head_block_time()
-                           &&
+                    while (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS &&
+                           _hardfork_times[hardforks.last_hardfork + 1] <= head_block_time() &&
                            hardforks.last_hardfork < STEEMIT_HARDFORK_0_5__54) {
                         apply_hardfork(hardforks.last_hardfork + 1);
                     }
                 }
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         bool database_basic::has_hardfork(uint32_t hardfork) const {
-            return get_hardfork_property_object().processed_hardforks.size() >
-                   hardfork;
+            return get_hardfork_property_object().processed_hardforks.size() > hardfork;
         }
 
         void database_basic::set_hardfork(uint32_t hardfork, bool apply_now) {
@@ -1810,13 +1778,14 @@ namespace steemit {
             _hardfork_versions[STEEMIT_HARDFORK_0_17] = STEEMIT_HARDFORK_0_17_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
-            FC_ASSERT(hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork", hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS", STEEMIT_NUM_HARDFORKS));
-            FC_ASSERT(_hardfork_versions[hardforks.last_hardfork] <= STEEMIT_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork");
+            FC_ASSERT(hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS,
+                      "Chain knows of more hardforks than configuration",
+                      ("hardforks.last_hardfork", hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",
+                                                                           STEEMIT_NUM_HARDFORKS));
+            FC_ASSERT(_hardfork_versions[hardforks.last_hardfork] <= STEEMIT_BLOCKCHAIN_VERSION,
+                      "Blockchain version is older than last applied hardfork");
             FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
         }
-
-
-
 
 
         time_point_sec database_basic::head_block_time() const {
@@ -1826,8 +1795,7 @@ namespace steemit {
         void database_basic::update_global_dynamic_data(const signed_block &b) {
             try {
                 auto block_size = fc::raw::pack_size(b);
-                const dynamic_global_property_object &_dgp =
-                        get_dynamic_global_properties();
+                const dynamic_global_property_object &_dgp = get_dynamic_global_properties();
 
                 uint32_t missed_blocks = 0;
                 if (head_block_time() != fc::time_point_sec()) {
@@ -1835,7 +1803,14 @@ namespace steemit {
                     assert(missed_blocks != 0);
                     missed_blocks--;
                     for (uint32_t i = 0; i < missed_blocks; ++i) {
-                        const auto &witness_missed = database_helper::big_helper::get_witness(const_cast<database_basic&>(*this),database_helper::big_helper::get_scheduled_witness(const_cast<database_basic&>(*this),i + 1));
+                        const auto &witness_missed = database_helper::big_helper::get_witness(
+                                const_cast<database_basic&>(*this),
+                                database_helper::big_helper::get_scheduled_witness(
+                                        const_cast<database_basic&>(*this),
+                                        i + 1
+                                )
+                        );
+
                         if (witness_missed.owner != b.witness) {
                             modify(witness_missed, [&](witness_object &w) {
                                 w.total_missed++;
@@ -1883,37 +1858,33 @@ namespace steemit {
        */
                     if (dgp.head_block_number % 20 == 0) {
                         if ((!has_hardfork(STEEMIT_HARDFORK_0_12__179) &&
-                             dgp.average_block_size >
-                             dgp.maximum_block_size / 2) ||
+                             dgp.average_block_size > dgp.maximum_block_size / 2) ||
                             (has_hardfork(STEEMIT_HARDFORK_0_12__179) &&
-                             dgp.average_block_size >
-                             dgp.maximum_block_size / 4)) {
+                             dgp.average_block_size > dgp.maximum_block_size / 4)) {
                             dgp.current_reserve_ratio /= 2; /// exponential back up
                         } else { /// linear growth... not much fine grain control near full capacity
                             dgp.current_reserve_ratio++;
                         }
 
                         if (has_hardfork(STEEMIT_HARDFORK_0_2) &&
-                            dgp.current_reserve_ratio >
-                            STEEMIT_MAX_RESERVE_RATIO) {
+                            dgp.current_reserve_ratio > STEEMIT_MAX_RESERVE_RATIO) {
                             dgp.current_reserve_ratio = STEEMIT_MAX_RESERVE_RATIO;
                         }
                     }
-                    dgp.max_virtual_bandwidth = (dgp.maximum_block_size *
-                                                 dgp.current_reserve_ratio *
-                                                 STEEMIT_BANDWIDTH_PRECISION *
-                                                 STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) /
-                                                STEEMIT_BLOCK_INTERVAL;
+                    dgp.max_virtual_bandwidth =
+                            (dgp.maximum_block_size * dgp.current_reserve_ratio * STEEMIT_BANDWIDTH_PRECISION *
+                             STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) / STEEMIT_BLOCK_INTERVAL;
                 });
 
-                if (!(get_node_properties().skip_flags & static_cast<uint32_t >(validation_steps::skip_undo_history_check))) {
-                    STEEMIT_ASSERT(_dgp.head_block_number -
-                                   _dgp.last_irreversible_block_num <
-                                   STEEMIT_MAX_UNDO_HISTORY, undo_database_exception,
+                if (!(get_node_properties().skip_flags &
+                      static_cast<uint32_t >(validation_steps::skip_undo_history_check))) {
+                    STEEMIT_ASSERT(_dgp.head_block_number - _dgp.last_irreversible_block_num < STEEMIT_MAX_UNDO_HISTORY,
+                                   undo_database_exception,
                                    "The database does not have enough undo history to support a blockchain with so many missed blocks. "
                                            "Please add a checkpoint if you would like to continue applying blocks beyond this point.",
-                                   ("last_irreversible_block_num", _dgp.last_irreversible_block_num)("head", _dgp.head_block_number)
-                                           ("max_undo", STEEMIT_MAX_UNDO_HISTORY));
+                                   ("last_irreversible_block_num", _dgp.last_irreversible_block_num)("head",
+                                                                                                     _dgp.head_block_number)(
+                                           "max_undo", STEEMIT_MAX_UNDO_HISTORY));
                 }
             } FC_CAPTURE_AND_RETHROW()
         }
@@ -1921,30 +1892,25 @@ namespace steemit {
         void database_basic::update_virtual_supply() {
             try {
                 modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
-                    dgp.virtual_supply = dgp.current_supply
-                                         +
-                                         (get_feed_history().current_median_history.is_null()
-                                          ? asset(0, STEEM_SYMBOL) :
-                                          dgp.current_sbd_supply *
-                                          get_feed_history().current_median_history);
+                    dgp.virtual_supply = dgp.current_supply +
+                                         (get_feed_history().current_median_history.is_null() ? asset(0, STEEM_SYMBOL) :
+                                          dgp.current_sbd_supply * get_feed_history().current_median_history);
 
                     auto median_price = get_feed_history().current_median_history;
 
-                    if (!median_price.is_null() &&
-                        has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
-                        auto percent_sbd = uint16_t((
-                                                            (fc::uint128_t((dgp.current_sbd_supply *
-                                                                            get_feed_history().current_median_history).amount.value) *
-                                                             STEEMIT_100_PERCENT)
-                                                            / dgp.virtual_supply.amount.value).to_uint64());
+                    if (!median_price.is_null() && has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
+                        auto percent_sbd = uint16_t(((fc::uint128_t(
+                                (dgp.current_sbd_supply * get_feed_history().current_median_history).amount.value) *
+                                                      STEEMIT_100_PERCENT) /
+                                                     dgp.virtual_supply.amount.value).to_uint64());
 
                         if (percent_sbd <= STEEMIT_SBD_START_PERCENT) {
                             dgp.sbd_print_rate = STEEMIT_100_PERCENT;
                         } else if (percent_sbd >= STEEMIT_SBD_STOP_PERCENT) {
                             dgp.sbd_print_rate = 0;
                         } else {
-                            dgp.sbd_print_rate =
-                                    ((STEEMIT_SBD_STOP_PERCENT - percent_sbd) * STEEMIT_100_PERCENT) / (STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT);
+                            dgp.sbd_print_rate = ((STEEMIT_SBD_STOP_PERCENT - percent_sbd) * STEEMIT_100_PERCENT) /
+                                                 (STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT);
                         }
                     }
                 });
@@ -1969,21 +1935,15 @@ namespace steemit {
                 for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
                     FC_ASSERT(itr->votes < gpo.total_vesting_shares.amount, "", ("itr", *itr));
 
-                for (auto itr = account_idx.begin();
-                     itr != account_idx.end(); ++itr) {
+                for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr) {
                     total_supply += itr->balance;
                     total_supply += itr->savings_balance;
                     total_sbd += itr->sbd_balance;
                     total_sbd += itr->savings_sbd_balance;
                     total_vesting += itr->vesting_shares;
-                    total_vsf_votes += (itr->proxy ==
-                                        STEEMIT_PROXY_TO_SELF_ACCOUNT ?
-                                        itr->witness_vote_weight() :
-                                        (STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ?
-                                         itr->proxied_vsf_votes[
-                                                 STEEMIT_MAX_PROXY_RECURSION_DEPTH -
-                                                 1] :
-                                         itr->vesting_shares.amount));
+                    total_vsf_votes += (itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr->witness_vote_weight() : (
+                            STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ? itr->proxied_vsf_votes[
+                                    STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] : itr->vesting_shares.amount));
                 }
 
                 const auto &convert_request_idx = get_index<convert_request_index>().indices();
@@ -2023,8 +1983,7 @@ namespace steemit {
 
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
 
-                for (auto itr = savings_withdraw_idx.begin();
-                     itr != savings_withdraw_idx.end(); ++itr) {
+                for (auto itr = savings_withdraw_idx.begin(); itr != savings_withdraw_idx.end(); ++itr) {
                     if (itr->amount.symbol == STEEM_SYMBOL) {
                         total_supply += itr->amount;
                     } else if (itr->amount.symbol == SBD_SYMBOL) {
@@ -2050,44 +2009,29 @@ namespace steemit {
 
                 const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
-                for (auto itr = reward_idx.begin();
-                     itr != reward_idx.end(); ++itr) {
+                for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr) {
                     total_supply += itr->reward_balance;
                 }
 
                 total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_steem;
 
-                FC_ASSERT(
-                        gpo.current_supply == total_supply,
-                        "",
-                        ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply)
-                );
-                FC_ASSERT(
-                        gpo.current_sbd_supply == total_sbd,
-                        "",
-                        ("gpo.current_sbd_supply", gpo.current_sbd_supply)("total_sbd", total_sbd)
-                );
-                FC_ASSERT(
-                        gpo.total_vesting_shares == total_vesting,
-                        "",
-                        ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting)
-                );
-                FC_ASSERT(
-                        gpo.total_vesting_shares.amount == total_vsf_votes,
-                        "",
-                        ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes)
-                );
+                FC_ASSERT(gpo.current_supply == total_supply, "",
+                          ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
+                FC_ASSERT(gpo.current_sbd_supply == total_sbd, "",
+                          ("gpo.current_sbd_supply", gpo.current_sbd_supply)("total_sbd", total_sbd));
+                FC_ASSERT(gpo.total_vesting_shares == total_vesting, "",
+                          ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting));
+                FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",
+                          ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
 
                 FC_ASSERT(gpo.virtual_supply >= gpo.current_supply);
                 if (!get_feed_history().current_median_history.is_null()) {
-                    FC_ASSERT(
-                            gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply == gpo.virtual_supply,
-                            "",
-                            ("gpo.current_sbd_supply", gpo.current_sbd_supply)("get_feed_history().current_median_history", get_feed_history().current_median_history)("gpo.current_supply", gpo.current_supply)("gpo.virtual_supply", gpo.virtual_supply)
-                    );
+                    FC_ASSERT(gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply ==
+                              gpo.virtual_supply, "", ("gpo.current_sbd_supply", gpo.current_sbd_supply)(
+                            "get_feed_history().current_median_history", get_feed_history().current_median_history)(
+                            "gpo.current_supply", gpo.current_supply)("gpo.virtual_supply", gpo.virtual_supply));
                 }
-            }
-            FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
+            } FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
         }
 
 
@@ -2107,8 +2051,7 @@ namespace steemit {
         const dynamic_global_property_object &database_basic::get_dynamic_global_properties() const {
             try {
                 return get<dynamic_global_property_object>();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
 
         }
 
@@ -2118,6 +2061,6 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-////Todo Nex Refactoring
-}
+        ////Todo Nex Refactoring
+    }
 } //steemit::chain

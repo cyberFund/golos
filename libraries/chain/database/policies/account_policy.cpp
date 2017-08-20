@@ -11,10 +11,8 @@ namespace steemit {
                 auto reward = asset(255, STEEM_SYMBOL);
                 static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
                 if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                    asset percent(
-                            protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
-                                    props.virtual_supply.amount),
-                            STEEM_SYMBOL);
+                    asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
+                            props.virtual_supply.amount), STEEM_SYMBOL);
                     reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
                 }
 
@@ -27,10 +25,8 @@ namespace steemit {
                 auto reward = asset(85, STEEM_SYMBOL);
                 static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
                 if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                    asset percent(
-                            protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
-                                    props.virtual_supply.amount),
-                            STEEM_SYMBOL);
+                    asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
+                            props.virtual_supply.amount), STEEM_SYMBOL);
                     reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
                 }
 
@@ -89,20 +85,16 @@ namespace steemit {
                         acnt.savings_balance += delta;
                         break;
                     case SBD_SYMBOL:
-                        if (a.savings_sbd_seconds_last_update !=
-                            references.head_block_time()) {
-                            acnt.savings_sbd_seconds +=
-                                    fc::uint128_t(a.savings_sbd_balance.amount.value) *
-                                    (references.head_block_time() -
-                                     a.savings_sbd_seconds_last_update).to_seconds();
+                        if (a.savings_sbd_seconds_last_update != references.head_block_time()) {
+                            acnt.savings_sbd_seconds += fc::uint128_t(a.savings_sbd_balance.amount.value) *
+                                                        (references.head_block_time() -
+                                                         a.savings_sbd_seconds_last_update).to_seconds();
                             acnt.savings_sbd_seconds_last_update = references.head_block_time();
 
-                            if (acnt.savings_sbd_seconds > 0 &&
-                                (acnt.savings_sbd_seconds_last_update -
-                                 acnt.savings_sbd_last_interest_payment).to_seconds() >
-                                STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                                auto interest = acnt.savings_sbd_seconds /
-                                                STEEMIT_SECONDS_PER_YEAR;
+                            if (acnt.savings_sbd_seconds > 0 && (acnt.savings_sbd_seconds_last_update -
+                                                                 acnt.savings_sbd_last_interest_payment).to_seconds() >
+                                                                STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                                auto interest = acnt.savings_sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
                                 interest *= references.get_dynamic_global_properties().sbd_interest_rate;
                                 interest /= STEEMIT_100_PERCENT;
                                 asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
@@ -180,8 +172,7 @@ namespace steemit {
 
             if (null_account.vesting_shares.amount > 0) {
                 const auto &gpo = references.get_dynamic_global_properties();
-                auto converted_steem = null_account.vesting_shares *
-                                       gpo.get_vesting_share_price();
+                auto converted_steem = null_account.vesting_shares * gpo.get_vesting_share_price();
 
                 references.modify(gpo, [&](dynamic_global_property_object &g) {
                     g.total_vesting_shares -= null_account.vesting_shares;
@@ -205,8 +196,7 @@ namespace steemit {
         }
 
         void account_policy::pay_fee(const account_object &account, asset fee) {
-            FC_ASSERT(fee.amount >=
-                      0); /// NOTE if this fails then validate() on some operation is probably wrong
+            FC_ASSERT(fee.amount >= 0); /// NOTE if this fails then validate() on some operation is probably wrong
             if (fee.amount == 0) {
                 return;
             }
@@ -216,12 +206,13 @@ namespace steemit {
             database_helper::big_helper::adjust_supply(references, -fee);
         }
 
-        void account_policy::old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+        void account_policy::old_update_account_bandwidth(const account_object &a, uint32_t trx_size,
+                                                          const bandwidth_type type) {
             try {
                 const auto &props = references.get_dynamic_global_properties();
                 if (props.total_vesting_shares.amount > 0) {
-                    FC_ASSERT(a.vesting_shares.amount >
-                              0, "Only accounts with a postive vesting balance may transact.");
+                    FC_ASSERT(a.vesting_shares.amount > 0,
+                              "Only accounts with a postive vesting balance may transact.");
 
                     auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(
                             boost::make_tuple(a.name, type));
@@ -234,23 +225,18 @@ namespace steemit {
                     }
 
                     references.modify(*band, [&](account_bandwidth_object &b) {
-                        b.lifetime_bandwidth +=
-                                trx_size * STEEMIT_BANDWIDTH_PRECISION;
+                        b.lifetime_bandwidth += trx_size * STEEMIT_BANDWIDTH_PRECISION;
 
                         auto now = references.head_block_time();
-                        auto delta_time = (now -
-                                           b.last_bandwidth_update).to_seconds();
+                        auto delta_time = (now - b.last_bandwidth_update).to_seconds();
                         uint64_t N = trx_size * STEEMIT_BANDWIDTH_PRECISION;
-                        if (delta_time >=
-                            STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
+                        if (delta_time >= STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
                             b.average_bandwidth = N;
                         } else {
-                            auto old_weight = b.average_bandwidth *
-                                              (STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS -
-                                               delta_time);
+                            auto old_weight =
+                                    b.average_bandwidth * (STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time);
                             auto new_weight = delta_time * N;
-                            b.average_bandwidth = (old_weight + new_weight) /
-                                                  STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS;
+                            b.average_bandwidth = (old_weight + new_weight) / STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS;
                         }
 
                         b.last_bandwidth_update = now;
@@ -262,71 +248,71 @@ namespace steemit {
                     fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
                     fc::uint128 max_virtual_bandwidth(props.max_virtual_bandwidth);
 
-                    FC_ASSERT((account_vshares * max_virtual_bandwidth) >
-                              (account_average_bandwidth * total_vshares),
+                    FC_ASSERT((account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares),
                               "Account exceeded maximum allowed bandwidth per vesting share.",
-                              ("account_vshares", account_vshares)
-                                      ("account_average_bandwidth", account_average_bandwidth)
-                                      ("max_virtual_bandwidth", max_virtual_bandwidth)
-                                      ("total_vesting_shares", total_vshares));
+                              ("account_vshares", account_vshares)("account_average_bandwidth",
+                                                                   account_average_bandwidth)("max_virtual_bandwidth",
+                                                                                              max_virtual_bandwidth)(
+                                      "total_vesting_shares", total_vshares));
                 }
             } FC_CAPTURE_AND_RETHROW()
         }
-/*
-        bool account_policy::update_account_bandwidth(const account_object &a, uint32_t trx_size,
-                                                 const bandwidth_type type) {
-            const auto &props = references.get_dynamic_global_properties();
-            bool has_bandwidth = true;
 
-            if (props.total_vesting_shares.amount > 0) {
-                auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(
-                        boost::make_tuple(a.name, type));
+        /*
+                bool account_policy::update_account_bandwidth(const account_object &a, uint32_t trx_size,
+                                                         const bandwidth_type type) {
+                    const auto &props = references.get_dynamic_global_properties();
+                    bool has_bandwidth = true;
 
-                if (band == nullptr) {
-                    band = &references.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
-                        b.account = a.name;
-                        b.type = type;
-                    });
+                    if (props.total_vesting_shares.amount > 0) {
+                        auto band = references.find<account_bandwidth_object, by_account_bandwidth_type>(
+                                boost::make_tuple(a.name, type));
+
+                        if (band == nullptr) {
+                            band = &references.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
+                                b.account = a.name;
+                                b.type = type;
+                            });
+                        }
+
+                        share_type new_bandwidth;
+                        share_type trx_bandwidth = trx_size * STEEMIT_BANDWIDTH_PRECISION;
+                        auto delta_time = (references.head_block_time() - band->last_bandwidth_update).to_seconds();
+
+                        if (delta_time > STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
+                            new_bandwidth = 0;
+                        } else {
+                            new_bandwidth = (((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) * fc::uint128(band->average_bandwidth.value)) / STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
+                        }
+
+                        new_bandwidth += trx_bandwidth;
+
+                        references.modify(*band, [&](account_bandwidth_object &b) {
+                            b.average_bandwidth = new_bandwidth;
+                            b.lifetime_bandwidth += trx_bandwidth;
+                            b.last_bandwidth_update = references.head_block_time();
+                        });
+
+                        fc::uint128 account_vshares(a.vesting_shares.amount.value);
+                        fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
+                        fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
+                        fc::uint128 max_virtual_bandwidth(props.max_virtual_bandwidth);
+
+                        has_bandwidth = (account_vshares * max_virtual_bandwidth) >
+                                        (account_average_bandwidth * total_vshares);
+
+                        if (references.is_producing())
+                            FC_ASSERT(has_bandwidth,
+                                      "Account exceeded maximum allowed bandwidth per vesting share.",
+                                      ("account_vshares", account_vshares)
+                                              ("account_average_bandwidth", account_average_bandwidth)
+                                              ("max_virtual_bandwidth", max_virtual_bandwidth)
+                                              ("total_vesting_shares", total_vshares));
+                    }
+
+                    return has_bandwidth;
                 }
-
-                share_type new_bandwidth;
-                share_type trx_bandwidth = trx_size * STEEMIT_BANDWIDTH_PRECISION;
-                auto delta_time = (references.head_block_time() - band->last_bandwidth_update).to_seconds();
-
-                if (delta_time > STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
-                    new_bandwidth = 0;
-                } else {
-                    new_bandwidth = (((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) * fc::uint128(band->average_bandwidth.value)) / STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
-                }
-
-                new_bandwidth += trx_bandwidth;
-
-                references.modify(*band, [&](account_bandwidth_object &b) {
-                    b.average_bandwidth = new_bandwidth;
-                    b.lifetime_bandwidth += trx_bandwidth;
-                    b.last_bandwidth_update = references.head_block_time();
-                });
-
-                fc::uint128 account_vshares(a.vesting_shares.amount.value);
-                fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
-                fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
-                fc::uint128 max_virtual_bandwidth(props.max_virtual_bandwidth);
-
-                has_bandwidth = (account_vshares * max_virtual_bandwidth) >
-                                (account_average_bandwidth * total_vshares);
-
-                if (references.is_producing())
-                    FC_ASSERT(has_bandwidth,
-                              "Account exceeded maximum allowed bandwidth per vesting share.",
-                              ("account_vshares", account_vshares)
-                                      ("account_average_bandwidth", account_average_bandwidth)
-                                      ("max_virtual_bandwidth", max_virtual_bandwidth)
-                                      ("total_vesting_shares", total_vshares));
-            }
-
-            return has_bandwidth;
-        }
-*/
+        */
         void account_policy::expire_escrow_ratification() {
             const auto &escrow_idx = references.get_index<escrow_index>().indices().get<by_ratification_deadline>();
             auto escrow_itr = escrow_idx.lower_bound(false);
@@ -363,14 +349,17 @@ namespace steemit {
                 int64_t inflation_rate_floor = int64_t(STEEMIT_INFLATION_RATE_STOP_PERCENT);
 
                 // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-                int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor);
+                int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment,
+                                                          inflation_rate_floor);
 
-                auto new_steem = (props.virtual_supply.amount * current_inflation_rate) / (int64_t(STEEMIT_100_PERCENT) * int64_t(STEEMIT_BLOCKS_PER_YEAR));
+                auto new_steem = (props.virtual_supply.amount * current_inflation_rate) /
+                                 (int64_t(STEEMIT_100_PERCENT) * int64_t(STEEMIT_BLOCKS_PER_YEAR));
                 auto content_reward = (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) / STEEMIT_100_PERCENT;
                 if (references.has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
                     content_reward = database_helper::big_helper::pay_reward_funds(references,content_reward);
                 } /// 75% to content creator
-                auto vesting_reward = (new_steem * STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+                auto vesting_reward =
+                        (new_steem * STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT; /// 15% to vesting fund
                 auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
                 const auto &cwit = get_witness(references, props.current_witness);
@@ -398,14 +387,12 @@ namespace steemit {
                     p.virtual_supply += asset(new_steem, STEEM_SYMBOL);
 
                 });
-
                 database_helper::big_helper::create_vesting(references, get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
             } else {
                 auto content_reward = get_content_reward(references);
                 auto curate_reward = get_curation_reward(references);
                 auto witness_pay = get_producer_reward();
-                auto vesting_reward =
-                        content_reward + curate_reward + witness_pay;
+                auto vesting_reward = content_reward + curate_reward + witness_pay;
 
                 content_reward = content_reward + curate_reward;
 
@@ -418,10 +405,8 @@ namespace steemit {
                 references.modify(props, [&](dynamic_global_property_object &p) {
                     p.total_vesting_fund_steem += vesting_reward;
                     p.total_reward_fund_steem += content_reward;
-                    p.current_supply +=
-                            content_reward + witness_pay + vesting_reward;
-                    p.virtual_supply +=
-                            content_reward + witness_pay + vesting_reward;
+                    p.current_supply += content_reward + witness_pay + vesting_reward;
+                    p.virtual_supply += content_reward + witness_pay + vesting_reward;
                 });
             }
         }
@@ -463,8 +448,7 @@ namespace steemit {
                 auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
 
                 /// pay witness in vesting shares
-                if (props.head_block_number >=
-                    STEEMIT_START_MINER_VOTING_BLOCK ||
+                if (props.head_block_number >= STEEMIT_START_MINER_VOTING_BLOCK ||
                     (witness_account.vesting_shares.amount.value == 0)) {
                     // const auto& witness_obj = get_witness( props.current_witness );
                     database_helper::big_helper::create_vesting( references,witness_account, pay);
@@ -479,8 +463,7 @@ namespace steemit {
                 auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16);
 
                 /// pay witness in vesting shares
-                if (props.head_block_number >=
-                    STEEMIT_START_MINER_VOTING_BLOCK ||
+                if (props.head_block_number >= STEEMIT_START_MINER_VOTING_BLOCK ||
                     (witness_account.vesting_shares.amount.value == 0)) {
                     // const auto& witness_obj = get_witness( props.current_witness );
                     database_helper::big_helper::create_vesting(references,witness_account, pay);
@@ -496,11 +479,11 @@ namespace steemit {
 
         void account_policy::account_recovery_processing() {
             // Clear expired recovery requests
-            const auto &rec_req_idx = references.get_index<account_recovery_request_index>().indices().get<by_expiration>();
+            const auto &rec_req_idx = references.get_index<account_recovery_request_index>().indices().get<
+                    by_expiration>();
             auto rec_req = rec_req_idx.begin();
 
-            while (rec_req != rec_req_idx.end() &&
-                   rec_req->expires <= references.head_block_time()) {
+            while (rec_req != rec_req_idx.end() && rec_req->expires <= references.head_block_time()) {
                 references.remove(*rec_req);
                 rec_req = rec_req_idx.begin();
             }
@@ -509,13 +492,16 @@ namespace steemit {
             const auto &hist_idx = references.get_index<owner_authority_history_index>().indices(); //by id
             auto hist = hist_idx.begin();
 
-            while (hist != hist_idx.end() && time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) < references.head_block_time()) {
+            while (hist != hist_idx.end() &&
+                   time_point_sec(hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) <
+                   references.head_block_time()) {
                 references.remove(*hist);
                 hist = hist_idx.begin();
             }
 
             // Apply effective recovery_account changes
-            const auto &change_req_idx = references.get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
+            const auto &change_req_idx = references.get_index<change_recovery_account_request_index>().indices().get<
+                    by_effective_date>();
             auto change_req = change_req_idx.begin();
 
             while (change_req != change_req_idx.end() && change_req->effective_on <= references.head_block_time()) {

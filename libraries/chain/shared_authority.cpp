@@ -81,8 +81,7 @@ namespace steemit {
         }
 
         bool operator==(const shared_authority &a, const shared_authority &b) {
-            return (a.weight_threshold == b.weight_threshold) &&
-                   (a.account_auths == b.account_auths) &&
+            return (a.weight_threshold == b.weight_threshold) && (a.account_auths == b.account_auths) &&
                    (a.key_auths == b.key_auths);
         }
 

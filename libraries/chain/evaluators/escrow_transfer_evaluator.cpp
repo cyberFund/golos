@@ -1,4 +1,5 @@
 #include <steemit/chain/evaluators/escrow_transfer_evaluator.hpp>
+
 void steemit::chain::escrow_transfer_evaluator::do_apply(const protocol::escrow_transfer_operation &o) {
     try {
 
@@ -7,11 +8,10 @@ void steemit::chain::escrow_transfer_evaluator::do_apply(const protocol::escrow_
         this->_db.get_account(o.to);
         this->_db.get_account(o.agent);
 
-        FC_ASSERT(o.ratification_deadline >
-                  this->_db.head_block_time(),
+        FC_ASSERT(o.ratification_deadline > this->_db.head_block_time(),
                   "The escorw ratification deadline must be after head block time.");
-        FC_ASSERT(o.escrow_expiration >
-                  this->_db.head_block_time(), "The escrow expiration must be after head block time.");
+        FC_ASSERT(o.escrow_expiration > this->_db.head_block_time(),
+                  "The escrow expiration must be after head block time.");
 
         asset steem_spent = o.steem_amount;
         asset sbd_spent = o.sbd_amount;
@@ -21,11 +21,11 @@ void steemit::chain::escrow_transfer_evaluator::do_apply(const protocol::escrow_
             sbd_spent += o.fee;
         }
 
-        FC_ASSERT(from_account.balance >=
-                  steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}",
+        FC_ASSERT(from_account.balance >= steem_spent,
+                  "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}",
                   ("r", steem_spent)("a", from_account.balance));
-        FC_ASSERT(from_account.sbd_balance >=
-                  sbd_spent, "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}",
+        FC_ASSERT(from_account.sbd_balance >= sbd_spent,
+                  "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}",
                   ("r", sbd_spent)("a", from_account.sbd_balance));
 
         this->_db.adjust_balance(from_account, -steem_spent);
@@ -42,6 +42,5 @@ void steemit::chain::escrow_transfer_evaluator::do_apply(const protocol::escrow_
             esc.steem_balance = o.steem_amount;
             esc.pending_fee = o.fee;
         });
-    }
-    FC_CAPTURE_AND_RETHROW((o))
+    } FC_CAPTURE_AND_RETHROW((o))
 }

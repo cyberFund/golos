@@ -1,4 +1,5 @@
 #include <steemit/chain/evaluators/account_witness_vote_evaluator.hpp>
+
 void steemit::chain::account_witness_vote_evaluator::do_apply(const protocol::account_witness_vote_operation &o) {
 
     const auto &voter = this->_db.get_account(o.account);
@@ -17,8 +18,7 @@ void steemit::chain::account_witness_vote_evaluator::do_apply(const protocol::ac
         FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
 
         if (this->_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
-            FC_ASSERT(voter.witnesses_voted_for <
-                      STEEMIT_MAX_ACCOUNT_WITNESS_VOTES,
+            FC_ASSERT(voter.witnesses_voted_for < STEEMIT_MAX_ACCOUNT_WITNESS_VOTES,
                       "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
 
             this->_db.create<witness_vote_object>([&](witness_vote_object &v) {

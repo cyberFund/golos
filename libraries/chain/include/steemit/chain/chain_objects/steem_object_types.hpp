@@ -28,7 +28,7 @@ namespace steemit {
         using steemit::protocol::account_name_type;
         using steemit::protocol::share_type;
 
-        using shared_string = boost::interprocess::basic_string<char, std::char_traits<char>, allocator<char>> ;
+        using shared_string = boost::interprocess::basic_string<char, std::char_traits<char>, allocator<char>>;
 
         inline std::string to_string(const shared_string &str) {
             return std::string(str.begin(), str.end());
@@ -185,47 +185,40 @@ namespace fc {
         s.assign(str.begin(), str.end());
     }
 
-    template<typename T>
-    void to_variant(const chainbase::object_id<T> &var, variant &vo) {
+    template<typename T> void to_variant(const chainbase::object_id<T> &var, variant &vo) {
         vo = var._id;
     }
 
-    template<typename T>
-    void from_variant(const variant &vo, chainbase::object_id<T> &var) {
+    template<typename T> void from_variant(const variant &vo, chainbase::object_id<T> &var) {
         var._id = vo.as_int64();
     }
 
     namespace raw {
-        template<typename Stream, typename T>
-        inline void pack(Stream &s, const chainbase::object_id<T> &id) {
-            s.write((const char *)&id._id, sizeof(id._id));
+        template<typename Stream, typename T> inline void pack(Stream &s, const chainbase::object_id<T> &id) {
+            s.write((const char *) &id._id, sizeof(id._id));
         }
 
-        template<typename Stream, typename T>
-        inline void unpack(Stream &s, chainbase::object_id<T> &id) {
-            s.read((char *)&id._id, sizeof(id._id));
+        template<typename Stream, typename T> inline void unpack(Stream &s, chainbase::object_id<T> &id) {
+            s.read((char *) &id._id, sizeof(id._id));
         }
     }
 
     namespace raw {
         using chainbase::allocator;
 
-        template<typename T>
-        inline void pack(steemit::chain::buffer_type &raw, const T &v) {
+        template<typename T> inline void pack(steemit::chain::buffer_type &raw, const T &v) {
             auto size = pack_size(v);
             raw.resize(size);
             datastream<char *> ds(raw.data(), size);
             pack(ds, v);
         }
 
-        template<typename T>
-        inline void unpack(const steemit::chain::buffer_type &raw, T &v) {
+        template<typename T> inline void unpack(const steemit::chain::buffer_type &raw, T &v) {
             datastream<const char *> ds(raw.data(), raw.size());
             unpack(ds, v);
         }
 
-        template<typename T>
-        inline T unpack(const steemit::chain::buffer_type &raw) {
+        template<typename T> inline T unpack(const steemit::chain::buffer_type &raw) {
             T v;
             datastream<const char *> ds(raw.data(), raw.size());
             unpack(ds, v);
@@ -239,36 +232,17 @@ namespace fc {
 }
 
 FC_REFLECT_ENUM(steemit::chain::object_type,
-        (dynamic_global_property_object_type)
-                (account_object_type)
-                (account_authority_object_type)
-                (account_bandwidth_object_type)
-                (witness_object_type)
-                (transaction_object_type)
-                (block_summary_object_type)
-                (witness_schedule_object_type)
-                (comment_object_type)
-                (comment_vote_object_type)
-                (witness_vote_object_type)
-                (limit_order_object_type)
-                (feed_history_object_type)
-                (convert_request_object_type)
-                (liquidity_reward_balance_object_type)
-                (operation_object_type)
-                (account_history_object_type)
-                (hardfork_property_object_type)
-                (withdraw_vesting_route_object_type)
-                (owner_authority_history_object_type)
-                (account_recovery_request_object_type)
-                (change_recovery_account_request_object_type)
-                (escrow_object_type)
-                (savings_withdraw_object_type)
-                (decline_voting_rights_request_object_type)
-                (block_stats_object_type)
-                (vesting_delegation_object_type)
-                (vesting_delegation_expiration_object_type)
-                (reward_fund_object_type)
-)
+                (dynamic_global_property_object_type)(account_object_type)(account_authority_object_type)(
+                        account_bandwidth_object_type)(witness_object_type)(transaction_object_type)(
+                        block_summary_object_type)(witness_schedule_object_type)(comment_object_type)(
+                        comment_vote_object_type)(witness_vote_object_type)(limit_order_object_type)(
+                        feed_history_object_type)(convert_request_object_type)(liquidity_reward_balance_object_type)(
+                        operation_object_type)(account_history_object_type)(hardfork_property_object_type)(
+                        withdraw_vesting_route_object_type)(owner_authority_history_object_type)(
+                        account_recovery_request_object_type)(change_recovery_account_request_object_type)(
+                        escrow_object_type)(savings_withdraw_object_type)(decline_voting_rights_request_object_type)(
+                        block_stats_object_type)(vesting_delegation_object_type)(
+                        vesting_delegation_expiration_object_type)(reward_fund_object_type))
 
 FC_REFLECT_TYPENAME(steemit::chain::shared_string)
 FC_REFLECT_TYPENAME(steemit::chain::buffer_type)

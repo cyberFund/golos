@@ -29,15 +29,15 @@ namespace steemit {
             struct comment_reward_context;
         }
 
-        enum class validation_steps {
-            skip_nothing = 0,
-            skip_witness_signature = 1 << 0,  ///< used while reindexing
+        enum validation_steps {
+            skip_nothing = 0, skip_witness_signature = 1 << 0,  ///< used while reindexing
             skip_transaction_signatures = 1 << 1,  ///< used by non-witness nodes
             skip_transaction_dupe_check = 1 << 2,  ///< used while reindexing
             skip_fork_db = 1 << 3,  ///< used while reindexing
             skip_block_size_check = 1 << 4,  ///< used when applying locally generated transactions
             skip_tapos_check = 1 << 5,  ///< used while reindexing -- note this skips expiration check as well
-            skip_authority_check = 1 << 6,  ///< used while reindexing -- disables any checking of authority on transactions
+            skip_authority_check =
+            1 << 6,  ///< used while reindexing -- disables any checking of authority on transactions
             skip_merkle_check = 1 << 7,  ///< used while reindexing
             skip_undo_history_check = 1 << 8,  ///< used while reindexing
             skip_witness_schedule_check = 1 << 9,  ///< used while reindexing
@@ -55,6 +55,7 @@ namespace steemit {
         public:
 
             database_basic();
+
             virtual ~database_basic();
 
             bool is_producing() const {
@@ -77,7 +78,9 @@ namespace steemit {
              *
              * @param data_dir Path to open or create database in
              */
-            void open(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t initial_supply = STEEMIT_INIT_SUPPLY, uint64_t shared_file_size = 0, uint32_t chainbase_flags = 0);
+            void open(const fc::path &data_dir, const fc::path &shared_mem_dir,
+                      uint64_t initial_supply = STEEMIT_INIT_SUPPLY, uint64_t shared_file_size = 0,
+                      uint32_t chainbase_flags = 0);
 
             /**
              * @brief Rebuild object graph from block history and open detabase
@@ -85,7 +88,8 @@ namespace steemit {
              * This method may be called after or instead of @ref database::open, and will rebuild the object graph by
              * replaying blockchain history. When this method exits successfully, the database will be open.
              */
-            void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size = (1024l * 1024l * 1024l * 8l));
+            void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir,
+                         uint64_t shared_file_size = (1024l * 1024l * 1024l * 8l));
 
             /**
              * @brief wipe Delete database from disk, and potentially the raw chain as well.
@@ -107,7 +111,7 @@ namespace steemit {
 
             bool is_known_transaction(const transaction_id_type &id) const;
 
-            block_id_type get_block_id_for_num( uint32_t block_num )const;
+            block_id_type get_block_id_for_num(uint32_t block_num) const;
 
             block_id_type find_block_id_for_num(uint32_t block_num) const;
 
@@ -122,27 +126,40 @@ namespace steemit {
             chain_id_type get_chain_id() const;
 
             const node_property_object &get_node_properties() const;
-
 ////Todo Nex Refactoring
+
             const hardfork_property_object &get_hardfork_property_object() const;
+
             void process_hardforks();
+
             bool has_hardfork(uint32_t hardfork) const;
+
             void set_hardfork(uint32_t hardfork, bool apply_now);
+
             void apply_hardfork(uint32_t hardfork);
+
             void init_hardforks();
 
-
             time_point_sec head_block_time() const;
+
             void update_global_dynamic_data(const signed_block &b);
+
             void update_virtual_supply();
+
             void validate_invariants() const;
+
             uint32_t head_block_num() const;
+
             block_id_type head_block_id() const;
+
             uint32_t last_non_undoable_block_num() const;
+
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
+
             const feed_history_object &get_feed_history() const;
+
             const dynamic_global_property_object &get_dynamic_global_properties() const;
-////Todo Nex Refactoring
+            ////Todo Nex Refactoring
 
             /**
              *  Deducts fee from the account and the share supply
@@ -170,9 +187,11 @@ namespace steemit {
 
             bool before_last_checkpoint() const;
 
-            bool push_block(const signed_block &b, uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
+            bool push_block(const signed_block &b,
+                            uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
 
-            void push_transaction(const signed_transaction &trx, uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
+            void push_transaction(const signed_transaction &trx,
+                                  uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
 
             void _maybe_warn_multiple_production(uint32_t height) const;
 
@@ -180,18 +199,11 @@ namespace steemit {
 
             void _push_transaction(const signed_transaction &trx);
 
-            signed_block generate_block(
-                    const fc::time_point_sec when,
-                    const account_name_type &witness_owner,
-                    const fc::ecc::private_key &block_signing_private_key,
-                    uint32_t skip
-            );
+            signed_block generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
+                                        const fc::ecc::private_key &block_signing_private_key, uint32_t skip);
 
-            signed_block _generate_block(
-                    const fc::time_point_sec when,
-                    const account_name_type &witness_owner,
-                    const fc::ecc::private_key &block_signing_private_key
-            );
+            signed_block _generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
+                                         const fc::ecc::private_key &block_signing_private_key);
 
             void pop_block();
 
@@ -374,7 +386,8 @@ namespace steemit {
 
             virtual void initialize_evaluators() = 0;
 
-            void set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry);
+            void set_custom_operation_interpreter(const std::string &id,
+                                                  std::shared_ptr<custom_operation_interpreter> registry);
 
             std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
 
@@ -435,9 +448,11 @@ namespace steemit {
         private:
             optional<chainbase::database::session> _pending_tx_session;
 
-            void apply_block(const signed_block &next_block, uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
+            void apply_block(const signed_block &next_block,
+                             uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
 
-            void apply_transaction(const signed_transaction &trx, uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
+            void apply_transaction(const signed_transaction &trx,
+                                   uint32_t skip = static_cast<uint32_t>(validation_steps::skip_nothing));
 
             void _apply_block(const signed_block &next_block);
 
@@ -465,14 +480,13 @@ namespace steemit {
 
             vector<signed_transaction> _pending_tx;
             fork_database _fork_db;
-            std::array<fc::time_point_sec, STEEMIT_NUM_HARDFORKS + 1>_hardfork_times;
-            std::array<protocol::hardfork_version, STEEMIT_NUM_HARDFORKS + 1>_hardfork_versions;
+            std::array<fc::time_point_sec, STEEMIT_NUM_HARDFORKS + 1> _hardfork_times;
+            std::array<protocol::hardfork_version, STEEMIT_NUM_HARDFORKS + 1> _hardfork_versions;
 
             block_log _block_log;
 
             // this function needs access to _plugin_index_signal
-            template<typename DataBase,typename MultiIndexType>
-            friend void add_plugin_index(DataBase &db);
+            template<typename Database, typename MultiIndexType> friend void add_plugin_index(Database &db);
 
             transaction_id_type _current_trx_id;
             uint32_t _current_block_num = 0;

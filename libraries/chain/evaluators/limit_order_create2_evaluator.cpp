@@ -1,13 +1,13 @@
 #include <steemit/chain/evaluators/limit_order_create2_evaluator.hpp>
+
 void steemit::chain::limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &o) {
 
-    FC_ASSERT(o.expiration >
-              this->_db.head_block_time(), "Limit order has to expire after head block time.");
+    FC_ASSERT(o.expiration > this->_db.head_block_time(), "Limit order has to expire after head block time.");
 
     const auto &owner = this->_db.get_account(o.owner);
 
-    FC_ASSERT(this->_db.get_balance(owner, o.amount_to_sell.symbol) >=
-              o.amount_to_sell, "Account does not have sufficient funds for limit order.");
+    FC_ASSERT(this->_db.get_balance(owner, o.amount_to_sell.symbol) >= o.amount_to_sell,
+              "Account does not have sufficient funds for limit order.");
 
     this->_db.adjust_balance(owner, -o.amount_to_sell);
 

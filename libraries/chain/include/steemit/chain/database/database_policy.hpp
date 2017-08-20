@@ -21,20 +21,19 @@
 namespace steemit {
     namespace chain {
 
-
         template<typename... Policies>
-        class database_police : public database_basic, public Policies ... {
+        class database_policy : public database_basic, public Policies ... {
         public:
-            database_police() :database_basic(), Policies(*this,1)... {
+            database_policy() : database_basic(), Policies(*this)... {
 
 
             }
 
-            virtual ~database_police() = default;
+            virtual ~database_policy() = default;
 
         };
 
-        using database_tag = database_police<
+        using database_t = database_policy<
                 account_policy,
                 asset_policy,
                 behaviour_based_policy,
@@ -45,6 +44,5 @@ namespace steemit {
                 witness_policy,
                 witness_schedule_policy
         >;
-
     }
 }

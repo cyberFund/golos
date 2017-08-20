@@ -1,4 +1,5 @@
 #include <steemit/chain/evaluators/feed_publish_evaluator.hpp>
+
 void steemit::chain::feed_publish_evaluator::do_apply(const protocol::feed_publish_operation &o) {
 
     const auto &witness = this->_db.get_witness(o.publisher);

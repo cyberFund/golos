@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <steemit/protocol/steem_operations.hpp>
@@ -17,14 +16,13 @@
 namespace steemit {
     namespace chain {
 
-        template<typename DataBase, typename CustomOperationType>
-        class generic_custom_operation_interpreter
-                : public custom_operation_interpreter,
-                  public evaluator_registry<CustomOperationType> {
+        template<typename Database, typename CustomOperationType> class generic_custom_operation_interpreter
+                : public custom_operation_interpreter, public evaluator_registry<CustomOperationType> {
         public:
-            generic_custom_operation_interpreter(DataBase &db) :evaluator_registry<CustomOperationType>(),_db(db){}
+            generic_custom_operation_interpreter(Database &db) : evaluator_registry<CustomOperationType>(), _db(db) {
+            }
 
-            DataBase& _db;
+            Database &_db;
 
             void apply_operations(const vector<CustomOperationType> &custom_operations, const operation &outer_o) {
                 auto plugin_session = _db.start_undo_session(true);
@@ -65,8 +63,7 @@ namespace steemit {
                     fc::variant v = fc::json::from_string(outer_o.json);
 
                     std::vector<CustomOperationType> custom_operations;
-                    if (v.is_array() && v.size() > 0 &&
-                        v.get_array()[0].is_array()) {
+                    if (v.is_array() && v.size() > 0 && v.get_array()[0].is_array()) {
                         // it looks like a list
                         from_variant(v, custom_operations);
                     } else {
@@ -84,14 +81,12 @@ namespace steemit {
 
                     try {
                         custom_operations = fc::raw::unpack<vector<CustomOperationType>>(outer_o.data);
-                    }
-                    catch (fc::exception &) {
+                    } catch (fc::exception &) {
                         custom_operations.push_back(fc::raw::unpack<CustomOperationType>(outer_o.data));
                     }
 
                     apply_operations(custom_operations, operation(outer_o));
-                }
-                FC_CAPTURE_AND_RETHROW((outer_o))
+                } FC_CAPTURE_AND_RETHROW((outer_o))
             }
 
             virtual std::shared_ptr<graphene::schema::abstract_schema> get_operation_schema() override {

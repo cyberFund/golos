@@ -6,12 +6,12 @@
 namespace steemit {
     namespace chain {
 
-        class comment_payout_extension_evaluator : public evaluator_impl<database_tag ,comment_payout_extension_evaluator> {
+        class comment_payout_extension_evaluator : public evaluator_impl<database_t, comment_payout_extension_evaluator> {
         public:
             typedef protocol::comment_payout_extension_operation operation_type;
 
             template <typename DataBase>
-            comment_payout_extension_evaluator(DataBase &db) : evaluator_impl<database_tag ,comment_payout_extension_evaluator>(db) {
+            comment_payout_extension_evaluator(DataBase &db) : evaluator_impl<database_t ,comment_payout_extension_evaluator>(db) {
             }
 
             void do_apply(const protocol::comment_payout_extension_operation &o) {
@@ -27,9 +27,7 @@ namespace steemit {
                 const comment_object &comment = this->_db.get_comment(o.author, o.permlink);
 
                 if (o.amount) {
-                    FC_ASSERT(
-                            this->_db.get_balance(from_account, o.amount->symbol) >=
-                            *o.amount, "Account does not have sufficient funds for transfer.");
+                    FC_ASSERT(this->_db.get_balance(from_account, o.amount->symbol) >= *o.amount, "Account does not have sufficient funds for transfer.");
 
                     this->_db.pay_fee(from_account, *o.amount);
 
@@ -46,5 +44,6 @@ namespace steemit {
                 }
             }
         };
-    }}
+    }
+}
 #endif //GOLOS_COMMENT_PAYOUT_EXTENSION_EVALUATOR_HPP

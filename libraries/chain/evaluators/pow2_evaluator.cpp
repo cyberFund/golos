@@ -1,4 +1,5 @@
 #include <steemit/chain/evaluators/pow2_evaluator.hpp>
+
 void steemit::chain::pow2_evaluator::do_apply(const protocol::pow2_operation &o) {
     auto &db = this->db();
     const auto &dgp = db.get_dynamic_global_properties();
@@ -7,28 +8,22 @@ void steemit::chain::pow2_evaluator::do_apply(const protocol::pow2_operation &o)
 
     if (db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
         const auto &work = o.work.get<equihash_pow>();
-        FC_ASSERT(work.prev_block ==
-                  db.head_block_id(), "Equihash pow op not for last block");
+        FC_ASSERT(work.prev_block == db.head_block_id(), "Equihash pow op not for last block");
         auto recent_block_num = protocol::block_header::num_from_id(work.input.prev_block);
         FC_ASSERT(recent_block_num > dgp.last_irreversible_block_num,
                   "Equihash pow done for block older than last irreversible block num");
-        FC_ASSERT(work.pow_summary <
-                  target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}",
+        FC_ASSERT(work.pow_summary < target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}",
                   ("w", work.pow_summary)("t", target_pow));
         worker_account = work.input.worker_account;
     } else {
         const auto &work = o.work.get<pow2>();
-        FC_ASSERT(work.input.prev_block ==
-                  db.head_block_id(), "Work not for last block");
-        FC_ASSERT(work.pow_summary <
-                  target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}",
+        FC_ASSERT(work.input.prev_block == db.head_block_id(), "Work not for last block");
+        FC_ASSERT(work.pow_summary < target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}",
                   ("w", work.pow_summary)("t", target_pow));
         worker_account = work.input.worker_account;
     }
 
-    FC_ASSERT(o.props.maximum_block_size >=
-              STEEMIT_MIN_BLOCK_SIZE_LIMIT *
-              2, "Voted maximum block size is too small.");
+    FC_ASSERT(o.props.maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2, "Voted maximum block size is too small.");
 
     db.modify(dgp, [&](dynamic_global_property_object &p) {
         p.total_pow++;
@@ -64,8 +59,7 @@ void steemit::chain::pow2_evaluator::do_apply(const protocol::pow2_operation &o)
         FC_ASSERT(!o.new_owner_key.valid(), "Cannot specify an owner key unless creating account.");
         const witness_object *cur_witness = db.find_witness(worker_account);
         FC_ASSERT(cur_witness, "Witness must be created for existing account before mining.");
-        FC_ASSERT(cur_witness->pow_worker ==
-                  0, "This account is already scheduled for pow block production.");
+        FC_ASSERT(cur_witness->pow_worker == 0, "This account is already scheduled for pow block production.");
         db.modify(*cur_witness, [&](witness_object &w) {
             w.props = o.props;
             w.pow_worker = dgp.total_pow;

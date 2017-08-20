@@ -13,8 +13,8 @@ namespace steemit {
 
             using operation_type = private_message_operation;
 
-            template<typename DataBase>
-            private_message_evaluator(DataBase& db,private_message_plugin* plugin) :chain::evaluator_impl<database,private_message_evaluator,private_message_plugin_operation>(db),_plugin(plugin){
+            template<typename Database>
+            private_message_evaluator(Database& db,private_message_plugin* plugin) :chain::evaluator_impl<database,private_message_evaluator,private_message_plugin_operation>(db),_plugin(plugin){
 
             }
 

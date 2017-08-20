@@ -7,8 +7,7 @@
 namespace steemit {
     namespace chain {
 
-        template<typename OperationType>
-        class evaluator_registry {
+        template<typename OperationType> class evaluator_registry {
         public:
             evaluator_registry() {
                 for (int i = 0; i < OperationType::count(); i++) {
@@ -16,12 +15,13 @@ namespace steemit {
                 }
             }
 
-            template<typename DataBase, typename EvaluatorType,typename ...Args>
-            void register_evaluator(DataBase& db,Args... args) {
-                _op_evaluators[OperationType::template tag<typename EvaluatorType::operation_type>::value].reset(new EvaluatorType(db,(args)...));
+            template<typename Database, typename EvaluatorType, typename ...Args>
+            void register_evaluator(Database &db, Args... args) {
+                _op_evaluators[OperationType::template tag<typename EvaluatorType::operation_type>::value].reset(
+                        new EvaluatorType(db, (args)...));
             }
 
-            evaluator<OperationType> &get_evaluator(const OperationType &op) {
+            evaluator <OperationType> &get_evaluator(const OperationType &op) {
                 int i_which = op.which();
                 uint64_t u_which = uint64_t(i_which);
                 if (i_which < 0)
@@ -34,8 +34,7 @@ namespace steemit {
                 return *eval;
             }
 
-            std::vector<std::unique_ptr<evaluator<OperationType>>> _op_evaluators;
+            std::vector<std::unique_ptr<evaluator <OperationType>>> _op_evaluators;
         };
-
     }
 }

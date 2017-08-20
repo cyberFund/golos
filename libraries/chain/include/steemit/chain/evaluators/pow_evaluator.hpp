@@ -6,20 +6,17 @@
 namespace steemit {
     namespace chain {
 
-        class pow_evaluator : public evaluator_impl<database_tag,pow_evaluator> {
+        class pow_evaluator : public evaluator_impl<database_t, pow_evaluator> {
         public:
             typedef protocol::pow_operation operation_type;
 
-            template <typename DataBase>
-            pow_evaluator(DataBase &db) : evaluator_impl<database_tag,pow_evaluator>(db) {
+            template<typename Database> pow_evaluator(Database &db) : evaluator_impl<database_t, pow_evaluator>(db) {
             }
 
-            template<typename Operation>
-            void pow_apply(database_tag &db, Operation o) {
+            template<typename Operation> void pow_apply(database_t &db, Operation o) {
                 const auto &dgp = db.get_dynamic_global_properties();
 
-                if (db.is_producing() ||
-                    db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
+                if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
                     const auto &witness_by_work = db.get_index<witness_index>().indices().get<by_work>();
                     auto work_itr = witness_by_work.find(o.work.work);
                     if (work_itr != witness_by_work.end()) {
@@ -54,23 +51,20 @@ namespace steemit {
 
                 const auto &worker_account = db.get_account(o.get_worker_account()); // verify it exists
                 const auto &worker_auth = db.get<account_authority_object, by_account>(o.get_worker_account());
-                FC_ASSERT(worker_auth.active.num_auths() ==
-                          1, "Miners can only have one key authority. ${a}", ("a", worker_auth.active));
-                FC_ASSERT(worker_auth.active.key_auths.size() ==
-                          1, "Miners may only have one key authority.");
-                FC_ASSERT(worker_auth.active.key_auths.begin()->first ==
-                          o.work.worker, "Work must be performed by key that signed the work.");
-                FC_ASSERT(
-                        o.block_id == db.head_block_id(), "pow not for last block");
+                FC_ASSERT(worker_auth.active.num_auths() == 1, "Miners can only have one key authority. ${a}",
+                          ("a", worker_auth.active));
+                FC_ASSERT(worker_auth.active.key_auths.size() == 1, "Miners may only have one key authority.");
+                FC_ASSERT(worker_auth.active.key_auths.begin()->first == o.work.worker,
+                          "Work must be performed by key that signed the work.");
+                FC_ASSERT(o.block_id == db.head_block_id(), "pow not for last block");
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_13__256)) {
-                    FC_ASSERT(worker_account.last_account_update <
-                              db.head_block_time(), "Worker account must not have updated their account this block.");
+                    FC_ASSERT(worker_account.last_account_update < db.head_block_time(),
+                              "Worker account must not have updated their account this block.");
                 }
 
                 fc::sha256 target = db.get_pow_target();
 
-                FC_ASSERT(
-                        o.work.work < target, "Work lacks sufficient difficulty.");
+                FC_ASSERT(o.work.work < target, "Work lacks sufficient difficulty.");
 
                 db.modify(dgp, [&](dynamic_global_property_object &p) {
                     p.total_pow++; // make sure this doesn't break anything...
@@ -80,8 +74,8 @@ namespace steemit {
 
                 const witness_object *cur_witness = db.find_witness(worker_account.name);
                 if (cur_witness) {
-                    FC_ASSERT(cur_witness->pow_worker ==
-                              0, "This account is already scheduled for pow block production.");
+                    FC_ASSERT(cur_witness->pow_worker == 0,
+                              "This account is already scheduled for pow block production.");
                     db.modify(*cur_witness, [&](witness_object &w) {
                         w.props = o.props;
                         w.pow_worker = dgp.total_pow;
@@ -114,5 +108,6 @@ namespace steemit {
 
             void do_apply(const protocol::pow_operation &o);
         };
-    }}
+    }
+}
 #endif //GOLOS_POW_EVALUATOR_HPP

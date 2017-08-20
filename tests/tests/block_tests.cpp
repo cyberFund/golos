@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 database db;
                 db._log_hardforks = false;
                 db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
-                b = db.generate_block(db.get_slot_time(1), db.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                b = db.generate_block(db.get_slot_time(1), db.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
 
                 // TODO:  Change this test when we correct #406
                 // n.b. we generate STEEMIT_MIN_UNDO_HISTORY+1 extra blocks which will be discarded on save
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                     //witness_id_type prev_witness = b.witness;
                     string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
-                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, database::skip_nothing);
+                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, validation_steps::skip_nothing);
                     BOOST_CHECK(b.witness == cur_witness);
                     uint32_t cutoff_height = db.get_dynamic_global_properties().last_irreversible_block_num;
                     if (cutoff_height >= 200) {
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                     //witness_id_type prev_witness = b.witness;
                     string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
-                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, database::skip_nothing);
+                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, validation_steps::skip_nothing);
                 }
                 BOOST_CHECK_EQUAL(db.head_block_num(),
                         cutoff_block.block_num() + 200);
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 for (uint32_t i = 0; i < 5; ++i) {
                     now = db.get_slot_time(1);
                     time_stack.push_back(now);
-                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
                 }
                 BOOST_CHECK(db.head_block_num() == 5);
                 BOOST_CHECK(db.head_block_time() == now);
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 for (uint32_t i = 0; i < 5; ++i) {
                     now = db.get_slot_time(1);
                     time_stack.push_back(now);
-                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
                 }
                 BOOST_CHECK(db.head_block_num() == 7);
             }
@@ -165,18 +165,18 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             for (uint32_t i = 0; i < 10; ++i) {
-                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
                 try {
                     PUSH_BLOCK(db2, b);
                 } FC_CAPTURE_AND_RETHROW(("db2"));
             }
             for (uint32_t i = 10; i < 13; ++i) {
-                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             }
             string db1_tip = db1.head_block_id().str();
             uint32_t next_slot = 3;
             for (uint32_t i = 13; i < 16; ++i) {
-                auto b = db2.generate_block(db2.get_slot_time(next_slot), db2.get_scheduled_witness(next_slot), init_account_priv_key, database::skip_nothing);
+                auto b = db2.generate_block(db2.get_slot_time(next_slot), db2.get_scheduled_witness(next_slot), init_account_priv_key, validation_steps::skip_nothing);
                 next_slot = 1;
                 // notify both databases of the new block.
                 // only db2 should switch to the new fork, db1 should not
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db1.head_block_num(), 13);
             BOOST_CHECK_EQUAL(db2.head_block_num(), 13);
             {
-                auto b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                auto b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
                 good_block = b;
                 b.transactions.emplace_back(signed_transaction());
                 b.transactions.back().operations.emplace_back(transfer_operation());
@@ -244,14 +244,14 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             // db1 : A
             // db2 : B C D
 
-            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
 
             auto alice_id = db1.get_account("alice").id;
             BOOST_CHECK(db1.get(alice_id).name == "alice");
 
-            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             db1.push_block(b);
-            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             db1.push_block(b);
             STEEMIT_REQUIRE_THROW(db2.get(alice_id), std::exception);
             db1.get(alice_id); /// it should be included in the pending state
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             PUSH_TX(db2, trx);
 
-            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             db1.push_block(b);
 
             BOOST_CHECK(db1.get(alice_id).name == "alice");
@@ -283,8 +283,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             db2.open(dir2.path(), dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
             BOOST_CHECK(db1.get_chain_id() == db2.get_chain_id());
 
-            auto skip_sigs = database::skip_transaction_signatures |
-                             database::skip_authority_check;
+            auto skip_sigs = validation_steps::skip_transaction_signatures |
+                             validation_steps::skip_authority_check;
 
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
 
-            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
 
             BOOST_TEST_MESSAGE("Creating a transaction with reference block");
             idump((db1.head_block_id()));
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             idump((trx));
             db1.push_transaction(trx);
             BOOST_TEST_MESSAGE("Generating a block");
-            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             trx.clear();
 
             transfer_operation t;
@@ -370,12 +370,12 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             trx.set_expiration(db1.head_block_time() + fc::seconds(2));
             trx.sign(init_account_priv_key, db1.get_chain_id());
             idump((trx)(db1.head_block_time()));
-            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             idump((b));
-            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, validation_steps::skip_nothing);
             trx.signatures.clear();
             trx.sign(init_account_priv_key, db1.get_chain_id());
-            BOOST_REQUIRE_THROW(db1.push_transaction(trx, 0/*database::skip_transaction_signatures | database::skip_authority_check*/), fc::exception);
+            BOOST_REQUIRE_THROW(db1.push_transaction(trx, 0/*validation_steps::skip_transaction_signatures | validation_steps::skip_authority_check*/), fc::exception);
         } catch (fc::exception &e) {
             edump((e.to_detail_string()));
             throw;
@@ -415,7 +415,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
-            PUSH_TX(db, tx, database::skip_transaction_dupe_check);
+            PUSH_TX(db, tx, validation_steps::skip_transaction_dupe_check);
 
             BOOST_TEST_MESSAGE("ref_block_num=0, ref_block_prefix=12345678");
 
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_TEST_MESSAGE("ref_block_num=1, ref_block_prefix=12345678");
 
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, validation_steps::skip_transaction_dupe_check), fc::exception);
 
             BOOST_TEST_MESSAGE("ref_block_num=9999, ref_block_prefix=12345678");
 
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, validation_steps::skip_transaction_dupe_check), fc::exception);
         }
         catch (fc::exception &e) {
             edump((e.to_detail_string()));
@@ -501,9 +501,9 @@ BOOST_AUTO_TEST_SUITE(block_tests)
     BOOST_FIXTURE_TEST_CASE(pop_block_twice, clean_database_fixture) {
         try {
             uint32_t skip_flags = (
-                    database::skip_witness_signature
-                    | database::skip_transaction_signatures
-                    | database::skip_authority_check
+                    validation_steps::skip_witness_signature
+                    | validation_steps::skip_transaction_signatures
+                    | validation_steps::skip_authority_check
             );
 
             // Sam is the creator of accounts
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), STEEMIT_100_PERCENT);
 
             BOOST_TEST_MESSAGE("Generating a block skipping 1");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 1);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 1);
             BOOST_CHECK_EQUAL(rsf(),
                     "0111111111111111111111111111111111111111111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -571,7 +571,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(127));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 1");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 1);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 1);
             BOOST_CHECK_EQUAL(rsf(),
                     "0101111111111111111111111111111111111111111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -579,7 +579,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(126));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 2");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 2);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 2);
             BOOST_CHECK_EQUAL(rsf(),
                     "0010101111111111111111111111111111111111111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -587,7 +587,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(124));
 
             BOOST_TEST_MESSAGE("Generating a block for skipping 3");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 3);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 3);
             BOOST_CHECK_EQUAL(rsf(),
                     "0001001010111111111111111111111111111111111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(121));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 5");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 5);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 5);
             BOOST_CHECK_EQUAL(rsf(),
                     "0000010001001010111111111111111111111111111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -603,7 +603,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(116));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 8");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 8);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 8);
             BOOST_CHECK_EQUAL(rsf(),
                     "0000000010000010001001010111111111111111111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -611,7 +611,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(108));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 13");
-            generate_block(~database::skip_fork_db, init_account_priv_key, 13);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 13);
             BOOST_CHECK_EQUAL(rsf(),
                     "0000000000000100000000100000100010010101111111111111111111111111"
                             "1111111111111111111111111111111111111111111111111111111111111111"
@@ -648,14 +648,14 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             );
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(95));
 
-            generate_block(~database::skip_fork_db, init_account_priv_key, 64);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 64);
             BOOST_CHECK_EQUAL(rsf(),
                     "0000000000000000000000000000000000000000000000000000000000000000"
                             "1111100000000000001000000001000001000100101011111111111111111111"
             );
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(31));
 
-            generate_block(~database::skip_fork_db, init_account_priv_key, 32);
+            generate_block(~validation_steps::skip_fork_db, init_account_priv_key, 32);
             BOOST_CHECK_EQUAL(rsf(),
                     "0000000000000000000000000000000010000000000000000000000000000000"
                             "0000000000000000000000000000000001111100000000000001000000001000"
