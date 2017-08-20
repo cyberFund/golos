@@ -677,7 +677,7 @@ namespace steemit {
             });
         }
 
-        void market_history_api::unsubscribe_from_market(string a, string b) {
+        void market_history_api::unsubscribe_from_market(const string &a, const string &b) {
             my->unsubscribe_from_market(a, b);
         }
 

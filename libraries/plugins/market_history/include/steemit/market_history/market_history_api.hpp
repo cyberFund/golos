@@ -108,7 +108,7 @@ namespace steemit {
              * @param a First asset ID
              * @param b Second asset ID
              */
-            void unsubscribe_from_market(string a, string b);
+            void unsubscribe_from_market(const string &a, const string &b);
 
             std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(const string &owner) const;
 
