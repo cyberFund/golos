@@ -899,8 +899,8 @@ namespace steemit {
 
             /** Place a limit order attempting to sell one asset for another.
              *
-             * Buying and selling are the same operation on Graphene; if you want to buy BTS
-             * with USD, you should sell USD for BTS.
+             * Buying and selling are the same operation on Graphene; if you want to buy GOLOS
+             * with USD, you should sell USD for GOLOS.
              *
              * The blockchain will attempt to sell the \c symbol_to_sell for as
              * much \c symbol_to_receive as possible, as long as the price is at
