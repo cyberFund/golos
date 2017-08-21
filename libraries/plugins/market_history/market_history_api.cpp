@@ -30,12 +30,6 @@ namespace steemit {
                         return double(a.value) / std::pow(10, p);
                     };
 
-                    /** do nothing for other operation types */
-                    template<typename T>
-                    market_trade operator()(const T &) const {
-                        return {};
-                    }
-
                     market_trade operator()(const fill_order_operation &o) const {
                         market_trade trade;
 
@@ -307,8 +301,7 @@ namespace steemit {
                     return double(a.amount.value) / std::pow(10, p);
                 };
 
-                std::function<double( const price
-                &)> price_to_real = [&](const price &p) -> double {
+                std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
                     if (p.base.symbol_name() == base_id) {
                         return asset_to_real(p.base, assets[0]->precision) /
                                asset_to_real(p.quote, assets[1]->precision);
@@ -358,9 +351,8 @@ namespace steemit {
                 if (base_id > quote_id) {
                     std::swap(base_id, quote_id);
                 }
-                const auto &history_idx = app.chain_database()->get_index<
-                        market_history::order_history_index>().indices().get<market_history::by_key>();
-                market_history::history_key hkey;
+                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<by_key>();
+                history_key hkey;
                 hkey.base = base_id;
                 hkey.quote = quote_id;
                 hkey.sequence = std::numeric_limits<int64_t>::min();
@@ -717,7 +709,8 @@ namespace steemit {
         std::vector<force_settlement_object> market_history_api::get_settle_orders_by_owner(const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 std::vector<force_settlement_object> result;
-                const auto &idx = my->app.chain_database()->get_index<force_settlement_index>().indices().get<by_account>();
+                const auto &idx = my->app.chain_database()->get_index<force_settlement_index>().indices().get<
+                        by_account>();
                 auto itr = idx.lower_bound(owner);
                 while (itr != idx.end() && itr->owner == owner) {
                     result.emplace_back(*itr);
