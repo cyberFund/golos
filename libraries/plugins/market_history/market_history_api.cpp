@@ -683,7 +683,7 @@ namespace steemit {
                 while (itr != idx.end() && itr->seller == owner) {
                     result.emplace_back(*itr);
 
-                    auto assets = my->lookup_asset_symbols({itr->sell_price.base, itr->sell_price.quote});
+                    auto assets = my->lookup_asset_symbols({itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
 
                     std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
                                                                                      int p) -> double {
