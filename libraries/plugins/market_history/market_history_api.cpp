@@ -351,7 +351,8 @@ namespace steemit {
                 if (base_id > quote_id) {
                     std::swap(base_id, quote_id);
                 }
-                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<by_key>();
+                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<
+                        by_key>();
                 history_key hkey;
                 hkey.base = base_id;
                 hkey.quote = quote_id;
@@ -682,11 +683,23 @@ namespace steemit {
                 while (itr != idx.end() && itr->seller == owner) {
                     result.emplace_back(*itr);
 
+                    auto assets = my->lookup_asset_symbols({itr->sell_price.base, itr->sell_price.quote});
+
+                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
+                                                                                     int p) -> double {
+                        return double(a.value) / std::pow(10, p);
+                    };
+
                     if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
-                        result.back().real_price = (~result.back().sell_price).to_real();
+                        result.back().real_price =
+                                price_to_real((~result.back().sell_price).base.amount, assets[0]->precision) /
+                                price_to_real((~result.back().sell_price).quote.amount, assets[1]->precision);
                     } else {
-                        result.back().real_price = (result.back().sell_price).to_real();
+                        result.back().real_price =
+                                price_to_real(result.back().sell_price.base.amount, assets[0]->precision) /
+                                price_to_real(result.back().sell_price.quote.amount, assets[1]->precision);
                     }
+
                     ++itr;
                 }
                 return result;

@@ -379,6 +379,7 @@ namespace steemit {
                 asset_to_settle = db.find_asset(op.amount.symbol_name());
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 const auto &bitasset = db.get_asset_bitasset_data(asset_to_settle->asset_name);
+                FC_ASSERT(asset_to_settle->precision == op.amount.precision(), "Settlement asset precision differs");
                 FC_ASSERT(asset_to_settle->can_force_settle() ||
                           bitasset.has_settlement());
                 if (bitasset.is_prediction_market)
