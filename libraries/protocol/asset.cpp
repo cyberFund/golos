@@ -85,8 +85,8 @@ namespace steemit {
         asset asset::from_string(const string &from) {
             try {
                 string s = fc::trim(from);
-                auto space_pos = s.find(" ");
-                auto dot_pos = s.find(".");
+                auto space_pos = s.find(' ');
+                auto dot_pos = s.find('.');
 
                 asset result;
                 result.symbol = uint64_t(3);

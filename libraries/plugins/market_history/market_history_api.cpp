@@ -202,8 +202,8 @@ namespace steemit {
                 std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                                [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<
                                        asset_object> {
-                                   auto ptr = app.chain_database()->find_asset(symbol);
-                                   return ptr == nullptr ? optional<asset_object>() : *ptr;
+                                   auto itr = assets_by_symbol.find(symbol);
+                                   return itr == assets_by_symbol.end() ? optional<asset_object>() : *itr;
                                });
                 return result;
             }
@@ -683,7 +683,8 @@ namespace steemit {
                 while (itr != idx.end() && itr->seller == owner) {
                     result.emplace_back(*itr);
 
-                    auto assets = my->lookup_asset_symbols({itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
+                    auto assets = my->lookup_asset_symbols(
+                            {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
 
                     std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
                                                                                      int p) -> double {
