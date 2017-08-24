@@ -101,6 +101,5 @@ namespace steemit {
                 return graphene::schema::get_schema_for_type<CustomOperationType>();
             }
         };
-
     }
 }
