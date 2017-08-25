@@ -205,7 +205,6 @@ namespace steemit {
                 const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<
                         by_asset_name>();
                 vector<optional<asset_object>> result;
-                result.reserve(asset_symbols.size());
                 std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                                [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<
                                        asset_object> {
