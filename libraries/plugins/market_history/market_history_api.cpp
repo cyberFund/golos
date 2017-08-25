@@ -685,6 +685,8 @@ namespace steemit {
 
                     auto assets = my->lookup_asset_symbols(
                             {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
+                    FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
+                    FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
 
                     std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
                                                                                      int p) -> double {
