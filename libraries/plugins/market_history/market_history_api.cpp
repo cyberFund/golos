@@ -93,6 +93,13 @@ namespace steemit {
 
                 vector<limit_order_object> get_limit_orders(const string &a, const string &b, uint32_t limit) const;
 
+                std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(
+                        const string &owner) const;
+
+                std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
+
+                std::vector<force_settlement_object> get_settle_orders_by_owner(const string &owner) const;
+
                 vector<call_order_object> get_call_orders(const string &a, uint32_t limit) const;
 
                 vector<force_settlement_object> get_settle_orders(const string &a, uint32_t limit) const;
@@ -557,6 +564,63 @@ namespace steemit {
                 return result;
             }
 
+            std::vector<steemit::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
+                    const string &owner) const {
+                std::vector<steemit::application::extended_limit_order> result;
+                const auto &idx = app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->seller == owner) {
+                    result.emplace_back(*itr);
+
+                    auto assets = lookup_asset_symbols(
+                            {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
+                    FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
+                    FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
+
+                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
+                                                                                     int p) -> double {
+                        return double(a.value) / std::pow(10, p);
+                    };
+
+                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
+                        result.back().real_price =
+                                price_to_real((~result.back().sell_price).base.amount, assets[0]->precision) /
+                                price_to_real((~result.back().sell_price).quote.amount, assets[1]->precision);
+                    } else {
+                        result.back().real_price =
+                                price_to_real(result.back().sell_price.base.amount, assets[0]->precision) /
+                                price_to_real(result.back().sell_price.quote.amount, assets[1]->precision);
+                    }
+
+                    ++itr;
+                }
+                return result;
+            }
+
+            std::vector<call_order_object> market_history_api_impl::get_call_orders_by_owner(
+                    const string &owner) const {
+                std::vector<call_order_object> result;
+                const auto &idx = app.chain_database()->get_index<call_order_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->borrower == owner) {
+                    result.emplace_back(*itr);
+                    ++itr;
+                }
+                return result;
+            }
+
+            std::vector<force_settlement_object> market_history_api_impl::get_settle_orders_by_owner(
+                    const string &owner) const {
+                std::vector<force_settlement_object> result;
+                const auto &idx = app.chain_database()->get_index<force_settlement_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->owner == owner) {
+                    result.emplace_back(*itr);
+                    ++itr;
+                }
+                return result;
+            }
+
         } // detail
 
         market_history_api::market_history_api(const steemit::application::api_context &ctx) {
@@ -677,62 +741,19 @@ namespace steemit {
         std::vector<steemit::application::extended_limit_order> market_history_api::get_limit_orders_by_owner(
                 const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
-                std::vector<steemit::application::extended_limit_order> result;
-                const auto &idx = my->app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
-                auto itr = idx.lower_bound(owner);
-                while (itr != idx.end() && itr->seller == owner) {
-                    result.emplace_back(*itr);
-
-                    auto assets = my->lookup_asset_symbols(
-                            {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
-                    FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
-                    FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
-
-                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
-                                                                                     int p) -> double {
-                        return double(a.value) / std::pow(10, p);
-                    };
-
-                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
-                        result.back().real_price =
-                                price_to_real((~result.back().sell_price).base.amount, assets[0]->precision) /
-                                price_to_real((~result.back().sell_price).quote.amount, assets[1]->precision);
-                    } else {
-                        result.back().real_price =
-                                price_to_real(result.back().sell_price.base.amount, assets[0]->precision) /
-                                price_to_real(result.back().sell_price.quote.amount, assets[1]->precision);
-                    }
-
-                    ++itr;
-                }
-                return result;
+                return my->get_limit_orders_by_owner(owner);
             });
         }
 
         std::vector<call_order_object> market_history_api::get_call_orders_by_owner(const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
-                std::vector<call_order_object> result;
-                const auto &idx = my->app.chain_database()->get_index<call_order_index>().indices().get<by_account>();
-                auto itr = idx.lower_bound(owner);
-                while (itr != idx.end() && itr->borrower == owner) {
-                    result.emplace_back(*itr);
-                    ++itr;
-                }
-                return result;
+                return my->get_call_orders_by_owner(owner);
             });
         }
 
         std::vector<force_settlement_object> market_history_api::get_settle_orders_by_owner(const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
-                std::vector<force_settlement_object> result;
-                const auto &idx = my->app.chain_database()->get_index<force_settlement_index>().indices().get<
-                        by_account>();
-                auto itr = idx.lower_bound(owner);
-                while (itr != idx.end() && itr->owner == owner) {
-                    result.emplace_back(*itr);
-                    ++itr;
-                }
-                return result;
+                return my->get_settle_orders_by_owner(owner);
             });
         }
 

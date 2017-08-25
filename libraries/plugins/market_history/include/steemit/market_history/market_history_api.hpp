@@ -110,7 +110,8 @@ namespace steemit {
              */
             void unsubscribe_from_market(const string &a, const string &b);
 
-            std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(const string &owner) const;
+            std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(
+                    const string &owner) const;
 
             std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
 
@@ -165,7 +166,7 @@ namespace steemit {
              * @return A list of market history buckets.
              */
             vector<bucket_object> get_market_history(const string &a, const string &b, uint32_t bucket_seconds,
-                                                     fc::time_point_sec start, fc::time_point_sec end)const;
+                                                     fc::time_point_sec start, fc::time_point_sec end) const;
 
             /**
              * @brief Returns the bucket seconds being tracked by the plugin.
@@ -233,4 +234,5 @@ FC_API(steemit::market_history::market_history_api,
                //Market
                (get_ticker)(get_volume)(get_order_book)(get_trade_history)(get_market_history)(
                get_market_history_buckets)(get_limit_orders)(get_call_orders)(get_settle_orders)(get_margin_positions)(
-               get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_limit_orders_by_owner)(get_call_orders_by_owner)(get_settle_orders_by_owner)(get_fill_order_history));
+               get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_limit_orders_by_owner)(
+               get_call_orders_by_owner)(get_settle_orders_by_owner)(get_fill_order_history));
