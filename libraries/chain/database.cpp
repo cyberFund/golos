@@ -4149,6 +4149,15 @@ namespace steemit {
                         b.adjust_balance(delta);
                     });
                 }
+
+                //TODO Backward compatibility only
+                modify<account_object>(get_account(a.name), [&](account_object &acnt) {
+                    if (delta.symbol == SBD_SYMBOL) {
+                        acnt.sbd_balance += delta;
+                    } else {
+                        acnt.balance += delta;
+                    }
+                });
             } FC_CAPTURE_AND_RETHROW((a)(delta))
         }
 
@@ -4170,6 +4179,10 @@ namespace steemit {
                         interest /= STEEMIT_100_PERCENT;
                         asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
                         b.balance += interest_paid.amount;
+
+                        //TODO Backward compatibility only
+                        acnt.sbd_balance += interest_paid;
+
                         acnt.sbd_seconds = 0;
                         acnt.sbd_last_interest_payment = head_block_time();
 
