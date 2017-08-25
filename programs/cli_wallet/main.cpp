@@ -272,7 +272,6 @@ int main(int argc, char **argv) {
                     });
         }
         if (!options.count("daemon")) {
-            // TODO
             wallet_cli->register_api(wapi);
             if (!interactive) {
                 if (wapiptr->is_new()) {
@@ -294,7 +293,7 @@ int main(int argc, char **argv) {
                     if (commands["unlock"].empty()) {
                         elog("cli_wallet unlock error: ${s}", ("s", "Password can't be an empty string"));   
                     }
-                    wapiptr->set_password(commands["unlock"].front());
+                    wapiptr->unlock(commands["unlock"].front());
                     commands.erase(it);
                 }
                 std::vector < std::pair < std::string, std::string > > commands_output;
@@ -309,8 +308,6 @@ int main(int argc, char **argv) {
                             }
                         }
 
-                        // DELETE (TODO)
-                        // std::cout << line << "\n";
                         line += char(EOF);
                         fc::variants args = fc::json::variants_from_string(line);;
                         if( args.size() == 0 ) {
@@ -324,7 +321,6 @@ int main(int argc, char **argv) {
                         if( itr == wallet_cli->_result_formatters.end() )
                         {   
                             commands_output.push_back(std::make_pair(command.first, fc::json::to_pretty_string( result )));
-                            // std::cout << fc::json::to_pretty_string( result ) << "\n";
                         }
                         else {
                             std::cout << itr->second( result, args ) << "\n";
