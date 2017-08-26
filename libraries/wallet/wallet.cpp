@@ -1255,7 +1255,14 @@ namespace steemit {
 
         vector<collateral_bid_object> wallet_api::get_collateral_bids(string asset, uint32_t limit,
                                                                       uint32_t start) const {
-            return my->_remote_db->get_collateral_bids(get_asset(asset).id, limit, start);
+            try {
+                my->use_remote_market_history_api();
+            } catch (fc::exception &e) {
+                elog("Connected node needs to enable market_history");
+                return {};
+            }
+
+            return (*my->_remote_market_history_api)->get_collateral_bids(get_asset(asset).asset_name, limit, start);
         }
 
         signed_transaction wallet_api::bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
