@@ -35,11 +35,11 @@ namespace steemit {
 
         using namespace fc;
 
-        void operation_get_impacted_accounts(
+        static void operation_get_impacted_accounts(
                 const steemit::protocol::operation &op,
                 fc::flat_set<protocol::account_name_type> &result);
 
-        void transaction_get_impacted_accounts(
+        static void transaction_get_impacted_accounts(
                 const steemit::protocol::transaction &tx,
                 fc::flat_set<protocol::account_name_type> &result
         );
