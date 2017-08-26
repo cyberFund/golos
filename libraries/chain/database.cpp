@@ -5013,7 +5013,7 @@ namespace steemit {
                 // cancel remaining bids
                 const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
                 auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name,
-                                                                 price::max(bad.options.short_backing_asset,
+                                                                 protocol::price::max(bad.options.short_backing_asset,
                                                                             bitasset.asset_name),
                                                                  collateral_bid_object::id_type()));
                 while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol_name() == bitasset.asset_name) {
@@ -5037,8 +5037,8 @@ namespace steemit {
                 bid_collateral_operation vop;
                 vop.bidder = bid.bidder;
                 vop.additional_collateral = bid.inv_swan_price.base;
-                vop.debt_covered = asset(0, bid.inv_swan_price.quote.asset_id);
-                push_applied_operation(vop);
+                vop.debt_covered = asset(0, bid.inv_swan_price.quote.symbol_name());
+                push_virtual_operation(vop);
             }
             remove(bid);
         }
@@ -5056,11 +5056,11 @@ namespace steemit {
             const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
             const auto start = bid_idx.lower_bound(
                     boost::make_tuple(to_revive_id, price::max(bad.options.short_backing_asset, to_revive_id),
-                                      collateral_bid::id_type()));
+                                      collateral_bid_object::id_type()));
 
             share_type covered = 0;
             auto itr = start;
-            while (itr != bid_idx.end() && itr->inv_swan_price.quote.asset_id == to_revive_id) {
+            while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol_name() == to_revive_id) {
                 const collateral_bid_object &bid = *itr;
                 asset total_collateral = bid.inv_swan_price.quote * bad.settlement_price;
                 total_collateral += bid.inv_swan_price.base;
@@ -5113,7 +5113,7 @@ namespace steemit {
             });
 
             if (bid.inv_swan_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
-                modify(bid.bidder(*this).statistics(*this), [&](account_statistics_object &stats) {
+                modify(get_account_statistics(bid.bidder), [&](account_statistics_object &stats) {
                     stats.total_core_in_orders += call_obj.collateral;
                 });
             }
