@@ -188,7 +188,7 @@ namespace steemit {
         composite_key_compare <std::less<asset_name_type>, std::greater<price>, std::less<
                 collateral_bid_object::id_type>>
         >
-        >
+        >,
         allocator <collateral_bid_object>
         >
         collateral_bid_index;
