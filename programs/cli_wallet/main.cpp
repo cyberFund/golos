@@ -317,8 +317,9 @@ int main(int argc, char **argv) {
                         const string& method = args[0].get_string();
 
                         auto result = wallet_cli->receive_call( 0, method, fc::variants( args.begin() + 1,args.end() ) );
-                        auto itr = wallet_cli->_result_formatters.find( method );
-                        if( itr == wallet_cli->_result_formatters.end() )
+
+                        auto itr = wallet_cli->find_method( method );
+                        if( itr == wallet_cli->get_result_formatters_end() )
                         {   
                             commands_output.push_back(std::make_pair(command.first, fc::json::to_pretty_string( result )));
                         }
