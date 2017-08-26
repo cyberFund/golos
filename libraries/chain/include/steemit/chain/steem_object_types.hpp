@@ -258,6 +258,7 @@ FC_REFLECT_ENUM(steemit::chain::object_type,
                 (operation_history_object_type)
                 (account_transaction_history_object_type)
                 (proposal_object_type)
+                (collateral_bid_object_type)
 )
 
 FC_REFLECT_TYPENAME(steemit::chain::shared_string)
