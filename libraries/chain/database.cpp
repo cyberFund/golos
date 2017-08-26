@@ -4154,7 +4154,7 @@ namespace steemit {
                 modify<account_object>(get_account(a.name), [&](account_object &acnt) {
                     if (delta.symbol == SBD_SYMBOL) {
                         acnt.sbd_balance += delta;
-                    } else {
+                    } else if (delta.symbol == STEEM_SYMBOL) {
                         acnt.balance += delta;
                     }
                 });
