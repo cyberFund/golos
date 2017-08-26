@@ -97,9 +97,6 @@ namespace steemit {
          * bitasset from collateral bids.
          */
         struct execute_bid_operation : public virtual_operation {
-            struct fee_parameters_type {
-            };
-
             execute_bid_operation() {
             }
 
