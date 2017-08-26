@@ -4978,6 +4978,71 @@ namespace steemit {
             return false;
         }
 
+        void database::revive_bitasset(const asset_object &bitasset) {
+            try {
+                FC_ASSERT(bitasset.is_market_issued());
+                const asset_bitasset_data_object &bad = get_asset_bitasset_data(bitasset.asset_name);
+                FC_ASSERT(bad.has_settlement());
+                const asset_dynamic_data_object &bdd = get_asset_dynamic_data(bitasset.asset_name);
+                FC_ASSERT(!bad.is_prediction_market);
+                FC_ASSERT(!bad.current_feed.settlement_price.is_null());
+
+                if (bdd.current_supply > 0) {
+                    // Create + execute a "bid" with 0 additional collateral
+                    const collateral_bid_object &pseudo_bid = create<collateral_bid_object>(
+                            [&](collateral_bid_object &bid) {
+                                bid.bidder = bitasset.issuer;
+                                bid.inv_swan_price = asset(0, bad.options.short_backing_asset) /
+                                                     asset(bdd.current_supply, bitasset.asset_name);
+                            });
+                    execute_bid(pseudo_bid, bdd.current_supply, bad.settlement_fund, bad.current_feed);
+                } else
+                    FC_ASSERT(bad.settlement_fund == 0);
+
+                _cancel_bids_and_revive_mpa(bitasset, bad);
+            } FC_CAPTURE_AND_RETHROW((bitasset))
+        }
+
+        void database::_cancel_bids_and_revive_mpa(const asset_object &bitasset,
+                                                   const asset_bitasset_data_object &bad) {
+            try {
+                FC_ASSERT(bitasset.is_market_issued());
+                FC_ASSERT(bad.has_settlement());
+                FC_ASSERT(!bad.is_prediction_market);
+
+                // cancel remaining bids
+                const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
+                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name,
+                                                                 price::max(bad.options.short_backing_asset,
+                                                                            bitasset.asset_name),
+                                                                 collateral_bid_object::id_type()));
+                while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol_name() == bitasset.asset_name) {
+                    const collateral_bid_object &bid = *itr;
+                    ++itr;
+                    cancel_bid(bid);
+                }
+
+                // revive
+                modify(bad, [&](asset_bitasset_data_object &obj) {
+                    obj.settlement_price = price();
+                    obj.settlement_fund = 0;
+                });
+            } FC_CAPTURE_AND_RETHROW((bitasset))
+        }
+
+        void database::cancel_bid(const collateral_bid_object &bid, bool create_virtual_op) {
+            adjust_balance(bid.bidder, bid.inv_swan_price.base);
+
+            if (create_virtual_op) {
+                bid_collateral_operation vop;
+                vop.bidder = bid.bidder;
+                vop.additional_collateral = bid.inv_swan_price.base;
+                vop.debt_covered = asset(0, bid.inv_swan_price.quote.asset_id);
+                push_applied_operation(vop);
+            }
+            remove(bid);
+        }
+
         void database::process_bids(const asset_bitasset_data_object &bad) {
             if (bad.current_feed.settlement_price.is_null()) {
                 return;
@@ -5053,12 +5118,11 @@ namespace steemit {
                 });
             }
 
-            push_applied_operation(
-                    execute_bid_operation(bid.bidder, asset(call_obj.collateral, bid.inv_swan_price.base.asset_id),
-                                          asset(debt_covered, bid.inv_swan_price.quote.asset_id)));
+            push_virtual_operation(
+                    execute_bid_operation(bid.bidder, asset(call_obj.collateral, bid.inv_swan_price.base.symbol_name()),
+                                          asset(debt_covered, bid.inv_swan_price.quote.symbol_name())));
 
             remove(bid);
         }
     }
-}
 } //steemit::chain
