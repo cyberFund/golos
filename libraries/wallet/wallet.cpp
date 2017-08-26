@@ -440,6 +440,15 @@ namespace steemit {
                     return *opt;
                 }
 
+                asset_bitasset_data_object get_bitasset_data(string asset_symbol) const {
+                    auto asset = get_asset(asset_symbol);
+                    FC_ASSERT(asset.is_market_issued());
+                    fc::optional<asset_bitasset_data_object> b = _remote_db->get_bitassets_data({asset_symbol}).front();
+
+                    FC_ASSERT(b);
+                    return *b;
+                }
+
                 string get_wallet_filename() const {
                     return _wallet_filename;
                 }
@@ -1128,6 +1137,28 @@ namespace steemit {
                     _builder_transactions.erase(handle);
                 }
 
+                signed_transaction bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
+                                                  string additional_collateral, bool broadcast) {
+                    try {
+                        optional<asset_object> debt_asset = find_asset(debt_symbol);
+                        if (!debt_asset)
+                            FC_THROW("No asset with that symbol exists!");
+                        const asset_object &collateral = get_asset(
+                                get_bitasset_data(debt_asset->asset_name).options.short_backing_asset);
+
+                        bid_collateral_operation op;
+                        op.bidder = get_account(bidder_name).name;
+                        op.debt_covered = debt_asset->amount_from_string(debt_amount);
+                        op.additional_collateral = collateral.amount_from_string(additional_collateral);
+
+                        signed_transaction tx;
+                        tx.operations.push_back(op);
+                        tx.validate();
+
+                        return sign_transaction(tx, broadcast);
+                    } FC_CAPTURE_AND_RETHROW((bidder_name)(debt_amount)(debt_symbol)(additional_collateral)(broadcast))
+                }
+
                 string _wallet_filename;
                 wallet_data _wallet;
 
@@ -1360,12 +1391,7 @@ namespace steemit {
         }
 
         asset_bitasset_data_object wallet_api::get_bitasset_data(string asset_symbol) const {
-            auto asset = get_asset(asset_symbol);
-            FC_ASSERT(asset.is_market_issued());
-            fc::optional<asset_bitasset_data_object> b = my->_remote_db->get_bitassets_data({asset_symbol}).front();
-
-            FC_ASSERT(b);
-            return *b;
+            return my->get_bitasset_data(asset_symbol);
         }
 
         proposal_object wallet_api::get_proposal(string account_name, integral_id_type id) const {
@@ -2724,29 +2750,6 @@ namespace steemit {
 
                 return sign_transaction(tx, broadcast);
             } FC_CAPTURE_AND_RETHROW((account_to_settle)(amount_to_settle)(symbol)(broadcast))
-        }
-
-        signed_transaction bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
-                                          string additional_collateral, bool broadcast) {
-            try {
-                optional<asset_object> debt_asset = find_asset(debt_symbol);
-                if (!debt_asset)
-                    FC_THROW("No asset with that symbol exists!");
-                const asset_object &collateral = get_asset(
-                        get_object(*debt_asset->bitasset_data_id).options.short_backing_asset);
-
-                bid_collateral_operation op;
-                op.bidder = get_account_id(bidder_name);
-                op.debt_covered = debt_asset->amount_from_string(debt_amount);
-                op.additional_collateral = collateral.amount_from_string(additional_collateral);
-
-                signed_transaction tx;
-                tx.operations.push_back(op);
-                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
-                tx.validate();
-
-                return sign_transaction(tx, broadcast);
-            } FC_CAPTURE_AND_RETHROW((bidder_name)(debt_amount)(debt_symbol)(additional_collateral)(broadcast))
         }
 
         signed_transaction wallet_api::whitelist_account(string authorizing_account, string account_to_list,
