@@ -540,7 +540,7 @@ namespace steemit {
                     FC_ASSERT(swan.is_market_issued());
                     const asset_bitasset_data_object &bad = app.chain_database()->get_asset_bitasset_data(asset);
                     const asset_object &back = app.chain_database()->get_asset(bad.options.short_backing_asset);
-                    const auto &idx = app.chain_database()->.get_index_type<collateral_bid_index>();
+                    const auto &idx = app.chain_database()->get_index<collateral_bid_index>();
                     const auto &aidx = idx.indices().get<by_price>();
                     auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
                                                                     collateral_bid_object::id_type()));
