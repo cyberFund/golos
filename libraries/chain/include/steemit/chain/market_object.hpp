@@ -155,20 +155,20 @@ namespace steemit {
 
             id_type id;
 
-            asset get_additional_collateral() const {
+            protocol::asset get_additional_collateral() const {
                 return inv_swan_price.base;
             }
 
-            asset get_debt_covered() const {
+            protocol::asset get_debt_covered() const {
                 return inv_swan_price.quote;
             }
 
-            asset_name_type debt_type() const {
+            protocol::asset_name_type debt_type() const {
                 return inv_swan_price.quote.symbol_name();
             }
 
-            account_name_type bidder;
-            price inv_swan_price;  // Collateral / Debt
+            protocol::account_name_type bidder;
+            protocol::price inv_swan_price;  // Collateral / Debt
         };
 
         struct by_price;
@@ -178,14 +178,14 @@ namespace steemit {
         typedef multi_index_container <collateral_bid_object, indexed_by<ordered_unique < tag < by_id>, member<
                 collateral_bid_object, collateral_bid_object::id_type, &collateral_bid_object::id>>,
         ordered_unique <tag<by_account>, composite_key<collateral_bid_object, const_mem_fun < collateral_bid_object,
-                asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, account_name_type,
+                protocol::asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, account_name_type,
                 &collateral_bid_object::bidder>>
         >,
         ordered_unique <tag<by_price>, composite_key<collateral_bid_object, const_mem_fun < collateral_bid_object,
-                asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, price,
+                protocol::asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, protocol::price,
                 &collateral_bid_object::inv_swan_price>, member<collateral_bid_object, collateral_bid_object::id_type,
                 &collateral_bid_object::id>>,
-        composite_key_compare <std::less<asset_name_type>, std::greater<price>, std::less<
+        composite_key_compare <std::less<protocol::asset_name_type>, std::greater<protocol::price>, std::less<
                 collateral_bid_object::id_type>>
         >
         >,

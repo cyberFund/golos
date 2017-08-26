@@ -413,8 +413,7 @@ namespace steemit {
                                       o.additional_collateral.symbol_name())).amount));
                 }
 
-                const collateral_bid_index &bids = db.get_index<collateral_bid_index>();
-                const auto &index = bids.indices().get<by_account>();
+                const auto &index = db.get_index<collateral_bid_index>().indices().get<by_account>();
                 const auto &bid = index.find(boost::make_tuple(o.debt_covered.symbol_name(), o.bidder));
                 if (bid != index.end()) {
                     _bid = &(*bid);
@@ -424,7 +423,7 @@ namespace steemit {
 
 
             try {
-                if (_bid) {
+                if (_bid != nullptr) {
                     db.cancel_bid(*_bid, false);
                 }
 

@@ -5031,7 +5031,7 @@ namespace steemit {
         }
 
         void database::cancel_bid(const collateral_bid_object &bid, bool create_virtual_op) {
-            adjust_balance(bid.bidder, bid.inv_swan_price.base);
+            adjust_balance(get_account(bid.bidder), bid.inv_swan_price.base);
 
             if (create_virtual_op) {
                 bid_collateral_operation vop;
