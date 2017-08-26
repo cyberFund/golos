@@ -1253,6 +1253,16 @@ namespace steemit {
             return my->_remote_db->get_active_witnesses();
         }
 
+        vector<collateral_bid_object> wallet_api::get_collateral_bids(string asset, uint32_t limit,
+                                                                      uint32_t start) const {
+            return my->_remote_db->get_collateral_bids(get_asset(asset).id, limit, start);
+        }
+
+        signed_transaction wallet_api::bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
+                                                      string additional_collateral, bool broadcast) {
+            return my->bid_collateral(bidder_name, debt_amount, debt_symbol, additional_collateral, broadcast);
+        }
+
         brain_key_info wallet_api::suggest_brain_key() const {
             brain_key_info result;
             // create a private key for secure entropy
@@ -2707,6 +2717,29 @@ namespace steemit {
 
                 return sign_transaction(tx, broadcast);
             } FC_CAPTURE_AND_RETHROW((account_to_settle)(amount_to_settle)(symbol)(broadcast))
+        }
+
+        signed_transaction bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
+                                          string additional_collateral, bool broadcast) {
+            try {
+                optional<asset_object> debt_asset = find_asset(debt_symbol);
+                if (!debt_asset)
+                    FC_THROW("No asset with that symbol exists!");
+                const asset_object &collateral = get_asset(
+                        get_object(*debt_asset->bitasset_data_id).options.short_backing_asset);
+
+                bid_collateral_operation op;
+                op.bidder = get_account_id(bidder_name);
+                op.debt_covered = debt_asset->amount_from_string(debt_amount);
+                op.additional_collateral = collateral.amount_from_string(additional_collateral);
+
+                signed_transaction tx;
+                tx.operations.push_back(op);
+                set_operation_fees(tx, _remote_db->get_global_properties().parameters.current_fees);
+                tx.validate();
+
+                return sign_transaction(tx, broadcast);
+            } FC_CAPTURE_AND_RETHROW((bidder_name)(debt_amount)(debt_symbol)(additional_collateral)(broadcast))
         }
 
         signed_transaction wallet_api::whitelist_account(string authorizing_account, string account_to_list,

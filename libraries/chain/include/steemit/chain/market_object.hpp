@@ -135,18 +135,77 @@ namespace steemit {
             }
         };
 
+        /**
+         * @class collateral_bid_object
+         * @brief bids of collateral for debt after a black swan
+         *
+         * There should only be one collateral_bid_object per asset per account, and
+         * only for smartcoin assets that have a global settlement_price.
+         */
+        class collateral_bid_object : public object<collateral_bid_object_type, collateral_bid_object> {
+        public:
+            template<typename Constructor, typename Allocator>
+            collateral_bid_object(Constructor &&c, allocator <Allocator> a) {
+                c(*this);
+            }
+
+            collateral_bid_object() {
+
+            }
+
+            id_type id;
+
+            asset get_additional_collateral() const {
+                return inv_swan_price.base;
+            }
+
+            asset get_debt_covered() const {
+                return inv_swan_price.quote;
+            }
+
+            asset_name_type debt_type() const {
+                return inv_swan_price.quote.symbol_name();
+            }
+
+            account_name_type bidder;
+            price inv_swan_price;  // Collateral / Debt
+        };
+
         struct by_price;
         struct by_expiration;
         struct by_account;
-        typedef multi_index_container <limit_order_object, indexed_by<ordered_unique < tag <
-                                                                      by_id>, member<limit_order_object, limit_order_object::id_type, &limit_order_object::id>>,
-        ordered_non_unique <tag<by_expiration>, member<limit_order_object, time_point_sec, &limit_order_object::expiration>>,
-        ordered_unique <tag<by_price>, composite_key<limit_order_object, member <
-                                                                         limit_order_object, protocol::price, &limit_order_object::sell_price>, member<limit_order_object, limit_order_object::id_type, &limit_order_object::id>>,
+
+        typedef multi_index_container <collateral_bid_object, indexed_by<ordered_unique < tag < by_id>, member<
+                collateral_bid_object, collateral_bid_object::id_type, &collateral_bid_object::id>>,
+        ordered_unique <tag<by_account>, composite_key<collateral_bid_object, const_mem_fun < collateral_bid_object,
+                asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, account_name_type,
+                &collateral_bid_object::bidder>>
+        >,
+        ordered_unique <tag<by_price>, composite_key<collateral_bid_object, const_mem_fun < collateral_bid_object,
+                asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, price,
+                &collateral_bid_object::inv_swan_price>, member<collateral_bid_object, collateral_bid_object::id_type,
+                &collateral_bid_object::id>>,
+        composite_key_compare <std::less<asset_name_type>, std::greater<price>, std::less<
+                collateral_bid_object::id_type>>
+        >
+        >
+        allocator <collateral_bid_object>
+        >
+        collateral_bid_index;
+
+
+        typedef multi_index_container <limit_order_object, indexed_by<ordered_unique < tag < by_id>, member<
+                limit_order_object, limit_order_object::id_type, &limit_order_object::id>>,
+        ordered_non_unique <tag<by_expiration>, member<limit_order_object, time_point_sec,
+                &limit_order_object::expiration>>,
+        ordered_unique <tag<by_price>, composite_key<limit_order_object, member < limit_order_object, protocol::price,
+                &limit_order_object::sell_price>, member<limit_order_object, limit_order_object::id_type,
+                &limit_order_object::id>>,
         composite_key_compare <std::greater<protocol::price>, std::less<limit_order_object::id_type>>
         >,
-        ordered_unique <tag<by_account>, composite_key<limit_order_object, member <
-                                                                           limit_order_object, account_name_type, &limit_order_object::seller>, member<limit_order_object, protocol::integral_id_type, &limit_order_object::order_id>>
+        ordered_unique <tag<by_account>, composite_key<limit_order_object, member < limit_order_object,
+                account_name_type, &limit_order_object::seller>, member<limit_order_object, protocol::integral_id_type,
+                &limit_order_object::order_id>>
         >
         >,
         allocator <limit_order_object>
@@ -156,30 +215,37 @@ namespace steemit {
         struct by_collateral;
         struct by_account;
         struct by_price;
-        typedef multi_index_container <call_order_object, indexed_by<ordered_unique < tag <
-                                                                     by_id>, member<call_order_object, call_order_object::id_type, &call_order_object::id>>,
-        ordered_unique <tag<by_price>, composite_key<call_order_object, member <
-                                                                        call_order_object, protocol::price, &call_order_object::call_price>, member<call_order_object, protocol::integral_id_type, &call_order_object::order_id>>,
+        typedef multi_index_container <call_order_object, indexed_by<ordered_unique < tag < by_id>, member<
+                call_order_object, call_order_object::id_type, &call_order_object::id>>,
+        ordered_unique <tag<by_price>, composite_key<call_order_object, member < call_order_object, protocol::price,
+                &call_order_object::call_price>, member<call_order_object, protocol::integral_id_type,
+                &call_order_object::order_id>>,
         composite_key_compare <std::less<protocol::price>, std::less<protocol::integral_id_type>>
         >,
-        ordered_unique <tag<by_account>, composite_key<call_order_object, member <
-                                                                          call_order_object, account_name_type, &call_order_object::borrower>, const_mem_fun<call_order_object, protocol::asset_name_type, &call_order_object::debt_type>>
+        ordered_unique <tag<by_account>, composite_key<call_order_object, member < call_order_object, account_name_type,
+                &call_order_object::borrower>, const_mem_fun<call_order_object, protocol::asset_name_type,
+                &call_order_object::debt_type>>
         >,
-        ordered_unique <tag<by_collateral>, composite_key<call_order_object, const_mem_fun <
-                                                                             call_order_object, protocol::price, &call_order_object::collateralization>, member<call_order_object, protocol::integral_id_type, &call_order_object::order_id>>
+        ordered_unique <tag<by_collateral>, composite_key<call_order_object, const_mem_fun < call_order_object,
+                protocol::price, &call_order_object::collateralization>, member<call_order_object,
+                protocol::integral_id_type, &call_order_object::order_id>>
         >
         >,allocator <call_order_object>
         >
         call_order_index;
 
         struct by_expiration;
-        typedef multi_index_container <force_settlement_object, indexed_by<ordered_unique < tag <
-                                                                           by_id>, member<force_settlement_object, force_settlement_object::id_type, &force_settlement_object::id>>,
-        ordered_unique <tag<by_account>, composite_key<force_settlement_object, member <
-                                                                                force_settlement_object, account_name_type, &force_settlement_object::owner>, member<force_settlement_object, protocol::integral_id_type, &force_settlement_object::settlement_id>>
+        typedef multi_index_container <force_settlement_object, indexed_by<ordered_unique < tag < by_id>, member<
+                force_settlement_object, force_settlement_object::id_type, &force_settlement_object::id>>,
+        ordered_unique <tag<by_account>, composite_key<force_settlement_object, member < force_settlement_object,
+                account_name_type, &force_settlement_object::owner>, member<force_settlement_object,
+                protocol::integral_id_type, &force_settlement_object::settlement_id>>
         >,
-        ordered_unique <tag<by_expiration>, composite_key<force_settlement_object, const_mem_fun <
-                                                                                   force_settlement_object, protocol::asset_name_type, &force_settlement_object::settlement_asset_symbol>, member<force_settlement_object, time_point_sec, &force_settlement_object::settlement_date>, member<force_settlement_object, protocol::integral_id_type, &force_settlement_object::settlement_id>>
+        ordered_unique <tag<by_expiration>, composite_key<force_settlement_object,
+                const_mem_fun < force_settlement_object, protocol::asset_name_type,
+                &force_settlement_object::settlement_asset_symbol>, member<force_settlement_object, time_point_sec,
+                &force_settlement_object::settlement_date>, member<force_settlement_object, protocol::integral_id_type,
+                &force_settlement_object::settlement_id>>
         >
         >,allocator <force_settlement_object>
         >
@@ -196,3 +262,6 @@ CHAINBASE_SET_INDEX_TYPE(steemit::chain::call_order_object, steemit::chain::call
 
 FC_REFLECT(steemit::chain::force_settlement_object, (id)(owner)(balance)(settlement_date)(settlement_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::force_settlement_object, steemit::chain::force_settlement_index)
+
+FC_REFLECT_DERIVED(steemit::chain::collateral_bid_object, (id)(bidder)(inv_swan_price))
+CHAINBASE_SET_INDEX_TYPE(steemit::chain::collateral_bid_object, steemit::chain::collateral_bid_index)

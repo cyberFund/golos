@@ -86,7 +86,9 @@ namespace steemit {
             account_balance_object_type,
 
             operation_history_object_type,
-            account_transaction_history_object_type
+            account_transaction_history_object_type,
+
+            collateral_bid_object_type
         };
 
         class dynamic_global_property_object;

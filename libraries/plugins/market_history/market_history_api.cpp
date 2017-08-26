@@ -106,6 +106,9 @@ namespace steemit {
 
                 vector<call_order_object> get_margin_positions(const account_name_type &name) const;
 
+                vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+                                                                  uint32_t start, uint32_t skip) const;
+
                 void subscribe_to_market(std::function<void(const variant &)> callback, string a, string b);
 
                 void unsubscribe_from_market(string a, string b);
@@ -529,6 +532,34 @@ namespace steemit {
                 } FC_CAPTURE_AND_RETHROW((name))
             }
 
+            vector<collateral_bid_object> market_history_api_impl::get_collateral_bids(const asset_name_type asset,
+                                                                                       uint32_t limit, uint32_t start,
+                                                                                       uint32_t skip) const {
+                try {
+                    FC_ASSERT(limit <= 100);
+                    const asset_object &swan = app.chain_database()->get_asset(asset);
+                    FC_ASSERT(swan.is_market_issued());
+                    const asset_bitasset_data_object &bad = app.chain_database()->get_asset_bitasset_data(asset);
+                    const asset_object &back = app.chain_database()->get_asset(bad.options.short_backing_asset);
+                    const auto &idx = app.chain_database()->.get_index_type<collateral_bid_index>();
+                    const auto &aidx = idx.indices().get<by_price>();
+                    auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
+                                                                    collateral_bid_object::id_type()));
+                    auto end = aidx.lower_bound(boost::make_tuple(asset, price::min(back.asset_name, asset),
+                                                                  collateral_bid_object::id_type(
+                                                                          STEEMIT_MAX_INSTANCE_ID)));
+                    vector<collateral_bid_object> result;
+                    while (skip-- > 0 && start != end) {
+                        ++start;
+                    }
+                    while (start != end && limit-- > 0) {
+                        result.emplace_back(*start);
+                        ++start;
+                    }
+                    return result;
+                } FC_CAPTURE_AND_RETHROW((asset)(limit)(skip))
+            }
+
             std::vector<liquidity_balance> market_history_api_impl::get_liquidity_queue(const string &start_account,
                                                                                         uint32_t limit) const {
                 FC_ASSERT(limit <= 1000);
@@ -760,6 +791,11 @@ namespace steemit {
         void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, const string &a,
                                                      const string &b) {
             my->subscribe_to_market(std::move(callback), a, b);
+        }
+
+        vector<collateral_bid_object> market_history_api::get_collateral_bids(const asset_name_type asset,
+                                                                              uint32_t limit, uint32_t start) const {
+            return my->get_collateral_bids(asset, limit, start, 0);
         }
     }
 } // steemit::market_history

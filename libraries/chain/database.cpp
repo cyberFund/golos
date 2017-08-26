@@ -2286,6 +2286,7 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<proposal_create_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator>();
+            _my->_evaluator_registry.register_evaluator<bid_collateral_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id,
@@ -2348,6 +2349,8 @@ namespace steemit {
             add_index<reward_fund_index>();
             //            add_index<proposal_index>()->add_secondary_index<required_approval_index>();
             add_index<proposal_index>();
+
+            add_index<collateral_bid_index>();
 
             _plugin_index_signal();
         }
@@ -4975,5 +4978,87 @@ namespace steemit {
             return false;
         }
 
+        void database::process_bids(const asset_bitasset_data_object &bad) {
+            if (bad.current_feed.settlement_price.is_null()) {
+                return;
+            }
+
+            asset_name_type to_revive_id = (asset(0, bad.options.short_backing_asset) *
+                                            bad.settlement_price).symbol_name();
+            const asset_object &to_revive = get_asset(to_revive_id);
+            const asset_dynamic_data_object &bdd = get_asset_dynamic_data(to_revive.asset_name);
+
+            const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
+            const auto start = bid_idx.lower_bound(
+                    boost::make_tuple(to_revive_id, price::max(bad.options.short_backing_asset, to_revive_id),
+                                      collateral_bid::id_type()));
+
+            share_type covered = 0;
+            auto itr = start;
+            while (itr != bid_idx.end() && itr->inv_swan_price.quote.asset_id == to_revive_id) {
+                const collateral_bid_object &bid = *itr;
+                asset total_collateral = bid.inv_swan_price.quote * bad.settlement_price;
+                total_collateral += bid.inv_swan_price.base;
+                price call_price = price::call_price(bid.inv_swan_price.quote, total_collateral,
+                                                     bad.current_feed.maintenance_collateral_ratio);
+                if (~call_price >= bad.current_feed.settlement_price) {
+                    break;
+                }
+                covered += bid.inv_swan_price.quote.amount;
+                ++itr;
+                if (covered >= bdd.current_supply) {
+                    break;
+                }
+            }
+            if (covered < bdd.current_supply) {
+                return;
+            }
+
+            const auto end = itr;
+            share_type to_cover = bdd.current_supply;
+            share_type remaining_fund = bad.settlement_fund;
+            for (itr = start; itr != end;) {
+                const collateral_bid_object &bid = *itr;
+                ++itr;
+                share_type debt = bid.inv_swan_price.quote.amount;
+                share_type collateral = (bid.inv_swan_price.quote * bad.settlement_price).amount;
+                if (bid.inv_swan_price.quote.amount >= to_cover) {
+                    debt = to_cover;
+                    collateral = remaining_fund;
+                }
+                to_cover -= debt;
+                remaining_fund -= collateral;
+                execute_bid(bid, debt, collateral, bad.current_feed);
+            }
+            FC_ASSERT(remaining_fund == 0);
+            FC_ASSERT(to_cover == 0);
+
+            _cancel_bids_and_revive_mpa(to_revive, bad);
+        }
+
+        void database::execute_bid(const collateral_bid_object &bid, share_type debt_covered,
+                                   share_type collateral_from_fund, const price_feed &current_feed) {
+            const call_order_object &call_obj = create<call_order_object>([&](call_order_object &call) {
+                call.borrower = bid.bidder;
+                call.collateral = bid.inv_swan_price.base.amount + collateral_from_fund;
+                call.debt = debt_covered;
+                call.call_price = price::call_price(asset(debt_covered, bid.inv_swan_price.quote.symbol_name()),
+                                                    asset(call.collateral, bid.inv_swan_price.base.symbol_name()),
+                                                    current_feed.maintenance_collateral_ratio);
+            });
+
+            if (bid.inv_swan_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
+                modify(bid.bidder(*this).statistics(*this), [&](account_statistics_object &stats) {
+                    stats.total_core_in_orders += call_obj.collateral;
+                });
+            }
+
+            push_applied_operation(
+                    execute_bid_operation(bid.bidder, asset(call_obj.collateral, bid.inv_swan_price.base.asset_id),
+                                          asset(debt_covered, bid.inv_swan_price.quote.asset_id)));
+
+            remove(bid);
+        }
     }
+}
 } //steemit::chain

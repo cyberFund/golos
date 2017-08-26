@@ -9,8 +9,7 @@ namespace steemit {
         ///  Issue #56 contains the justificiation for allowing any UTF-8 string to serve as a permlink, content will be grouped by tags
         ///  going forward.
         inline void validate_permlink(const string &permlink) {
-            FC_ASSERT(permlink.size() <
-                      STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
+            FC_ASSERT(permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -29,12 +28,10 @@ namespace steemit {
 
         void limit_order_create2_operation::validate() const {
             validate_account_name(owner);
-            FC_ASSERT(amount_to_sell.symbol ==
-                      exchange_rate.base.symbol, "Sell asset must be the base of the price");
+            FC_ASSERT(amount_to_sell.symbol == exchange_rate.base.symbol, "Sell asset must be the base of the price");
             exchange_rate.validate();
 
-            FC_ASSERT((amount_to_sell * exchange_rate).amount >
-                      0, "Amount to sell cannot round to 0 when traded");
+            FC_ASSERT((amount_to_sell * exchange_rate).amount > 0, "Amount to sell cannot round to 0 when traded");
         }
 
         void limit_order_cancel_operation::validate() const {
@@ -52,8 +49,13 @@ namespace steemit {
         void call_order_update_operation::validate() const {
             try {
                 FC_ASSERT(delta_collateral.symbol != delta_debt.symbol);
-                FC_ASSERT(
-                        delta_collateral.amount != 0 || delta_debt.amount != 0);
+                FC_ASSERT(delta_collateral.amount != 0 || delta_debt.amount != 0);
+            } FC_CAPTURE_AND_RETHROW((*this))
+        }
+
+        void bid_collateral_operation::validate() const {
+            try {
+                FC_ASSERT(debt_covered.amount == 0 || (debt_covered.amount > 0 && additional_collateral.amount > 0));
             } FC_CAPTURE_AND_RETHROW((*this))
         }
     }
