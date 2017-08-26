@@ -242,12 +242,12 @@ namespace steemit {
             //void operator()( const operation& op ){}
         };
 
-        static void operation_get_impacted_accounts(const operation &op, flat_set<account_name_type> &result) {
+        void operation_get_impacted_accounts(const operation &op, flat_set<account_name_type> &result) {
             get_impacted_account_visitor vtor = get_impacted_account_visitor(result);
             op.visit(vtor);
         }
 
-        static void transaction_get_impacted_accounts(const transaction &tx, flat_set<account_name_type> &result) {
+        void transaction_get_impacted_accounts(const transaction &tx, flat_set<account_name_type> &result) {
             for (const auto &op : tx.operations) {
                 operation_get_impacted_accounts(op, result);
             }
