@@ -185,25 +185,26 @@ namespace steemit {
                     STEEM_SYMBOL_NAME);
             BOOST_CHECK(core_asset_data.fee_pool == 0);
 
-            const account_statistics_index &statistics_index = input_db.get_index<
-                    account_statistics_index>().indicies();
-            const auto &balance_index = input_db.get_index<account_balance_index>().indices();
-            const auto &settle_index = input_db.get_index<force_settlement_index>().indices();
             map<asset_name_type, share_type> total_balances;
             map<asset_name_type, share_type> total_debts;
             share_type core_in_orders;
             share_type reported_core_in_orders;
 
-            for (const account_balance_object &b : balance_index) {
+            for (const account_balance_object &b : input_db.get_index<account_balance_index>().indices()) {
                 total_balances[b.asset_name] += b.balance;
             }
-            for (const force_settlement_object &s : settle_index) {
+            for (const force_settlement_object &s : input_db.get_index<force_settlement_index>().indices()) {
                 total_balances[s.balance.symbol_name()] += s.balance.amount;
             }
-            for (const account_statistics_object &a : statistics_index) {
+            for (const account_statistics_object &a : input_db.get_index<account_statistics_object>().indices()) {
                 reported_core_in_orders += a.total_core_in_orders;
                 total_balances[STEEM_SYMBOL_NAME] += a.pending_fees + a.pending_vested_fees;
             }
+
+            for (const collateral_bid_object &b : input_db.get_index<collateral_bid_index>().indices()) {
+                total_balances[b.inv_swan_price.base.symbol_name()] += b.inv_swan_price.base.amount;
+            }
+
             for (const limit_order_object &o : input_db.get_index<limit_order_index>().indices()) {
                 asset for_sale = o.amount_for_sale();
                 if (for_sale.symbol == STEEM_SYMBOL) {
@@ -581,6 +582,23 @@ namespace steemit {
                 trx.operations.clear();
                 verify_asset_supplies(db);
             } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
+        }
+
+
+        void database_fixture::bid_collateral(const account_object &who, const asset &to_bid, const asset &to_cover) {
+            try {
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.operations.clear();
+                bid_collateral_operation bid;
+                bid.bidder = who.name;
+                bid.additional_collateral = to_bid;
+                bid.debt_covered = to_cover;
+                trx.operations.push_back(bid);
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+            } FC_CAPTURE_AND_RETHROW((who.name)(to_bid)(to_cover))
         }
 
         void database_fixture::update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers) {

@@ -144,7 +144,7 @@ namespace steemit {
             chain::database &db;
             signed_transaction trx;
             public_key_type committee_key;
-            account_object::id_type committee_account;
+            account_name_type committee_account;
             fc::ecc::private_key private_key = fc::ecc::private_key::generate();
             fc::ecc::private_key init_account_priv_key;
             string debug_key = graphene::utilities::key_to_wif(init_account_priv_key);
@@ -229,6 +229,8 @@ namespace steemit {
             }
 
             void cover(const account_object &who, asset what, asset collateral_freed);
+
+            void bid_collateral(const account_object &who, const asset &to_bid, const asset &to_cover);
 
             const asset_object &get_asset(const asset_name_type &symbol) const;
 
