@@ -439,7 +439,7 @@ namespace steemit {
             db.push_transaction(trx, ~0);
             trx.operations.clear();
             verify_asset_supplies(db);
-            return processed.operation_results[0].get<asset>();
+            return order.amount_for_sale();
         }
 
         const asset_object &database_fixture::get_asset(const asset_name_type &symbol) const {
