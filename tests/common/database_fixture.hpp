@@ -149,8 +149,7 @@ namespace steemit {
             fc::ecc::private_key init_account_priv_key;
             string debug_key = graphene::utilities::key_to_wif(init_account_priv_key);
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
-            uint32_t default_skip = 0 | database::skip_undo_history_check |
-                                    database::skip_authority_check;
+            uint32_t default_skip = 0 | database::skip_undo_history_check | database::skip_authority_check;
 
             std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> db_plugin;
 
@@ -177,8 +176,8 @@ namespace steemit {
             void verify_account_history_plugin_index() const;
 
             void generate_block(uint32_t skip = 0,
-                    const fc::ecc::private_key &key = generate_private_key(BLOCKCHAIN_NAME),
-                    int miss_blocks = 0);
+                                const fc::ecc::private_key &key = generate_private_key(BLOCKCHAIN_NAME),
+                                int miss_blocks = 0);
 
             /**
              * @brief Generates block_count blocks
@@ -212,6 +211,13 @@ namespace steemit {
 
             void publish_feed(const asset_object &mia, const account_object &by, const price_feed &f);
 
+            const limit_order_object *create_sell_order(account_name_type user, const asset &amount, const asset &recv);
+
+            const limit_order_object *create_sell_order(const account_object &user, const asset &amount,
+                                                        const asset &recv);
+
+            asset cancel_limit_order(const limit_order_object &order);
+
             const call_order_object *borrow(const account_name_type &who, asset what, asset collateral) {
                 return borrow(db.get_account(who), what, collateral);
             }
@@ -228,55 +234,38 @@ namespace steemit {
 
             const account_object &get_account(const string &name) const;
 
-            const asset_object &create_bitasset(const string &name,
-                    account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
-                    uint16_t market_fee_percent = 100 /*1%*/,
-                    uint16_t flags = charge_market_fee);
+            const asset_object &create_bitasset(const string &name, account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
+                                                uint16_t market_fee_percent = 100 /*1%*/,
+                                                uint16_t flags = charge_market_fee);
 
             const asset_object &create_prediction_market(const string &name,
-                    account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
-                    uint16_t market_fee_percent = 100 /*1%*/,
-                    uint16_t flags = charge_market_fee);
+                                                         account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
+                                                         uint16_t market_fee_percent = 100 /*1%*/,
+                                                         uint16_t flags = charge_market_fee);
 
             const asset_object &create_user_issued_asset(const string &name);
 
-            const asset_object &create_user_issued_asset(const asset_name_type &name,
-                    const account_object &issuer,
-                    uint16_t flags);
+            const asset_object &create_user_issued_asset(const asset_name_type &name, const account_object &issuer,
+                                                         uint16_t flags);
 
             void issue_uia(const account_object &recipient, asset amount);
 
             void issue_uia(account_name_type recipient_id, asset amount);
 
-            const account_object &account_create(
-                    const string &name,
-                    const string &creator,
-                    const private_key_type &creator_key,
-                    const share_type &fee,
-                    const public_key_type &key,
-                    const public_key_type &post_key,
-                    const string &json_metadata
-            );
+            const account_object &account_create(const string &name, const string &creator,
+                                                 const private_key_type &creator_key, const share_type &fee,
+                                                 const public_key_type &key, const public_key_type &post_key,
+                                                 const string &json_metadata);
 
-            const account_object &account_create(
-                    const string &name,
-                    const public_key_type &key,
-                    const public_key_type &post_key
-            );
+            const account_object &account_create(const string &name, const public_key_type &key,
+                                                 const public_key_type &post_key);
 
-            const account_object &account_create(
-                    const string &name,
-                    const public_key_type& key = public_key_type()
-            );
+            const account_object &account_create(const string &name, const public_key_type &key = public_key_type());
 
 
-            const witness_object &witness_create(
-                    const string &owner,
-                    const private_key_type &owner_key,
-                    const string &url,
-                    const public_key_type &signing_key,
-                    const share_type &fee
-            );
+            const witness_object &witness_create(const string &owner, const private_key_type &owner_key,
+                                                 const string &url, const public_key_type &signing_key,
+                                                 const share_type &fee);
 
             void fund(const string &account_name, const share_type &amount = 500000);
 
