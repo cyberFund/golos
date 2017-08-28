@@ -344,8 +344,8 @@
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
-#define STEEMIT_POST_MAX_BANDWIDTH_PRE_HF17    (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
-#define STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF17  (uint64_t(STEEMIT_POST_MAX_BANDWIDTH_PRE_HF17) * STEEMIT_POST_MAX_BANDWIDTH_PRE_HF17)
+#define STEEMIT_POST_MAX_BANDWIDTH_PRE_HF17     (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
+#define STEEMIT_POST_WEIGHT_CONSTANT_PRE_HF17   (uint64_t(STEEMIT_POST_MAX_BANDWIDTH_PRE_HF17) * STEEMIT_POST_MAX_BANDWIDTH_PRE_HF17)
 #define STEEMIT_POST_MAX_BANDWIDTH              (8*STEEMIT_100_PERCENT)
 #define STEEMIT_POST_WEIGHT_CONSTANT            (uint64_t(STEEMIT_POST_MAX_BANDWIDTH) * STEEMIT_POST_MAX_BANDWIDTH)
 
@@ -480,7 +480,7 @@
 #define STEEMIT_MAX_BLOCK_SIZE                  (STEEMIT_MAX_TRANSACTION_SIZE*STEEMIT_BLOCK_INTERVAL*2000)
 #define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR)
-#define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF16   (24*7) /// 7 days * 24 hours per day
+#define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF16    (24*7) /// 7 days * 24 hours per day
 #define STEEMIT_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define STEEMIT_MAX_FEED_AGE                    (fc::days(7))
 #define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/3) /// protects the network from conversions before price has been established

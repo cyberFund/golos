@@ -30,11 +30,6 @@ namespace steemit {
                         return double(a.value) / std::pow(10, p);
                     };
 
-                    /** do nothing for other operation types */
-                    template<typename T> market_trade operator()(const T &) const {
-                        return {};
-                    }
-
                     market_trade operator()(const fill_order_operation &o) const {
                         market_trade trade;
 
@@ -98,11 +93,21 @@ namespace steemit {
 
                 vector<limit_order_object> get_limit_orders(const string &a, const string &b, uint32_t limit) const;
 
+                std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(
+                        const string &owner) const;
+
+                std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
+
+                std::vector<force_settlement_object> get_settle_orders_by_owner(const string &owner) const;
+
                 vector<call_order_object> get_call_orders(const string &a, uint32_t limit) const;
 
                 vector<force_settlement_object> get_settle_orders(const string &a, uint32_t limit) const;
 
                 vector<call_order_object> get_margin_positions(const account_name_type &name) const;
+
+                vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+                                                                  uint32_t start, uint32_t skip) const;
 
                 void subscribe_to_market(std::function<void(const variant &)> callback, string a, string b);
 
@@ -203,12 +208,11 @@ namespace steemit {
                 const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<
                         by_asset_name>();
                 vector<optional<asset_object>> result;
-                result.reserve(asset_symbols.size());
                 std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
                                [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<
                                        asset_object> {
-                                   auto ptr = app.chain_database()->find_asset(symbol);
-                                   return ptr == nullptr ? optional<asset_object>() : *ptr;
+                                   auto itr = assets_by_symbol.find(symbol);
+                                   return itr == assets_by_symbol.end() ? optional<asset_object>() : *itr;
                                });
                 return result;
             }
@@ -230,7 +234,10 @@ namespace steemit {
 
                 try {
                     const fc::time_point_sec now = fc::time_point::now();
-                    const fc::time_point_sec yesterday = fc::time_point_sec(now.sec_since_epoch() - 86400);
+                    const fc::time_point_sec yesterday = app.chain_database()->fetch_block_by_number(0)->timestamp <
+                                                         fc::time_point_sec(now.sec_since_epoch() - 86400)
+                                                         ? fc::time_point_sec(now.sec_since_epoch() - 86400)
+                                                         : app.chain_database()->fetch_block_by_number(0)->timestamp;
                     const auto batch_size = 100;
 
                     vector<market_trade> trades = get_trade_history(base, quote, now, yesterday, batch_size);
@@ -353,9 +360,9 @@ namespace steemit {
                 if (base_id > quote_id) {
                     std::swap(base_id, quote_id);
                 }
-                const auto &history_idx = app.chain_database()->get_index<
-                        market_history::order_history_index>().indices().get<market_history::by_key>();
-                market_history::history_key hkey;
+                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<
+                        by_key>();
+                history_key hkey;
                 hkey.base = base_id;
                 hkey.quote = quote_id;
                 hkey.sequence = std::numeric_limits<int64_t>::min();
@@ -408,8 +415,9 @@ namespace steemit {
                 auto itr = history_idx.lower_bound(hkey);
                 vector<order_history_object> result;
                 while (itr != history_idx.end() && count < limit) {
-                    if (itr->key.base != a_name || itr->key.quote != b_name)
+                    if (itr->key.base != a_name || itr->key.quote != b_name) {
                         break;
+                    }
                     result.emplace_back(*itr);
                     ++itr;
                     ++count;
@@ -523,6 +531,34 @@ namespace steemit {
                 } FC_CAPTURE_AND_RETHROW((name))
             }
 
+            vector<collateral_bid_object> market_history_api_impl::get_collateral_bids(const asset_name_type asset,
+                                                                                       uint32_t limit, uint32_t start,
+                                                                                       uint32_t skip) const {
+                try {
+                    FC_ASSERT(limit <= 100);
+                    const asset_object &swan = app.chain_database()->get_asset(asset);
+                    FC_ASSERT(swan.is_market_issued());
+                    const asset_bitasset_data_object &bad = app.chain_database()->get_asset_bitasset_data(asset);
+                    const asset_object &back = app.chain_database()->get_asset(bad.options.short_backing_asset);
+                    const auto &idx = app.chain_database()->get_index<collateral_bid_index>();
+                    const auto &aidx = idx.indices().get<by_price>();
+                    auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
+                                                                    collateral_bid_object::id_type()));
+                    auto end = aidx.lower_bound(boost::make_tuple(asset, price::min(back.asset_name, asset),
+                                                                  collateral_bid_object::id_type(
+                                                                          STEEMIT_MAX_INSTANCE_ID)));
+                    vector<collateral_bid_object> result;
+                    while (skip-- > 0 && start != end) {
+                        ++start;
+                    }
+                    while (start != end && limit-- > 0) {
+                        result.emplace_back(*start);
+                        ++start;
+                    }
+                    return result;
+                } FC_CAPTURE_AND_RETHROW((asset)(limit)(skip))
+            }
+
             std::vector<liquidity_balance> market_history_api_impl::get_liquidity_queue(const string &start_account,
                                                                                         uint32_t limit) const {
                 FC_ASSERT(limit <= 1000);
@@ -555,6 +591,63 @@ namespace steemit {
                     ++itr;
                 }
 
+                return result;
+            }
+
+            std::vector<steemit::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
+                    const string &owner) const {
+                std::vector<steemit::application::extended_limit_order> result;
+                const auto &idx = app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->seller == owner) {
+                    result.emplace_back(*itr);
+
+                    auto assets = lookup_asset_symbols(
+                            {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
+                    FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
+                    FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
+
+                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
+                                                                                     int p) -> double {
+                        return double(a.value) / std::pow(10, p);
+                    };
+
+                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
+                        result.back().real_price =
+                                price_to_real((~result.back().sell_price).base.amount, assets[0]->precision) /
+                                price_to_real((~result.back().sell_price).quote.amount, assets[1]->precision);
+                    } else {
+                        result.back().real_price =
+                                price_to_real(result.back().sell_price.base.amount, assets[0]->precision) /
+                                price_to_real(result.back().sell_price.quote.amount, assets[1]->precision);
+                    }
+
+                    ++itr;
+                }
+                return result;
+            }
+
+            std::vector<call_order_object> market_history_api_impl::get_call_orders_by_owner(
+                    const string &owner) const {
+                std::vector<call_order_object> result;
+                const auto &idx = app.chain_database()->get_index<call_order_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->borrower == owner) {
+                    result.emplace_back(*itr);
+                    ++itr;
+                }
+                return result;
+            }
+
+            std::vector<force_settlement_object> market_history_api_impl::get_settle_orders_by_owner(
+                    const string &owner) const {
+                std::vector<force_settlement_object> result;
+                const auto &idx = app.chain_database()->get_index<force_settlement_index>().indices().get<by_account>();
+                auto itr = idx.lower_bound(owner);
+                while (itr != idx.end() && itr->owner == owner) {
+                    result.emplace_back(*itr);
+                    ++itr;
+                }
                 return result;
             }
 
@@ -671,33 +764,37 @@ namespace steemit {
             });
         }
 
-        void market_history_api::unsubscribe_from_market(string a, string b) {
+        void market_history_api::unsubscribe_from_market(const string &a, const string &b) {
             my->unsubscribe_from_market(a, b);
         }
 
-        std::vector<steemit::application::extended_limit_order> market_history_api::get_open_orders(
+        std::vector<steemit::application::extended_limit_order> market_history_api::get_limit_orders_by_owner(
                 const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
-                std::vector<steemit::application::extended_limit_order> result;
-                const auto &idx = my->app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
-                auto itr = idx.lower_bound(owner);
-                while (itr != idx.end() && itr->seller == owner) {
-                    result.push_back(*itr);
-
-                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
-                        result.back().real_price = (~result.back().sell_price).to_real();
-                    } else {
-                        result.back().real_price = (result.back().sell_price).to_real();
-                    }
-                    ++itr;
-                }
-                return result;
+                return my->get_limit_orders_by_owner(owner);
             });
         }
 
-        void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, string a,
-                                                     string b) {
-            my->subscribe_to_market(callback, a, b);
+        std::vector<call_order_object> market_history_api::get_call_orders_by_owner(const string &owner) const {
+            return my->app.chain_database()->with_read_lock([&]() {
+                return my->get_call_orders_by_owner(owner);
+            });
+        }
+
+        std::vector<force_settlement_object> market_history_api::get_settle_orders_by_owner(const string &owner) const {
+            return my->app.chain_database()->with_read_lock([&]() {
+                return my->get_settle_orders_by_owner(owner);
+            });
+        }
+
+        void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, const string &a,
+                                                     const string &b) {
+            my->subscribe_to_market(std::move(callback), a, b);
+        }
+
+        vector<collateral_bid_object> market_history_api::get_collateral_bids(const asset_name_type asset,
+                                                                              uint32_t limit, uint32_t start) const {
+            return my->get_collateral_bids(asset, limit, start, 0);
         }
     }
 } // steemit::market_history
