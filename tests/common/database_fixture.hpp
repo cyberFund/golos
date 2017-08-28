@@ -303,7 +303,7 @@ namespace steemit {
 
             vector<operation> get_last_operations(uint32_t ops);
 
-            void validate_database(void);
+            void validate_database();
         };
 
         struct clean_database_fixture : public database_fixture {

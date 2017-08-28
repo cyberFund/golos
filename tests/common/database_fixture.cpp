@@ -948,7 +948,7 @@ namespace steemit {
             return ops;
         }
 
-        void database_fixture::validate_database(void) {
+        void database_fixture::validate_database() {
             try {
                 db.validate_invariants();
             } FC_LOG_AND_RETHROW();
