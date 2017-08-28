@@ -196,7 +196,7 @@ namespace steemit {
             for (const force_settlement_object &s : input_db.get_index<force_settlement_index>().indices()) {
                 total_balances[s.balance.symbol_name()] += s.balance.amount;
             }
-            for (const account_statistics_object &a : input_db.get_index<account_statistics_object>().indices()) {
+            for (const account_statistics_object &a : input_db.get_index<account_statistics_index>().indices()) {
                 reported_core_in_orders += a.total_core_in_orders;
                 total_balances[STEEM_SYMBOL_NAME] += a.pending_fees + a.pending_vested_fees;
             }
