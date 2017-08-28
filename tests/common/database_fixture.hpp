@@ -219,13 +219,13 @@ namespace steemit {
             asset cancel_limit_order(const limit_order_object &order);
 
             const call_order_object *borrow(const account_name_type &who, asset what, asset collateral) {
-                return borrow(db.get_account(who), what, collateral);
+                return borrow(db.get_account(who), std::move(what), std::move(collateral));
             }
 
             const call_order_object *borrow(const account_object &who, asset what, asset collateral);
 
             void cover(const account_name_type &who, asset what, asset collateral_freed) {
-                cover(db.get_account(who), what, collateral_freed);
+                cover(db.get_account(who), std::move(what), std::move(collateral_freed));
             }
 
             void cover(const account_object &who, asset what, asset collateral_freed);
@@ -327,7 +327,6 @@ namespace steemit {
 
             void _push_transaction(database &db, const signed_transaction &tx, uint32_t skip_flags = 0);
         }
-
     }
 }
 #endif
