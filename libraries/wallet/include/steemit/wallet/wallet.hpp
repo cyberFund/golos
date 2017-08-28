@@ -873,6 +873,36 @@ namespace steemit {
 
             vector<force_settlement_object> get_settle_orders_by_owner(string account_name);
 
+            /** Returns the collateral_bid object for the given MPA
+             *
+             * @param asset the name or id of the asset
+             * @param limit the number of entries to return
+             * @param start the sequence number where to start looping back throw the history
+             * @returns a list of \c collateral_bid_objects
+             */
+            vector<collateral_bid_object> get_collateral_bids(string asset, uint32_t limit = 100,
+                                                              uint32_t start = 0) const;
+
+            /** Creates or updates a bid on an MPA after global settlement.
+             *
+             * In order to revive a market-pegged asset after global settlement (aka
+             * black swan), investors can bid collateral in order to take over part of
+             * the debt and the settlement fund, see BSIP-0018. Updating an existing
+             * bid to cover 0 debt will delete the bid.
+             *
+             * @param bidder_name the name or id of the account making the bid
+             * @param debt_amount the amount of debt of the named asset to bid for
+             * @param debt_symbol the name or id of the MPA to bid for
+             * @param additional_collateral the amount of additional collateral to bid
+             *        for taking over debt_amount. The asset type of this amount is
+             *        determined automatically from debt_symbol.
+             * @param broadcast true to broadcast the transaction on the network
+             * @returns the signed transaction creating/updating the bid
+             */
+
+            signed_transaction bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
+                                              string additional_collateral, bool broadcast = false);
+
             /**
              *  Creates a limit order at the price amount_to_sell / min_to_receive and will deduct amount_to_sell from account
              *
@@ -1495,7 +1525,7 @@ FC_API(steemit::wallet::wallet_api,
 
                (create_asset)(update_asset)(update_bitasset)(update_asset_feed_producers)(publish_asset_feed)(
                issue_asset)(get_asset)(get_bitasset_data)(fund_asset_fee_pool)(reserve_asset)(global_settle_asset)(
-               settle_asset)(whitelist_account)
+               settle_asset)(whitelist_account)(bid_collateral)(get_collateral_bids)
 
                (get_proposal)(approve_proposal)
 

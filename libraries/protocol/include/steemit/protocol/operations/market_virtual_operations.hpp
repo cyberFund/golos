@@ -90,6 +90,24 @@ namespace steemit {
             }
         };
 
+        /**
+         * @ingroup operations
+         *
+         * @note This is a virtual operation that is created while reviving a
+         * bitasset from collateral bids.
+         */
+        struct execute_bid_operation : public virtual_operation {
+            execute_bid_operation() {
+            }
+
+            execute_bid_operation(account_name_type a, asset d, asset c) : bidder(a), debt(d), collateral(c) {
+            }
+
+            account_name_type bidder;
+            asset debt;
+            asset collateral;
+        };
+
         typedef fc::static_variant<protocol::fill_order_operation, protocol::fill_call_order_operation,
                 protocol::fill_settlement_order_operation> market_virtual_operations;
     }
@@ -101,5 +119,6 @@ FC_REFLECT(steemit::protocol::fill_order_operation,
            (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
 FC_REFLECT(steemit::protocol::fill_call_order_operation, (order_id)(owner)(pays)(receives)(fee))
 FC_REFLECT(steemit::protocol::fill_settlement_order_operation, (order_id)(owner)(pays)(receives)(fee))
+FC_REFLECT(steemit::protocol::execute_bid_operation, (bidder)(debt)(collateral))
 
 #endif //GOLOS_MARKET_VIRTUAL_OPERATIONS_HPP

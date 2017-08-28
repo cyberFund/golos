@@ -140,6 +140,22 @@ namespace steemit {
                 a.insert(funding_account);
             }
         };
+
+        /**
+         *  @ingroup operations
+         *
+         *  This operation can be used after a black swan to bid collateral for
+         *  taking over part of the debt and the settlement_fund (see BSIP-0018).
+         */
+        struct bid_collateral_operation : public base_operation {
+            /** should be equivalent to call_order_update fee */
+            account_name_type bidder; ///< pays fee and additional collateral
+            asset additional_collateral; ///< the amount of collateral to bid for the debt
+            asset debt_covered; ///< the amount of debt to take over
+            extensions_type extensions;
+
+            void validate() const;
+        };
     }
 }
 
@@ -151,3 +167,4 @@ FC_REFLECT(steemit::protocol::limit_order_create2_operation,
            (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration))
 FC_REFLECT(steemit::protocol::limit_order_cancel_operation, (owner)(order_id))
 FC_REFLECT(steemit::protocol::call_order_update_operation, (funding_account)(delta_collateral)(delta_debt))
+FC_REFLECT(steemit::protocol::bid_collateral_operation, (bidder)(additional_collateral)(debt_covered)(extensions))

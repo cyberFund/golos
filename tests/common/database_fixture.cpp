@@ -34,8 +34,7 @@ namespace steemit {
                         fc::enable_record_assert_trip = true;
                     }
                     if (arg == "--show-test-names") {
-                        std::cout << "running test "
-                                  << boost::unit_test::framework::current_test_case().p_name
+                        std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name
                                   << std::endl;
                     }
                 }
@@ -60,14 +59,11 @@ namespace steemit {
                 vest(STEEMIT_INIT_MINER_NAME, 10000);
 
                 // Fill up the rest of the required miners
-                for (int i = STEEMIT_NUM_INIT_MINERS;
-                     i < STEEMIT_MAX_WITNESSES; i++) {
-                    account_create(STEEMIT_INIT_MINER_NAME +
-                                   fc::to_string(i), init_account_pub_key);
-                    fund(STEEMIT_INIT_MINER_NAME +
-                         fc::to_string(i), STEEMIT_MIN_PRODUCER_REWARD.amount.value);
-                    witness_create(STEEMIT_INIT_MINER_NAME +
-                                   fc::to_string(i), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount);
+                for (int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++) {
+                    account_create(STEEMIT_INIT_MINER_NAME + fc::to_string(i), init_account_pub_key);
+                    fund(STEEMIT_INIT_MINER_NAME + fc::to_string(i), STEEMIT_MIN_PRODUCER_REWARD.amount.value);
+                    witness_create(STEEMIT_INIT_MINER_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
+                                   init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount);
                 }
 
                 validate_database();
@@ -84,8 +80,7 @@ namespace steemit {
                 // If we're unwinding due to an exception, don't do any more checks.
                 // This way, boost test's last checkpoint tells us approximately where the error was.
                 if (!std::uncaught_exception()) {
-                    BOOST_CHECK(db.get_node_properties().skip_flags ==
-                                database::skip_nothing);
+                    BOOST_CHECK(db.get_node_properties().skip_flags == database::skip_nothing);
                 }
 
                 if (data_dir) {
@@ -105,8 +100,7 @@ namespace steemit {
                     fc::enable_record_assert_trip = true;
                 }
                 if (arg == "--show-test-names") {
-                    std::cout << "running test "
-                              << boost::unit_test::framework::current_test_case().p_name
+                    std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name
                               << std::endl;
                 }
             }
@@ -124,14 +118,11 @@ namespace steemit {
             vest(STEEMIT_INIT_MINER_NAME, 10000);
 
             // Fill up the rest of the required miners
-            for (int i = STEEMIT_NUM_INIT_MINERS;
-                 i < STEEMIT_MAX_WITNESSES; i++) {
-                account_create(STEEMIT_INIT_MINER_NAME +
-                               fc::to_string(i), init_account_pub_key);
-                fund(STEEMIT_INIT_MINER_NAME +
-                     fc::to_string(i), STEEMIT_MIN_PRODUCER_REWARD.amount.value);
-                witness_create(STEEMIT_INIT_MINER_NAME +
-                               fc::to_string(i), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount);
+            for (int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++) {
+                account_create(STEEMIT_INIT_MINER_NAME + fc::to_string(i), init_account_pub_key);
+                fund(STEEMIT_INIT_MINER_NAME + fc::to_string(i), STEEMIT_MIN_PRODUCER_REWARD.amount.value);
+                witness_create(STEEMIT_INIT_MINER_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
+                               init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount);
             }
 
             validate_database();
@@ -152,8 +143,7 @@ namespace steemit {
                 generate_block();
 
                 ilog("Done loading saved chain");
-            }
-            FC_LOG_AND_RETHROW()
+            } FC_LOG_AND_RETHROW()
         }
 
         live_database_fixture::~live_database_fixture() {
@@ -161,15 +151,13 @@ namespace steemit {
                 // If we're unwinding due to an exception, don't do any more checks.
                 // This way, boost test's last checkpoint tells us approximately where the error was.
                 if (!std::uncaught_exception()) {
-                    BOOST_CHECK(db.get_node_properties().skip_flags ==
-                                database::skip_nothing);
+                    BOOST_CHECK(db.get_node_properties().skip_flags == database::skip_nothing);
                 }
 
                 db.pop_block();
                 db.close();
                 return;
-            }
-            FC_LOG_AND_RETHROW()
+            } FC_LOG_AND_RETHROW()
         }
 
         fc::ecc::private_key database_fixture::generate_private_key(string seed) {
@@ -186,36 +174,37 @@ namespace steemit {
             if (!data_dir) {
                 data_dir = fc::temp_directory(graphene::utilities::temp_directory_path());
                 db._log_hardforks = false;
-                db.open(data_dir->path(), data_dir->path(), INITIAL_TEST_SUPPLY,
-                        1024 * 1024 *
-                        8, chainbase::database::read_write); // 8 MB file for testing
+                db.open(data_dir->path(), data_dir->path(), INITIAL_TEST_SUPPLY, 1024 * 1024 * 8,
+                        chainbase::database::read_write); // 8 MB file for testing
             }
         }
 
         void database_fixture::verify_asset_supplies(const database &input_db) {
             //wlog("*** Begin asset supply verification ***");
-            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_object, by_asset_name>(STEEM_SYMBOL_NAME);
+            const asset_dynamic_data_object &core_asset_data = input_db.get<asset_dynamic_data_object, by_asset_name>(
+                    STEEM_SYMBOL_NAME);
             BOOST_CHECK(core_asset_data.fee_pool == 0);
 
-            const account_statistics_index &statistics_index =
-                    input_db.get_index<account_statistics_index>().indicies();
-            const auto &balance_index = input_db.get_index<account_balance_index>().indices();
-            const auto &settle_index = input_db.get_index<force_settlement_index>().indices();
             map<asset_name_type, share_type> total_balances;
             map<asset_name_type, share_type> total_debts;
             share_type core_in_orders;
             share_type reported_core_in_orders;
 
-            for (const account_balance_object &b : balance_index) {
+            for (const account_balance_object &b : input_db.get_index<account_balance_index>().indices()) {
                 total_balances[b.asset_name] += b.balance;
             }
-            for (const force_settlement_object &s : settle_index) {
+            for (const force_settlement_object &s : input_db.get_index<force_settlement_index>().indices()) {
                 total_balances[s.balance.symbol_name()] += s.balance.amount;
             }
-            for (const account_statistics_object &a : statistics_index) {
+            for (const account_statistics_object &a : input_db.get_index<account_statistics_index>().indices()) {
                 reported_core_in_orders += a.total_core_in_orders;
                 total_balances[STEEM_SYMBOL_NAME] += a.pending_fees + a.pending_vested_fees;
             }
+
+            for (const collateral_bid_object &b : input_db.get_index<collateral_bid_index>().indices()) {
+                total_balances[b.inv_swan_price.base.symbol_name()] += b.inv_swan_price.base.amount;
+            }
+
             for (const limit_order_object &o : input_db.get_index<limit_order_index>().indices()) {
                 asset for_sale = o.amount_for_sale();
                 if (for_sale.symbol == STEEM_SYMBOL) {
@@ -242,26 +231,27 @@ namespace steemit {
                 }
                 total_balances[asset_obj.asset_name] += dasset_obj.confidential_supply.value;
             }
-//            for (const vesting_balance_object &vbo : input_db.get_index<vesting_balance_index>().indices()) {
-//                total_balances[vbo.balance.symbol] += vbo.balance.amount;
-//            }
-//            for (const fba_accumulator_object &fba : input_db.get_index < simple_index < fba_accumulator_object > >
-//                                                     ()) {
-//                total_balances[asset_symbol_type()] += fba.accumulated_fba_fees;
-//            }
+            //            for (const vesting_balance_object &vbo : input_db.get_index<vesting_balance_index>().indices()) {
+            //                total_balances[vbo.balance.symbol] += vbo.balance.amount;
+            //            }
+            //            for (const fba_accumulator_object &fba : input_db.get_index < simple_index < fba_accumulator_object > >
+            //                                                     ()) {
+            //                total_balances[asset_symbol_type()] += fba.accumulated_fba_fees;
+            //            }
 
-//            total_balances[STEEM_SYMBOL] += input_db.get_dynamic_global_properties().witness_budget;
+            //            total_balances[STEEM_SYMBOL] += input_db.get_dynamic_global_properties().witness_budget;
 
             for (const auto &item : total_debts) {
                 BOOST_CHECK_EQUAL(input_db.get_asset_dynamic_data(item.first).current_supply.value, item.second.value);
             }
 
             for (const asset_object &asset_obj : input_db.get_index<asset_index>().indices()) {
-                BOOST_CHECK_EQUAL(total_balances[asset_obj.asset_name].value, input_db.get_asset_dynamic_data(asset_obj.asset_name).current_supply.value);
+                BOOST_CHECK_EQUAL(total_balances[asset_obj.asset_name].value,
+                                  input_db.get_asset_dynamic_data(asset_obj.asset_name).current_supply.value);
             }
 
             BOOST_CHECK_EQUAL(core_in_orders.value, reported_core_in_orders.value);
-//   wlog("***  End  asset supply verification ***");
+            //   wlog("***  End  asset supply verification ***");
         }
 
         void database_fixture::verify_account_history_plugin_index() const {
@@ -270,8 +260,8 @@ namespace steemit {
                 return;
             }
 
-            const std::shared_ptr<steemit::account_history::account_history_plugin> pin =
-                    app.get_plugin<steemit::account_history::account_history_plugin>("account_history");
+            const std::shared_ptr<steemit::account_history::account_history_plugin> pin = app.get_plugin<
+                    steemit::account_history::account_history_plugin>("account_history");
             if (pin->tracked_accounts().size() == 0) {
                 /*
                 vector< pair< account_name_type, address > > tuples_from_db;
@@ -359,14 +349,12 @@ namespace steemit {
 
         void database_fixture::generate_blocks(fc::time_point_sec timestamp, bool miss_intermediate_blocks) {
             db_plugin->debug_generate_blocks_until(debug_key, timestamp, miss_intermediate_blocks, default_skip);
-            BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() <
-                          STEEMIT_BLOCK_INTERVAL);
+            BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() < STEEMIT_BLOCK_INTERVAL);
         }
 
         void database_fixture::force_global_settle(const asset_object &what, const price &p) {
             try {
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 asset_global_settle_operation sop;
                 sop.issuer = what.issuer;
@@ -382,8 +370,7 @@ namespace steemit {
 
         void database_fixture::force_settle(const account_object &who, asset what) {
             try {
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 asset_settle_operation sop;
                 sop.account = who.name;
@@ -398,8 +385,7 @@ namespace steemit {
 
         const call_order_object *database_fixture::borrow(const account_object &who, asset what, asset collateral) {
             try {
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 call_order_update_operation update;
                 update.funding_account = who.name;
@@ -422,6 +408,41 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
         }
 
+        const limit_order_object *database_fixture::create_sell_order(account_name_type user, const asset &amount,
+                                                                      const asset &recv) {
+            auto r = create_sell_order(db.get_account(user), amount, recv);
+            verify_asset_supplies(db);
+            return r;
+        }
+
+        const limit_order_object *database_fixture::create_sell_order(const account_object &user, const asset &amount,
+                                                                      const asset &recv) {
+            //wdump((amount)(recv));
+            limit_order_create_operation buy_order;
+            buy_order.owner = user.name;
+            buy_order.amount_to_sell = amount;
+            buy_order.min_to_receive = recv;
+            trx.operations.push_back(buy_order);
+            trx.validate();
+            db.push_transaction(trx, ~0);
+            trx.operations.clear();
+            verify_asset_supplies(db);
+            //wdump((processed));
+            return db.find<limit_order_object>(buy_order.order_id);
+        }
+
+        asset database_fixture::cancel_limit_order(const limit_order_object &order) {
+            limit_order_cancel_operation cancel_order;
+            cancel_order.owner = order.seller;
+            cancel_order.order_id = order.order_id;
+            trx.operations.push_back(cancel_order);
+            trx.validate();
+            db.push_transaction(trx, ~0);
+            trx.operations.clear();
+            verify_asset_supplies(db);
+            return order.amount_for_sale();
+        }
+
         const asset_object &database_fixture::get_asset(const asset_name_type &symbol) const {
             const auto &idx = db.get_index<asset_index>().indices().get<by_asset_name>();
             const auto itr = idx.find(symbol);
@@ -436,11 +457,10 @@ namespace steemit {
             return *itr;
         }
 
-        const asset_object &database_fixture::create_bitasset(
-                const string &name,
-                account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
-                uint16_t market_fee_percent /* = 100 */ /* 1% */,
-                uint16_t flags /* = charge_market_fee */
+        const asset_object &database_fixture::create_bitasset(const string &name,
+                                                              account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
+                                                              uint16_t market_fee_percent /* = 100 */ /* 1% */,
+                                                              uint16_t flags /* = charge_market_fee */
         ) {
             try {
                 asset_create_operation creator;
@@ -465,11 +485,10 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
-        const asset_object &database_fixture::create_prediction_market(
-                const string &name,
-                account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
-                uint16_t market_fee_percent /* = 100 */ /* 1% */,
-                uint16_t flags /* = charge_market_fee */
+        const asset_object &database_fixture::create_prediction_market(const string &name,
+                                                                       account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
+                                                                       uint16_t market_fee_percent /* = 100 */ /* 1% */,
+                                                                       uint16_t flags /* = charge_market_fee */
         ) {
             try {
                 asset_create_operation creator;
@@ -512,7 +531,8 @@ namespace steemit {
             return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
         }
 
-        const asset_object &database_fixture::create_user_issued_asset(const asset_name_type &name, const account_object &issuer, uint16_t flags) {
+        const asset_object &database_fixture::create_user_issued_asset(const asset_name_type &name,
+                                                                       const account_object &issuer, uint16_t flags) {
             asset_create_operation creator;
             creator.issuer = issuer.name;
             creator.asset_name = name;
@@ -524,8 +544,7 @@ namespace steemit {
             creator.common_options.issuer_permissions = flags;
             trx.operations.clear();
             trx.operations.push_back(std::move(creator));
-            trx.set_expiration(db.head_block_time() +
-                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.validate();
             db.push_transaction(trx, ~0);
             trx.operations.clear();
@@ -550,8 +569,7 @@ namespace steemit {
 
         void database_fixture::cover(const account_object &who, asset what, asset collateral) {
             try {
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 call_order_update_operation update;
                 update.funding_account = who.name;
@@ -566,10 +584,26 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
         }
 
+
+        void database_fixture::bid_collateral(const account_object &who, const asset &to_bid, const asset &to_cover) {
+            try {
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.operations.clear();
+                bid_collateral_operation bid;
+                bid.bidder = who.name;
+                bid.additional_collateral = to_bid;
+                bid.debt_covered = to_cover;
+                trx.operations.push_back(bid);
+                trx.validate();
+                db.push_transaction(trx, ~0);
+                trx.operations.clear();
+                verify_asset_supplies(db);
+            } FC_CAPTURE_AND_RETHROW((who.name)(to_bid)(to_cover))
+        }
+
         void database_fixture::update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers) {
             try {
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
                 asset_update_feed_producers_operation op;
                 op.asset_to_update = mia.asset_name;
@@ -585,8 +619,7 @@ namespace steemit {
         }
 
         void database_fixture::publish_feed(const asset_object &mia, const account_object &by, const price_feed &f) {
-            trx.set_expiration(db.head_block_time() +
-                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.operations.clear();
 
             asset_publish_feed_operation op;
@@ -604,15 +637,11 @@ namespace steemit {
             verify_asset_supplies(db);
         }
 
-        const account_object &database_fixture::account_create(
-                const string &name,
-                const string &creator,
-                const private_key_type &creator_key,
-                const share_type &fee,
-                const public_key_type &key,
-                const public_key_type &post_key,
-                const string &json_metadata
-        ) {
+        const account_object &database_fixture::account_create(const string &name, const string &creator,
+                                                               const private_key_type &creator_key,
+                                                               const share_type &fee, const public_key_type &key,
+                                                               const public_key_type &post_key,
+                                                               const string &json_metadata) {
             try {
                 account_create_operation op;
                 op.new_account_name = name;
@@ -625,8 +654,7 @@ namespace steemit {
                 op.json_metadata = json_metadata;
 
                 trx.operations.push_back(op);
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.sign(creator_key, db.get_chain_id());
                 trx.validate();
                 db.push_transaction(trx, 0);
@@ -636,38 +664,23 @@ namespace steemit {
                 const account_object &acct = db.get_account(name);
 
                 return acct;
-            }
-            FC_CAPTURE_AND_RETHROW((name)(creator))
+            } FC_CAPTURE_AND_RETHROW((name)(creator))
         }
 
-        const account_object &database_fixture::account_create(
-                const string &name,
-                const public_key_type &key,
-                const public_key_type &post_key
-        ) {
+        const account_object &database_fixture::account_create(const string &name, const public_key_type &key,
+                                                               const public_key_type &post_key) {
             try {
-                return account_create(
-                        name,
-                        STEEMIT_INIT_MINER_NAME,
-                        init_account_priv_key,
-                        100,
-                        key,
-                        post_key,
-                        "");
-            }
-            FC_CAPTURE_AND_RETHROW((name));
+                return account_create(name, STEEMIT_INIT_MINER_NAME, init_account_priv_key, 100, key, post_key, "");
+            } FC_CAPTURE_AND_RETHROW((name));
         }
 
         const account_object &database_fixture::account_create(const string &name, const public_key_type &key) {
             return account_create(name, key, key);
         }
 
-        const witness_object &database_fixture::witness_create(
-                const string &owner,
-                const private_key_type &owner_key,
-                const string &url,
-                const public_key_type &signing_key,
-                const share_type &fee) {
+        const witness_object &database_fixture::witness_create(const string &owner, const private_key_type &owner_key,
+                                                               const string &url, const public_key_type &signing_key,
+                                                               const share_type &fee) {
             try {
                 witness_update_operation op;
                 op.owner = owner;
@@ -676,8 +689,7 @@ namespace steemit {
                 op.fee = asset(fee, STEEM_SYMBOL);
 
                 trx.operations.push_back(op);
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.sign(owner_key, db.get_chain_id());
                 trx.validate();
                 db.push_transaction(trx, 0);
@@ -685,24 +697,17 @@ namespace steemit {
                 trx.signatures.clear();
 
                 return db.get_witness(owner);
-            }
-            FC_CAPTURE_AND_RETHROW((owner)(url))
+            } FC_CAPTURE_AND_RETHROW((owner)(url))
         }
 
-        void database_fixture::fund(
-                const string &account_name,
-                const share_type &amount
-        ) {
+        void database_fixture::fund(const string &account_name, const share_type &amount) {
             try {
                 transfer(STEEMIT_INIT_MINER_NAME, account_name, amount);
 
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::fund(
-                const string &account_name,
-                const asset &amount
-        ) {
+        void database_fixture::fund(const string &account_name, const asset &amount) {
             try {
                 db_plugin->debug_update([=](database &db) {
                     db.adjust_balance(db.get_account(account_name), amount);
@@ -726,16 +731,12 @@ namespace steemit {
 
                     db.update_virtual_supply();
                 }, default_skip);
-            }
-            FC_CAPTURE_AND_RETHROW((account_name)(amount))
+            } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::convert(
-                const string &account_name,
-                const asset &amount) {
+        void database_fixture::convert(const string &account_name, const asset &amount) {
             try {
                 const account_object &account = db.get_account(account_name);
-
 
                 if (amount.symbol == STEEM_SYMBOL) {
                     db.adjust_balance(account, -amount);
@@ -751,10 +752,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::transfer(
-                const string &from,
-                const string &to,
-                const share_type &amount) {
+        void database_fixture::transfer(const string &from, const string &to, const asset &amount) {
             try {
                 transfer_operation op;
                 op.from = from;
@@ -762,8 +760,7 @@ namespace steemit {
                 op.amount = amount;
 
                 trx.operations.push_back(op);
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -778,8 +775,7 @@ namespace steemit {
                 op.amount = asset(amount, STEEM_SYMBOL);
 
                 trx.operations.push_back(op);
-                trx.set_expiration(db.head_block_time() +
-                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
@@ -820,8 +816,7 @@ namespace steemit {
                     op.publisher = STEEMIT_INIT_MINER_NAME + fc::to_string(i);
                     op.exchange_rate = new_price;
                     trx.operations.push_back(op);
-                    trx.set_expiration(db.head_block_time() +
-                                       STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                    trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                     db.push_transaction(trx, ~0);
                     trx.operations.clear();
                 }
@@ -956,8 +951,7 @@ namespace steemit {
         void database_fixture::validate_database(void) {
             try {
                 db.validate_invariants();
-            }
-            FC_LOG_AND_RETHROW();
+            } FC_LOG_AND_RETHROW();
         }
 
         namespace test {

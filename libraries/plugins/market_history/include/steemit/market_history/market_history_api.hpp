@@ -199,6 +199,16 @@ namespace steemit {
             vector<force_settlement_object> get_settle_orders(const string &a, uint32_t limit) const;
 
             /**
+             * @brief Get collateral_bid_objects for a given asset
+             * @param a ID of asset
+             * @param limit Maximum number of objects to retrieve
+             * @param start skip that many results
+             * @return The settle orders, ordered from earliest settlement date to latest
+             */
+            vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+                                                              uint32_t start) const;
+
+            /**
              *  @return all open margin positions for a given account id.
              */
             vector<call_order_object> get_margin_positions(const string &name) const;
@@ -235,4 +245,4 @@ FC_API(steemit::market_history::market_history_api,
                (get_ticker)(get_volume)(get_order_book)(get_trade_history)(get_market_history)(
                get_market_history_buckets)(get_limit_orders)(get_call_orders)(get_settle_orders)(get_margin_positions)(
                get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_limit_orders_by_owner)(
-               get_call_orders_by_owner)(get_settle_orders_by_owner)(get_fill_order_history));
+               get_call_orders_by_owner)(get_settle_orders_by_owner)(get_fill_order_history)(get_collateral_bids));

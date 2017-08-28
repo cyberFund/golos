@@ -231,6 +231,8 @@ namespace steemit {
 
             void max_bandwidth_per_share() const;
 
+            void process_bids(const asset_bitasset_data_object &bad);
+
             /**
              *  Calculate the percent of block production slots that were missed in the
              *  past 128 blocks, not including the current block.
@@ -568,6 +570,13 @@ namespace steemit {
 
             void cancel_order(const limit_order_object &order, bool create_virtual_op = true);
 
+            void revive_bitasset(const asset_object &bitasset);
+
+            void cancel_bid(const collateral_bid_object &bid, bool create_virtual_op = true);
+
+            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund,
+                             const price_feed &current_feed);
+
             /**
              * @brief Process a new limit order through the markets
              * @param order The new order to process
@@ -662,7 +671,8 @@ namespace steemit {
             bool skip_transaction_delta_check = true;
 #endif
 
-            template<typename MultiIndexType> void add_plugin_index() {
+            template<typename MultiIndexType>
+            void add_plugin_index() {
                 _plugin_index_signal.connect([&]() {
                     add_index<MultiIndexType>();
                 });
@@ -685,6 +695,8 @@ namespace steemit {
             void _apply_block(const signed_block &next_block);
 
             void _apply_transaction(const signed_transaction &trx);
+
+            void _cancel_bids_and_revive_mpa(const asset_object &bitasset, const asset_bitasset_data_object &bad);
 
             void apply_operation(const operation &op);
 
