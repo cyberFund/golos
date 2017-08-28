@@ -44,11 +44,11 @@ namespace steemit {
             FC_ASSERT(!fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed.");
 
             auto steem_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF16;
-            if (this->db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+            if (db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 steem_conversion_delay = STEEMIT_CONVERSION_DELAY;
             }
 
-            this->db.create<convert_request_object>([&](convert_request_object &obj) {
+            db.create<convert_request_object>([&](convert_request_object &obj) {
                 obj.owner = o.owner;
                 obj.requestid = o.request_id;
                 obj.amount = o.amount;
@@ -96,7 +96,7 @@ namespace steemit {
                     db.adjust_balance(db.get_account(op.owner), -op.amount_to_sell);
 
                     bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
-                        obj.created = this->db.head_block_time();
+                        obj.created = db.head_block_time();
                         obj.order_id = op.order_id;
                         obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
@@ -114,18 +114,18 @@ namespace steemit {
                            is_asset_type(op.min_to_receive, STEEM_SYMBOL)),
                           "Limit order must be for the STEEM:SBD market");
 
-                FC_ASSERT(op.expiration > this->db.head_block_time(),
+                FC_ASSERT(op.expiration > db.head_block_time(),
                           "Limit order has to expire after head block time.");
 
-                const auto &owner = this->db.get_account(op.owner);
+                const auto &owner = db.get_account(op.owner);
 
-                FC_ASSERT(this->db.get_balance(owner, op.amount_to_sell.symbol_name()) >= op.amount_to_sell,
+                FC_ASSERT(db.get_balance(owner, op.amount_to_sell.symbol_name()) >= op.amount_to_sell,
                           "Account does not have sufficient funds for limit order.");
 
-                this->db.adjust_balance(owner, -op.amount_to_sell);
+                db.adjust_balance(owner, -op.amount_to_sell);
 
-                const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
-                    obj.created = this->db.head_block_time();
+                const auto &order = db.create<limit_order_object>([&](limit_order_object &obj) {
+                    obj.created = db.head_block_time();
                     obj.seller = op.owner;
                     obj.order_id = op.order_id;
                     obj.for_sale = op.amount_to_sell.amount;
@@ -133,7 +133,7 @@ namespace steemit {
                     obj.expiration = op.expiration;
                 });
 
-                bool filled = this->db.apply_order(order);
+                bool filled = db.apply_order(order);
 
                 if (op.fill_or_kill) {
                     FC_ASSERT(filled, "Cancelling order because it was not filled.");
@@ -180,7 +180,7 @@ namespace steemit {
                     get_database().adjust_balance(get_database().get_account(op.owner), -op.amount_to_sell);
 
                     bool filled = db.apply_order(db.create<limit_order_object>([&](limit_order_object &obj) {
-                        obj.created = this->db.head_block_time();
+                        obj.created = db.head_block_time();
                         obj.order_id = op.order_id;
                         obj.seller = seller->name;
                         obj.for_sale = op.amount_to_sell.amount;
@@ -198,18 +198,18 @@ namespace steemit {
                            is_asset_type(op.exchange_rate.quote, STEEM_SYMBOL)),
                           "Limit order must be for the STEEM:SBD market");
 
-                FC_ASSERT(op.expiration > this->db.head_block_time(),
+                FC_ASSERT(op.expiration > db.head_block_time(),
                           "Limit order has to expire after head block time.");
 
-                const auto &owner = this->db.get_account(op.owner);
+                const auto &owner = db.get_account(op.owner);
 
-                FC_ASSERT(this->db.get_balance(owner, op.amount_to_sell.symbol_name()) >= op.amount_to_sell,
+                FC_ASSERT(db.get_balance(owner, op.amount_to_sell.symbol_name()) >= op.amount_to_sell,
                           "Account does not have sufficient funds for limit order.");
 
-                this->db.adjust_balance(owner, -op.amount_to_sell);
+                db.adjust_balance(owner, -op.amount_to_sell);
 
-                const auto &order = this->db.create<limit_order_object>([&](limit_order_object &obj) {
-                    obj.created = this->db.head_block_time();
+                const auto &order = db.create<limit_order_object>([&](limit_order_object &obj) {
+                    obj.created = db.head_block_time();
                     obj.seller = op.owner;
                     obj.order_id = op.order_id;
                     obj.for_sale = op.amount_to_sell.amount;
@@ -217,7 +217,7 @@ namespace steemit {
                     obj.expiration = op.expiration;
                 });
 
-                bool filled = this->db.apply_order(order);
+                bool filled = db.apply_order(order);
 
                 if (op.fill_or_kill) {
                     FC_ASSERT(filled, "Cancelling order because it was not filled.");
@@ -248,22 +248,20 @@ namespace steemit {
                     d.check_call_orders(d.get_asset(quote_asset));
                 } FC_CAPTURE_AND_RETHROW((op))
             } else {
-                this->db.cancel_order(this->db.get_limit_order(op.owner, op.order_id), false);
+                db.cancel_order(db.get_limit_order(op.owner, op.order_id), false);
             }
         }
 
         void call_order_update_evaluator::do_apply(const call_order_update_operation &op) {
             try {
-                database &d = get_database();
-
-                _paying_account = d.find_account(op.funding_account);
-                _debt_asset = d.find_asset(op.delta_debt.symbol_name());
+                _paying_account = db.find_account(op.funding_account);
+                _debt_asset = db.find_asset(op.delta_debt.symbol_name());
 
                 FC_ASSERT(_debt_asset->is_market_issued(),
                           "Unable to cover ${sym} as it is not a collateralized asset.",
                           ("sym", _debt_asset->asset_name));
 
-                _bitasset_data = d.find_asset_bitasset_data(_debt_asset->asset_name);
+                _bitasset_data = db.find_asset_bitasset_data(_debt_asset->asset_name);
 
                 /// if there is a settlement for this asset, then no further margin positions may be taken and
                 /// all existing margin positions should have been closed va database::globally_settle_asset
@@ -278,16 +276,16 @@ namespace steemit {
                 }
 
                 if (op.delta_debt.amount < 0) {
-                    FC_ASSERT(d.get_balance(*_paying_account, *_debt_asset) >= op.delta_debt,
+                    FC_ASSERT(db.get_balance(*_paying_account, *_debt_asset) >= op.delta_debt,
                               "Cannot cover by ${c} when payer only has ${b}",
-                              ("c", op.delta_debt.amount)("b", d.get_balance(*_paying_account, *_debt_asset).amount));
+                              ("c", op.delta_debt.amount)("b", db.get_balance(*_paying_account, *_debt_asset).amount));
                 }
 
                 if (op.delta_collateral.amount > 0) {
                     FC_ASSERT(
-                            d.get_balance(*_paying_account, d.get_asset(_bitasset_data->options.short_backing_asset)) >=
+                            db.get_balance(*_paying_account, db.get_asset(_bitasset_data->options.short_backing_asset)) >=
                             op.delta_collateral, "Cannot increase collateral by ${c} when payer only has ${b}",
-                            ("c", op.delta_collateral.amount)("b", d.get_balance(*_paying_account, d.get_asset(
+                            ("c", op.delta_collateral.amount)("b", db.get_balance(*_paying_account, db.get_asset(
                                     op.delta_collateral.symbol_name())).amount));
                 }
             } FC_CAPTURE_AND_RETHROW((op))
