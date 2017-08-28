@@ -43,6 +43,22 @@ using namespace steemit::chain;
 using namespace steemit::wallet;
 using namespace std;
 
+using commands_vec = std::vector < std::pair < std::string, std::vector < std::string > > >;
+
+void nom_daemon_mode (
+    const boost::program_options::variables_map & options,
+    const commands_vec & commands,
+    const bool & interactive,
+    std::shared_ptr<fc::rpc::cli> wallet_cli,
+    const fc::api<wallet_api> & wapi
+);
+
+void parse_commands(
+    const boost::program_options::variables_map & options,
+    commands_vec & commands,
+    bool & interactive
+);
+
 int main(int argc, char **argv) {
     try {
 
@@ -65,8 +81,8 @@ int main(int argc, char **argv) {
                 ;
 
         vector<string> allowed_ips;
-        std::map <std::string, std::vector < std::string > > commands;
 
+        commands_vec commands;                
         bool interactive = true;
 
         boost::program_options::variables_map options;
@@ -78,43 +94,7 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        if (options.count("commands")) {
-            // If you would like to enable non-interactive mode, then you should
-            // pass commands you like cli_wallet to execute via 'commands' program
-            // option. All commands should be separated with "&&". The order does not matter.
-            // EXAMPLE: ./cli_wallet --commands="unlock verystrongpassword && some_command arg1 arg2 && another_command arg1 arg2 arg3"
-
-            interactive = false;
-            auto tmp_commmad_string = options["commands"].as<string>();
-
-            // Here will be stored the strings that will be parsed by the "&&"
-            std::vector <std::string> unparsed_commands;
-            auto delims = "&&";
-
-            boost::algorithm::split_regex( unparsed_commands, tmp_commmad_string, boost::regex( delims ) );
-
-
-            for (auto x : unparsed_commands) {
-                std::string command = x;
-                boost::trim(command);
-                // Here will be stored the string which will contain func_name and args
-                vector<string> line_parts;
-                boost::split(line_parts, command, boost::is_any_of("\t "));
-
-                auto func_name = line_parts[0];
-                // Checking case when line can be empty. EX: "&&     &&" 
-                if (func_name == "") {
-                    continue;
-                }   
-                // Pushing all non-empty arguments
-                for (auto i = 1; i < line_parts.size(); i++) {
-                    if (line_parts[i] != "") {
-                        commands[func_name].push_back(line_parts[i]);
-                    }
-                }
-            }
-        }
-    
+        parse_commands(options, commands, interactive);
 
         if (options.count("rpc-http-allowip") &&
             options.count("rpc-http-endpoint")) {
@@ -271,72 +251,9 @@ int main(int argc, char **argv) {
                         conn->on_request(req, resp);
                     });
         }
+
         if (!options.count("daemon")) {
-            wallet_cli->register_api(wapi);
-            if (!interactive) {
-                if (wapiptr->is_new()) {
-                    auto it = commands.find("set_password");
-                    if ( it == commands.end() ) {
-                        elog("cli_wallet error: ${s}", ("s", "Please use the set_password method to initialize a new wallet before"));
-                    }
-                    if (commands["set_password"].empty()) {
-                        elog("cli_wallet set_password error: ${s}", ("s", "Password can not be an empty string"));   
-                    }
-                    wapiptr->set_password(commands["set_password"].front()); 
-                    commands.erase(it);
-                }
-                else {
-                    auto it = commands.find("unlock");
-                    if ( it == commands.end() ) {
-                        elog("cli_wallet error: ${s}", ("s", "Please unlock the wallet to use it"));
-                    }
-                    if (commands["unlock"].empty()) {
-                        elog("cli_wallet unlock error: ${s}", ("s", "Password can't be an empty string"));   
-                    }
-                    wapiptr->unlock(commands["unlock"].front());
-                    commands.erase(it);
-                }
-                std::vector < std::pair < std::string, std::string > > commands_output;
-                for (auto const &command : commands) {
-                    try
-                    {   
-                        std::string line = "";
-                        for (auto i = 0; i < command.second.size(); i++) {
-                            line += i;
-                            if (i != command.second.size() - 1) {
-                                line += " ";
-                            }
-                        }
-
-                        line += char(EOF);
-                        fc::variants args = fc::json::variants_from_string(line);;
-                        if( args.size() == 0 ) {
-                            continue;
-                        }
-
-                        const string& method = args[0].get_string();
-
-                        auto result = wallet_cli->receive_call( 0, method, fc::variants( args.begin() + 1,args.end() ) );
-
-                        auto itr = wallet_cli->find_method( method );
-                        if( itr == wallet_cli->get_result_formatters_end() )
-                        {   
-                            commands_output.push_back(std::make_pair(command.first, fc::json::to_pretty_string( result )));
-                        }
-                        else {
-                            std::cout << itr->second( result, args ) << "\n";
-                        }
-                    }
-                    catch ( const fc::exception& e )
-                    {
-                        std::cout << e.to_detail_string() << "\n";
-                    }
-                }
-            }
-            else {
-                wallet_cli->start();
-                wallet_cli->wait();
-            }
+            nom_daemon_mode ( options, commands, interactive, wallet_cli, wapi );
         } else {
             fc::promise<int>::ptr exit_promise = new fc::promise<int>("UNIX Signal Handler");
             fc::set_signal_handler([&exit_promise](int signal) {
@@ -346,7 +263,6 @@ int main(int argc, char **argv) {
             ilog("Entering Daemon Mode, ^C to exit");
             exit_promise->wait();
         }
-
         wapi->save_wallet_file(wallet_file.generic_string());
         locked_connection.disconnect();
         closed_connection.disconnect();
@@ -356,4 +272,101 @@ int main(int argc, char **argv) {
         return -1;
     }
     return 0;
+}
+
+void nom_daemon_mode (
+    const boost::program_options::variables_map & options,
+    const commands_vec & commands,
+    const bool & interactive,
+    std::shared_ptr<fc::rpc::cli> wallet_cli,
+    const fc::api<wallet_api> & wapi
+) {
+    wallet_cli->register_api(wapi);
+    if (!interactive) {
+        std::vector < std::pair < std::string, std::string > > commands_output;
+        for (auto const &command : commands) {
+            try
+            {   
+                std::string line = command.first + " ";
+                for (auto i = 0; i < command.second.size(); i++) {
+                    line += command.second[i];
+                    if (i != command.second.size() - 1) {
+                        line += " ";
+                    }
+                }
+
+                line += char(EOF);
+                fc::variants args = fc::json::variants_from_string(line);
+
+                if ( args.size() == 0 ) {
+                    continue;
+                }
+
+                const string& method = args[0].get_string();
+
+                auto result = wallet_cli->receive_call( 0, method, fc::variants( args.begin() + 1, args.end() ) );
+
+                auto itr = wallet_cli->find_method( method );
+                if ( itr == wallet_cli->get_result_formatters_end() ) {
+                    commands_output.push_back(std::make_pair(command.first, fc::json::to_pretty_string( result )));
+                }
+                else {
+                    std::cout << itr->second( result, args ) << "\n";
+                }
+            }
+            catch ( const fc::exception& e )
+            {
+                std::cout << e.to_detail_string() << "\n";
+            }
+        }
+        for (auto i : commands_output) {
+            std::cout << fc::json::to_pretty_string (i.first + " " + i.second) << std::endl;
+        }
+    }
+    else {
+        wallet_cli->start();
+        wallet_cli->wait();
+    }
+}
+
+void parse_commands(
+    const boost::program_options::variables_map & options,
+    commands_vec & commands, bool & interactive
+) {
+    if (options.count("commands")) {
+        // If you would like to enable non-interactive mode, then you should
+        // pass commands you like cli_wallet to execute via 'commands' program
+        // option. All commands should be separated with "&&". The order does matter!
+        // EXAMPLE: ./cli_wallet --commands="unlock verystrongpassword && some_command arg1 arg2 && another_command arg1 arg2 arg3"
+
+        interactive = false;
+        auto tmp_commmad_string = options["commands"].as<string>();
+
+        // Here will be stored the strings that will be parsed by the "&&"
+        std::vector <std::string> unparsed_commands;
+        auto delims = "&&";
+
+        boost::algorithm::split_regex( unparsed_commands, tmp_commmad_string, boost::regex( delims ) );
+
+        for (size_t it = 0; it < unparsed_commands.size(); it++) {
+            std::string command = unparsed_commands[it];
+            boost::trim(command);
+            // Here will be stored the string which will contain func_name and args
+            vector<string> line_parts;
+            boost::split(line_parts, command, boost::is_any_of("\t "));
+
+            auto func_name = line_parts[0];
+            // Checking case when line can be empty. EX: "&&     &&" 
+            if (func_name == "") {
+                continue;
+            }   
+            // Pushing all non-empty arguments
+            commands.push_back(make_pair(func_name, std::vector<std::string>()));
+            for (size_t i = 1; i < line_parts.size(); i++) {
+                if (line_parts[i] != "") {
+                    commands.back().second.push_back(line_parts[i]);
+                }
+            }
+        }
+    }
 }
