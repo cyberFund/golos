@@ -330,6 +330,10 @@ namespace steemit {
             });
         }
 
+        size_t database_api::get_free_memory() const {
+            return my->_db.get_free_memory();
+        }
+
         fc::variant_object database_api_impl::get_config() const {
             return steemit::protocol::get_config();
         }
@@ -1539,7 +1543,6 @@ namespace steemit {
 
                 std::vector<discussion> return_result = merge(map_result, map_result_language);
 
-
                 return return_result;
             });
         }
@@ -1586,7 +1589,6 @@ namespace steemit {
 
 
                 std::vector<discussion> return_result = merge(map_result, map_result_language);
-
 
                 return return_result;
             });
