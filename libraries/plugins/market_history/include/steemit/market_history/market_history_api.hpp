@@ -199,12 +199,12 @@ namespace steemit {
             vector<force_settlement_object> get_settle_orders(const string &a, uint32_t limit) const;
 
             /**
-        * @brief Get collateral_bid_objects for a given asset
-        * @param a ID of asset
-        * @param limit Maximum number of objects to retrieve
-        * @param start skip that many results
-        * @return The settle orders, ordered from earliest settlement date to latest
-        */
+             * @brief Get collateral_bid_objects for a given asset
+             * @param a ID of asset
+             * @param limit Maximum number of objects to retrieve
+             * @param start skip that many results
+             * @return The settle orders, ordered from earliest settlement date to latest
+             */
             vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
                                                               uint32_t start) const;
 

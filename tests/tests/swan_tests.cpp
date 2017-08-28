@@ -11,6 +11,7 @@
 #include <steemit/application/database_api.hpp>
 
 #include <fc/crypto/digest.hpp>
+#include <steemit/market_history/market_history_api.hpp>
 
 #include "../common/database_fixture.hpp"
 
@@ -42,6 +43,30 @@ namespace steemit {
                 _swan = bitusd.asset_name;
                 _back = STEEM_SYMBOL_NAME;
                 update_feed_producers(swan(), {_feedproducer});
+            }
+
+            vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+                                                              uint32_t start) const {
+                try {
+                    FC_ASSERT(limit <= 100);
+                    const asset_object &swan = db.get_asset(asset);
+                    FC_ASSERT(swan.is_market_issued());
+                    const asset_bitasset_data_object &bad = db.get_asset_bitasset_data(asset);
+                    const asset_object &back = db.get_asset(bad.options.short_backing_asset);
+                    const auto &idx = db.get_index<collateral_bid_index>();
+                    const auto &aidx = idx.indices().get<by_price>();
+                    auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
+                                                                    collateral_bid_object::id_type()));
+                    auto end = aidx.lower_bound(boost::make_tuple(asset, price::min(back.asset_name, asset),
+                                                                  collateral_bid_object::id_type(
+                                                                          STEEMIT_MAX_INSTANCE_ID)));
+                    vector<collateral_bid_object> result;
+                    while (start != end && limit-- > 0) {
+                        result.emplace_back(*start);
+                        ++start;
+                    }
+                    return result;
+                } FC_CAPTURE_AND_RETHROW((asset)(limit))
             }
 
             limit_order_object trigger_swan(share_type amount1, share_type amount2) {
@@ -80,11 +105,6 @@ namespace steemit {
                 generate_blocks(db.head_block_time() + STEEMIT_DEFAULT_PRICE_FEED_LIFETIME);
                 generate_blocks(2);
                 FC_ASSERT(db.get_asset_bitasset_data(_swan).current_feed.settlement_price.is_null());
-            }
-
-            void wait_for_hf_core_216() {
-                generate_blocks(HARDFORK_CORE_216_TIME);
-                generate_blocks(2);
             }
 
             void wait_for_maintenance() {
@@ -133,7 +153,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             force_settle(borrower(), swan().amount(100));
 
             expire_feed();
-            wait_for_hf_core_216();
+            generate_blocks(2);
 
             force_settle(borrower(), swan().amount(100));
 
@@ -239,8 +259,10 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
                 set_price(bitusd, bitusd.amount(40) / core.amount(1000)); // $0.04
                 borrow(borrower, bitusd.amount(100), asset(5000));    // 2x collat
                 transfer(borrower.name, seller.name, bitusd.amount(100));
-                const limit_order_object *oid_019 = create_sell_order(seller, bitusd.amount(39), core.amount(2000));   // this order is at $0.019, we should not be able to match against it
-                const limit_order_object *oid_020 = create_sell_order(seller, bitusd.amount(40), core.amount(2000));   // this order is at $0.020, we should be able to match against it
+                const limit_order_object *oid_019 = create_sell_order(seller, bitusd.amount(39), core.amount(
+                        2000));   // this order is at $0.019, we should not be able to match against it
+                const limit_order_object *oid_020 = create_sell_order(seller, bitusd.amount(40), core.amount(
+                        2000));   // this order is at $0.020, we should be able to match against it
                 set_price(bitusd, bitusd.amount(21) / core.amount(1000)); // $0.021
                 //
                 // We attempt to match against $0.019 order and black swan,
@@ -263,7 +285,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
         try {
             init_standard_swan(700);
 
-            wait_for_hf_core_216();
+            generate_blocks(2);
 
             // revive after price recovers
             set_feed(700, 800);
@@ -285,7 +307,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             // no hardfork yet
             STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), back().amount(1000), swan().amount(100)), fc::exception);
 
-            wait_for_hf_core_216();
+            generate_blocks(2);
 
             int64_t b2_balance = get_balance(borrower2(), back());
             bid_collateral(borrower2(), back().amount(1000), swan().amount(100));
@@ -347,22 +369,22 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             bid_collateral(borrower2(), back().amount(2100), swan().amount(1399));
 
             // check get_collateral_bids
-            steemit::application::database_api db_api(db);
-            STEEMIT_REQUIRE_THROW(db_api.get_collateral_bids(back().asset_name, 100, 0), fc::assert_exception);
-            std::vector <collateral_bid_object> bids = db_api.get_collateral_bids(_swan, 100, 1);
+            STEEMIT_REQUIRE_THROW(get_collateral_bids(back().asset_name, 100, 0), fc::assert_exception);
+            std::vector<collateral_bid_object> bids = get_collateral_bids(_swan, 100, 1);
+
             BOOST_CHECK_EQUAL(1, bids.size());
             FC_ASSERT(_borrower2 == bids[0].bidder);
-            bids = db_api.get_collateral_bids(_swan, 1, 0);
+            bids = get_collateral_bids(_swan, 1, 0);
             BOOST_CHECK_EQUAL(1, bids.size());
             FC_ASSERT(_borrower == bids[0].bidder);
-            bids = db_api.get_collateral_bids(_swan, 100, 0);
+            bids = get_collateral_bids(_swan, 100, 0);
             BOOST_CHECK_EQUAL(2, bids.size());
             FC_ASSERT(_borrower == bids[0].bidder);
             FC_ASSERT(_borrower2 == bids[1].bidder);
 
             // revive
             wait_for_maintenance();
-            BOOST_CHECK(!swan().bitasset_data(db).has_settlement());
+            BOOST_CHECK(!db.get_asset_bitasset_data(_swan).has_settlement());
         } catch (const fc::exception &e) {
             edump((e.to_detail_string()));
             throw;
@@ -375,12 +397,12 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
         try {
             limit_order_object oid = init_standard_swan(1000);
 
-            cancel_limit_order(oid(db));
+            cancel_limit_order(oid);
             force_settle(borrower(), swan().amount(1000));
             force_settle(borrower2(), swan().amount(1000));
             BOOST_CHECK_EQUAL(0, db.get_asset_dynamic_data(_swan).current_supply.value);
 
-            wait_for_hf_core_216();
+            generate_blocks(2);
 
             // revive after price recovers
             set_feed(1, 1);
@@ -395,21 +417,21 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
      */
     BOOST_AUTO_TEST_CASE(revive_empty) {
         try {
-            wait_for_hf_core_216();
+            generate_blocks(2);
 
             trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             limit_order_object oid = init_standard_swan(1000);
 
-            cancel_limit_order(oid(db));
+            cancel_limit_order(oid);
             force_settle(borrower(), swan().amount(1000));
             force_settle(borrower2(), swan().amount(1000));
-            BOOST_CHECK_EQUAL(0, swan().dynamic_data(db).current_supply.value);
+            BOOST_CHECK_EQUAL(0, db.get_asset_dynamic_data(_swan).current_supply.value);
 
-            BOOST_CHECK(swan().bitasset_data(db).has_settlement());
+            BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             // revive
             wait_for_maintenance();
-            BOOST_CHECK(!swan().bitasset_data(db).has_settlement());
+            BOOST_CHECK(!db.get_asset_bitasset_data(_swan).has_settlement());
         } catch (const fc::exception &e) {
             edump((e.to_detail_string()));
             throw;
@@ -420,7 +442,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
      */
     BOOST_AUTO_TEST_CASE(revive_empty_with_bid) {
         try {
-            set_expiration(db, trx);
+            trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             standard_users();
             standard_asset();
 
@@ -430,24 +452,24 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
 
             set_feed(1, 2);
             // this sell order is designed to trigger a black swan
-            limit_order_object oid = create_sell_order(borrower2(), swan().amount(1), back().amount(3))->id;
-            BOOST_CHECK(swan().bitasset_data(db).has_settlement());
+            limit_order_object oid = *create_sell_order(borrower2(), swan().amount(1), back().amount(3));
+            BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
-            cancel_limit_order(oid(db));
+            cancel_limit_order(oid);
             force_settle(borrower(), swan().amount(500));
             force_settle(borrower(), swan().amount(500));
             force_settle(borrower2(), swan().amount(667));
             force_settle(borrower2(), swan().amount(333));
-            BOOST_CHECK_EQUAL(0, swan().dynamic_data(db).current_supply.value);
-            BOOST_CHECK_EQUAL(0, swan().bitasset_data(db).settlement_fund.value);
+            BOOST_CHECK_EQUAL(0, db.get_asset_dynamic_data(_swan).current_supply.value);
+            BOOST_CHECK_EQUAL(0, db.get_asset_bitasset_data(_swan).settlement_fund.value);
 
             bid_collateral(borrower(), back().amount(1051), swan().amount(700));
 
-            BOOST_CHECK(swan().bitasset_data(db).has_settlement());
+            BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             // revive
             wait_for_maintenance();
-            BOOST_CHECK(!swan().bitasset_data(db).has_settlement());
+            BOOST_CHECK(!db.get_asset_bitasset_data(_swan).has_settlement());
         } catch (const fc::exception &e) {
             edump((e.to_detail_string()));
             throw;
