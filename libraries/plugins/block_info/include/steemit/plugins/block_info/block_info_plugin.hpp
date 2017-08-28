@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/plugins/block_info/block_info.hpp>
 
 #include <string>
@@ -17,9 +17,9 @@ namespace steemit {
     namespace plugin {
         namespace block_info {
 
-            using steemit::app::application;
+            using steemit::application::application;
 
-            class block_info_plugin : public steemit::app::plugin {
+            class block_info_plugin : public steemit::application::plugin {
             public:
                 block_info_plugin(application *app);
 

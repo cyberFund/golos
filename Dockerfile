@@ -65,7 +65,7 @@ ADD . /usr/local/src/golos
 #    make -j$(nproc) chain_test && \
 #    ./tests/chain_test && \
 #    mkdir -p /var/cobertura && \
-#    gcovr --object-directory="../" --root=../ --xml-pretty --gcov-exclude=".*tests.*" --gcov-exclude=".*fc.*"  --output="/var/cobertura/coverage.xml" && \
+#        gcovr --object-directory="../" --root=../ --xml-pretty --gcov-exclude=".*tests.*" --gcov-exclude=".*fc.*" --gcov-exclude=".*application*" --gcov-exclude=".*net*" --gcov-exclude=".*plugins*" --gcov-exclude=".*schema*" --gcov-exclude=".*time*" --gcov-exclude=".*utilities*" --gcov-exclude=".*wallet*" --gcov-exclude=".*programs*" --output="/var/cobertura/coverage.xml" && \
 #    cd /usr/local/src/golos && \
 #    rm -rf /usr/local/src/golos/build
 

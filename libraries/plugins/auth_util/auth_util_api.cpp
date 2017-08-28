@@ -1,8 +1,8 @@
 
 #include <fc/container/flat.hpp>
 
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/chain/account_object.hpp>
 
@@ -19,16 +19,16 @@ namespace steemit {
 
                 class auth_util_api_impl {
                 public:
-                    auth_util_api_impl(steemit::app::application &_app);
+                    auth_util_api_impl(steemit::application::application &_app);
 
                     void check_authority_signature(const check_authority_signature_params &args, check_authority_signature_result &result);
 
                     std::shared_ptr<steemit::plugin::auth_util::auth_util_plugin> get_plugin();
 
-                    steemit::app::application &app;
+                    steemit::application::application &app;
                 };
 
-                auth_util_api_impl::auth_util_api_impl(steemit::app::application &_app)
+                auth_util_api_impl::auth_util_api_impl(steemit::application::application &_app)
                         : app(_app) {
                 }
 
@@ -69,7 +69,7 @@ namespace steemit {
 
             } // detail
 
-            auth_util_api::auth_util_api(const steemit::app::api_context &ctx) {
+            auth_util_api::auth_util_api(const steemit::application::api_context &ctx) {
                 my = std::make_shared<detail::auth_util_api_impl>(ctx.app);
             }
 

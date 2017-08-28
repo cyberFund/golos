@@ -23,7 +23,7 @@
  */
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/chain/database.hpp>
 
 #include <fc/thread/future.hpp>
@@ -33,7 +33,7 @@ namespace steemit {
 
         using std::string;
         using protocol::public_key_type;
-        using app::application;
+        using application::application;
         using steemit::protocol::block_id_type;
 
         namespace block_production_condition {
@@ -51,7 +51,7 @@ namespace steemit {
             };
         }
 
-        class witness_plugin : public steemit::app::plugin {
+        class witness_plugin : public steemit::application::plugin {
         public:
             witness_plugin(application *app) : plugin(app) {
             }

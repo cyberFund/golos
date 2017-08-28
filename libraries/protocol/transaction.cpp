@@ -260,7 +260,7 @@ namespace steemit {
             for (const public_key_type &k : s) {
                 result.erase(k);
                 try {
-                    steemit::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
+                    protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
                     continue;  // element stays erased if verify_authority is ok
                 }
                 catch (const tx_missing_owner_auth &e) {
@@ -283,9 +283,14 @@ namespace steemit {
                 const authority_getter &get_posting,
                 uint32_t max_recursion) const {
             try {
-                steemit::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
+                protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
+        digest_type processed_transaction::merkle_digest() const {
+            digest_type::encoder enc;
+            fc::raw::pack(enc, *this);
+            return enc.result();
+        }
     }
 } // steemit::protocol

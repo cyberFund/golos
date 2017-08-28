@@ -76,7 +76,7 @@ namespace steemit {
 
         class blockchain_statistics_api {
         public:
-            blockchain_statistics_api(const steemit::app::api_context &ctx);
+            blockchain_statistics_api(const steemit::application::api_context &ctx);
 
             void on_api_startup();
 

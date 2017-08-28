@@ -10,8 +10,6 @@ namespace steemit {
         using steemit::protocol::account_name_type;
         using steemit::protocol::weight_type;
 
-        namespace bip = boost::interprocess;
-
         /**
          *  The purpose of this class is to represent an authority object in a manner compatiable with
          *  shared memory storage.  This requires all dynamic fields to be allocated with the same allocator
@@ -76,7 +74,7 @@ namespace steemit {
                 add_authorities(auths...);
             }
 
-            vector <public_key_type> get_keys() const;
+            vector<public_key_type> get_keys() const;
 
             bool is_impossible() const;
 
@@ -86,13 +84,13 @@ namespace steemit {
 
             void validate() const;
 
-            typedef bip::allocator<shared_authority, bip::managed_mapped_file::segment_manager> allocator_type;
+            typedef boost::interprocess::allocator<shared_authority, boost::interprocess::managed_mapped_file::segment_manager> allocator_type;
 
-            typedef bip::allocator<std::pair<account_name_type, weight_type>, bip::managed_mapped_file::segment_manager> account_pair_allocator_type;
-            typedef bip::allocator<std::pair<public_key_type, weight_type>, bip::managed_mapped_file::segment_manager> key_pair_allocator_type;
+            typedef boost::interprocess::allocator<std::pair<account_name_type, weight_type>, boost::interprocess::managed_mapped_file::segment_manager> account_pair_allocator_type;
+            typedef boost::interprocess::allocator<std::pair<public_key_type, weight_type>, boost::interprocess::managed_mapped_file::segment_manager> key_pair_allocator_type;
 
-            typedef bip::flat_map<account_name_type, weight_type, protocol::string_less, account_pair_allocator_type> account_authority_map;
-            typedef bip::flat_map<public_key_type, weight_type, std::less<public_key_type>, key_pair_allocator_type> key_authority_map;
+            typedef boost::interprocess::flat_map<account_name_type, weight_type, protocol::string_less, account_pair_allocator_type> account_authority_map;
+            typedef boost::interprocess::flat_map<public_key_type, weight_type, std::less<public_key_type>, key_pair_allocator_type> key_authority_map;
 
             uint32_t weight_threshold = 0;
             account_authority_map account_auths;

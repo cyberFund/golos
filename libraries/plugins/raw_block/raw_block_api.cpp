@@ -1,6 +1,6 @@
 
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/plugins/raw_block/raw_block_api.hpp>
 #include <steemit/plugins/raw_block/raw_block_plugin.hpp>
@@ -13,14 +13,14 @@ namespace steemit {
 
                 class raw_block_api_impl {
                 public:
-                    raw_block_api_impl(steemit::app::application &_app);
+                    raw_block_api_impl(steemit::application::application &_app);
 
                     std::shared_ptr<steemit::plugin::raw_block::raw_block_plugin> get_plugin();
 
-                    steemit::app::application &app;
+                    steemit::application::application &app;
                 };
 
-                raw_block_api_impl::raw_block_api_impl(steemit::app::application &_app)
+                raw_block_api_impl::raw_block_api_impl(steemit::application::application &_app)
                         : app(_app) {
                 }
 
@@ -30,7 +30,7 @@ namespace steemit {
 
             } // detail
 
-            raw_block_api::raw_block_api(const steemit::app::api_context &ctx) {
+            raw_block_api::raw_block_api(const steemit::application::api_context &ctx) {
                 my = std::make_shared<detail::raw_block_api_impl>(ctx.app);
             }
 

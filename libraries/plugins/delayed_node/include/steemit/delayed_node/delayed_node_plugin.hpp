@@ -23,16 +23,16 @@
  */
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/chain/steem_objects.hpp>
 
 namespace steemit {
     namespace delayed_node {
         namespace detail { struct delayed_node_plugin_impl; }
 
-        using app::application;
+        using application::application;
 
-        class delayed_node_plugin : public steemit::app::plugin {
+        class delayed_node_plugin : public steemit::application::plugin {
             std::unique_ptr<detail::delayed_node_plugin_impl> my;
         public:
             delayed_node_plugin(application *app);

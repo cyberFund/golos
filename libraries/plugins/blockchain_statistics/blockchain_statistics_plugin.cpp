@@ -1,11 +1,10 @@
 #include <steemit/blockchain_statistics/blockchain_statistics_api.hpp>
 
-#include <steemit/app/impacted.hpp>
+#include <steemit/application/impacted.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/comment_object.hpp>
 #include <steemit/chain/history_object.hpp>
 
-#include <steemit/chain/index.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 namespace steemit {
@@ -403,7 +402,7 @@ namespace steemit {
                 db.pre_apply_operation.connect([&](const operation_notification &o) { _my->pre_operation(o); });
                 db.post_apply_operation.connect([&](const operation_notification &o) { _my->post_operation(o); });
 
-                add_plugin_index<bucket_index>(db);
+                db.add_plugin_index<bucket_index>();
 
                 if (options.count("chain-stats-bucket-size")) {
                     const std::string &buckets = options["chain-stats-bucket-size"].as<string>();

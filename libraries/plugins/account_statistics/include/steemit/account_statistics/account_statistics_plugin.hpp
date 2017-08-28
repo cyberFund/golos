@@ -1,4 +1,4 @@
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -24,7 +24,7 @@ namespace steemit {
     namespace account_statistics {
 
         using namespace chain;
-        using app::application;
+        using application::application;
 
         enum account_statistics_plugin_object_types {
             account_stats_bucket_object_type = (ACCOUNT_STATISTICS_SPACE_ID
@@ -136,7 +136,7 @@ namespace steemit {
             class account_statistics_plugin_impl;
         }
 
-        class account_statistics_plugin : public steemit::app::plugin {
+        class account_statistics_plugin : public steemit::application::plugin {
         public:
             account_statistics_plugin(application *app);
 

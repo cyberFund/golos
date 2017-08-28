@@ -5,7 +5,6 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-//#include <graphene/db2/database.hpp>
 #include <chainbase/chainbase.hpp>
 
 #include <steemit/protocol/types.hpp>
@@ -15,13 +14,12 @@
 namespace steemit {
     namespace chain {
 
-        namespace bip = chainbase::bip;
         using namespace boost::multi_index;
 
         using boost::multi_index_container;
 
         using chainbase::object;
-        using chainbase::oid;
+        using chainbase::object_id;
         using chainbase::allocator;
 
         using steemit::protocol::block_id_type;
@@ -30,7 +28,7 @@ namespace steemit {
         using steemit::protocol::account_name_type;
         using steemit::protocol::share_type;
 
-        typedef bip::basic_string<char, std::char_traits<char>, allocator<char>> shared_string;
+        typedef boost::interprocess::basic_string<char, std::char_traits<char>, allocator<char>> shared_string;
 
         inline std::string to_string(const shared_string &str) {
             return std::string(str.begin(), str.end());
@@ -40,7 +38,7 @@ namespace steemit {
             out.assign(in.begin(), in.end());
         }
 
-        typedef bip::vector<char, allocator<char>> buffer_type;
+        typedef boost::interprocess::vector<char, allocator<char>> buffer_type;
 
         struct by_id;
 
@@ -71,7 +69,26 @@ namespace steemit {
             escrow_object_type,
             savings_withdraw_object_type,
             decline_voting_rights_request_object_type,
-            block_stats_object_type
+            block_stats_object_type,
+            vesting_delegation_object_type,
+            vesting_delegation_expiration_object_type,
+            reward_fund_object_type,
+            proposal_object_type,
+
+            asset_dynamic_data_object_type,
+            asset_object_type,
+            asset_bitasset_data_object_type,
+
+            force_settlement_object_type,
+            call_order_object_type,
+
+            account_statistics_object_type,
+            account_balance_object_type,
+
+            operation_history_object_type,
+            account_transaction_history_object_type,
+
+            collateral_bid_object_type
         };
 
         class dynamic_global_property_object;
@@ -106,12 +123,6 @@ namespace steemit {
 
         class operation_object;
 
-        class account_history_object;
-
-        class category_object;
-
-        class hardfork_property_object;
-
         class withdraw_vesting_route_object;
 
         class owner_authority_history_object;
@@ -128,33 +139,11 @@ namespace steemit {
 
         class block_stats_object;
 
-        typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
-        typedef oid<account_object> account_id_type;
-        typedef oid<account_authority_object> account_authority_id_type;
-        typedef oid<account_bandwidth_object> account_bandwidth_id_type;
-        typedef oid<witness_object> witness_id_type;
-        typedef oid<transaction_object> transaction_object_id_type;
-        typedef oid<block_summary_object> block_summary_id_type;
-        typedef oid<witness_schedule_object> witness_schedule_id_type;
-        typedef oid<comment_object> comment_id_type;
-        typedef oid<comment_vote_object> comment_vote_id_type;
-        typedef oid<witness_vote_object> witness_vote_id_type;
-        typedef oid<limit_order_object> limit_order_id_type;
-        typedef oid<feed_history_object> feed_history_id_type;
-        typedef oid<convert_request_object> convert_request_id_type;
-        typedef oid<liquidity_reward_balance_object> liquidity_reward_balance_id_type;
-        typedef oid<operation_object> operation_id_type;
-        typedef oid<account_history_object> account_history_id_type;
-        typedef oid<category_object> category_id_type;
-        typedef oid<hardfork_property_object> hardfork_property_id_type;
-        typedef oid<withdraw_vesting_route_object> withdraw_vesting_route_id_type;
-        typedef oid<owner_authority_history_object> owner_authority_history_id_type;
-        typedef oid<account_recovery_request_object> account_recovery_request_id_type;
-        typedef oid<change_recovery_account_request_object> change_recovery_account_request_id_type;
-        typedef oid<escrow_object> escrow_id_type;
-        typedef oid<savings_withdraw_object> savings_withdraw_id_type;
-        typedef oid<decline_voting_rights_request_object> decline_voting_rights_request_id_type;
-        typedef oid<block_stats_object> block_stats_id_type;
+        class vesting_delegation_object;
+
+        class vesting_delegation_expiration_object;
+
+        class reward_fund_object;
 
         enum bandwidth_type {
             post,    ///< Rate limiting posting reward eligibility over time
@@ -180,29 +169,28 @@ namespace fc {
     }
 
     template<typename T>
-    void to_variant(const chainbase::oid<T> &var, variant &vo) {
+    void to_variant(const chainbase::object_id<T> &var, variant &vo) {
         vo = var._id;
     }
 
     template<typename T>
-    void from_variant(const variant &vo, chainbase::oid<T> &var) {
+    void from_variant(const variant &vo, chainbase::object_id<T> &var) {
         var._id = vo.as_int64();
     }
 
     namespace raw {
         template<typename Stream, typename T>
-        inline void pack(Stream &s, const chainbase::oid<T> &id) {
+        inline void pack(Stream &s, const chainbase::object_id<T> &id) {
             s.write((const char *)&id._id, sizeof(id._id));
         }
 
         template<typename Stream, typename T>
-        inline void unpack(Stream &s, chainbase::oid<T> &id) {
+        inline void unpack(Stream &s, chainbase::object_id<T> &id) {
             s.read((char *)&id._id, sizeof(id._id));
         }
     }
 
     namespace raw {
-        namespace bip = chainbase::bip;
         using chainbase::allocator;
 
         template<typename T>
@@ -227,10 +215,6 @@ namespace fc {
             return v;
         }
     }
-}
-
-namespace fc {
-
 }
 
 FC_REFLECT_ENUM(steemit::chain::object_type,
@@ -261,6 +245,20 @@ FC_REFLECT_ENUM(steemit::chain::object_type,
                 (savings_withdraw_object_type)
                 (decline_voting_rights_request_object_type)
                 (block_stats_object_type)
+                (vesting_delegation_object_type)
+                (vesting_delegation_expiration_object_type)
+                (reward_fund_object_type)
+                (asset_dynamic_data_object_type)
+                (asset_object_type)
+                (asset_bitasset_data_object_type)
+                (force_settlement_object_type)
+                (call_order_object_type)
+                (account_statistics_object_type)
+                (account_balance_object_type)
+                (operation_history_object_type)
+                (account_transaction_history_object_type)
+                (proposal_object_type)
+                (collateral_bid_object_type)
 )
 
 FC_REFLECT_TYPENAME(steemit::chain::shared_string)

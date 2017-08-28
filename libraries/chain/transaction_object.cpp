@@ -58,7 +58,7 @@ namespace steemit {
         const object *transaction_index::get(object_id_type id) const {
             if (id.type() != transaction_object::type_id ||
                 id.space() != transaction_object::space_id) {
-                    return nullptr;
+                return nullptr;
             }
 
             auto itr = _index.find(id.instance());

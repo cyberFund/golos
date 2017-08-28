@@ -11,25 +11,25 @@ namespace steemit {
         using steemit::protocol::base_operation;
 
         struct follow_operation : base_operation {
-            account_name_type follower;
-            account_name_type following;
+            protocol::account_name_type follower;
+            protocol::account_name_type following;
             set<string> what; /// blog, mute
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set<protocol::account_name_type> &a) const {
                 a.insert(follower);
             }
         };
 
         struct reblog_operation : base_operation {
-            account_name_type account;
-            account_name_type author;
+            protocol::account_name_type account;
+            protocol::account_name_type author;
             string permlink;
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set<protocol::account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -49,6 +49,6 @@ namespace steemit {
 FC_REFLECT(steemit::follow::follow_operation, (follower)(following)(what))
 FC_REFLECT(steemit::follow::reblog_operation, (account)(author)(permlink))
 
-DECLARE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)
+STEEMIT_DECLARE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)
 
 FC_REFLECT_TYPENAME(steemit::follow::follow_plugin_operation)

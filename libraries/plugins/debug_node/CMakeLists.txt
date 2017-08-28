@@ -14,7 +14,7 @@ else()
             )
 endif()
 
-target_link_libraries(golos_debug_node golos_app golos_chain golos_protocol fc)
+target_link_libraries(golos_debug_node golos::application golos_chain golos_protocol fc)
 target_include_directories(golos_debug_node
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 

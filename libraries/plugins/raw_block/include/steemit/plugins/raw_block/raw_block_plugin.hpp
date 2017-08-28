@@ -1,15 +1,15 @@
 
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 
 namespace steemit {
     namespace plugin {
         namespace raw_block {
 
-            using steemit::app::application;
+            using steemit::application::application;
 
-            class raw_block_plugin : public steemit::app::plugin {
+            class raw_block_plugin : public steemit::application::plugin {
             public:
                 raw_block_plugin(application *app);
 

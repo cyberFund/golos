@@ -2,8 +2,8 @@
 #include <fc/filesystem.hpp>
 #include <fc/variant_object.hpp>
 
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
+#include <steemit/application/api_context.hpp>
+#include <steemit/application/application.hpp>
 
 #include <steemit/chain/account_object.hpp>
 
@@ -38,7 +38,7 @@ namespace steemit {
 
                 class debug_node_api_impl {
                 public:
-                    debug_node_api_impl(steemit::app::application &_app);
+                    debug_node_api_impl(steemit::application::application &_app);
 
                     uint32_t debug_push_blocks(const std::string &src_filename, uint32_t count, bool skip_validate_invariants);
 
@@ -78,7 +78,7 @@ namespace steemit {
 
                     std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> get_plugin();
 
-                    steemit::app::application &app;
+                    steemit::application::application &app;
                     debug_private_key_storage key_storage;
                 };
 
@@ -106,7 +106,7 @@ namespace steemit {
                     return;
                 }
 
-                debug_node_api_impl::debug_node_api_impl(steemit::app::application &_app)
+                debug_node_api_impl::debug_node_api_impl(steemit::application::application &_app)
                         : app(_app) {
 #ifdef STEEMIT_INIT_PRIVATE_KEY
                     fc::ecc::private_key init_key = STEEMIT_INIT_PRIVATE_KEY;
@@ -187,7 +187,10 @@ namespace steemit {
 
                     std::shared_ptr<steemit::chain::database> db = app.chain_database();
                     fc::path src_path = fc::path(src_filename);
-                    if (fc::is_directory(src_path)) {
+                    fc::path index_path = fc::path(src_filename + ".index");
+                    if (fc::exists(src_path) && fc::exists(index_path) &&
+                        !fc::is_directory(src_path) &&
+                        !fc::is_directory(index_path)) {
                         ilog("Loading ${n} from block_log ${fn}", ("n", count)("fn", src_filename));
                         idump((src_filename)(count)(skip_validate_invariants));
                         steemit::chain::block_log log;
@@ -246,15 +249,15 @@ namespace steemit {
 
 /*void debug_node_api_impl::debug_push_block( const steemit::chain::signed_block& block )
 {
-   app.chain_database()->push_block( block );
+   application.chain_database()->push_block( block );
 }*/
 
                 steemit::chain::witness_schedule_object debug_node_api_impl::debug_get_witness_schedule() {
-                    return app.chain_database()->get(steemit::chain::witness_schedule_id_type());
+                    return app.chain_database()->get(steemit::chain::witness_schedule_object::id_type());
                 }
 
                 steemit::chain::hardfork_property_object debug_node_api_impl::debug_get_hardfork_property_object() {
-                    return app.chain_database()->get(steemit::chain::hardfork_property_id_type());
+                    return app.chain_database()->get(steemit::chain::hardfork_property_object::id_type());
                 }
 
                 void debug_node_api_impl::debug_update_object(const fc::variant_object &update) {
@@ -297,7 +300,7 @@ namespace steemit {
                 }
 
                 bool debug_node_api_impl::debug_has_hardfork(uint32_t hardfork_id) {
-                    return app.chain_database()->get(steemit::chain::hardfork_property_id_type()).last_hardfork >=
+                    return app.chain_database()->get(steemit::chain::hardfork_property_object::id_type()).last_hardfork >=
                            hardfork_id;
                 }
 
@@ -307,7 +310,7 @@ namespace steemit {
 
             } // detail
 
-            debug_node_api::debug_node_api(const steemit::app::api_context &ctx) {
+            debug_node_api::debug_node_api(const steemit::application::api_context &ctx) {
                 my = std::make_shared<detail::debug_node_api_impl>(ctx.app);
             }
 

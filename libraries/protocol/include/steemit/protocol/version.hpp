@@ -1,5 +1,7 @@
 #pragma once
 
+#include <steemit/protocol/types.hpp>
+
 #include <fc/string.hpp>
 #include <fc/time.hpp>
 
@@ -132,6 +134,26 @@ namespace steemit {
             fc::time_point_sec hf_time;
         };
 
+        template<typename Enable, typename = typename std::enable_if<true, Enable>::type>
+        struct static_version_impl {
+
+        };
+
+        template<uint8_t m, uint8_t h, uint16_t r, typename ... StaticRanges>
+        struct static_version
+                : public static_version_impl<
+                        typename steemit::type_traits::all_true<
+                                std::is_same<
+                                        steemit::type_traits::static_range<true>,
+                                        StaticRanges
+                                >::value...
+                        >::value
+                > {
+            static const version version_instance;
+        };
+
+        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion, typename ... StaticRanges>
+        const version static_version<MinorVersion, HardforkVersion, ReleaseVersion, StaticRanges...>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);
     }
 } // steemit::protocol
 

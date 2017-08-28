@@ -6,15 +6,15 @@ namespace steemit {
         namespace detail {
             class account_statistics_api_impl {
             public:
-                account_statistics_api_impl(steemit::app::application &app)
+                account_statistics_api_impl(steemit::application::application &app)
                         : _app(app) {
                 }
 
-                steemit::app::application &_app;
+                steemit::application::application &_app;
             };
         } // detail
 
-        account_statistics_api::account_statistics_api(const steemit::app::api_context &ctx) {
+        account_statistics_api::account_statistics_api(const steemit::application::api_context &ctx) {
             _my = std::make_shared<detail::account_statistics_api_impl>(ctx.app);
         }
 

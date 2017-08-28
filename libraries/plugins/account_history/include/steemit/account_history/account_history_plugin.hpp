@@ -23,7 +23,7 @@
  */
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <steemit/application/plugin.hpp>
 #include <steemit/chain/database.hpp>
 
 #include <fc/thread/future.hpp>
@@ -31,7 +31,7 @@
 namespace steemit {
     namespace account_history {
         using namespace chain;
-        using app::application;
+        using application::application;
 
 //
 // Plugins should #define their SPACE_ID's so plugins with
@@ -61,7 +61,7 @@ namespace steemit {
  *  This plugin is designed to track a range of operations by account so that one node
  *  doesn't need to hold the full operation history in memory.
  */
-        class account_history_plugin : public steemit::app::plugin {
+        class account_history_plugin : public steemit::application::plugin {
         public:
             account_history_plugin(application *app);
 

@@ -6,10 +6,7 @@
 namespace steemit {
     namespace protocol {
 
-        typedef std::function< authority(const string &)
-
-        >
-        authority_getter;
+        typedef std::function< authority(const string &)> authority_getter;
 
         struct sign_state {
             /** returns true if we have a signature for this key or can

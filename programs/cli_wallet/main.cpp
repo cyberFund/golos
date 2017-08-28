@@ -1,27 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -37,7 +13,7 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
-#include <steemit/app/api.hpp>
+#include <steemit/application/api.hpp>
 #include <steemit/wallet/wallet.hpp>
 
 #include <fc/interprocess/signals.hpp>
@@ -57,11 +33,10 @@
 
 
 using namespace graphene::utilities;
-using namespace steemit::app;
+using namespace steemit::application;
 using namespace steemit::chain;
 using namespace steemit::wallet;
 using namespace std;
-namespace bpo = boost::program_options;
 
 int main(int argc, char **argv) {
     try {
@@ -69,24 +44,24 @@ int main(int argc, char **argv) {
         boost::program_options::options_description opts;
         opts.add_options()
                 ("help,h", "Print this help message and exit.")
-                ("server-rpc-endpoint,s", bpo::value<string>()->implicit_value("ws://127.0.0.1:8090"), "Server websocket RPC endpoint")
-                ("server-rpc-user,u", bpo::value<string>(), "Server Username")
-                ("server-rpc-password,p", bpo::value<string>(), "Server Password")
-                ("cert-authority,a", bpo::value<string>()->default_value("_default"), "Trusted CA bundle file for connecting to wss:// TLS server")
-                ("rpc-endpoint,r", bpo::value<string>()->implicit_value("127.0.0.1:8091"), "Endpoint for wallet websocket RPC to listen on")
-                ("rpc-tls-endpoint,t", bpo::value<string>()->implicit_value("127.0.0.1:8092"), "Endpoint for wallet websocket TLS RPC to listen on")
-                ("rpc-tls-certificate,c", bpo::value<string>()->implicit_value("server.pem"), "PEM certificate for wallet websocket TLS RPC")
-                ("rpc-http-endpoint,H", bpo::value<string>()->implicit_value("127.0.0.1:8093"), "Endpoint for wallet HTTP RPC to listen on")
+                ("server-rpc-endpoint,s", boost::program_options::value<string>()->implicit_value("ws://127.0.0.1:8090"), "Server websocket RPC endpoint")
+                ("server-rpc-user,u", boost::program_options::value<string>(), "Server Username")
+                ("server-rpc-password,p", boost::program_options::value<string>(), "Server Password")
+                ("cert-authority,a", boost::program_options::value<string>()->default_value("_default"), "Trusted CA bundle file for connecting to wss:// TLS server")
+                ("rpc-endpoint,r", boost::program_options::value<string>()->implicit_value("127.0.0.1:8091"), "Endpoint for wallet websocket RPC to listen on")
+                ("rpc-tls-endpoint,t", boost::program_options::value<string>()->implicit_value("127.0.0.1:8092"), "Endpoint for wallet websocket TLS RPC to listen on")
+                ("rpc-tls-certificate,c", boost::program_options::value<string>()->implicit_value("server.pem"), "PEM certificate for wallet websocket TLS RPC")
+                ("rpc-http-endpoint,H", boost::program_options::value<string>()->implicit_value("127.0.0.1:8093"), "Endpoint for wallet HTTP RPC to listen on")
                 ("daemon,d", "Run the wallet in daemon mode")
-                ("rpc-http-allowip", bpo::value<vector<string>>()->multitoken(), "Allows only specified IPs to connect to the HTTP endpoint")
-                ("wallet-file,w", bpo::value<string>()->implicit_value("wallet.json"), "wallet to load")
-                ("chain-id", bpo::value<string>(), "chain ID to connect to");
+                ("rpc-http-allowip", boost::program_options::value<vector<string>>()->multitoken(), "Allows only specified IPs to connect to the HTTP endpoint")
+                ("wallet-file,w", boost::program_options::value<string>()->implicit_value("wallet.json"), "wallet to load")
+                ("chain-id", boost::program_options::value<string>(), "chain ID to connect to");
 
         vector<string> allowed_ips;
 
-        bpo::variables_map options;
+        boost::program_options::variables_map options;
 
-        bpo::store(bpo::parse_command_line(argc, argv, opts), options);
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, opts), options);
 
         if (options.count("help")) {
             std::cout << opts << "\n";

@@ -24,7 +24,7 @@
 
 #include <steemit/delayed_node/delayed_node_plugin.hpp>
 
-#include <steemit/app/api.hpp>
+#include <steemit/application/api.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -38,7 +38,7 @@ namespace steemit {
                 std::string remote_endpoint;
                 fc::http::websocket_client client;
                 std::shared_ptr<fc::rpc::websocket_api_connection> client_connection;
-                fc::api<steemit::app::database_api> database_api;
+                fc::api<steemit::application::database_api> database_api;
                 boost::signals2::scoped_connection client_connection_closed;
                 steemit::chain::block_id_type last_received_remote_head;
                 steemit::chain::block_id_type last_processed_remote_head;
@@ -60,7 +60,7 @@ namespace steemit {
 
         void delayed_node_plugin::connect() {
             my->client_connection = std::make_shared<fc::rpc::websocket_api_connection>(*my->client.connect(my->remote_endpoint));
-            my->database_api = my->client_connection->get_remote_api<steemit::app::database_api>(0);
+            my->database_api = my->client_connection->get_remote_api<steemit::application::database_api>(0);
             my->client_connection_closed = my->client_connection->closed.connect([this] {
                 connection_failed();
             });

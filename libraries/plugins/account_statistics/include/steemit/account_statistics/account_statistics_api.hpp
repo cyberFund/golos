@@ -19,7 +19,7 @@ namespace steemit {
 
         class account_statistics_api {
         public:
-            account_statistics_api(const steemit::app::api_context &ctx);
+            account_statistics_api(const steemit::application::api_context &ctx);
 
             void on_api_startup();
 
