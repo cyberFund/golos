@@ -107,11 +107,6 @@ namespace steemit {
                 FC_ASSERT(db.get_asset_bitasset_data(_swan).current_feed.settlement_price.is_null());
             }
 
-            void wait_for_maintenance() {
-                generate_blocks(db.get_dynamic_global_properties().next_maintenance_time);
-                generate_blocks(1);
-            }
-
             const account_object &borrower() {
                 return db.get_account(_borrower);
             }
@@ -136,7 +131,6 @@ namespace steemit {
             account_name_type _borrower, _borrower2, _feedproducer;
             asset_name_type _swan, _back;
         };
-
     }
 }
 
@@ -176,7 +170,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
         try {
             ACTORS((buyer)(seller)(borrower)(borrower2)(settler)(feeder));
 
-            const asset_object &core = asset_name_type()(db);
+            const asset_object &core = db.get_asset(STEEM_SYMBOL_NAME);
 
             int trial = 0;
 
@@ -348,19 +342,25 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             // doesn't happen without price feed
             bid_collateral(borrower(), back().amount(1400), swan().amount(700));
             bid_collateral(borrower2(), back().amount(1400), swan().amount(700));
-            wait_for_maintenance();
+
+            generate_blocks(1);
+
             BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             set_feed(1, 2);
             // doesn't happen if cover is insufficient
             bid_collateral(borrower2(), back().amount(1400), swan().amount(600));
-            wait_for_maintenance();
+
+            generate_blocks(1);
+
             BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             set_feed(1, 2);
             // doesn't happen if some bids have a bad swan price
             bid_collateral(borrower2(), back().amount(1050), swan().amount(700));
-            wait_for_maintenance();
+
+            generate_blocks(1);
+
             BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             set_feed(1, 2);
@@ -383,7 +383,9 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             FC_ASSERT(_borrower2 == bids[1].bidder);
 
             // revive
-            wait_for_maintenance();
+
+            generate_blocks(1);
+
             BOOST_CHECK(!db.get_asset_bitasset_data(_swan).has_settlement());
         } catch (const fc::exception &e) {
             edump((e.to_detail_string()));
@@ -430,7 +432,9 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             // revive
-            wait_for_maintenance();
+
+            generate_blocks(1);
+
             BOOST_CHECK(!db.get_asset_bitasset_data(_swan).has_settlement());
         } catch (const fc::exception &e) {
             edump((e.to_detail_string()));
@@ -468,7 +472,8 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             BOOST_CHECK(db.get_asset_bitasset_data(_swan).has_settlement());
 
             // revive
-            wait_for_maintenance();
+            generate_blocks(1);
+
             BOOST_CHECK(!db.get_asset_bitasset_data(_swan).has_settlement());
         } catch (const fc::exception &e) {
             edump((e.to_detail_string()));

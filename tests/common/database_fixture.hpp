@@ -273,7 +273,7 @@ namespace steemit {
 
             void fund(const string &account_name, const asset &amount);
 
-            void transfer(const string &from, const string &to, const share_type &steem);
+            void transfer(const string &from, const string &to, const asset &steem);
 
             void convert(const string &account_name, const asset &amount);
 
