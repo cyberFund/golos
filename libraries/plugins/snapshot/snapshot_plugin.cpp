@@ -122,7 +122,7 @@ namespace steemit {
 
             void snapshot_plugin::plugin_set_program_options(boost::program_options::options_description &command_line_options, boost::program_options::options_description &config_file_options) {
                 command_line_options.add_options()
-                        ("snapshot-file", boost::program_options::value<string>()->composing()->multitoken(), "Snapshot files to load");
+                        ("snapshot-file", boost::program_options::value<vector<string>>()->composing()->multitoken(), "Snapshot files to load");
                 config_file_options.
                         add(command_line_options);
             }
