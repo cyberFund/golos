@@ -68,11 +68,11 @@ namespace steemit {
                     sell_asset = d.find_asset(op.amount_to_sell.symbol_name());
                     receive_asset = d.find_asset(op.min_to_receive.symbol_name());
 
-                    if (sell_asset->options.whitelist_markets.empty()) {
+                    if (!sell_asset->options.whitelist_markets.empty()) {
                         FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
                                   sell_asset->options.whitelist_markets.end());
                     }
-                    if (sell_asset->options.blacklist_markets.empty()) {
+                    if (!sell_asset->options.blacklist_markets.empty()) {
                         FC_ASSERT(sell_asset->options.blacklist_markets.find(receive_asset->asset_name) ==
                                   sell_asset->options.blacklist_markets.end());
                     }
