@@ -56,9 +56,12 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
+)
+FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
+)
+FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
+)
 
 namespace steemit {
     namespace chain {
@@ -149,7 +152,8 @@ namespace steemit {
                     init_hardforks(); // Writes to local state, but reads from get_database
                 });
 
-            } FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
+            }
+            FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
         }
 
         void database::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size) {
@@ -197,7 +201,8 @@ namespace steemit {
 
                 auto end = fc::time_point::now();
                 ilog("Done reindexing, elapsed time: ${t} sec", ("t", double((end - start).count()) / 1000000.0));
-            } FC_CAPTURE_AND_RETHROW((data_dir)(shared_mem_dir))
+            }
+            FC_CAPTURE_AND_RETHROW((data_dir)(shared_mem_dir))
 
         }
 
@@ -223,7 +228,8 @@ namespace steemit {
                 _block_log.close();
 
                 _fork_db.reset();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         asset database::get_balance(account_name_type owner, asset_name_type asset_name) const {
@@ -253,7 +259,8 @@ namespace steemit {
         bool database::is_known_block(const block_id_type &id) const {
             try {
                 return fetch_block_by_id(id).valid();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         /**
@@ -265,7 +272,8 @@ namespace steemit {
             try {
                 const auto &trx_idx = get_index<transaction_index>().indices().get<by_trx_id>();
                 return trx_idx.find(id) != trx_idx.end();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         block_id_type database::find_block_id_for_num(uint32_t block_num) const {
@@ -292,13 +300,14 @@ namespace steemit {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                shared_ptr <fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
 
                 return block_id_type();
-            } FC_CAPTURE_AND_RETHROW((block_num))
+            }
+            FC_CAPTURE_AND_RETHROW((block_num))
         }
 
         block_id_type database::get_block_id_for_num(uint32_t block_num) const {
@@ -307,7 +316,7 @@ namespace steemit {
             return bid;
         }
 
-        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional <signed_block> database::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -322,12 +331,13 @@ namespace steemit {
                 }
 
                 return b->data;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
-        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional <signed_block> database::fetch_block_by_number(uint32_t block_num) const {
             try {
-                optional<signed_block> b;
+                optional <signed_block> b;
 
                 auto results = _fork_db.fetch_block_by_number(block_num);
                 if (results.size() == 1) {
@@ -337,7 +347,8 @@ namespace steemit {
                 }
 
                 return b;
-            } FC_LOG_AND_RETHROW()
+            }
+            FC_LOG_AND_RETHROW()
         }
 
         const signed_transaction database::get_recent_transaction(const transaction_id_type &trx_id) const {
@@ -348,12 +359,13 @@ namespace steemit {
                 signed_transaction trx;
                 fc::raw::unpack(itr->packed_trx, trx);
                 return trx;;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
-        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        vector <block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
+                pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
                         head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)(head_block_id())(branches.first.size())(branches.second.size()));
@@ -365,7 +377,8 @@ namespace steemit {
                 }
                 result.emplace_back(branches.first.back()->previous_id());
                 return result;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         chain_id_type database::get_chain_id() const {
@@ -375,7 +388,8 @@ namespace steemit {
         const asset_object &database::get_asset(const asset_name_type &name) const {
             try {
                 return get<asset_object, by_asset_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const asset_object *database::find_asset(const asset_name_type &name) const {
@@ -385,7 +399,8 @@ namespace steemit {
         const asset_dynamic_data_object &database::get_asset_dynamic_data(const asset_name_type &name) const {
             try {
                 return get<asset_dynamic_data_object, by_asset_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const asset_bitasset_data_object *database::find_asset_bitasset_data(const asset_name_type &name) const {
@@ -395,7 +410,8 @@ namespace steemit {
         const asset_bitasset_data_object &database::get_asset_bitasset_data(const asset_name_type &name) const {
             try {
                 return get<asset_bitasset_data_object, by_asset_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const asset_dynamic_data_object *database::find_asset_dynamic_data(const asset_name_type &name) const {
@@ -406,7 +422,8 @@ namespace steemit {
                                                       protocol::integral_id_type id) const {
             try {
                 return get<proposal_object, by_account>(boost::make_tuple(name, id));
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const proposal_object *database::find_proposal(const account_name_type &name,
@@ -417,7 +434,8 @@ namespace steemit {
         const witness_object &database::get_witness(const account_name_type &name) const {
             try {
                 return get<witness_object, by_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const witness_object *database::find_witness(const account_name_type &name) const {
@@ -427,7 +445,8 @@ namespace steemit {
         const account_object &database::get_account(const account_name_type &name) const {
             try {
                 return get<account_object, by_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const account_object *database::find_account(const account_name_type &name) const {
@@ -437,7 +456,8 @@ namespace steemit {
         const account_statistics_object &database::get_account_statistics(const account_name_type &name) const {
             try {
                 return get<account_statistics_object, by_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const account_statistics_object *database::find_account_statistics(const account_name_type &name) const {
@@ -448,7 +468,8 @@ namespace steemit {
                                                     const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-            } FC_CAPTURE_AND_RETHROW((author)(permlink))
+            }
+            FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
         const comment_object *database::find_comment(const account_name_type &author,
@@ -459,7 +480,8 @@ namespace steemit {
         const comment_object &database::get_comment(const account_name_type &author, const string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-            } FC_CAPTURE_AND_RETHROW((author)(permlink))
+            }
+            FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
         const comment_object *database::find_comment(const account_name_type &author, const string &permlink) const {
@@ -469,7 +491,8 @@ namespace steemit {
         const category_object &database::get_category(const shared_string &name) const {
             try {
                 return get<category_object, by_name>(name);
-            } FC_CAPTURE_AND_RETHROW((name))
+            }
+            FC_CAPTURE_AND_RETHROW((name))
         }
 
         const category_object *database::find_category(const shared_string &name) const {
@@ -479,7 +502,8 @@ namespace steemit {
         const escrow_object &database::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
             try {
                 return get<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
-            } FC_CAPTURE_AND_RETHROW((name)(escrow_id))
+            }
+            FC_CAPTURE_AND_RETHROW((name)(escrow_id))
         }
 
         const escrow_object *database::find_escrow(const account_name_type &name, uint32_t escrow_id) const {
@@ -494,7 +518,8 @@ namespace steemit {
                 }
 
                 return get<limit_order_object, by_account>(boost::make_tuple(name, order_id));
-            } FC_CAPTURE_AND_RETHROW((name)(order_id))
+            }
+            FC_CAPTURE_AND_RETHROW((name)(order_id))
         }
 
         const limit_order_object *database::find_limit_order(const account_name_type &name,
@@ -510,7 +535,8 @@ namespace steemit {
                                                                       uint32_t request_id) const {
             try {
                 return get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
-            } FC_CAPTURE_AND_RETHROW((owner)(request_id))
+            }
+            FC_CAPTURE_AND_RETHROW((owner)(request_id))
         }
 
         const savings_withdraw_object *database::find_savings_withdraw(const account_name_type &owner,
@@ -521,7 +547,8 @@ namespace steemit {
         const dynamic_global_property_object &database::get_dynamic_global_properties() const {
             try {
                 return get<dynamic_global_property_object>();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         const node_property_object &database::get_node_properties() const {
@@ -531,19 +558,22 @@ namespace steemit {
         const feed_history_object &database::get_feed_history() const {
             try {
                 return get<feed_history_object>();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         const witness_schedule_object &database::get_witness_schedule_object() const {
             try {
                 return get<witness_schedule_object>();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         const hardfork_property_object &database::get_hardfork_property_object() const {
             try {
                 return get<hardfork_property_object>();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         const time_point_sec database::calculate_discussion_payout_time(const comment_object &comment) const {
@@ -620,7 +650,8 @@ namespace steemit {
                                                                                               max_virtual_bandwidth)(
                                       "total_vesting_shares", total_vshares));
                 }
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
@@ -664,12 +695,13 @@ namespace steemit {
 
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
 
-                if (is_producing())
+                if (is_producing()) {
                     FC_ASSERT(has_bandwidth, "Account exceeded maximum allowed bandwidth per vesting share.",
                               ("account_vshares", account_vshares)("account_average_bandwidth",
                                                                    account_average_bandwidth)("max_virtual_bandwidth",
                                                                                               max_virtual_bandwidth)(
                                       "total_vesting_shares", total_vshares));
+                }
             }
 
             return has_bandwidth;
@@ -680,7 +712,7 @@ namespace steemit {
             return uint64_t(STEEMIT_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
+        void database::add_checkpoints(const flat_map <uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
@@ -705,7 +737,8 @@ namespace steemit {
                     detail::without_pending_transactions(*this, std::move(_pending_tx), [&]() {
                         try {
                             result = _push_block(new_block);
-                        } FC_CAPTURE_AND_RETHROW((new_block))
+                        }
+                        FC_CAPTURE_AND_RETHROW((new_block))
                     });
                 });
             });
@@ -720,7 +753,7 @@ namespace steemit {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                vector <std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -737,7 +770,7 @@ namespace steemit {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
+                    shared_ptr <fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -755,7 +788,7 @@ namespace steemit {
                             // push all blocks on the new fork
                             for (auto ritr = branches.first.rbegin(); ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
-                                optional<fc::exception> except;
+                                optional <fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
@@ -804,7 +837,8 @@ namespace steemit {
                 }
 
                 return false;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::push_transaction(const signed_transaction &trx, uint32_t skip) {
@@ -822,7 +856,8 @@ namespace steemit {
                     set_producing(false);
                     throw;
                 }
-            } FC_CAPTURE_AND_RETHROW((trx))
+            }
+            FC_CAPTURE_AND_RETHROW((trx))
         }
 
         void database::_push_transaction(const signed_transaction &trx) {
@@ -855,7 +890,8 @@ namespace steemit {
                     apply_operation(op);
                 }
                 remove(proposal);
-            } FC_CAPTURE_AND_RETHROW((proposal))
+            }
+            FC_CAPTURE_AND_RETHROW((proposal))
         }
 
         signed_block database::generate_block(fc::time_point_sec when, const account_name_type &witness_owner,
@@ -866,7 +902,8 @@ namespace steemit {
             detail::with_skip_flags(*this, skip, [&]() {
                 try {
                     result = _generate_block(when, witness_owner, block_signing_private_key);
-                } FC_CAPTURE_AND_RETHROW((witness_owner))
+                }
+                FC_CAPTURE_AND_RETHROW((witness_owner))
             });
             return result;
         }
@@ -1006,7 +1043,7 @@ namespace steemit {
                 auto head_id = head_block_id();
 
                 /// save the head block so we can recover its transactions
-                optional<signed_block> head_block = fetch_block_by_id(head_id);
+                optional <signed_block> head_block = fetch_block_by_id(head_id);
                 STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
 
                 _fork_db.pop_block();
@@ -1014,7 +1051,8 @@ namespace steemit {
 
                 _popped_tx.insert(_popped_tx.begin(), head_block->transactions.begin(), head_block->transactions.end());
 
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::clear_pending() {
@@ -1022,7 +1060,8 @@ namespace steemit {
                 assert((_pending_tx.size() == 0) || _pending_tx_session.valid());
                 _pending_tx.clear();
                 _pending_tx_session.reset();
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::notify_pre_apply_operation(operation_notification &note) {
@@ -1129,7 +1168,8 @@ namespace steemit {
                     adjust_balance(to_account, steem);
                     assets.second = steem;
                 }
-            } FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
+            }
+            FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
 
             return assets;
         }
@@ -1151,7 +1191,8 @@ namespace steemit {
                 adjust_proxied_witness_votes(to_account, new_vesting.amount);
 
                 return new_vesting;
-            } FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
+            }
+            FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
         }
 
         fc::sha256 database::get_pow_target() const {
@@ -1542,7 +1583,8 @@ namespace steemit {
                 max_rewards -= unclaimed_rewards;
 
                 return unclaimed_rewards;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void fill_comment_reward_context_local_state(utilities::comment_reward_context &ctx,
@@ -1677,7 +1719,8 @@ namespace steemit {
                     }
                 }
                 return claimed_reward;
-            } FC_CAPTURE_AND_RETHROW((comment))
+            }
+            FC_CAPTURE_AND_RETHROW((comment))
         }
 
         void database::process_comment_cashout() {
@@ -1694,8 +1737,8 @@ namespace steemit {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector<reward_fund_context> funds;
-            vector<share_type> steem_awarded;
+            vector <reward_fund_context> funds;
+            vector <share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
@@ -2555,7 +2598,8 @@ namespace steemit {
                 create<witness_schedule_object>([&](witness_schedule_object &wso) {
                     wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
                 });
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
 
@@ -2589,7 +2633,8 @@ namespace steemit {
          STEEMIT_TRY_NOTIFY( changed_objects, changed_ids )
         }
         */
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
 
         }
 
@@ -2664,7 +2709,8 @@ namespace steemit {
                     _last_free_gb_printed = free_gb;
                 }
 
-            } FC_CAPTURE_AND_RETHROW((next_block))
+            }
+            FC_CAPTURE_AND_RETHROW((next_block))
         }
 
         void database::_apply_block(const signed_block &next_block) {
@@ -2826,7 +2872,7 @@ namespace steemit {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector<price> feeds;
+                vector <price> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
@@ -2880,7 +2926,8 @@ namespace steemit {
                         }
                     });
                 }
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::apply_transaction(const signed_transaction &trx, uint32_t skip) {
@@ -2928,7 +2975,7 @@ namespace steemit {
                     }
                 }
                 flat_set<account_name_type> required;
-                vector<authority> other;
+                vector <authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -2991,11 +3038,13 @@ namespace steemit {
                     try {
                         apply_operation(op);
                         ++_current_op_in_trx;
-                    } FC_CAPTURE_AND_RETHROW((op));
+                    }
+                    FC_CAPTURE_AND_RETHROW((op));
                 }
                 _current_trx_id = transaction_id_type();
 
-            } FC_CAPTURE_AND_RETHROW((trx))
+            }
+            FC_CAPTURE_AND_RETHROW((trx))
         }
 
         void database::apply_operation(const operation &op) {
@@ -3030,7 +3079,8 @@ namespace steemit {
                 }
 
                 return witness;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::create_block_summary(const signed_block &next_block) {
@@ -3039,7 +3089,8 @@ namespace steemit {
                 modify(get<block_summary_object>(sid), [&](block_summary_object &p) {
                     p.block_id = next_block.id();
                 });
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_global_dynamic_data(const signed_block &b) {
@@ -3128,7 +3179,8 @@ namespace steemit {
                                                                                                      _dgp.head_block_number)(
                                            "max_undo", STEEMIT_MAX_UNDO_HISTORY));
                 }
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_virtual_supply() {
@@ -3156,7 +3208,8 @@ namespace steemit {
                         }
                     }
                 });
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
@@ -3168,7 +3221,8 @@ namespace steemit {
                     _wit.last_aslot = new_block_aslot;
                     _wit.last_confirmed_block_num = new_block.block_num();
                 });
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_last_irreversible_block() {
@@ -3230,7 +3284,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr <fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block,
                                       "Current fork in the fork database does not contain the last_irreversible_block");
@@ -3243,7 +3297,8 @@ namespace steemit {
                 }
 
                 _fork_db.set_max_size(dpo.head_block_number - dpo.last_irreversible_block_num + 1);
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
 
@@ -3332,7 +3387,8 @@ namespace steemit {
                 fill_order(settle, settle_pays, settle_receives);
 
                 return call_receives;
-            } FC_CAPTURE_AND_RETHROW((call)(settle)(match_price)(max_settlement))
+            }
+            FC_CAPTURE_AND_RETHROW((call)(settle)(match_price)(max_settlement))
         }
 
         /**
@@ -3453,24 +3509,26 @@ namespace steemit {
                 if (pays == order.amount_for_sale()) {
                     remove(order);
                     return true;
+                } else {
+
+                    modify(order, [&](limit_order_object &b) {
+                        b.for_sale -= pays.amount;
+                    });
+                    /**
+                     *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
+                     *  have hit the limit where the seller is asking for nothing in return.  When this
+                     *  happens we must refund any balance back to the seller, it is too small to be
+                     *  sold at the sale price.
+                     */
+                    if (order.amount_to_receive().amount == 0) {
+                        cancel_order(order);
+                        return true;
+                    }
+                    return false;
                 }
 
-                modify(order, [&](limit_order_object &b) {
-                    b.for_sale -= pays.amount;
-                });
-                /**
-                 *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
-                 *  have hit the limit where the seller is asking for nothing in return.  When this
-                 *  happens we must refund any balance back to the seller, it is too small to be
-                 *  sold at the sale price.
-                 */
-                if (order.amount_to_receive().amount == 0) {
-                    cancel_order(order);
-                    return true;
-                }
-                return false;
-
-            } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
+            }
+            FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
         bool database::fill_order(const call_order_object &order, const asset &pays, const asset &receives) {
@@ -3480,7 +3538,7 @@ namespace steemit {
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional<asset> collateral_freed;
+                optional <asset> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -3527,7 +3585,8 @@ namespace steemit {
                 }
 
                 return collateral_freed.valid();
-            } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
+            }
+            FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
         bool database::fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives) {
@@ -3678,7 +3737,8 @@ namespace steemit {
                 } // whlie call_itr != call_end
 
                 return margin_called;
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::globally_settle_asset(const asset_object &mia, const price &settlement_price) {
@@ -3732,7 +3792,8 @@ namespace steemit {
                     obj.current_supply = original_mia_supply;
                 });
 
-            } FC_CAPTURE_AND_RETHROW((mia)(settlement_price))
+            }
+            FC_CAPTURE_AND_RETHROW((mia)(settlement_price))
         }
 
         void database::pay_order(const account_object &receiver, const asset &receives, const asset &pays) {
@@ -4161,7 +4222,8 @@ namespace steemit {
                         acnt.balance += delta;
                     }
                 });
-            } FC_CAPTURE_AND_RETHROW((a)(delta))
+            }
+            FC_CAPTURE_AND_RETHROW((a)(delta))
         }
 
         void database::adjust_sbd_balance(const account_object &a, account_balance_object &b) {
@@ -4281,7 +4343,8 @@ namespace steemit {
                 const account_balance_object &b = get<account_balance_object, by_account_asset>(
                         boost::make_tuple(a.name, asset_name));
                 return {b.balance, b.asset_name};
-            } FC_CAPTURE_AND_RETHROW((asset_name))
+            }
+            FC_CAPTURE_AND_RETHROW((asset_name))
         }
 
         asset database::get_savings_balance(const account_object &a, const asset_name_type &asset_name) const {
@@ -4396,7 +4459,8 @@ namespace steemit {
                         apply_hardfork(hardforks.last_hardfork + 1);
                     }
                 }
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         bool database::has_hardfork(uint32_t hardfork) const {
@@ -4806,7 +4870,8 @@ namespace steemit {
                             "get_feed_history().current_median_history", get_feed_history().current_median_history)(
                             "gpo.current_supply", gpo.current_supply)("gpo.virtual_supply", gpo.virtual_supply));
                 }
-            } FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
+            }
+            FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
         }
 
         void database::perform_vesting_share_split(uint32_t magnitude) {
@@ -4861,7 +4926,8 @@ namespace steemit {
                     ++cat_itr;
                 }
 
-            } FC_CAPTURE_AND_RETHROW()
+            }
+            FC_CAPTURE_AND_RETHROW()
         }
 
         void database::retally_comment_children() {
@@ -4996,11 +5062,13 @@ namespace steemit {
                                                      asset(bdd.current_supply, bitasset.asset_name);
                             });
                     execute_bid(pseudo_bid, bdd.current_supply, bad.settlement_fund, bad.current_feed);
-                } else
+                } else {
                     FC_ASSERT(bad.settlement_fund == 0);
+                }
 
                 _cancel_bids_and_revive_mpa(bitasset, bad);
-            } FC_CAPTURE_AND_RETHROW((bitasset))
+            }
+            FC_CAPTURE_AND_RETHROW((bitasset))
         }
 
         void database::_cancel_bids_and_revive_mpa(const asset_object &bitasset,
@@ -5014,7 +5082,7 @@ namespace steemit {
                 const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
                 auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name,
                                                                  protocol::price::max(bad.options.short_backing_asset,
-                                                                            bitasset.asset_name),
+                                                                                      bitasset.asset_name),
                                                                  collateral_bid_object::id_type()));
                 while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol_name() == bitasset.asset_name) {
                     const collateral_bid_object &bid = *itr;
@@ -5027,7 +5095,8 @@ namespace steemit {
                     obj.settlement_price = price();
                     obj.settlement_fund = 0;
                 });
-            } FC_CAPTURE_AND_RETHROW((bitasset))
+            }
+            FC_CAPTURE_AND_RETHROW((bitasset))
         }
 
         void database::cancel_bid(const collateral_bid_object &bid, bool create_virtual_op) {
