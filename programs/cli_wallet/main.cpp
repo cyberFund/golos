@@ -43,19 +43,19 @@ using namespace steemit::chain;
 using namespace steemit::wallet;
 using namespace std;
 
-using commands_vec = std::vector < std::pair < std::string, std::vector < std::string > > >;
+void daemon_mode();
 
 void nom_daemon_mode (
     const boost::program_options::variables_map & options,
-    const commands_vec & commands,
+    const std::vector < std::string > & commands,
     const bool & interactive,
     std::shared_ptr<fc::rpc::cli> wallet_cli,
     const fc::api<wallet_api> & wapi
 );
 
-void parse_commands(
+void parse_commands (
     const boost::program_options::variables_map & options,
-    commands_vec & commands,
+    std::vector < std::string > & commands,
     bool & interactive
 );
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 
         vector<string> allowed_ips;
 
-        commands_vec commands;                
+        std::vector < std::string > commands;                
         bool interactive = true;
 
         boost::program_options::variables_map options;
@@ -255,13 +255,7 @@ int main(int argc, char **argv) {
         if (!options.count("daemon")) {
             nom_daemon_mode ( options, commands, interactive, wallet_cli, wapi );
         } else {
-            fc::promise<int>::ptr exit_promise = new fc::promise<int>("UNIX Signal Handler");
-            fc::set_signal_handler([&exit_promise](int signal) {
-                exit_promise->set_value(signal);
-            }, SIGINT);
-
-            ilog("Entering Daemon Mode, ^C to exit");
-            exit_promise->wait();
+            daemon_mode();
         }
         wapi->save_wallet_file(wallet_file.generic_string());
         locked_connection.disconnect();
@@ -274,9 +268,19 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+void daemon_mode() {
+    fc::promise<int>::ptr exit_promise = new fc::promise<int>("UNIX Signal Handler");
+    fc::set_signal_handler([&exit_promise](int signal) {
+        exit_promise->set_value(signal);
+    }, SIGINT);
+
+    ilog("Entering Daemon Mode, ^C to exit");
+    exit_promise->wait();
+}
+
 void nom_daemon_mode (
     const boost::program_options::variables_map & options,
-    const commands_vec & commands,
+    const std::vector < std::string > & commands,
     const bool & interactive,
     std::shared_ptr<fc::rpc::cli> wallet_cli,
     const fc::api<wallet_api> & wapi
@@ -284,16 +288,10 @@ void nom_daemon_mode (
     wallet_cli->register_api(wapi);
     if (!interactive) {
         std::vector < std::pair < std::string, std::string > > commands_output;
-        for (auto const &command : commands) {
-            try
-            {   
-                std::string line = command.first + " ";
-                for (auto i = 0; i < command.second.size(); i++) {
-                    line += command.second[i];
-                    if (i != command.second.size() - 1) {
-                        line += " ";
-                    }
-                }
+        for (auto const &x : commands) {
+            try {
+
+                std::string line = x;
 
                 line += char(EOF);
                 fc::variants args = fc::json::variants_from_string(line);
@@ -306,16 +304,15 @@ void nom_daemon_mode (
 
                 auto result = wallet_cli->receive_call( 0, method, fc::variants( args.begin() + 1, args.end() ) );
 
-                auto itr = wallet_cli->find_method( method );
+                auto itr = wallet_cli->find_method( method );                
                 if ( itr == wallet_cli->get_result_formatters_end() ) {
-                    commands_output.push_back(std::make_pair(command.first, fc::json::to_pretty_string( result )));
+                    commands_output.push_back ( std::make_pair ( method, fc::json::to_pretty_string ( result ) ) );
                 }
                 else {
                     std::cout << itr->second( result, args ) << "\n";
                 }
             }
-            catch ( const fc::exception& e )
-            {
+            catch ( const fc::exception& e ) {
                 std::cout << e.to_detail_string() << "\n";
             }
         }
@@ -329,9 +326,9 @@ void nom_daemon_mode (
     }
 }
 
-void parse_commands(
+void parse_commands (
     const boost::program_options::variables_map & options,
-    commands_vec & commands, bool & interactive
+    std::vector < std::string > & commands, bool & interactive
 ) {
     if (options.count("commands")) {
         // If you would like to enable non-interactive mode, then you should
@@ -343,30 +340,19 @@ void parse_commands(
         auto tmp_commmad_string = options["commands"].as<string>();
 
         // Here will be stored the strings that will be parsed by the "&&"
-        std::vector <std::string> unparsed_commands;
+        std::vector < std::string > unchecked_commands;
         auto delims = "&&";
+        boost::algorithm::split_regex( unchecked_commands, tmp_commmad_string, boost::regex( delims ) );
 
-        boost::algorithm::split_regex( unparsed_commands, tmp_commmad_string, boost::regex( delims ) );
-
-        for (size_t it = 0; it < unparsed_commands.size(); it++) {
-            std::string command = unparsed_commands[it];
-            boost::trim(command);
-            // Here will be stored the string which will contain func_name and args
-            vector<string> line_parts;
-            boost::split(line_parts, command, boost::is_any_of("\t "));
-
-            auto func_name = line_parts[0];
-            // Checking case when line can be empty. EX: "&&     &&" 
-            if (func_name == "") {
-                continue;
-            }   
-            // Pushing all non-empty arguments
-            commands.push_back(make_pair(func_name, std::vector<std::string>()));
-            for (size_t i = 1; i < line_parts.size(); i++) {
-                if (line_parts[i] != "") {
-                    commands.back().second.push_back(line_parts[i]);
-                }
+        for (auto x : unchecked_commands ) {
+            boost::trim(x);
+            if (x != "") {
+                commands.push_back(x);
             }
+        }
+
+        for (auto x : commands) {
+            std::cerr << x << std::endl;
         }
     }
 }
