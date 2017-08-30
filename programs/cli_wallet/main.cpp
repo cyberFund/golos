@@ -350,9 +350,5 @@ void parse_commands (
                 commands.push_back(x);
             }
         }
-
-        for (auto x : commands) {
-            std::cerr << x << std::endl;
-        }
     }
 }
