@@ -450,7 +450,7 @@ namespace steemit {
                               itr->key.seconds == bucket_seconds)) {
                             return result;
                         }
-                        result.push_back(*itr);
+                        result.emplace_back(*itr);
                         ++itr;
                     }
                     return result;
