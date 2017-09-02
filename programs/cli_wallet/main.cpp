@@ -290,27 +290,27 @@ void nom_daemon_mode (
         std::vector < std::pair < std::string, std::string > > commands_output;
         for (auto const &x : commands) {
             try {
+                wallet_cli->exec_command ( x, commands_output );
+                // std::string line = x;
 
-                std::string line = x;
+                // line += char(EOF);
+                // fc::variants args = fc::json::variants_from_string(line);
 
-                line += char(EOF);
-                fc::variants args = fc::json::variants_from_string(line);
+                // if ( args.size() == 0 ) {
+                //     continue;
+                // }
 
-                if ( args.size() == 0 ) {
-                    continue;
-                }
+                // const string& method = args[0].get_string();
 
-                const string& method = args[0].get_string();
+                // auto result = wallet_cli->receive_call( 0, method, fc::variants( args.begin() + 1, args.end() ) );
 
-                auto result = wallet_cli->receive_call( 0, method, fc::variants( args.begin() + 1, args.end() ) );
-
-                auto itr = wallet_cli->find_method( method );                
-                if ( itr == wallet_cli->get_result_formatters_end() ) {
-                    commands_output.push_back ( std::make_pair ( method, fc::json::to_pretty_string ( result ) ) );
-                }
-                else {
-                    std::cout << itr->second( result, args ) << "\n";
-                }
+                // auto itr = wallet_cli->find_method( method );
+                // if ( itr == wallet_cli->get_result_formatters_end() ) {
+                //     commands_output.push_back ( std::make_pair ( method, fc::json::to_pretty_string ( result ) ) );
+                // }
+                // else {
+                //     commands_output.push_back ( std::make_pair ( result, fc::json::to_pretty_string ( itr->second( result, args ) ) ) );
+                // }
             }
             catch ( const fc::exception& e ) {
                 std::cout << e.to_detail_string() << "\n";
