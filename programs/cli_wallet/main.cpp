@@ -287,18 +287,19 @@ void nom_daemon_mode (
 ) {
     wallet_cli->register_api(wapi);
     if (!interactive) {
-        std::vector < std::string > commands_output;
+        std::vector < std::pair < std::string, std::string > > commands_output;
         for (auto const &command : commands) {
             try {
                 auto result = wallet_cli->exec_command ( command );
-                commands_output.push_back (result) ;
+                commands_output.push_back ( {command, result} ) ;
             }
             catch ( const fc::exception& e ) {
                 std::cout << e.to_detail_string() << '\n';
             }
         }
         for (auto i : commands_output) {
-            std::cout << fc::json::to_pretty_string (i) << '\n';
+            // Format of output  
+            std::cout << i.first << '\n' << fc::json::to_pretty_string( i.second ) << '\n';
         }
     }
     else {
