@@ -72,6 +72,13 @@ namespace detail_ns {
         };
     };
 
+    template<>
+    struct js_name<fc::fixed_string<> > {
+        static std::string name() {
+            return "string";
+        }
+    };
+
     template<typename T, size_t N>
     struct js_name<fc::array<T, N>> {
         static std::string name() {
