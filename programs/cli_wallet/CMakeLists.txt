@@ -12,9 +12,13 @@ if(GPERFTOOLS_FOUND)
     list(APPEND PLATFORM_SPECIFIC_LIBS tcmalloc)
 endif()
 
+FIND_PACKAGE(Boost  REQUIRED COMPONENTS
+    regex
+)
+
 # I don't know why golos::application is required twice in the following line, I just know the linker breaks if it isn't.
 target_link_libraries(cli_wallet
-                      PRIVATE golos::application golos::network golos_chain golos_protocol graphene_utilities golos_wallet golos_private_message golos::application golos_follow fc readline ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS})
+                      PRIVATE golos::application golos::network golos_chain golos_protocol graphene_utilities golos_wallet golos_private_message golos::application golos_follow fc readline ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} ${Boost_LIBRARIES})
 
 if(MSVC)
     set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "/bigobj")
