@@ -98,6 +98,8 @@ namespace steemit {
                 proposal_update_operation,
                 proposal_delete_operation,
 
+                bid_collateral_operation,
+
                 /// virtual operations below this point
                 fill_convert_request_operation,
                 author_reward_operation,
@@ -114,7 +116,8 @@ namespace steemit {
                 return_vesting_delegation_operation,
                 asset_settle_cancel_operation,
                 fill_call_order_operation,
-                fill_settlement_order_operation
+                fill_settlement_order_operation,
+                execute_bid_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,

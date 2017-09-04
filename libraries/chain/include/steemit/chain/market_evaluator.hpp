@@ -16,29 +16,26 @@ namespace steemit {
 
         class call_order_object;
 
-        class convert_evaluator
-                : public steemit::chain::evaluator<convert_evaluator> {
+        class convert_evaluator : public steemit::chain::evaluator<convert_evaluator> {
         public:
             typedef protocol::convert_operation operation_type;
 
-            convert_evaluator(database &db)
-                    : steemit::chain::evaluator<convert_evaluator>(db) {
+            convert_evaluator(database &db) : steemit::chain::evaluator<convert_evaluator>(db) {
             }
 
             void do_apply(const protocol::convert_operation &o);
         };
 
-        class limit_order_create_evaluator
-                : public evaluator<limit_order_create_evaluator> {
+        class limit_order_create_evaluator : public evaluator<limit_order_create_evaluator> {
         public:
             typedef protocol::limit_order_create_operation operation_type;
 
-            limit_order_create_evaluator(database &db)
-                    : evaluator<limit_order_create_evaluator>(db) {
+            limit_order_create_evaluator(database &db) : evaluator<limit_order_create_evaluator>(db) {
 
             }
 
             void do_apply(const protocol::limit_order_create_operation &o);
+
         protected:
             share_type deferred_fee = 0;
             const account_object *seller = nullptr;
@@ -46,13 +43,11 @@ namespace steemit {
             const asset_object *receive_asset = nullptr;
         };
 
-        class limit_order_create2_evaluator
-                : public steemit::chain::evaluator<limit_order_create2_evaluator> {
+        class limit_order_create2_evaluator : public steemit::chain::evaluator<limit_order_create2_evaluator> {
         public:
             typedef protocol::limit_order_create2_operation operation_type;
 
-            limit_order_create2_evaluator(database &db)
-                    : steemit::chain::evaluator<limit_order_create2_evaluator>(db) {
+            limit_order_create2_evaluator(database &db) : steemit::chain::evaluator<limit_order_create2_evaluator>(db) {
             }
 
             void do_apply(const protocol::limit_order_create2_operation &op);
@@ -64,13 +59,11 @@ namespace steemit {
             const asset_object *receive_asset = nullptr;
         };
 
-        class limit_order_cancel_evaluator
-                : public evaluator<limit_order_cancel_evaluator> {
+        class limit_order_cancel_evaluator : public evaluator<limit_order_cancel_evaluator> {
         public:
             typedef protocol::limit_order_cancel_operation operation_type;
 
-            limit_order_cancel_evaluator(database &db)
-                    : evaluator<limit_order_cancel_evaluator>(db) {
+            limit_order_cancel_evaluator(database &db) : evaluator<limit_order_cancel_evaluator>(db) {
 
             }
 
@@ -80,13 +73,11 @@ namespace steemit {
             const limit_order_object *_order;
         };
 
-        class call_order_update_evaluator
-                : public evaluator<call_order_update_evaluator> {
+        class call_order_update_evaluator : public evaluator<call_order_update_evaluator> {
         public:
             typedef protocol::call_order_update_operation operation_type;
 
-            call_order_update_evaluator(database &db)
-                    : evaluator<call_order_update_evaluator>(db) {
+            call_order_update_evaluator(database &db) : evaluator<call_order_update_evaluator>(db) {
 
             }
 
@@ -97,6 +88,19 @@ namespace steemit {
             const account_object *_paying_account = nullptr;
             const call_order_object *_order = nullptr;
             const asset_bitasset_data_object *_bitasset_data = nullptr;
+        };
+
+        class bid_collateral_evaluator : public evaluator<bid_collateral_evaluator> {
+        public:
+            typedef protocol::bid_collateral_operation operation_type;
+
+            bid_collateral_evaluator(database &db) : evaluator<bid_collateral_evaluator>(db) {
+
+            }
+
+            void do_apply(const protocol::bid_collateral_operation &o);
+
+            const collateral_bid_object *_bid = nullptr;
         };
     }
 } // steemit::chain
