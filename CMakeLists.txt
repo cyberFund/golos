@@ -28,6 +28,7 @@ set(GUI_CLIENT_EXECUTABLE_NAME Golos)
 set(CUSTOM_URL_SCHEME "gcs")
 set(INSTALLER_APP_ID "68ad7005-8eee-49c9-95ce-9eed97e5b347")
 
+set(GOLOS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # http://stackoverflow.com/a/18369825
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
@@ -221,6 +222,17 @@ endif()
 
 # external_plugins needs to be compiled first because libraries/application depends on GOLOSIT_EXTERNAL_PLUGINS being fully populated
 add_subdirectory(external_plugins)
+
+# Used for correct linking libcds in `make install` case.
+# Look at "Always full RPATH" point in
+# https://cmake.org/Wiki/CMake_RPATH_handling for more info
+
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
+
 add_subdirectory(libraries)
 add_subdirectory(programs)
 
