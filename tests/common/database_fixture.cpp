@@ -481,7 +481,7 @@ namespace steemit {
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
 
-                return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+                return db.get_asset(creator.asset_name);
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
@@ -510,7 +510,7 @@ namespace steemit {
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
 
-                return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+                return db.get_asset(creator.asset_name);
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
@@ -528,7 +528,7 @@ namespace steemit {
             trx.validate();
             db.push_transaction(trx, ~0);
             trx.operations.clear();
-            return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+            return db.get_asset(creator.asset_name);
         }
 
         const asset_object &database_fixture::create_user_issued_asset(const asset_name_type &name,
@@ -549,7 +549,7 @@ namespace steemit {
             db.push_transaction(trx, ~0);
             trx.operations.clear();
 
-            return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+            return db.get_asset(creator.asset_name);
         }
 
         void database_fixture::issue_uia(const account_object &recipient, asset amount) {
