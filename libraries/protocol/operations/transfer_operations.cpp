@@ -18,15 +18,11 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        bool inline is_asset_type(asset asset, asset_symbol_type symbol) {
-            return asset.symbol == symbol;
-        }
-
         void transfer_operation::validate() const {
             try {
                 validate_account_name(from);
                 validate_account_name(to);
-                FC_ASSERT(amount.symbol !=
+                FC_ASSERT(amount.symbol_type_value() !=
                           VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
                 FC_ASSERT(amount.amount >
                           0, "Cannot transfer a negative amount (aka: stealing)");
@@ -38,20 +34,20 @@ namespace steemit {
 
         void transfer_to_vesting_operation::validate() const {
             validate_account_name(from);
-            FC_ASSERT(is_asset_type(amount, STEEM_SYMBOL), "Amount must be STEEM");
+            FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME, "Amount must be STEEM");
             if (to != account_name_type()) {
                 validate_account_name(to);
             }
             FC_ASSERT(amount >
-                      asset(0, STEEM_SYMBOL), "Must transfer a nonzero amount");
+                      asset(0, STEEM_SYMBOL_NAME), "Must transfer a nonzero amount");
         }
 
         void transfer_to_savings_operation::validate() const {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL ||
-                      amount.symbol == SBD_SYMBOL);
+            FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME ||
+                      amount.symbol == SBD_SYMBOL_NAME);
             FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }
@@ -60,8 +56,8 @@ namespace steemit {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL ||
-                      amount.symbol == SBD_SYMBOL);
+            FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME ||
+                      amount.symbol == SBD_SYMBOL_NAME);
             FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }

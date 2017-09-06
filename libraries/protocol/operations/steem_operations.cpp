@@ -18,10 +18,6 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        bool inline is_asset_type(asset asset, asset_symbol_type symbol) {
-            return asset.symbol == symbol;
-        }
-
         void comment_operation::validate() const {
             FC_ASSERT(title.size() < 256, "Title larger than size limit");
             FC_ASSERT(fc::is_utf8(title), "Title not formatted in UTF8");
@@ -85,7 +81,7 @@ namespace steemit {
 
             if (amount) {
                 FC_ASSERT(amount->symbol ==
-                          SBD_SYMBOL, "Payout window extension is only available with SBD");
+                          SBD_SYMBOL_NAME, "Payout window extension is only available with SBD");
                 FC_ASSERT(amount->amount >
                           0, "Cannot extend payout window with 0 SBD");
             }
@@ -103,7 +99,7 @@ namespace steemit {
             FC_ASSERT(percent_steem_dollars <=
                       STEEMIT_100_PERCENT, "Percent cannot exceed 100%");
             FC_ASSERT(max_accepted_payout.symbol ==
-                      SBD_SYMBOL, "Max accepted payout must be in SBD");
+                      SBD_SYMBOL_NAME, "Max accepted payout must be in SBD");
             FC_ASSERT(max_accepted_payout.amount.value >=
                       0, "Cannot accept less than 0 payout");
             validate_permlink(permlink);
@@ -137,7 +133,7 @@ namespace steemit {
 
         void withdraw_vesting_operation::validate() const {
             validate_account_name(account);
-            FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Amount must be VESTS");
+            FC_ASSERT(vesting_shares.symbol_type_value() == VESTS_SYMBOL, "Amount must be VESTS");
         }
 
         void set_withdraw_vesting_route_operation::validate() const {
@@ -151,7 +147,7 @@ namespace steemit {
             validate_account_name(owner);
             FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
             FC_ASSERT(fc::is_utf8(url), "URL is not valid UTF8");
-            FC_ASSERT(fee >= asset(0, STEEM_SYMBOL), "Fee cannot be negative");
+            FC_ASSERT(fee >= asset(0, STEEM_SYMBOL_NAME), "Fee cannot be negative");
             props.validate();
         }
 
@@ -316,10 +312,10 @@ namespace steemit {
 
         void feed_publish_operation::validate() const {
             validate_account_name(publisher);
-            FC_ASSERT((is_asset_type(exchange_rate.base, STEEM_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, SBD_SYMBOL))
-                      || (is_asset_type(exchange_rate.base, SBD_SYMBOL) &&
-                          is_asset_type(exchange_rate.quote, STEEM_SYMBOL)),
+            FC_ASSERT((exchange_rate.base.symbol == STEEM_SYMBOL_NAME &&
+                       exchange_rate.quote.symbol == SBD_SYMBOL_NAME)
+                      || (exchange_rate.base.symbol == SBD_SYMBOL_NAME &&
+                          exchange_rate.quote.symbol == STEEM_SYMBOL_NAME),
                     "Price feed must be a STEEM/SBD price");
             exchange_rate.validate();
         }
@@ -345,12 +341,12 @@ namespace steemit {
                                                0, "escrow must transfer a non-zero amount");
             FC_ASSERT(from != agent &&
                       to != agent, "agent must be a third party");
-            FC_ASSERT((fee.symbol == STEEM_SYMBOL) ||
-                      (fee.symbol == SBD_SYMBOL), "fee must be STEEM or SBD");
+            FC_ASSERT((fee.symbol == STEEM_SYMBOL_NAME) ||
+                      (fee.symbol == SBD_SYMBOL_NAME), "fee must be STEEM or SBD");
             FC_ASSERT(sbd_amount.symbol ==
-                      SBD_SYMBOL, "sbd amount must contain SBD");
+                      SBD_SYMBOL_NAME, "sbd amount must contain SBD");
             FC_ASSERT(steem_amount.symbol ==
-                      STEEM_SYMBOL, "steem amount must contain STEEM");
+                      STEEM_SYMBOL_NAME, "steem amount must contain STEEM");
             FC_ASSERT(ratification_deadline <
                       escrow_expiration, "ratification deadline must be before escrow expiration");
             if (json_meta.size() > 0) {
@@ -392,9 +388,9 @@ namespace steemit {
             FC_ASSERT(sbd_amount.amount > 0 || steem_amount.amount >
                                                0, "escrow must release a non-zero amount");
             FC_ASSERT(sbd_amount.symbol ==
-                      SBD_SYMBOL, "sbd amount must contain SBD");
+                      SBD_SYMBOL_NAME, "sbd amount must contain SBD");
             FC_ASSERT(steem_amount.symbol ==
-                      STEEM_SYMBOL, "steem amount must contain STEEM");
+                      STEEM_SYMBOL_NAME, "steem amount must contain STEEM");
         }
 
         void request_account_recovery_operation::validate() const {
@@ -446,7 +442,7 @@ namespace steemit {
             validate_account_name(delegatee);
             FC_ASSERT(delegator !=
                       delegatee, "You cannot delegate VESTS to yourself");
-            FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Delegation must be VESTS");
+            FC_ASSERT(vesting_shares.symbol_type_value() == VESTS_SYMBOL, "Delegation must be VESTS");
             FC_ASSERT(vesting_shares >=
                       asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
         }

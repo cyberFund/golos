@@ -162,8 +162,8 @@ namespace steemit {
             uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
             time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-            protocol::asset balance = protocol::asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
-            protocol::asset savings_balance = protocol::asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
+            protocol::asset balance = protocol::asset(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
+            protocol::asset savings_balance = protocol::asset(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
 
             /**
              *  SBD Deposits pay interest based upon the interest rate set by witnesses. The purpose of these
@@ -179,13 +179,13 @@ namespace steemit {
              *  @defgroup sbd_data SBD Balance Data
              */
             ///@{
-            protocol::asset sbd_balance = protocol::asset(0, SBD_SYMBOL); /// total sbd balance
+            protocol::asset sbd_balance = protocol::asset(0, SBD_SYMBOL_NAME); /// total sbd balance
             uint128_t sbd_seconds; ///< total sbd * how long it has been hel
             time_point_sec sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec sbd_last_interest_payment; ///< used to pay interest at most once per month
 
 
-            protocol::asset savings_sbd_balance = protocol::asset(0, SBD_SYMBOL); /// total sbd balance
+            protocol::asset savings_sbd_balance = protocol::asset(0, SBD_SYMBOL_NAME); /// total sbd balance
             uint128_t savings_sbd_seconds; ///< total sbd * how long it has been hel
             time_point_sec savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec savings_sbd_last_interest_payment; ///< used to pay interest at most once per month

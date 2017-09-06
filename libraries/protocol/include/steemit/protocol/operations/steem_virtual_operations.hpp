@@ -13,9 +13,9 @@ namespace steemit {
             author_reward_operation() {
             }
 
-            author_reward_operation(const account_name_type &a, const string &p, const asset &s, const asset &st, const asset &v)
-                    : author(a), permlink(p), sbd_payout(s), steem_payout(st),
-                      vesting_payout(v) {
+            author_reward_operation(const account_name_type &a, const string &p, const asset &s, const asset &st,
+                                    const asset &v) : author(a), permlink(p), sbd_payout(s), steem_payout(st),
+                    vesting_payout(v) {
             }
 
             account_name_type author;
@@ -30,9 +30,8 @@ namespace steemit {
             curation_reward_operation() {
             }
 
-            curation_reward_operation(const string &c, const asset &r, const string &a, const string &p)
-                    : curator(c), reward(r), comment_author(a),
-                      comment_permlink(p) {
+            curation_reward_operation(const string &c, const asset &r, const string &a, const string &p) : curator(c),
+                    reward(r), comment_author(a), comment_permlink(p) {
             }
 
             account_name_type curator;
@@ -46,8 +45,8 @@ namespace steemit {
             comment_reward_operation() {
             }
 
-            comment_reward_operation(const account_name_type &a, const string &pl, const asset &p)
-                    : author(a), permlink(pl), payout(p) {
+            comment_reward_operation(const account_name_type &a, const string &pl, const asset &p) : author(a),
+                    permlink(pl), payout(p) {
             }
 
             account_name_type author;
@@ -57,8 +56,7 @@ namespace steemit {
 
 
         struct liquidity_reward_operation : public virtual_operation {
-            liquidity_reward_operation(string o = string(), asset p = asset())
-                    : owner(o), payout(p) {
+            liquidity_reward_operation(string o = string(), asset p = asset()) : owner(o), payout(p) {
             }
 
             account_name_type owner;
@@ -67,8 +65,8 @@ namespace steemit {
 
 
         struct interest_operation : public virtual_operation {
-            interest_operation(const string &o = "", const asset &i = asset(0, SBD_SYMBOL))
-                    : owner(o), interest(i) {
+            interest_operation(const string &o = "", const asset &i = asset(0, SBD_SYMBOL_NAME)) : owner(o),
+                    interest(i) {
             }
 
             account_name_type owner;
@@ -96,8 +94,7 @@ namespace steemit {
             }
 
             fill_vesting_withdraw_operation(const string &f, const string &t, const asset &w, const asset &d)
-                    : from_account(f), to_account(t), withdrawn(w),
-                      deposited(d) {
+                    : from_account(f), to_account(t), withdrawn(w), deposited(d) {
             }
 
             account_name_type from_account;
@@ -121,8 +118,9 @@ namespace steemit {
             fill_transfer_from_savings_operation() {
             }
 
-            fill_transfer_from_savings_operation(const account_name_type &f, const account_name_type &t, const asset &a, const uint32_t r, const string &m)
-                    : from(f), to(t), amount(a), request_id(r), memo(m) {
+            fill_transfer_from_savings_operation(const account_name_type &f, const account_name_type &t, const asset &a,
+                                                 const uint32_t r, const string &m) : from(f), to(t), amount(a),
+                    request_id(r), memo(m) {
             }
 
             account_name_type from;
@@ -146,8 +144,7 @@ namespace steemit {
             comment_payout_update_operation() {
             }
 
-            comment_payout_update_operation(const account_name_type &a, const string &p)
-                    : author(a), permlink(p) {
+            comment_payout_update_operation(const account_name_type &a, const string &p) : author(a), permlink(p) {
             }
 
             account_name_type author;
@@ -158,8 +155,8 @@ namespace steemit {
             comment_benefactor_reward_operation() {
             }
 
-            comment_benefactor_reward_operation(const account_name_type &b, const account_name_type &a, const string &p, const asset &r)
-                    : benefactor(b), author(a), permlink(p), reward(r) {
+            comment_benefactor_reward_operation(const account_name_type &b, const account_name_type &a, const string &p,
+                                                const asset &r) : benefactor(b), author(a), permlink(p), reward(r) {
             }
 
             account_name_type benefactor;
@@ -172,8 +169,8 @@ namespace steemit {
             return_vesting_delegation_operation() {
             }
 
-            return_vesting_delegation_operation(const account_name_type &a, const asset &v)
-                    : account(a), vesting_shares(v) {
+            return_vesting_delegation_operation(const account_name_type &a, const asset &v) : account(a),
+                    vesting_shares(v) {
             }
 
             account_name_type account;

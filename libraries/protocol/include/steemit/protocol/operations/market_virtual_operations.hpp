@@ -56,8 +56,8 @@ namespace steemit {
             asset fee; // paid by receiving account
 
             pair <asset_name_type, asset_name_type> get_market() const {
-                return pays.symbol < receives.symbol ? std::make_pair(pays.symbol_name(), receives.symbol_name())
-                                                     : std::make_pair(receives.symbol_name(), pays.symbol_name());
+                return pays.symbol < receives.symbol ? std::make_pair(pays.symbol, receives.symbol)
+                                                     : std::make_pair(receives.symbol, pays.symbol);
             }
         };
 
@@ -85,8 +85,8 @@ namespace steemit {
             asset fee; // paid by receiving account
 
             pair <asset_name_type, asset_name_type> get_market() const {
-                return pays.symbol < receives.symbol ? std::make_pair(pays.symbol_name(), receives.symbol_name())
-                                                     : std::make_pair(receives.symbol_name(), pays.symbol_name());
+                return pays.symbol < receives.symbol ? std::make_pair(pays.symbol, receives.symbol)
+                                                     : std::make_pair(receives.symbol, pays.symbol);
             }
         };
 

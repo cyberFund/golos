@@ -1346,13 +1346,13 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 txs.push_back(signed_transaction());
             }
 
-            ops[0].exchange_rate = price(asset(100000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
-            ops[1].exchange_rate = price(asset(105000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
-            ops[2].exchange_rate = price(asset(98000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
-            ops[3].exchange_rate = price(asset(97000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
-            ops[4].exchange_rate = price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
-            ops[5].exchange_rate = price(asset(97500, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
-            ops[6].exchange_rate = price(asset(102000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL));
+            ops[0].exchange_rate = price(asset(100000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[1].exchange_rate = price(asset(105000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[2].exchange_rate = price(asset(98000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[3].exchange_rate = price(asset(97000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[4].exchange_rate = price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[5].exchange_rate = price(asset(97500, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[6].exchange_rate = price(asset(102000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
 
             for (int i = 0; i < 7; i++) {
                 txs[i].set_expiration(db.head_block_time() +
@@ -1369,9 +1369,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             feed_history_object feed_history = db.get_feed_history();
             BOOST_TEST_MESSAGE("Check state");
             BOOST_REQUIRE(feed_history.current_median_history ==
-                          price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL)));
+                          price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME)));
             BOOST_REQUIRE(feed_history.price_history[0] ==
-                          price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL)));
+                          price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME)));
             validate_database();
 
             for (int i = 0; i < 23; i++) {
@@ -1382,7 +1382,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                     txs[j].signatures.clear();
                     ops[j].exchange_rate = price(ops[j].exchange_rate.base, asset(
                             ops[j].exchange_rate.quote.amount +
-                            10, SBD_SYMBOL));
+                            10, SBD_SYMBOL_NAME));
                     txs[j].set_expiration(db.head_block_time() +
                                           STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                     txs[j].operations.push_back(ops[j]);
@@ -1445,13 +1445,13 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             auto start_balance = asset(
                     db.get_comment("alice", string("test")).total_payout_value.amount /
-                    2, SBD_SYMBOL);
+                    2, SBD_SYMBOL_NAME);
 
             BOOST_TEST_MESSAGE("Setup conversion to TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             op.owner = "alice";
-            op.amount = asset(2000, SBD_SYMBOL);
+            op.amount = asset(2000, SBD_SYMBOL_NAME);
             op.request_id = 2;
             tx.operations.push_back(op);
             tx.set_expiration(
@@ -1877,7 +1877,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             limit_order_create_operation op;
             op.owner = "alice";
-            op.amount_to_sell = asset(alice_sbd.amount.value / 20, SBD_SYMBOL);
+            op.amount_to_sell = asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
             op.min_to_receive = op.amount_to_sell * exchange_rate;
             op.order_id = 1;
 
@@ -1910,10 +1910,10 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.sign(bob_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            alice_steem_volume += (asset(alice_sbd.amount / 20, SBD_SYMBOL) *
+            alice_steem_volume += (asset(alice_sbd.amount / 20, SBD_SYMBOL_NAME) *
                                    exchange_rate).amount.value;
             alice_reward_last_update = db.head_block_time();
-            bob_steem_volume -= (asset(alice_sbd.amount / 20, SBD_SYMBOL) *
+            bob_steem_volume -= (asset(alice_sbd.amount / 20, SBD_SYMBOL_NAME) *
                                  exchange_rate).amount.value;
             bob_reward_last_update = db.head_block_time();
 
@@ -1941,11 +1941,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_order_id == 1);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
-                                20, SBD_SYMBOL).amount.value);
+                                20, SBD_SYMBOL_NAME).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
             BOOST_REQUIRE(fill_order_op.current_order_id == 2);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
-                          (asset(alice_sbd.amount.value / 20, SBD_SYMBOL) *
+                          (asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME) *
                            exchange_rate).amount.value);
 
             BOOST_CHECK(limit_order_idx.find(std::make_tuple("alice", 1)) ==
@@ -1959,7 +1959,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.amount_to_sell = asset((alice_sbd.amount.value /
                                        20), STEEM_SYMBOL);
             op.min_to_receive = asset((alice_sbd.amount.value /
-                                       20), SBD_SYMBOL);
+                                       20), SBD_SYMBOL_NAME);
             op.order_id = 3;
 
             tx.signatures.clear();
@@ -1981,7 +1981,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                                       alice_sbd.amount.value /
                                       20, STEEM_SYMBOL);
             op.min_to_receive = asset((alice_sbd.amount.value / 10) * 3 -
-                                      alice_sbd.amount.value / 20, SBD_SYMBOL);
+                                      alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -2001,7 +2001,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.owner = "alice";
             op.order_id = 5;
             op.amount_to_sell = asset(
-                    (alice_sbd.amount.value / 10) * 3, SBD_SYMBOL);
+                    (alice_sbd.amount.value / 10) * 3, SBD_SYMBOL_NAME);
             op.min_to_receive = asset(
                     (alice_sbd.amount.value / 10) * 3, STEEM_SYMBOL);
 
@@ -2034,7 +2034,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           asset((alice_sbd.amount.value / 10) * 3 -
                                 alice_sbd.amount.value /
-                                20, SBD_SYMBOL).amount.value);
+                                20, SBD_SYMBOL_NAME).amount.value);
 
             fill_order_op = ops[3].get<fill_order_operation>();
             BOOST_REQUIRE(fill_order_op.open_owner == "sam");
@@ -2046,7 +2046,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.current_order_id == 5);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
                           asset(alice_sbd.amount.value /
-                                20, SBD_SYMBOL).amount.value);
+                                20, SBD_SYMBOL_NAME).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
             BOOST_REQUIRE(reward == liquidity_idx.end());
@@ -2073,7 +2073,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.order_id = 6;
             op.amount_to_sell = asset(
-                    alice_sbd.amount.value / 20 * 2, SBD_SYMBOL);
+                    alice_sbd.amount.value / 20 * 2, SBD_SYMBOL_NAME);
             op.min_to_receive = asset(
                     alice_sbd.amount.value / 20 * 2, STEEM_SYMBOL);
 
@@ -2093,7 +2093,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.order_id = 7;
             op.amount_to_sell = asset(
                     alice_sbd.amount.value / 20, STEEM_SYMBOL);
-            op.min_to_receive = asset(alice_sbd.amount.value / 20, SBD_SYMBOL);
+            op.min_to_receive = asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -2114,7 +2114,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_order_id == 6);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
-                                20, SBD_SYMBOL).amount.value);
+                                20, SBD_SYMBOL_NAME).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
             BOOST_REQUIRE(fill_order_op.current_order_id == 7);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
@@ -2168,7 +2168,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_order_id == 6);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
                           asset(alice_sbd.amount.value /
-                                20, SBD_SYMBOL).amount.value);
+                                20, SBD_SYMBOL_NAME).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "sam");
             BOOST_REQUIRE(fill_order_op.current_order_id == 8);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
@@ -2201,7 +2201,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             transfer_operation transfer;
             transfer.to = "dave";
             transfer.from = "alice";
-            transfer.amount = asset(alice_sbd.amount / 2, SBD_SYMBOL);
+            transfer.amount = asset(alice_sbd.amount / 2, SBD_SYMBOL_NAME);
 
             tx.operations.clear();
             tx.signatures.clear();
@@ -2214,7 +2214,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.owner = "alice";
             op.amount_to_sell = asset(
                     8 * (alice_sbd.amount.value / 20), STEEM_SYMBOL);
-            op.min_to_receive = asset(op.amount_to_sell.amount, SBD_SYMBOL);
+            op.min_to_receive = asset(op.amount_to_sell.amount, SBD_SYMBOL_NAME);
             op.order_id = 9;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2227,7 +2227,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "dave";
             op.amount_to_sell = asset(
-                    7 * (alice_sbd.amount.value / 20), SBD_SYMBOL);;
+                    7 * (alice_sbd.amount.value / 20), SBD_SYMBOL_NAME);;
             op.min_to_receive = asset(op.amount_to_sell.amount, STEEM_SYMBOL);
             op.order_id = 10;
             tx.operations.clear();
@@ -2340,7 +2340,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             transfer.to = "bob";
             transfer.from = "alice";
-            transfer.amount = asset(alice_sbd.amount / 5, SBD_SYMBOL);
+            transfer.amount = asset(alice_sbd.amount / 5, SBD_SYMBOL_NAME);
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(transfer);
@@ -2351,7 +2351,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "bob";
             op.order_id = 12;
-            op.amount_to_sell = asset(3 * (alice_sbd.amount / 40), SBD_SYMBOL);
+            op.amount_to_sell = asset(3 * (alice_sbd.amount / 40), SBD_SYMBOL_NAME);
             op.min_to_receive = asset(op.amount_to_sell.amount, STEEM_SYMBOL);
             tx.operations.clear();
             tx.signatures.clear();
@@ -2365,7 +2365,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             op.owner = "dave";
             op.order_id = 13;
             op.amount_to_sell = op.min_to_receive;
-            op.min_to_receive.symbol = SBD_SYMBOL;
+            op.min_to_receive.symbol = SBD_SYMBOL_NAME;
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2516,7 +2516,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "alice";
             op.order_id = 15;
-            op.amount_to_sell.symbol = SBD_SYMBOL;
+            op.amount_to_sell.symbol = SBD_SYMBOL_NAME;
             op.min_to_receive.symbol = STEEM_SYMBOL;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2931,7 +2931,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       {
          db.modify( db.get_account( "sam" ), [&]( account_object& a )
          {
-            a.sbd_balance = asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL );
+            a.sbd_balance = asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL_NAME );
          });
       }, database::skip_witness_signature );
 
@@ -2939,7 +2939,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       {
          db.modify( db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
          {
-            gpo.current_sbd_supply = alice_sbd + asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL );
+            gpo.current_sbd_supply = alice_sbd + asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL_NAME );
          });
       }, database::skip_witness_signature );
 

@@ -14,58 +14,45 @@ namespace steemit {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
-        asset::asset() : amount(0), symbol(STEEM_SYMBOL) {
+        asset::asset() : amount(0), symbol(STEEM_SYMBOL_NAME), decimals(3) {
 
         }
 
-        asset::asset(share_type a, asset_symbol_type id) : amount(a), symbol(id) {
-        }
+        asset::asset(share_type a, asset_symbol_type name) : amount(a) {
+            auto ta = (const char *) &name;
+            FC_ASSERT(ta[7] == 0);
+            symbol = &ta[1];
 
-        asset::asset(share_type a, asset_name_type id) : amount(a) {
-            string s = fc::trim(id);
-
-            symbol = uint64_t(3);
-            char *sy = (char *) &symbol;
-
-            size_t symbol_size = id.size();
-
-            if (symbol_size > 0) {
-                FC_ASSERT(symbol_size <= 6);
-
-                std::string symbol_string(id);
-
-                FC_ASSERT(std::find_if(symbol_string.begin(), symbol_string.end(), [&](const char &c) -> bool {
-                    return std::isdigit(c);
-                }) == symbol_string.end());
-                memcpy(sy + 1, symbol_string.c_str(), symbol_size);
-            }
-        }
-
-        uint8_t asset::decimals() const {
-            auto a = (const char *) &symbol;
-            uint8_t result = uint8_t(a[0]);
+            uint8_t result = uint8_t(ta[0]);
             FC_ASSERT(result < 15);
+            decimals = result;
+        }
+
+        asset::asset(share_type a, asset_name_type name, uint8_t d) : amount(a), symbol(name), decimals(d) {
+
+        }
+
+        asset_symbol_type asset::symbol_type_value() const {
+            asset_symbol_type result;
+
+            FC_ASSERT(decimals < 15, "Precision should be less than 15");
+
+            memcpy(&result, &decimals, sizeof(decimals));
+
+            if (symbol.size() > 0) {
+                FC_ASSERT(symbol.size() <= 6,
+                          "Asset symbol type can only present symbols with length less or equal than 6");
+                memcpy(&result + 1, symbol.operator std::string().c_str(), symbol.size());
+            }
+
             return result;
-        }
-
-        void asset::set_decimals(uint8_t d) {
-            FC_ASSERT(d < 15);
-            auto a = (char *) &symbol;
-            a[0] = d;
-        }
-
-        asset_name_type asset::symbol_name() const {
-            auto a = (const char *) &symbol;
-            FC_ASSERT(a[7] == 0);
-            return &a[1];
         }
 
         int64_t asset::precision() const {
             static int64_t table[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000ll, 1000000000ll,
                                       10000000000ll, 100000000000ll, 1000000000000ll, 10000000000000ll,
                                       100000000000000ll};
-            uint8_t d = decimals();
-            return table[d];
+            return table[decimals];
         }
 
         string asset::to_string() const {
@@ -79,7 +66,7 @@ namespace steemit {
                 // leading 1.
                 result += "." + fc::to_string(prec + fract).erase(0, 1);
             }
-            return result + " " + symbol_name();
+            return result + " " + symbol;
         }
 
         asset asset::from_string(const string &from) {
@@ -89,8 +76,6 @@ namespace steemit {
                 auto dot_pos = s.find('.');
 
                 asset result;
-                result.symbol = uint64_t(3);
-                auto sy = (char *) &result.symbol;
 
                 if (space_pos == std::string::npos && dot_pos == std::string::npos &&
                     std::find_if(from.begin(), from.end(), [&](const std::string::value_type &c) -> bool {
@@ -102,7 +87,7 @@ namespace steemit {
 
                     auto intpart = s.substr(0, dot_pos);
                     auto fractpart = "1" + s.substr(dot_pos + 1, space_pos - dot_pos - 1);
-                    result.set_decimals(fractpart.size() - 1);
+                    result.decimals = static_cast<uint8_t>(fractpart.size() - 1);
 
                     result.amount = fc::to_int64(intpart);
                     result.amount.value *= result.precision();
@@ -111,14 +96,13 @@ namespace steemit {
                 } else {
                     auto intpart = s.substr(0, space_pos);
                     result.amount = fc::to_int64(intpart);
-                    result.set_decimals(0);
+                    result.decimals = 0;
                 }
-                auto symbol = s.substr(space_pos + 1);
-                size_t symbol_size = symbol.size();
 
-                if (symbol_size > 0) {
-                    FC_ASSERT(symbol_size <= 6);
-                    memcpy(sy + 1, symbol.c_str(), symbol_size);
+                auto symbol = s.substr(space_pos + 1);
+
+                if (symbol.size() > 0) {
+                    result.symbol = symbol;
                 }
 
                 return result;
@@ -173,12 +157,12 @@ namespace steemit {
         }
 
         asset operator*(const asset &a, const price &b) {
-            if (a.symbol_name() == b.base.symbol_name()) {
+            if (a.symbol == b.base.symbol) {
                 FC_ASSERT(b.base.amount.value > 0);
                 uint128_t result = (uint128_t(a.amount.value) * b.quote.amount.value) / b.base.amount.value;
                 FC_ASSERT(result.hi == 0);
                 return asset(result.to_uint64(), b.quote.symbol);
-            } else if (a.symbol_name() == b.quote.symbol_name()) {
+            } else if (a.symbol == b.quote.symbol) {
                 FC_ASSERT(b.quote.amount.value > 0);
                 uint128_t result = (uint128_t(a.amount.value) * b.base.amount.value) / b.quote.amount.value;
                 FC_ASSERT(result.hi == 0);
@@ -189,17 +173,9 @@ namespace steemit {
 
         price operator/(const asset &base, const asset &quote) {
             try {
-                FC_ASSERT(base.symbol_name() != quote.symbol_name());
+                FC_ASSERT(base.symbol != quote.symbol);
                 return price{base, quote};
             } FC_CAPTURE_AND_RETHROW((base)(quote))
-        }
-
-        price price::max(asset_symbol_type base, asset_symbol_type quote) {
-            return asset(share_type(STEEMIT_MAX_SHARE_SUPPLY), base) / asset(share_type(1), quote);
-        }
-
-        price price::min(asset_symbol_type base, asset_symbol_type quote) {
-            return asset(1, base) / asset(STEEMIT_MAX_SHARE_SUPPLY, quote);
         }
 
         price price::max(asset_name_type base, asset_name_type quote) {
@@ -218,7 +194,7 @@ namespace steemit {
             try {
                 FC_ASSERT(base.amount > share_type(0));
                 FC_ASSERT(quote.amount > share_type(0));
-                FC_ASSERT(base.symbol_name() != quote.symbol_name());
+                FC_ASSERT(base.symbol != quote.symbol);
             } FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
@@ -256,10 +232,10 @@ namespace steemit {
         bool price_feed::is_for(asset_name_type asset_name) const {
             try {
                 if (!settlement_price.is_null()) {
-                    return (settlement_price.base.symbol_name() == asset_name);
+                    return (settlement_price.base.symbol == asset_name);
                 }
                 if (!core_exchange_rate.is_null()) {
-                    return (core_exchange_rate.base.symbol_name() == asset_name);
+                    return (core_exchange_rate.base.symbol == asset_name);
                 }
                 // (null, null) is valid for any feed
                 return true;

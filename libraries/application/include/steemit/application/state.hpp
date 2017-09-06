@@ -77,12 +77,12 @@ namespace steemit {
 
             string url; /// /category/@rootauthor/root_permlink#author/permlink
             string root_title;
-            asset pending_payout_value = asset(0, SBD_SYMBOL); ///< sbd
-            asset total_pending_payout_value = asset(0, SBD_SYMBOL); ///< sbd including replies
+            asset pending_payout_value = asset(0, SBD_SYMBOL_NAME); ///< sbd
+            asset total_pending_payout_value = asset(0, SBD_SYMBOL_NAME); ///< sbd including replies
             vector<vote_state> active_votes;
             vector<string> replies; ///< author/slug mapping
             share_type author_reputation = 0;
-            asset promoted = asset(0, SBD_SYMBOL);
+            asset promoted = asset(0, SBD_SYMBOL_NAME);
             uint32_t body_length = 0;
             vector<account_name_type> reblogged_by;
             optional<account_name_type> first_reblogged_by;

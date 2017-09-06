@@ -51,20 +51,20 @@ namespace steemit {
              */
             uint32_t num_pow_witnesses = 0;
 
-            asset virtual_supply = asset(0, STEEM_SYMBOL);
-            asset current_supply = asset(0, STEEM_SYMBOL);
-            asset confidential_supply = asset(0, STEEM_SYMBOL); ///< total asset held in confidential balances
-            asset current_sbd_supply = asset(0, SBD_SYMBOL);
-            asset confidential_sbd_supply = asset(0, SBD_SYMBOL); ///< total asset held in confidential balances
-            asset total_vesting_fund_steem = asset(0, STEEM_SYMBOL);
+            asset virtual_supply = asset(0, STEEM_SYMBOL_NAME);
+            asset current_supply = asset(0, STEEM_SYMBOL_NAME);
+            asset confidential_supply = asset(0, STEEM_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset current_sbd_supply = asset(0, SBD_SYMBOL_NAME);
+            asset confidential_sbd_supply = asset(0, SBD_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset total_vesting_fund_steem = asset(0, STEEM_SYMBOL_NAME);
             asset total_vesting_shares = asset(0, VESTS_SYMBOL);
-            asset total_reward_fund_steem = asset(0, STEEM_SYMBOL);
+            asset total_reward_fund_steem = asset(0, STEEM_SYMBOL_NAME);
             fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
 
             price get_vesting_share_price() const {
                 if (total_vesting_fund_steem.amount == 0 ||
                     total_vesting_shares.amount == 0) {
-                    return price(asset(1000, STEEM_SYMBOL), asset(1000000, VESTS_SYMBOL));
+                    return price(asset(1000, STEEM_SYMBOL_NAME), asset(1000000, VESTS_SYMBOL));
                 }
 
                 return price(total_vesting_shares, total_vesting_fund_steem);

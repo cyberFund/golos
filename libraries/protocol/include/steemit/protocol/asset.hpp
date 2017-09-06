@@ -13,24 +13,21 @@ namespace steemit {
         struct asset {
             asset();
 
-            asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
+            asset(share_type a, asset_symbol_type name);
 
-            asset(share_type a, asset_name_type name);
+            asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
             share_type amount;
-            asset_symbol_type symbol;
+            asset_name_type symbol;
+            uint8_t decimals;
 
             double to_real() const {
                 return double(amount.value) / precision();
             }
 
-            uint8_t decimals() const;
-
-            asset_name_type symbol_name() const;
+            asset_symbol_type symbol_type_value() const;
 
             int64_t precision() const;
-
-            void set_decimals(uint8_t d);
 
             static asset from_string(const string &from);
 
@@ -94,16 +91,12 @@ namespace steemit {
         };
 
         struct price {
-            price(const asset &base = asset(0, STEEM_SYMBOL), const asset &quote = asset(0, STEEM_SYMBOL)) : base(base),
+            price(const asset &base = asset(0, STEEM_SYMBOL_NAME), const asset &quote = asset(0, STEEM_SYMBOL_NAME)) : base(base),
                                                                                                              quote(quote) {
             }
 
             asset base;
             asset quote;
-
-            static price max(asset_symbol_type base, asset_symbol_type quote);
-
-            static price min(asset_symbol_type base, asset_symbol_type quote);
 
             static price max(asset_name_type base, asset_name_type quote);
 
@@ -150,7 +143,7 @@ namespace steemit {
             static price call_price(const asset &debt, const asset &collateral, uint16_t collateral_ratio);
 
             /// The unit price for an asset type A is defined to be a price such that for any asset m, m*A=m
-            static price unit_price(asset_symbol_type a = STEEM_SYMBOL) {
+            static price unit_price(asset_name_type a = STEEM_SYMBOL_NAME) {
                 return price(asset(1, a), asset(1, a));
             }
         };
@@ -253,7 +246,7 @@ namespace fc {
     }
 }
 
-FC_REFLECT(steemit::protocol::asset, (amount)(symbol))
+FC_REFLECT(steemit::protocol::asset, (amount)(symbol)(decimals))
 FC_REFLECT(steemit::protocol::price, (base)(quote))
 
 FC_REFLECT(steemit::protocol::price_feed, (settlement_price)(maintenance_collateral_ratio)(maximum_short_squeeze_ratio)(core_exchange_rate))

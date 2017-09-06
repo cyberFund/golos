@@ -348,7 +348,7 @@ namespace steemit {
 
                 void operator()(const transfer_operation &op) const {
                     if (op.to == STEEMIT_NULL_ACCOUNT &&
-                        op.amount.symbol == SBD_SYMBOL) {
+                        op.amount.symbol == SBD_SYMBOL_NAME) {
                         vector<string> part;
                         part.reserve(4);
                         auto path = op.memo;

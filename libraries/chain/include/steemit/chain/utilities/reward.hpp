@@ -45,7 +45,7 @@ namespace steemit {
             uint128_t calculate_claims(const uint128_t &rshares, const reward_fund_object &rf);
 
             inline bool is_comment_payout_dust(const price &p, uint64_t steem_payout) {
-                return to_sbd(p, asset(steem_payout, STEEM_SYMBOL)) < STEEMIT_MIN_PAYOUT_SBD;
+                return to_sbd(p, asset(steem_payout, STEEM_SYMBOL_NAME)) < STEEMIT_MIN_PAYOUT_SBD;
             }
         }
     }

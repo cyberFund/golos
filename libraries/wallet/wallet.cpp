@@ -407,9 +407,9 @@ namespace steemit {
                 optional<asset_object> find_asset(asset_symbol_type asset_symbol) const {
                     // It's a symbol
                     optional<asset_object> rec = _remote_db->lookup_asset_symbols(
-                            {asset(0, asset_symbol).symbol_name()}).front();
+                            {asset(0, asset_symbol).symbol}).front();
                     if (rec) {
-                        if (rec->asset_name != asset(0, asset_symbol).symbol_name()) {
+                        if (rec->asset_name != asset(0, asset_symbol).symbol) {
                             return optional<asset_object>();
                         }
 
@@ -807,7 +807,7 @@ namespace steemit {
                         auto accounts = result.as<vector<account_api_obj>>();
                         asset total_steem;
                         asset total_vest(0, VESTS_SYMBOL);
-                        asset total_sbd(0, SBD_SYMBOL);
+                        asset total_sbd(0, SBD_SYMBOL_NAME);
                         for (const auto &a : accounts) {
                             total_steem += a.balance;
                             total_vest += a.vesting_shares;
@@ -861,7 +861,7 @@ namespace steemit {
                             ss << ' ' << setw(10) << o.real_price;
                             ss << ' ' << setw(10)
                                << fc::variant(asset(o.for_sale, o.sell_price.base.symbol)).as_string();
-                            ss << ' ' << setw(10) << (o.sell_price.base.symbol == STEEM_SYMBOL ? "SELL" : "BUY");
+                            ss << ' ' << setw(10) << (o.sell_price.base.symbol == STEEM_SYMBOL_NAME ? "SELL" : "BUY");
                             ss << "\n";
                         }
                         return ss.str();
@@ -1607,7 +1607,7 @@ namespace steemit {
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
                 op.fee = asset(my->_remote_db->get_chain_properties().account_creation_fee.amount *
-                               STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL);
+                               STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME);
 
                 signed_transaction tx;
                 tx.operations.push_back(op);
@@ -2094,7 +2094,7 @@ namespace steemit {
                                                           bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
-                fc::optional<asset_object> asset_obj = get_asset(amount.symbol_name());
+                fc::optional<asset_object> asset_obj = get_asset(amount.symbol);
                 FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", amount.symbol));
 
                 transfer_operation op;
@@ -2490,8 +2490,8 @@ namespace steemit {
 
             limit_order_create_operation op;
             op.owner = account.name;
-            op.amount_to_sell = get_asset(amount_to_sell.symbol_name()).amount(amount_to_sell.amount);
-            op.min_to_receive = get_asset(amount_to_receive.symbol_name()).amount(amount_to_receive.amount);
+            op.amount_to_sell = get_asset(amount_to_sell.symbol).amount(amount_to_sell.amount);
+            op.min_to_receive = get_asset(amount_to_receive.symbol).amount(amount_to_receive.amount);
             if (expiration) {
                 op.expiration = fc::time_point::now() + fc::seconds(expiration);
             }
@@ -2520,11 +2520,11 @@ namespace steemit {
                                                     asset amount_of_collateral, bool broadcast) {
             FC_ASSERT(!is_locked());
             auto seller = get_account(seller_name);
-            asset_object mia = get_asset(amount_to_borrow.symbol_name());
+            asset_object mia = get_asset(amount_to_borrow.symbol);
             FC_ASSERT(mia.is_market_issued());
 
             asset_object collateral = get_asset(
-                    asset(0, get_bitasset_data(mia.asset_name).options.short_backing_asset).symbol_name());
+                    asset(0, get_bitasset_data(mia.asset_name).options.short_backing_asset).symbol);
 
             call_order_update_operation op;
             op.funding_account = seller.name;
@@ -2540,7 +2540,7 @@ namespace steemit {
         }
 
         signed_transaction wallet_api::issue_asset(string to_account, asset amount, string memo, bool broadcast) {
-            auto asset_obj = get_asset(amount.symbol_name());
+            auto asset_obj = get_asset(amount.symbol);
 
             account_api_obj to = get_account(to_account);
             account_api_obj issuer = get_account(asset_obj.issuer);
@@ -2678,7 +2678,7 @@ namespace steemit {
                 optional<asset_object> asset_to_fund = my->find_asset(symbol);
                 if (!asset_to_fund)
                     FC_THROW("No asset with that symbol exists!");
-                asset_object core_asset = get_asset(asset(0, STEEM_SYMBOL).symbol_name());
+                asset_object core_asset = get_asset(STEEM_SYMBOL_NAME);
 
                 asset_fund_fee_pool_operation fund_op;
                 fund_op.from_account = from_account.name;

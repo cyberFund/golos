@@ -95,8 +95,8 @@ namespace steemit {
             }
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_14__410)) {
-                FC_ASSERT(o.props.account_creation_fee.symbol == STEEM_SYMBOL);
-            } else if (o.props.account_creation_fee.symbol != STEEM_SYMBOL) {
+                FC_ASSERT(o.props.account_creation_fee.symbol == STEEM_SYMBOL_NAME);
+            } else if (o.props.account_creation_fee.symbol != STEEM_SYMBOL_NAME) {
                 // after HF, above check can be moved to validate() if reindex doesn't show this warning
                 wlog("Wrong fee symbol in block ${b}", ("b", db.head_block_num() + 1));
             }
@@ -259,7 +259,7 @@ namespace steemit {
             const comment_object &comment = db.get_comment(o.author, o.permlink);
 
             if (o.amount) {
-                FC_ASSERT(db.get_balance(from_account, o.amount->symbol_name()) >= *o.amount,
+                FC_ASSERT(db.get_balance(from_account, o.amount->symbol) >= *o.amount,
                           "Account does not have sufficient funds for transfer.");
 
                 db.pay_fee(from_account, *o.amount);
@@ -574,7 +574,7 @@ namespace steemit {
 
                 asset steem_spent = o.steem_amount;
                 asset sbd_spent = o.sbd_amount;
-                if (o.fee.symbol == STEEM_SYMBOL) {
+                if (o.fee.symbol == STEEM_SYMBOL_NAME) {
                     steem_spent += o.fee;
                 } else {
                     sbd_spent += o.fee;
@@ -1889,7 +1889,7 @@ namespace steemit {
 
             const auto &wso = db.get_witness_schedule_object();
             const auto &gpo = db.get_dynamic_global_properties();
-            auto min_delegation = asset(wso.median_props.account_creation_fee.amount * 10, STEEM_SYMBOL) *
+            auto min_delegation = asset(wso.median_props.account_creation_fee.amount * 10, STEEM_SYMBOL_NAME) *
                                   gpo.get_vesting_share_price();
             auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
 

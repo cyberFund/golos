@@ -27,16 +27,12 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        bool inline is_asset_type(asset asset, asset_symbol_type symbol) {
-            return asset.symbol == symbol;
-        }
-
         void convert_evaluator::do_apply(const convert_operation &o) {
 
             const auto &owner = db.get_account(o.owner);
-            FC_ASSERT(db.get_balance(owner, o.amount.symbol_name()) >= o.amount,
+            FC_ASSERT(db.get_balance(owner, o.amount.symbol) >= o.amount,
                       "Account ${n} does not have sufficient balance for conversion. Balance: ${b}. Required: ${r}",
-                      ("n", o.owner)("b", db.get_balance(owner, o.amount.symbol_name()))("r", o.amount));
+                      ("n", o.owner)("b", db.get_balance(owner, o.amount.symbol))("r", o.amount));
 
             db.adjust_balance(owner, -o.amount);
 
@@ -65,8 +61,8 @@ namespace steemit {
                     FC_ASSERT(op.expiration >= d.head_block_time());
 
                     seller = d.find_account(op.owner);
-                    sell_asset = d.find_asset(op.amount_to_sell.symbol_name());
-                    receive_asset = d.find_asset(op.min_to_receive.symbol_name());
+                    sell_asset = d.find_asset(op.amount_to_sell.symbol);
+                    receive_asset = d.find_asset(op.min_to_receive.symbol);
 
                     if (!sell_asset->options.whitelist_markets.empty()) {
                         FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
@@ -88,7 +84,7 @@ namespace steemit {
                 try {
                     const auto &seller_stats = db.get_account_statistics(seller->name);
                     db.modify(seller_stats, [&](account_statistics_object &bal) {
-                        if (op.amount_to_sell.symbol == STEEM_SYMBOL) {
+                        if (op.amount_to_sell.symbol == STEEM_SYMBOL_NAME) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
@@ -108,10 +104,9 @@ namespace steemit {
                     FC_ASSERT(!op.fill_or_kill || filled);
                 } FC_CAPTURE_AND_RETHROW((op))
             } else {
-                FC_ASSERT((is_asset_type(op.amount_to_sell, STEEM_SYMBOL) &&
-                           is_asset_type(op.min_to_receive, SBD_SYMBOL)) ||
-                          (is_asset_type(op.amount_to_sell, SBD_SYMBOL) &&
-                           is_asset_type(op.min_to_receive, STEEM_SYMBOL)),
+                FC_ASSERT((op.amount_to_sell.symbol == STEEM_SYMBOL_NAME &&
+                           op.min_to_receive.symbol == SBD_SYMBOL_NAME) ||
+                          (op.amount_to_sell.symbol == SBD_SYMBOL_NAME && op.min_to_receive.symbol == STEEM_SYMBOL_NAME),
                           "Limit order must be for the STEEM:SBD market");
 
                 FC_ASSERT(op.expiration > db.head_block_time(),
@@ -119,7 +114,7 @@ namespace steemit {
 
                 const auto &owner = db.get_account(op.owner);
 
-                FC_ASSERT(db.get_balance(owner, op.amount_to_sell.symbol_name()) >= op.amount_to_sell,
+                FC_ASSERT(db.get_balance(owner, op.amount_to_sell.symbol) >= op.amount_to_sell,
                           "Account does not have sufficient funds for limit order.");
 
                 db.adjust_balance(owner, -op.amount_to_sell);
@@ -149,8 +144,8 @@ namespace steemit {
                     FC_ASSERT(op.expiration >= d.head_block_time());
 
                     seller = d.find_account(op.owner);
-                    sell_asset = d.find_asset(op.amount_to_sell.symbol_name());
-                    receive_asset = d.find_asset(op.exchange_rate.quote.symbol_name());
+                    sell_asset = d.find_asset(op.amount_to_sell.symbol);
+                    receive_asset = d.find_asset(op.exchange_rate.quote.symbol);
 
                     if (!sell_asset->options.whitelist_markets.empty()) {
                         FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
@@ -172,7 +167,7 @@ namespace steemit {
                 try {
                     const auto &seller_stats = db.get_account_statistics(seller->name);
                     get_database().modify(seller_stats, [&](account_statistics_object &bal) {
-                        if (op.amount_to_sell.symbol == STEEM_SYMBOL) {
+                        if (op.amount_to_sell.symbol == STEEM_SYMBOL_NAME) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
@@ -192,10 +187,10 @@ namespace steemit {
                     FC_ASSERT(!op.fill_or_kill || filled);
                 } FC_CAPTURE_AND_RETHROW((op))
             } else {
-                FC_ASSERT((is_asset_type(op.amount_to_sell, STEEM_SYMBOL) &&
-                           is_asset_type(op.exchange_rate.quote, SBD_SYMBOL)) ||
-                          (is_asset_type(op.amount_to_sell, SBD_SYMBOL) &&
-                           is_asset_type(op.exchange_rate.quote, STEEM_SYMBOL)),
+                FC_ASSERT((op.amount_to_sell.symbol == STEEM_SYMBOL_NAME &&
+                           op.exchange_rate.quote.symbol == SBD_SYMBOL_NAME) ||
+                          (op.amount_to_sell.symbol == SBD_SYMBOL_NAME &&
+                           op.exchange_rate.quote.symbol == STEEM_SYMBOL_NAME),
                           "Limit order must be for the STEEM:SBD market");
 
                 FC_ASSERT(op.expiration > db.head_block_time(),
@@ -203,7 +198,7 @@ namespace steemit {
 
                 const auto &owner = db.get_account(op.owner);
 
-                FC_ASSERT(db.get_balance(owner, op.amount_to_sell.symbol_name()) >= op.amount_to_sell,
+                FC_ASSERT(db.get_balance(owner, op.amount_to_sell.symbol) >= op.amount_to_sell,
                           "Account does not have sufficient funds for limit order.");
 
                 db.adjust_balance(owner, -op.amount_to_sell);
@@ -237,8 +232,8 @@ namespace steemit {
                 try {
                     database &d = get_database();
 
-                    auto base_asset = _order->sell_price.base.symbol_name();
-                    auto quote_asset = _order->sell_price.quote.symbol_name();
+                    auto base_asset = _order->sell_price.base.symbol;
+                    auto quote_asset = _order->sell_price.quote.symbol;
 
                     d.cancel_order(*_order, false /* don't create a virtual op*/);
 
@@ -255,7 +250,7 @@ namespace steemit {
         void call_order_update_evaluator::do_apply(const call_order_update_operation &op) {
             try {
                 _paying_account = db.find_account(op.funding_account);
-                _debt_asset = db.find_asset(op.delta_debt.symbol_name());
+                _debt_asset = db.find_asset(op.delta_debt.symbol);
 
                 FC_ASSERT(_debt_asset->is_market_issued(),
                           "Unable to cover ${sym} as it is not a collateralized asset.",
@@ -267,7 +262,7 @@ namespace steemit {
                 /// all existing margin positions should have been closed va database::globally_settle_asset
                 FC_ASSERT(!_bitasset_data->has_settlement());
 
-                FC_ASSERT(op.delta_collateral.symbol_name() == _bitasset_data->options.short_backing_asset);
+                FC_ASSERT(op.delta_collateral.symbol == _bitasset_data->options.short_backing_asset);
 
                 if (_bitasset_data->is_prediction_market) {
                     FC_ASSERT(op.delta_collateral.amount == op.delta_debt.amount);
@@ -286,7 +281,7 @@ namespace steemit {
                             db.get_balance(*_paying_account, db.get_asset(_bitasset_data->options.short_backing_asset)) >=
                             op.delta_collateral, "Cannot increase collateral by ${c} when payer only has ${b}",
                             ("c", op.delta_collateral.amount)("b", db.get_balance(*_paying_account, db.get_asset(
-                                    op.delta_collateral.symbol_name())).amount));
+                                    op.delta_collateral.symbol)).amount));
                 }
             } FC_CAPTURE_AND_RETHROW((op))
 
@@ -308,7 +303,7 @@ namespace steemit {
                     d.adjust_balance(d.get_account(op.funding_account), -op.delta_collateral);
 
                     // Adjust the total core in orders accodingly
-                    if (op.delta_collateral.symbol == STEEM_SYMBOL) {
+                    if (op.delta_collateral.symbol == STEEM_SYMBOL_NAME) {
                         d.modify(d.get_account_statistics(_paying_account->name),
                                  [&](account_statistics_object &stats) {
                                      stats.total_core_in_orders += op.delta_collateral.amount;
@@ -318,7 +313,7 @@ namespace steemit {
 
 
                 auto &call_idx = d.get_index<call_order_index>().indices().get<by_account>();
-                auto itr = call_idx.find(boost::make_tuple(op.funding_account, op.delta_debt.symbol_name()));
+                auto itr = call_idx.find(boost::make_tuple(op.funding_account, op.delta_debt.symbol));
                 const call_order_object *call_obj = nullptr;
 
                 if (itr == call_idx.end()) {
@@ -390,7 +385,7 @@ namespace steemit {
             const account_object &paying_account = db.get_account(o.bidder);
 
             try {
-                const asset_object &debt_asset = db.get_asset(o.debt_covered.symbol_name());
+                const asset_object &debt_asset = db.get_asset(o.debt_covered.symbol);
                 FC_ASSERT(debt_asset.is_market_issued(),
                           "Unable to cover ${sym} as it is not a collateralized asset.",
                           ("sym", debt_asset.asset_name));
@@ -399,7 +394,7 @@ namespace steemit {
 
                 FC_ASSERT(bitasset_data.has_settlement());
 
-                FC_ASSERT(o.additional_collateral.symbol_name() == bitasset_data.options.short_backing_asset);
+                FC_ASSERT(o.additional_collateral.symbol == bitasset_data.options.short_backing_asset);
 
                 FC_ASSERT(!bitasset_data.is_prediction_market, "Cannot bid on a prediction market!");
 
@@ -408,11 +403,11 @@ namespace steemit {
                             bitasset_data.options.short_backing_asset).asset_name) >= o.additional_collateral,
                               "Cannot bid ${c} collateral when payer only has ${b}",
                               ("c", o.additional_collateral.amount)("b", db.get_balance(paying_account, db.get_asset(
-                                      o.additional_collateral.symbol_name())).amount));
+                                      o.additional_collateral.symbol)).amount));
                 }
 
                 const auto &index = db.get_index<collateral_bid_index>().indices().get<by_account>();
-                const auto &bid = index.find(boost::make_tuple(o.debt_covered.symbol_name(), o.bidder));
+                const auto &bid = index.find(boost::make_tuple(o.debt_covered.symbol, o.bidder));
                 if (bid != index.end()) {
                     _bid = &(*bid);
                 } else

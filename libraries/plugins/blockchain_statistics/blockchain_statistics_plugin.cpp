@@ -56,7 +56,7 @@ namespace steemit {
                     _db.modify(_bucket, [&](bucket_object &b) {
                         b.transfers++;
 
-                        if (op.amount.symbol == STEEM_SYMBOL) {
+                        if (op.amount.symbol == STEEM_SYMBOL_NAME) {
                             b.steem_transferred += op.amount.amount;
                         } else {
                             b.sbd_transferred += op.amount.amount;
@@ -180,9 +180,9 @@ namespace steemit {
 
                     _db.modify(_bucket, [&](bucket_object &b) {
                         b.vesting_withdrawals_processed++;
-                        if (op.deposited.symbol == STEEM_SYMBOL) {
+                        if (op.deposited.symbol == STEEM_SYMBOL_NAME) {
                             b.vests_withdrawn += op.withdrawn.amount;
-                        } else {
+                        } else if (op.deposited.symbol == SBD_SYMBOL_NAME) {
                             b.vests_transferred += op.withdrawn.amount;
                         }
 

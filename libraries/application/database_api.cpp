@@ -699,7 +699,7 @@ namespace steemit {
                 // if the caller passes in an empty list of assets, return balances for all assets the account owns
                 auto range = _db.get_index<account_balance_index>().indices().get<by_account_asset>().equal_range(boost::make_tuple(acnt));
                 for (const account_balance_object &balance : boost::make_iterator_range(range.first, range.second)) {
-                    result.push_back(asset(balance.get_balance()));
+                    result.push_back(balance.get_balance());
                 }
             } else {
                 result.reserve(assets.size());
@@ -1046,7 +1046,7 @@ namespace steemit {
             const auto &cidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
             auto itr = cidx.lower_bound(d.id);
             if (itr != cidx.end() && itr->comment == d.id) {
-                d.promoted = asset(itr->promoted_balance, SBD_SYMBOL);
+                d.promoted = asset(itr->promoted_balance, SBD_SYMBOL_NAME);
             }
 
             const auto &props = my->_db.get_dynamic_global_properties();
@@ -1341,7 +1341,7 @@ namespace steemit {
 
                 try {
                     discussion insert_discussion = get_discussion(tidx_itr->comment, query.truncate_body);
-                    insert_discussion.promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL);
+                    insert_discussion.promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL_NAME);
 
                     if (filter(insert_discussion)) {
                         ++filter_count;

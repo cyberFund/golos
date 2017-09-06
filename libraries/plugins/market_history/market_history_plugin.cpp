@@ -38,8 +38,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.current_pays.symbol_name();
-                        hkey.quote = o.open_pays.symbol_name();
+                        hkey.base = o.current_pays.symbol;
+                        hkey.quote = o.open_pays.symbol;
                         if (hkey.base > hkey.quote) {
                             std::swap(hkey.base, hkey.quote);
                         }
@@ -79,8 +79,8 @@ namespace steemit {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.current_pays.symbol_name();
-                            key.quote = o.open_pays.symbol_name();
+                            key.base = o.current_pays.symbol;
+                            key.quote = o.open_pays.symbol;
 
 
                             /** for every matched order there are two fill order operations created, one for
@@ -161,8 +161,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.pays.symbol_name();
-                        hkey.quote = o.receives.symbol_name();
+                        hkey.base = o.pays.symbol;
+                        hkey.quote = o.receives.symbol;
                         if (hkey.base > hkey.quote)
                             std::swap(hkey.base, hkey.quote);
                         hkey.sequence = std::numeric_limits<int64_t>::min();
@@ -188,8 +188,8 @@ namespace steemit {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.pays.symbol_name();
-                            key.quote = o.receives.symbol_name();
+                            key.base = o.pays.symbol;
+                            key.quote = o.receives.symbol;
 
 
                             /** for every matched order there are two fill order operations created, one for
@@ -270,8 +270,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.pays.symbol_name();
-                        hkey.quote = o.receives.symbol_name();
+                        hkey.base = o.pays.symbol;
+                        hkey.quote = o.receives.symbol;
                         if (hkey.base > hkey.quote)
                             std::swap(hkey.base, hkey.quote);
                         hkey.sequence = std::numeric_limits<int64_t>::min();
@@ -297,8 +297,8 @@ namespace steemit {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.pays.symbol_name();
-                            key.quote = o.receives.symbol_name();
+                            key.base = o.pays.symbol;
+                            key.quote = o.receives.symbol;
 
 
                             /** for every matched order there are two fill order operations created, one for

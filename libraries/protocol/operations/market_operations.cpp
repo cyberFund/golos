@@ -17,10 +17,6 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        bool inline is_asset_type(asset asset, asset_symbol_type symbol) {
-            return asset.symbol == symbol;
-        }
-
         void limit_order_create_operation::validate() const {
             validate_account_name(owner);
             (amount_to_sell / min_to_receive).validate();
@@ -42,7 +38,7 @@ namespace steemit {
             validate_account_name(owner);
             /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
             /// market fluctuations through converting large quantities without moving the price.
-            FC_ASSERT(is_asset_type(amount, SBD_SYMBOL), "Can only convert SBD to STEEM");
+            FC_ASSERT(amount.symbol == SBD_SYMBOL_NAME, "Can only convert SBD to STEEM");
             FC_ASSERT(amount.amount > 0, "Must convert some SBD");
         }
 

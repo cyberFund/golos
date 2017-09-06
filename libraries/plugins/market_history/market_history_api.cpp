@@ -33,7 +33,7 @@ namespace steemit {
                     market_trade operator()(const fill_order_operation &o) const {
                         market_trade trade;
 
-                        if (assets[0]->asset_name == o.open_pays.symbol_name()) {
+                        if (assets[0]->asset_name == o.open_pays.symbol) {
                             trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
                             trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
                         } else {
@@ -47,7 +47,7 @@ namespace steemit {
                     market_trade operator()(const fill_call_order_operation &o) const {
                         market_trade trade;
 
-                        if (assets[0]->asset_name == o.receives.symbol_name()) {
+                        if (assets[0]->asset_name == o.receives.symbol) {
                             trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
                             trade.value = price_to_real(o.receives.amount, assets[0]->precision);
                         } else {
@@ -61,7 +61,7 @@ namespace steemit {
                     market_trade operator()(const fill_settlement_order_operation &o) const {
                         market_trade trade;
 
-                        if (assets[0]->asset_name == o.receives.symbol_name()) {
+                        if (assets[0]->asset_name == o.receives.symbol) {
                             trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
                             trade.value = price_to_real(o.receives.amount, assets[0]->precision);
                         } else {
@@ -136,7 +136,7 @@ namespace steemit {
 
                 boost::signals2::scoped_connection _block_applied_connection;
 
-                map<pair<asset_symbol_type, asset_symbol_type>,
+                map<pair<asset_name_type, asset_name_type>,
                         std::function<void(const variant &)>> _market_subscriptions;
 
                 steemit::application::application &app;
@@ -311,7 +311,7 @@ namespace steemit {
                 };
 
                 std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
-                    if (p.base.symbol_name() == base_id) {
+                    if (p.base.symbol == base_id) {
                         return asset_to_real(p.base, assets[0]->precision) /
                                asset_to_real(p.quote, assets[1]->precision);
                     }
@@ -321,7 +321,7 @@ namespace steemit {
                 };
 
                 for (const auto &o : orders) {
-                    if (o.sell_price.base.symbol_name() == base_id) {
+                    if (o.sell_price.base.symbol == base_id) {
                         order ord;
                         ord.price = price_to_real(o.sell_price);
                         ord.quote = asset_to_real(share_type(
@@ -472,8 +472,8 @@ namespace steemit {
 
                 vector<limit_order_object> result;
 
-                asset_symbol_type a_symbol = protocol::asset::from_string(a).symbol;
-                asset_symbol_type b_symbol = protocol::asset::from_string(b).symbol;
+                asset_name_type a_symbol = protocol::asset::from_string(a).symbol;
+                asset_name_type b_symbol = protocol::asset::from_string(b).symbol;
 
                 uint32_t count = 0;
                 auto limit_itr = limit_price_idx.lower_bound(price::max(a_symbol, b_symbol));
@@ -603,7 +603,7 @@ namespace steemit {
                     result.emplace_back(*itr);
 
                     auto assets = lookup_asset_symbols(
-                            {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
+                            {itr->sell_price.base.symbol, itr->sell_price.quote.symbol});
                     FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
                     FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
 
@@ -612,7 +612,7 @@ namespace steemit {
                         return double(a.value) / std::pow(10, p);
                     };
 
-                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
+                    if (itr->sell_price.base.symbol == STEEM_SYMBOL_NAME) {
                         result.back().real_price =
                                 price_to_real((~result.back().sell_price).base.amount, assets[0]->precision) /
                                 price_to_real((~result.back().sell_price).quote.amount, assets[1]->precision);

@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
     BOOST_AUTO_TEST_CASE(asset_test) {
         try {
             BOOST_CHECK_EQUAL(asset().decimals(), 3);
-            BOOST_CHECK_EQUAL(asset().symbol_name().operator std::string(), "TESTS");
+            BOOST_CHECK_EQUAL(asset().symbol.operator std::string(), "TESTS");
             BOOST_CHECK_EQUAL(asset().to_string(), "0.000 TESTS");
 
             BOOST_TEST_MESSAGE("Asset Test");
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
             BOOST_CHECK(std::abs(steem.to_real() - 123.456) < 0.0005);
             BOOST_CHECK_EQUAL(steem.amount.value, 123456);
             BOOST_CHECK_EQUAL(steem.decimals(), 3);
-            BOOST_CHECK_EQUAL(steem.symbol_name().operator std::string(), "TESTS");
+            BOOST_CHECK_EQUAL(steem.symbol.operator std::string(), "TESTS");
             BOOST_CHECK_EQUAL(steem.to_string(), "123.456 TESTS");
             BOOST_CHECK_EQUAL(steem.symbol, STEEM_SYMBOL);
             BOOST_CHECK_EQUAL(asset(50, STEEM_SYMBOL).to_string(), "0.050 TESTS");
@@ -113,11 +113,11 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
             BOOST_CHECK(std::abs(sbd.to_real() - 654.321) < 0.0005);
             BOOST_CHECK_EQUAL(sbd.amount.value, 654321);
             BOOST_CHECK_EQUAL(sbd.decimals(), 3);
-            BOOST_CHECK_EQUAL(sbd.symbol_name().operator std::string(), "TBD");
+            BOOST_CHECK_EQUAL(sbd.symbol.operator std::string(), "TBD");
             BOOST_CHECK_EQUAL(sbd.to_string(), "654.321 TBD");
-            BOOST_CHECK_EQUAL(sbd.symbol, SBD_SYMBOL);
-            BOOST_CHECK_EQUAL(asset(50, SBD_SYMBOL).to_string(), "0.050 TBD");
-            BOOST_CHECK_EQUAL(asset(50000, SBD_SYMBOL).to_string(), "50.000 TBD");
+            BOOST_CHECK_EQUAL(sbd.symbol, SBD_SYMBOL_NAME);
+            BOOST_CHECK_EQUAL(asset(50, SBD_SYMBOL_NAME).to_string(), "0.050 TBD");
+            BOOST_CHECK_EQUAL(asset(50000, SBD_SYMBOL_NAME).to_string(), "50.000 TBD");
 
             BOOST_CHECK_THROW(steem.set_decimals(100), fc::exception);
             char *steem_sy = (char *)&steem.symbol;
@@ -127,7 +127,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
             steem_sy[7] = 'A';
 
             auto check_sym = [](const asset &a) -> std::string {
-                auto symbol = a.symbol_name();
+                auto symbol = a.symbol;
                 wlog("symbol_name is ${s}", ("s", symbol));
                 return symbol;
             };
@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
             BOOST_CHECK_THROW(asset::from_string("1 .333 TESTS"), fc::exception);
             asset unusual = asset::from_string("1. 333 X"); // Passes because symbol '333 X' is short enough
             FC_ASSERT(unusual.decimals() == 0);
-            FC_ASSERT(unusual.symbol_name() == "333 X");
+            FC_ASSERT(unusual.symbol == "333 X");
             BOOST_CHECK_THROW(asset::from_string("1 .333 X"), fc::exception);
             BOOST_CHECK_THROW(asset::from_string("1 .333"), fc::exception);
             BOOST_CHECK_THROW(asset::from_string("1 1.1"), fc::exception);

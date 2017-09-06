@@ -129,7 +129,7 @@ namespace steemit {
 
             /// Convert an asset to a textual representation, i.e. "123.45"
             string amount_to_string(const protocol::asset &amount) const {
-                FC_ASSERT(amount.symbol == id);
+                FC_ASSERT(amount.symbol == asset_name);
                 return amount_to_string(amount.amount);
             }
 
@@ -140,7 +140,7 @@ namespace steemit {
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
             string amount_to_pretty_string(const protocol::asset &amount) const {
-                FC_ASSERT(amount.symbol_name() == asset_name);
+                FC_ASSERT(amount.symbol == asset_name);
                 return amount_to_pretty_string(amount.amount);
             }
 

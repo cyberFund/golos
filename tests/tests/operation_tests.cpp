@@ -4160,8 +4160,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
             BOOST_TEST_MESSAGE("--- failure when steem symbol != STEEM");
-            op.sbd_amount.symbol = SBD_SYMBOL;
-            op.steem_amount.symbol = SBD_SYMBOL;
+            op.sbd_amount.symbol = SBD_SYMBOL_NAME;
+            op.steem_amount.symbol = SBD_SYMBOL_NAME;
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
             BOOST_TEST_MESSAGE("--- failure when fee symbol != SBD and fee symbol != STEEM");
@@ -4983,7 +4983,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
 
             BOOST_TEST_MESSAGE("--- failure when steem is not steem symbol");
-            op.sbd_amount.symbol = SBD_SYMBOL;
+            op.sbd_amount.symbol = SBD_SYMBOL_NAME;
             op.steem_amount = ASSET("1.000 TBD");
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 

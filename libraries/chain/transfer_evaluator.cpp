@@ -13,7 +13,7 @@ namespace steemit {
             const auto &from_account = db.get_account(o.from);
             const auto &to_account = db.get_account(o.to);
 
-            const asset_object &asset_type = db.get_asset(o.amount.symbol_name());
+            const asset_object &asset_type = db.get_asset(o.amount.symbol);
 
             STEEMIT_ASSERT(
                     db.is_authorized_asset(from_account, asset_type),
@@ -47,7 +47,7 @@ namespace steemit {
                 });
             }
 
-            FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol_name()) >=
+            FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol) >=
                       o.amount, "Account does not have sufficient funds for transfer.");
 
             this->db.adjust_balance(from_account, -o.amount);
@@ -68,7 +68,7 @@ namespace steemit {
         void transfer_to_savings_evaluator::do_apply(const transfer_to_savings_operation &op) {
             const auto &from = this->db.get_account(op.from);
             const auto &to = this->db.get_account(op.to);
-            FC_ASSERT(this->db.get_balance(from, op.amount.symbol_name()) >=
+            FC_ASSERT(this->db.get_balance(from, op.amount.symbol) >=
                       op.amount, "Account does not have sufficient funds to transfer to savings.");
 
             this->db.adjust_balance(from, -op.amount);
@@ -82,7 +82,7 @@ namespace steemit {
             FC_ASSERT(from.savings_withdraw_requests <
                       STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests.");
 
-            FC_ASSERT(this->db.get_savings_balance(from, op.amount.symbol_name()) >=
+            FC_ASSERT(this->db.get_savings_balance(from, op.amount.symbol) >=
                       op.amount);
             this->db.adjust_savings_balance(from, -op.amount);
             this->db.create<savings_withdraw_object>([&](savings_withdraw_object &s) {
@@ -115,7 +115,7 @@ namespace steemit {
 
         void override_transfer_evaluator::do_apply(const protocol::override_transfer_operation &o) {
             try {
-                const asset_object &asset_type = db.get_asset(o.amount.symbol_name());
+                const asset_object &asset_type = db.get_asset(o.amount.symbol);
                 STEEMIT_ASSERT(
                         asset_type.can_override(),
                         override_transfer_not_permitted,

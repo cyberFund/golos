@@ -59,7 +59,7 @@ namespace steemit {
                 return amount_to_sell / min_to_receive;
             }
 
-            pair<asset_symbol_type, asset_symbol_type> get_market() const {
+            pair<asset_name_type, asset_name_type> get_market() const {
                 return amount_to_sell.symbol < min_to_receive.symbol ? std::make_pair(amount_to_sell.symbol,
                                                                                       min_to_receive.symbol)
                                                                      : std::make_pair(min_to_receive.symbol,
@@ -92,8 +92,8 @@ namespace steemit {
 
             pair<asset_name_type, asset_name_type> get_market() const {
                 return exchange_rate.base.symbol < exchange_rate.quote.symbol ? std::make_pair(
-                        exchange_rate.base.symbol_name(), exchange_rate.quote.symbol_name()) : std::make_pair(
-                        exchange_rate.quote.symbol_name(), exchange_rate.base.symbol_name());
+                        exchange_rate.base.symbol, exchange_rate.quote.symbol) : std::make_pair(
+                        exchange_rate.quote.symbol, exchange_rate.base.symbol);
             }
         };
 

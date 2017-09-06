@@ -91,7 +91,7 @@ namespace steemit {
                     a.asset_name = op.asset_name;
                     a.precision = op.precision;
                     a.options = op.common_options;
-                    if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL) {
+                    if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL_NAME) {
                         a.options.core_exchange_rate.quote.symbol = asset(0, op.asset_name).symbol;
                     } else {
                         a.options.core_exchange_rate.base.symbol = asset(0, op.asset_name).symbol;
@@ -105,7 +105,7 @@ namespace steemit {
 
         void asset_issue_evaluator::do_apply(const asset_issue_operation &o) {
             try {
-                const asset_object &a = db.get_asset(o.asset_to_issue.symbol_name());
+                const asset_object &a = db.get_asset(o.asset_to_issue.symbol);
                 FC_ASSERT(o.issuer == a.issuer);
                 FC_ASSERT(!a.is_market_issued(), "Cannot manually issue a market-issued asset.");
 
@@ -127,7 +127,7 @@ namespace steemit {
 
         void asset_reserve_evaluator::do_apply(const asset_reserve_operation &o) {
             try {
-                const asset_object &a = db.get_asset(o.amount_to_reserve.symbol_name());
+                const asset_object &a = db.get_asset(o.amount_to_reserve.symbol);
                 STEEMIT_ASSERT(!a.is_market_issued(), asset_reserve_invalid_on_mia,
                                "Cannot reserve ${sym} because it is a market-issued asset", ("sym", a.asset_name));
 
@@ -353,7 +353,7 @@ namespace steemit {
 
         void asset_settle_evaluator::do_apply(const asset_settle_evaluator::operation_type &op) {
             try {
-                asset_to_settle = db.find_asset(op.amount.symbol_name());
+                asset_to_settle = db.find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 const auto &bitasset = db.get_asset_bitasset_data(asset_to_settle->asset_name);
                 FC_ASSERT(asset_to_settle->precision == op.amount.precision(), "Settlement asset precision differs");
@@ -399,7 +399,7 @@ namespace steemit {
 
         void asset_force_settle_evaluator::do_apply(const asset_force_settle_evaluator::operation_type &op) {
             try {
-                asset_to_settle = db.find_asset(op.amount.symbol_name());
+                asset_to_settle = db.find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());
                 const auto &bitasset = db.get_asset_bitasset_data(asset_to_settle->asset_name);
                 FC_ASSERT(asset_to_settle->can_force_settle() || bitasset.has_settlement());
@@ -453,9 +453,9 @@ namespace steemit {
                     FC_ASSERT(!bitasset.has_settlement(), "No further feeds may be published after a settlement event");
                 }
 
-                FC_ASSERT(o.feed.settlement_price.quote.symbol_name() == bitasset.options.short_backing_asset);
+                FC_ASSERT(o.feed.settlement_price.quote.symbol == bitasset.options.short_backing_asset);
                 if (!o.feed.core_exchange_rate.is_null()) {
-                    FC_ASSERT(o.feed.core_exchange_rate.quote.symbol_name() == STEEM_SYMBOL_NAME);
+                    FC_ASSERT(o.feed.core_exchange_rate.quote.symbol == STEEM_SYMBOL_NAME);
                 }
 
 
@@ -506,12 +506,12 @@ namespace steemit {
 
         void asset_claim_fees_evaluator::do_apply(const asset_claim_fees_operation &o) {
             try {
-                FC_ASSERT(db.get_asset(o.amount_to_claim.symbol_name()).issuer == o.issuer,
+                FC_ASSERT(db.get_asset(o.amount_to_claim.symbol).issuer == o.issuer,
                           "Asset fees may only be claimed by the issuer");
             } FC_CAPTURE_AND_RETHROW((o))
 
             try {
-                const asset_object &a = db.get_asset(o.amount_to_claim.symbol_name());
+                const asset_object &a = db.get_asset(o.amount_to_claim.symbol);
                 const asset_dynamic_data_object &addo = db.get_asset_dynamic_data(a.asset_name);
                 FC_ASSERT(o.amount_to_claim.amount <= addo.accumulated_fees,
                           "Attempt to claim more fees than have accumulated", ("addo", addo));

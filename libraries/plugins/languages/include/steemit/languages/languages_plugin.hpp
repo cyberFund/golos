@@ -367,7 +367,7 @@ namespace steemit {
 
             language_name_type language;
             fc::uint128_t total_children_rshares2;
-            asset total_payout = asset(0, SBD_SYMBOL);
+            asset total_payout = asset(0, SBD_SYMBOL_NAME);
             int32_t net_votes = 0;
             uint32_t top_posts = 0;
             uint32_t comments = 0;
@@ -472,7 +472,7 @@ namespace steemit {
             id_type id;
             account_object::id_type author;
             language_name_type language;
-            asset total_rewards = asset(0, SBD_SYMBOL);
+            asset total_rewards = asset(0, SBD_SYMBOL_NAME);
             uint32_t total_posts = 0;
         };
 

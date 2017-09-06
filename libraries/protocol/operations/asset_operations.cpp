@@ -107,7 +107,7 @@ namespace steemit {
         void asset_issue_operation::validate() const {
             FC_ASSERT(asset_to_issue.amount.value <= STEEMIT_MAX_SHARE_SUPPLY);
             FC_ASSERT(asset_to_issue.amount.value > 0);
-            FC_ASSERT(asset_to_issue.symbol != STEEM_SYMBOL);
+            FC_ASSERT(asset_to_issue.symbol != STEEM_SYMBOL_NAME);
         }
 
         void asset_fund_fee_pool_operation::validate() const {
@@ -130,7 +130,7 @@ namespace steemit {
         }
 
         void asset_global_settle_operation::validate() const {
-            FC_ASSERT(asset_to_settle == asset(0, settle_price.base.symbol).symbol_name());
+            FC_ASSERT(asset_to_settle == asset(0, settle_price.base.symbol).symbol);
         }
 
         void bitasset_options::validate() const {
@@ -153,8 +153,8 @@ namespace steemit {
             FC_ASSERT((flags & (witness_fed_asset | committee_fed_asset)) !=
                       (witness_fed_asset | committee_fed_asset));
             core_exchange_rate.validate();
-            FC_ASSERT(core_exchange_rate.base.symbol == STEEM_SYMBOL ||
-                      core_exchange_rate.quote.symbol == STEEM_SYMBOL);
+            FC_ASSERT(core_exchange_rate.base.symbol == STEEM_SYMBOL_NAME ||
+                      core_exchange_rate.quote.symbol == STEEM_SYMBOL_NAME);
 
             if (!whitelist_authorities.empty() ||
                 !blacklist_authorities.empty()) {

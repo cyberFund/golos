@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
 
             auto _issue_uia = [&](const account_object &recipient, asset amount) {
                 asset_issue_operation op;
-                op.issuer = db.get_asset(amount.symbol_name()).issuer;
+                op.issuer = db.get_asset(amount.symbol).issuer;
                 op.asset_to_issue = amount;
                 op.issue_to_account = recipient.name;
                 transaction tx;
