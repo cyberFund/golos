@@ -46,7 +46,7 @@ namespace steemit {
             }
 
             asset operator-() const {
-                return asset(-amount, symbol);
+                return {-amount, symbol};
             }
 
             friend bool operator==(const asset &a, const asset &b) {
@@ -76,12 +76,12 @@ namespace steemit {
 
             friend asset operator-(const asset &a, const asset &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return asset(a.amount - b.amount, a.symbol);
+                return {a.amount - b.amount, a.symbol};
             }
 
             friend asset operator+(const asset &a, const asset &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return asset(a.amount + b.amount, a.symbol);
+                return {a.amount + b.amount, a.symbol};
             }
 
             static share_type scaled_precision(uint8_t precision) {

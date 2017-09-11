@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <map>
 
 #include <fc/io/json.hpp>
 #include <fc/io/stdio.hpp>
@@ -23,6 +24,10 @@
 #include <fc/log/file_appender.hpp>
 #include <fc/log/logger_config.hpp>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/regex.hpp>
+#include <fc/variant.hpp>
+
 #ifdef WIN32
 # include <signal.h>
 #else
@@ -37,6 +42,22 @@ using namespace steemit::application;
 using namespace steemit::chain;
 using namespace steemit::wallet;
 using namespace std;
+
+void daemon_mode();
+
+void nom_daemon_mode (
+    const boost::program_options::variables_map & options,
+    const std::vector < std::string > & commands,
+    const bool & interactive,
+    std::shared_ptr<fc::rpc::cli> wallet_cli,
+    const fc::api<wallet_api> & wapi
+);
+
+void parse_commands (
+    const boost::program_options::variables_map & options,
+    std::vector < std::string > & commands,
+    bool & interactive
+);
 
 int main(int argc, char **argv) {
     try {
@@ -55,9 +76,14 @@ int main(int argc, char **argv) {
                 ("daemon,d", "Run the wallet in daemon mode")
                 ("rpc-http-allowip", boost::program_options::value<vector<string>>()->multitoken(), "Allows only specified IPs to connect to the HTTP endpoint")
                 ("wallet-file,w", boost::program_options::value<string>()->implicit_value("wallet.json"), "wallet to load")
-                ("chain-id", boost::program_options::value<string>(), "chain ID to connect to");
+                ("chain-id", boost::program_options::value<string>(), "chain ID to connect to")
+                ("commands,c", boost::program_options::value<string>(), "Enable non-interactive mode")
+                ;
 
         vector<string> allowed_ips;
+
+        std::vector < std::string > commands;                
+        bool interactive = true;
 
         boost::program_options::variables_map options;
 
@@ -67,6 +93,9 @@ int main(int argc, char **argv) {
             std::cout << opts << "\n";
             return 0;
         }
+
+        parse_commands(options, commands, interactive);
+
         if (options.count("rpc-http-allowip") &&
             options.count("rpc-http-endpoint")) {
             allowed_ips = options["rpc-http-allowip"].as<vector<string>>();
@@ -125,6 +154,7 @@ int main(int argc, char **argv) {
             wdata.ws_password = options.at("server-rpc-password").as<std::string>();
         }
 
+
         fc::http::websocket_client client(options["cert-authority"].as<std::string>());
         idump((wdata.ws_server));
         auto con = client.connect(wdata.ws_server);
@@ -153,8 +183,7 @@ int main(int argc, char **argv) {
         (void)(closed_connection);
 
         if (wapiptr->is_new()) {
-            std::cout
-                    << "Please use the set_password method to initialize a new wallet before continuing\n";
+            std::cout << "Please use the set_password method to initialize a new wallet before continuing\n";
             wallet_cli->set_prompt("new >>> ");
         } else {
             wallet_cli->set_prompt("locked >>> ");
@@ -224,19 +253,10 @@ int main(int argc, char **argv) {
         }
 
         if (!options.count("daemon")) {
-            wallet_cli->register_api(wapi);
-            wallet_cli->start();
-            wallet_cli->wait();
+            nom_daemon_mode ( options, commands, interactive, wallet_cli, wapi );
         } else {
-            fc::promise<int>::ptr exit_promise = new fc::promise<int>("UNIX Signal Handler");
-            fc::set_signal_handler([&exit_promise](int signal) {
-                exit_promise->set_value(signal);
-            }, SIGINT);
-
-            ilog("Entering Daemon Mode, ^C to exit");
-            exit_promise->wait();
+            daemon_mode();
         }
-
         wapi->save_wallet_file(wallet_file.generic_string());
         locked_connection.disconnect();
         closed_connection.disconnect();
@@ -246,4 +266,71 @@ int main(int argc, char **argv) {
         return -1;
     }
     return 0;
+}
+
+void daemon_mode() {
+    fc::promise<int>::ptr exit_promise = new fc::promise<int>("UNIX Signal Handler");
+    fc::set_signal_handler([&exit_promise](int signal) {
+        exit_promise->set_value(signal);
+    }, SIGINT);
+
+    ilog("Entering Daemon Mode, ^C to exit");
+    exit_promise->wait();
+}
+
+void nom_daemon_mode (
+    const boost::program_options::variables_map & options,
+    const std::vector < std::string > & commands,
+    const bool & interactive,
+    std::shared_ptr<fc::rpc::cli> wallet_cli,
+    const fc::api<wallet_api> & wapi
+) {
+    wallet_cli->register_api(wapi);
+    if (!interactive) {
+        std::vector < std::pair < std::string, std::string > > commands_output;
+        for (auto const &command : commands) {
+            try {
+                auto result = wallet_cli->exec_command ( command );
+                commands_output.push_back ( {command, result} ) ;
+            }
+            catch ( const fc::exception& e ) {
+                std::cout << e.to_detail_string() << '\n';
+            }
+        }
+        for (auto i : commands_output) {
+            // Format of output  
+            std::cout << i.first << '\n' << fc::json::to_pretty_string( i.second ) << '\n';
+        }
+    }
+    else {
+        wallet_cli->start();
+        wallet_cli->wait();
+    }
+}
+
+void parse_commands (
+    const boost::program_options::variables_map & options,
+    std::vector < std::string > & commands, bool & interactive
+) {
+    if (options.count("commands")) {
+        // If you would like to enable non-interactive mode, then you should
+        // pass commands you like cli_wallet to execute via 'commands' program
+        // option. All commands should be separated with "&&". The order does matter!
+        // EXAMPLE: ./cli_wallet --commands="unlock verystrongpassword && some_command arg1 arg2 && another_command arg1 arg2 arg3"
+
+        interactive = false;
+        auto tmp_commmad_string = options["commands"].as<string>();
+
+        // Here will be stored the strings that will be parsed by the "&&"
+        std::vector < std::string > unchecked_commands;
+        auto delims = "&&";
+        boost::algorithm::split_regex( unchecked_commands, tmp_commmad_string, boost::regex( delims ) );
+
+        for (auto x : unchecked_commands ) {
+            boost::trim(x);
+            if (x != "") {
+                commands.push_back(x);
+            }
+        }
+    }
 }
