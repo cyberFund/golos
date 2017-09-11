@@ -5,7 +5,6 @@
 #include <steemit/chain/operation_notification.hpp>
 
 #include <steemit/account_by_key/account_by_key_plugin.hpp>
-#include <steemit/follow/follow_api.hpp>
 
 #include <boost/iostreams/device/mapped_file.hpp>
 
@@ -96,7 +95,7 @@ namespace steemit {
                 void snapshot_plugin_impl::update_key_lookup(const chain::account_authority_object &a) {
                     try {
                         self.application->get_plugin<account_by_key::account_by_key_plugin>(ACCOUNT_BY_KEY_PLUGIN_NAME)->update_key_lookup(a);
-                    } catch (fc::assert_exception) {
+                    } catch (const fc::assert_exception &e) {
                         ilog("Account by key plugin not loaded");
                     }
                 }
@@ -123,13 +122,13 @@ namespace steemit {
 
             void snapshot_plugin::plugin_set_program_options(boost::program_options::options_description &command_line_options, boost::program_options::options_description &config_file_options) {
                 command_line_options.add_options()
-                        ("snapshot-file", boost::program_options::value<string>()->composing()->multitoken(), "Snapshot files to load");
+                        ("snapshot-file", boost::program_options::value<vector<string>>()->composing()->multitoken(), "Snapshot files to load");
                 config_file_options.
                         add(command_line_options);
             }
 
             void snapshot_plugin::plugin_startup() {
-                if (options.count("snapshot-file")) {
+                if (options.count("snapshot-file") != 0u) {
                     load_snapshots(options["snapshot-file"].as<vector<string>>());
                 } else {
                 #ifndef STEEMIT_BUILD_TESTNET
@@ -154,7 +153,7 @@ namespace steemit {
 
                     snapshot_state snapshot = fc::json::from_file(fc::path(iterator)).as<snapshot_state>();
                     for (account_summary &account : snapshot.accounts) {
-                        if (!db.find_account(account.name)) {
+                        if (db.find_account(account.name) == nullptr) {
                             const chain::account_object &new_account = db.create<chain::account_object>([&](chain::account_object &a) {
                                 a.name = account.name;
                                 a.memo_key = account.keys.memo_key;

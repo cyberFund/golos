@@ -142,7 +142,7 @@ namespace steemit {
             /**
              * @brief Retrieve the current @ref dynamic_global_property_object
              */
-            dynamic_global_property_api_obj get_dynamic_global_properties() const;
+            dynamic_global_property_object get_dynamic_global_properties() const;
 
             chain_properties get_chain_properties() const;
 
@@ -150,13 +150,13 @@ namespace steemit {
 
             feed_history_api_obj get_feed_history() const;
 
-            witness_schedule_api_obj get_witness_schedule() const;
+            witness_schedule_object get_witness_schedule() const;
 
             hardfork_version get_hardfork_version() const;
 
             scheduled_hardfork get_next_scheduled_hardfork() const;
 
-            reward_fund_api_obj get_reward_fund(string name) const;
+            reward_fund_object get_reward_fund(string name) const;
 
             //////////////
             // Accounts //
@@ -202,19 +202,19 @@ namespace steemit {
 
             optional<account_recovery_request_api_obj> get_recovery_request(std::string account) const;
 
-            optional<escrow_api_obj> get_escrow(std::string from, uint32_t escrow_id) const;
+            optional<escrow_object> get_escrow(std::string from, uint32_t escrow_id) const;
 
             std::vector<withdraw_route> get_withdraw_routes(std::string account, withdraw_route_type type = outgoing) const;
 
-            optional<account_bandwidth_api_obj> get_account_bandwidth(std::string account, bandwidth_type type) const;
+            optional<account_bandwidth_object> get_account_bandwidth(std::string account, bandwidth_type type) const;
 
             std::vector<savings_withdraw_api_obj> get_savings_withdraw_from(std::string account) const;
 
             std::vector<savings_withdraw_api_obj> get_savings_withdraw_to(std::string account) const;
 
-            vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
+            vector<vesting_delegation_object> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
 
-            vector<vesting_delegation_expiration_api_obj> get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit = 100) const;
+            vector<vesting_delegation_expiration_object> get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit = 100) const;
 
             ///////////////
             // Witnesses //
@@ -229,7 +229,7 @@ namespace steemit {
              */
             std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
 
-            std::vector<convert_request_api_obj> get_conversion_requests(const std::string &account_name) const;
+            std::vector<convert_request_object> get_conversion_requests(const std::string &account_name) const;
 
             /**
              * @brief Get the witness owned by a given account

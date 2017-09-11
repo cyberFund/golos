@@ -1,3 +1,11 @@
+include(${GOLOS_ROOT_DIR}/cmake/FindLibcds.cmake)
+
+locate_libcds()
+
+if (NOT ${LIBCDS_IS_BUILT})
+    add_subdirectory(libcds)
+endif()
+
 add_subdirectory(fc)
 add_subdirectory(schema)
 add_subdirectory(chainbase)
