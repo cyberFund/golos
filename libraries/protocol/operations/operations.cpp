@@ -17,7 +17,19 @@ namespace steemit {
                 return true;
             }
 
+            bool operator()(const limit_order_create2_operation &) const {
+                return true;
+            }
+
             bool operator()(const limit_order_cancel_operation &) const {
+                return true;
+            }
+
+            bool operator()(const call_order_update_operation &) const {
+                return true;
+            }
+
+            bool operator()(const bid_collateral_operation &) const {
                 return true;
             }
 
@@ -50,4 +62,4 @@ namespace steemit {
     }
 } // steemit::protocol
 
-DEFINE_OPERATION_TYPE(steemit::protocol::operation)
+STEEMIT_DEFINE_OPERATION_TYPE(steemit::protocol::operation)

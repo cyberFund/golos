@@ -2012,7 +2012,7 @@ namespace steemit {
             /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
             if (props.num_pow_witnesses < STEEMIT_MAX_WITNESSES &&
                 props.head_block_number < STEEMIT_START_VESTING_BLOCK) {
-                return asset(0, STEEM_SYMBOL_NAME);
+                return {0, STEEM_SYMBOL_NAME};
             }
 #endif
 
@@ -2097,11 +2097,11 @@ namespace steemit {
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
             share_type used_rewards = 0;
 
-            for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr) {
+            for (const auto &itr : reward_idx) {
                 // reward is a per block reward and the percents are 16-bit. This should never overflow
-                auto r = (reward * itr->percent_content_rewards) / STEEMIT_100_PERCENT;
+                auto r = (reward * itr.percent_content_rewards) / STEEMIT_100_PERCENT;
 
-                modify(*itr, [&](reward_fund_object &rfo) {
+                modify(itr, [&](reward_fund_object &rfo) {
                     rfo.reward_balance += asset(r, STEEM_SYMBOL_NAME);
                 });
 

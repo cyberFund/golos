@@ -6,7 +6,7 @@
 
 #include <steemit/chain/block_summary_object.hpp>
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/hardfork.hpp>
+#include <steemit/version/hardfork.hpp>
 #include <steemit/chain/history_object.hpp>
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/utilities/reward.hpp>

@@ -285,15 +285,6 @@ namespace steemit {
              */
             vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
 
-            /**
-             * @brief Get a list of assets by symbol
-             * @param asset_symbols Symbols or stringified IDs of the assets to retrieve
-             * @return The assets corresponding to the provided symbols or IDs
-             *
-             * This function has semantics identical to @ref get_objects
-             */
-            vector<optional<asset_object>> lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const;
-
             ////////////////////////////
             // Authority / Validation //
             ////////////////////////////
@@ -629,7 +620,6 @@ FC_API(steemit::application::database_api,
                 (get_assets_dynamic_data)
                 (get_bitassets_data)
                 (list_assets)
-                (lookup_asset_symbols)
 
                 // Authority / validation
                 (get_transaction_hex)

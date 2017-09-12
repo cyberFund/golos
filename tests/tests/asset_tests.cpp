@@ -2,7 +2,7 @@
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/hardfork.hpp>
+#include <steemit/version/hardfork.hpp>
 
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/asset_object.hpp>

@@ -1,11 +1,11 @@
-#include <steemit/protocol/version.hpp>
+#include <steemit/version/version.hpp>
 
 #include <fc/exception/exception.hpp>
 
 namespace steemit {
     namespace protocol {
 
-/* Quick conversion utilities from http://joelverhagen.com/blog/2010/11/convert-an-int-to-a-string-and-vice-versa-in-c/ */
+        /* Quick conversion utilities from http://joelverhagen.com/blog/2010/11/convert-an-int-to-a-string-and-vice-versa-in-c/ */
         inline int string_to_int(fc::string input) {
             std::stringstream s(input);
             int i;
@@ -27,11 +27,7 @@ namespace steemit {
 
         version::operator fc::string() const {
             std::stringstream s;
-            s << ((v_num >> 24) & 0x000000FF)
-              << '.'
-              << ((v_num >> 16) & 0x000000FF)
-              << '.'
-              << ((v_num & 0x0000FFFF));
+            s << ((v_num >> 24) & 0x000000FF) << '.' << ((v_num >> 16) & 0x000000FF) << '.' << ((v_num & 0x0000FFFF));
 
             return s.str();
         }
@@ -52,8 +48,8 @@ namespace fc {
         s >> major >> dot_a >> hardfork >> dot_b >> revision;
 
         // We'll accept either m.h.v or m_h_v as canonical version strings
-        FC_ASSERT((dot_a == '.' || dot_a == '_') && dot_a ==
-                                                    dot_b, "Variant does not contain proper dotted decimal format");
+        FC_ASSERT((dot_a == '.' || dot_a == '_') && dot_a == dot_b,
+                  "Variant does not contain proper dotted decimal format");
         FC_ASSERT(major <= 0xFF, "Major version is out of range");
         FC_ASSERT(hardfork <= 0xFF, "Hardfork version is out of range");
         FC_ASSERT(revision <= 0xFFFF, "Revision version is out of range");
@@ -63,7 +59,7 @@ namespace fc {
     }
 
     void to_variant(const steemit::protocol::hardfork_version &hv, variant &var) {
-        to_variant((const steemit::protocol::version &)hv, var);
+        to_variant((const steemit::protocol::version &) hv, var);
     }
 
     void from_variant(const variant &var, steemit::protocol::hardfork_version &hv) {

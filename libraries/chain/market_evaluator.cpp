@@ -5,7 +5,7 @@
 #include <steemit/chain/market_evaluator.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/hardfork.hpp>
+#include <steemit/version/hardfork.hpp>
 
 #include <steemit/protocol/exceptions.hpp>
 #include <steemit/protocol/operations/market_operations.hpp>

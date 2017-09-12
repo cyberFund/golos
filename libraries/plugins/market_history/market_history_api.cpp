@@ -191,8 +191,7 @@ namespace steemit {
                     std::swap(a, b);
                 }
                 FC_ASSERT(a != b);
-                _market_subscriptions[std::make_pair(asset::from_string(a).symbol,
-                                                     asset::from_string(b).symbol)] = callback;
+                _market_subscriptions[std::make_pair(a, b)] = callback;
             }
 
             void market_history_api_impl::unsubscribe_from_market(string a, string b) {
@@ -200,17 +199,14 @@ namespace steemit {
                     std::swap(a, b);
                 }
                 FC_ASSERT(a != b);
-                _market_subscriptions.erase(std::make_pair(asset::from_string(a).symbol, asset::from_string(b).symbol));
+                _market_subscriptions.erase(std::make_pair(a, b));
             }
 
-            vector<optional<asset_object>> market_history_api_impl::lookup_asset_symbols(
-                    const vector<asset_name_type> &asset_symbols) const {
-                const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<
-                        by_asset_name>();
+            vector<optional<asset_object>> market_history_api_impl::lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const {
+                const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<by_asset_name>();
                 vector<optional<asset_object>> result;
                 std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                               [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<
-                                       asset_object> {
+                               [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<asset_object> {
                                    auto itr = assets_by_symbol.find(symbol);
                                    return itr == assets_by_symbol.end() ? optional<asset_object>() : *itr;
                                });

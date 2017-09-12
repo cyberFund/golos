@@ -201,10 +201,10 @@ namespace steemit {
             price core_exchange_rate;
 
             /** Fixed point between 1.000 and 10.000, implied fixed point denominator is GRAPHENE_COLLATERAL_RATIO_DENOM */
-            uint16_t maintenance_collateral_ratio = GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO;
+            uint16_t maintenance_collateral_ratio = STEEMIT_DEFAULT_MAINTENANCE_COLLATERAL_RATIO;
 
             /** Fixed point between 1.000 and 10.000, implied fixed point denominator is GRAPHENE_COLLATERAL_RATIO_DENOM */
-            uint16_t maximum_short_squeeze_ratio = GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO;
+            uint16_t maximum_short_squeeze_ratio = STEEMIT_DEFAULT_MAX_SHORT_SQUEEZE_RATIO;
 
             /**
              *  When updating a call order the following condition must be maintained:

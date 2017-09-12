@@ -83,10 +83,10 @@ namespace steemit {
 } // steemit::protocol
 
 //
-// Place DEFINE_OPERATION_TYPE in a .cpp file to define
+// Place STEEMIT_DEFINE_OPERATION_TYPE in a .cpp file to define
 // functions related to your operation type
 //
-#define DEFINE_OPERATION_TYPE(OperationType)                             \
+#define STEEMIT_DEFINE_OPERATION_TYPE(OperationType)                       \
 namespace fc {                                                             \
                                                                            \
 void to_variant( const OperationType& var,  fc::variant& vo )              \
@@ -124,11 +124,11 @@ void from_variant( const fc::variant& var,  OperationType& vo )            \
    }                                                                       \
 }                                                                          \
                                                                            \
-namespace steemit { namespace protocol {                                      \
+namespace steemit { namespace protocol {                                   \
                                                                            \
 void operation_validate( const OperationType& op )                         \
 {                                                                          \
-   op.visit( steemit::protocol::operation_validate_visitor() );               \
+   op.visit( steemit::protocol::operation_validate_visitor() );            \
 }                                                                          \
                                                                            \
 void operation_get_required_authorities( const OperationType& op,          \

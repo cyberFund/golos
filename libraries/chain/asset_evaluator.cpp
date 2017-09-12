@@ -4,7 +4,8 @@
 #include <steemit/chain/market_object.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/hardfork.hpp>
+
+#include <steemit/version/hardfork.hpp>
 
 #include <functional>
 

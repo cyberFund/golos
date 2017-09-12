@@ -25,7 +25,6 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/steemit/protocol/operations/transfer_operations.hpp
         include/steemit/protocol/transaction.hpp
         include/steemit/protocol/types.hpp
-        include/steemit/protocol/version.hpp
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -45,7 +44,6 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         transaction.cpp
         operations/transfer_operations.cpp
         types.cpp
-        version.cpp
         )
 
 if(BUILD_SHARED_LIBRARIES)
@@ -63,7 +61,9 @@ endif()
 add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
 set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
 
-target_link_libraries(golos_${CURRENT_TARGET} fc)
+add_dependencies(golos_${CURRENT_TARGET} golos::version)
+
+target_link_libraries(golos_${CURRENT_TARGET} fc golos::version)
 target_include_directories(golos_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include")
 

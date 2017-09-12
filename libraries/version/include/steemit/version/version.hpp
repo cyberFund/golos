@@ -1,18 +1,26 @@
 #pragma once
 
-#include <steemit/protocol/types.hpp>
-
 #include <fc/string.hpp>
 #include <fc/time.hpp>
 
 namespace steemit {
+    namespace type_traits {
+        template<bool>
+        struct static_range;
+
+        template<bool...>
+        struct bool_pack;
+
+        template<bool... v> using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
+    }
+
     namespace protocol {
 
-/*
- * This class represents the basic versioning scheme of the Golos blockchain.
- * All versions are a triple consisting of a major version, hardfork version, and release version.
- * It allows easy comparison between versions. A version is a read only object.
- */
+        /*
+         * This class represents the basic versioning scheme of the Golos blockchain.
+         * All versions are a triple consisting of a major version, hardfork version, and release version.
+         * It allows easy comparison between versions. A version is a read only object.
+         */
         struct version {
             version() {
             }
@@ -126,8 +134,7 @@ namespace steemit {
             hardfork_version_vote() {
             }
 
-            hardfork_version_vote(hardfork_version v, fc::time_point_sec t)
-                    : hf_version(v), hf_time(t) {
+            hardfork_version_vote(hardfork_version v, fc::time_point_sec t) : hf_version(v), hf_time(t) {
             }
 
             hardfork_version hf_version;
@@ -140,20 +147,14 @@ namespace steemit {
         };
 
         template<uint8_t m, uint8_t h, uint16_t r, typename ... StaticRanges>
-        struct static_version
-                : public static_version_impl<
-                        typename steemit::type_traits::all_true<
-                                std::is_same<
-                                        steemit::type_traits::static_range<true>,
-                                        StaticRanges
-                                >::value...
-                        >::value
-                > {
+        struct static_version : public static_version_impl<typename steemit::type_traits::all_true<
+                std::is_same<steemit::type_traits::static_range<true>, StaticRanges>::value...>::value> {
             static const version version_instance;
         };
 
-        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion, typename ... StaticRanges>
-        const version static_version<MinorVersion, HardforkVersion, ReleaseVersion, StaticRanges...>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);
+        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion,
+                typename ... StaticRanges> const version static_version<MinorVersion, HardforkVersion, ReleaseVersion,
+                StaticRanges...>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);
     }
 } // steemit::protocol
 

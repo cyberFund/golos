@@ -66,17 +66,6 @@ namespace steemit {
 
     };
 
-    namespace type_traits {
-        template<bool>
-        struct static_range;
-
-        template<bool...>
-        struct bool_pack;
-
-        template<bool... v>
-        using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
-    }
-
     namespace protocol {
         enum asset_issuer_permission_flags {
             charge_market_fee = 0x01, /**< an issuer-specified percentage of all market trades in this asset is paid to the issuer */

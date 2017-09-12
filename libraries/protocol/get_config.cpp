@@ -1,7 +1,7 @@
 #include <steemit/protocol/get_config.hpp>
 #include <steemit/protocol/config.hpp>
 #include <steemit/protocol/asset.hpp>
-#include <steemit/protocol/version.hpp>
+#include "../version/include/steemit/version/version.hpp"
 
 namespace steemit {
     namespace protocol {

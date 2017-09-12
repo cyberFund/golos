@@ -2,7 +2,7 @@
 
 #include <steemit/protocol/types.hpp>
 #include <steemit/protocol/authority.hpp>
-#include <steemit/protocol/version.hpp>
+#include "../../../../version/include/steemit/version/version.hpp"
 
 #include <fc/time.hpp>
 

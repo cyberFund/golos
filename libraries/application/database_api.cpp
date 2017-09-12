@@ -86,8 +86,6 @@ namespace steemit {
 
             vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
 
-            vector<optional<asset_object>> lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const;
-
             // Authority / validation
             std::string get_transaction_hex(const signed_transaction &trx) const;
 
@@ -243,7 +241,7 @@ namespace steemit {
                 ctx.app.get_plugin<follow::follow_plugin>(FOLLOW_PLUGIN_NAME);
                 _follow_api = std::make_shared<steemit::follow::follow_api>(ctx);
             }
-            catch (fc::assert_exception) {
+            catch (const fc::assert_exception &e) {
                 ilog("Follow Plugin not loaded");
             }
         }
@@ -802,22 +800,6 @@ namespace steemit {
                 result.emplace_back(*itr++);
             }
 
-            return result;
-        }
-
-        vector<optional<asset_object>> database_api::lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const {
-            return my->lookup_asset_symbols(asset_symbols);
-        }
-
-        vector<optional<asset_object>> database_api_impl::lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const {
-            const auto &assets_by_symbol = _db.get_index<asset_index>().indices().get<by_asset_name>();
-            vector<optional<asset_object>> result;
-            result.reserve(asset_symbols.size());
-            std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                    [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<asset_object> {
-                        auto ptr = _db.find_asset(symbol);
-                        return ptr == nullptr ? optional<asset_object>() : *ptr;
-                    });
             return result;
         }
 

@@ -1,6 +1,7 @@
 add_subdirectory(fc)
 add_subdirectory(schema)
 add_subdirectory(chainbase)
+add_subdirectory(version)
 add_subdirectory(chain)
 add_subdirectory(protocol)
 add_subdirectory(network)

@@ -215,7 +215,7 @@ namespace steemit {
                 flat_map<std::string, operation> &name2op;
 
                 op_prototype_visitor(int _t, flat_map<std::string, operation> &_prototype_ops) : t(_t),
-                                                                                                 name2op(_prototype_ops) {
+                        name2op(_prototype_ops) {
                 }
 
                 template<typename Type>
@@ -258,16 +258,9 @@ namespace steemit {
                 wallet_api &self;
 
                 wallet_api_impl(wallet_api &s, const wallet_data &initial_data, fc::api<login_api> rapi) : self(s),
-                                                                                                           _remote_api(
-                                                                                                                   rapi),
-                                                                                                           _remote_db(
-                                                                                                                   rapi->get_api_by_name(
-                                                                                                                           "database_api")->as<
-                                                                                                                           database_api>()),
-                                                                                                           _remote_net_broadcast(
-                                                                                                                   rapi->get_api_by_name(
-                                                                                                                           "network_broadcast_api")->as<
-                                                                                                                           network_broadcast_api>()) {
+                        _remote_api(rapi), _remote_db(rapi->get_api_by_name("database_api")->as<database_api>()),
+                        _remote_net_broadcast(
+                                rapi->get_api_by_name("network_broadcast_api")->as<network_broadcast_api>()) {
                     init_prototype_ops();
 
                     _wallet.ws_server = initial_data.ws_server;
