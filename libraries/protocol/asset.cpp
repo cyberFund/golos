@@ -14,11 +14,135 @@ namespace steemit {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
-        asset::asset() : amount(0), symbol(STEEM_SYMBOL_NAME), decimals(3) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset() : amount(0), symbol(STEEM_SYMBOL) {
 
         }
 
-        asset::asset(share_type a, asset_symbol_type name) : amount(a) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a, asset_symbol_type id) : amount(a),
+                symbol(id) {
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a, asset_name_type id) : amount(a) {
+            string s = fc::trim(id);
+
+            symbol = uint64_t(3);
+            char *sy = (char *) &symbol;
+
+            size_t symbol_size = id.size();
+
+            if (symbol_size > 0) {
+                FC_ASSERT(symbol_size <= 6);
+
+                std::string symbol_string(id);
+
+                FC_ASSERT(std::find_if(symbol_string.begin(), symbol_string.end(), [&](const char &c) -> bool {
+                    return std::isdigit(c);
+                }) == symbol_string.end());
+                memcpy(sy + 1, symbol_string.c_str(), symbol_size);
+            }
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        uint8_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::decimals() const {
+            auto a = (const char *) &symbol;
+            uint8_t result = uint8_t(a[0]);
+            FC_ASSERT(result < 15);
+            return result;
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::set_decimals(uint8_t d) {
+            FC_ASSERT(d < 15);
+            auto a = (char *) &symbol;
+            a[0] = d;
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset_name_type asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::symbol_name() const {
+            auto a = (const char *) &symbol;
+            FC_ASSERT(a[7] == 0);
+            return &a[1];
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        int64_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::precision() const {
+            static int64_t table[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000ll, 1000000000ll,
+                                      10000000000ll, 100000000000ll, 1000000000000ll, 10000000000000ll,
+                                      100000000000000ll};
+            uint8_t d = decimals();
+            return table[d];
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        string asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::to_string() const {
+            int64_t prec = precision();
+            string result = fc::to_string(amount.value / prec);
+            if (prec > 1) {
+                auto fract = amount.value % prec;
+                // prec is a power of ten, so for example when working with
+                // 7.005 we have fract = 5, prec = 1000.  So prec+fract=1005
+                // has the correct number of zeros and we can simply trim the
+                // leading 1.
+                result += "." + fc::to_string(prec + fract).erase(0, 1);
+            }
+            return result + " " + symbol_name();
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release> asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::from_string(const string &from) {
+            try {
+                string s = fc::trim(from);
+                auto space_pos = s.find(' ');
+                auto dot_pos = s.find('.');
+
+                asset<Major, Hardfork, Release> result;
+                result.symbol = uint64_t(3);
+                auto sy = (char *) &result.symbol;
+
+                if (space_pos == std::string::npos && dot_pos == std::string::npos &&
+                    std::find_if(from.begin(), from.end(), [&](const std::string::value_type &c) -> bool {
+                        return std::isdigit(c);
+                    }) == from.end()) {
+                    result.amount = 0;
+                } else if (dot_pos != std::string::npos) {
+                    FC_ASSERT(space_pos > dot_pos);
+
+                    auto intpart = s.substr(0, dot_pos);
+                    auto fractpart = "1" + s.substr(dot_pos + 1, space_pos - dot_pos - 1);
+                    result.set_decimals(fractpart.size() - 1);
+
+                    result.amount = fc::to_int64(intpart);
+                    result.amount.value *= result.precision();
+                    result.amount.value += fc::to_int64(fractpart);
+                    result.amount.value -= result.precision();
+                } else {
+                    auto intpart = s.substr(0, space_pos);
+                    result.amount = fc::to_int64(intpart);
+                    result.set_decimals(0);
+                }
+                auto symbol = s.substr(space_pos + 1);
+                size_t symbol_size = symbol.size();
+
+                if (symbol_size > 0) {
+                    FC_ASSERT(symbol_size <= 6);
+                    memcpy(sy + 1, symbol.c_str(), symbol_size);
+                }
+
+                return result;
+            } FC_CAPTURE_AND_RETHROW((from))
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset() : amount(0), symbol(STEEM_SYMBOL_NAME),
+                decimals(3) {
+
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a, asset_symbol_type name) : amount(a) {
             auto ta = (const char *) &name;
             FC_ASSERT(ta[7] == 0);
             symbol = &ta[1];
@@ -28,11 +152,14 @@ namespace steemit {
             decimals = result;
         }
 
-        asset::asset(share_type a, asset_name_type name, uint8_t d) : amount(a), symbol(name), decimals(d) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a, asset_name_type name, uint8_t d)
+                : amount(a), symbol(name), decimals(d) {
 
         }
 
-        asset_symbol_type asset::symbol_type_value() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset_symbol_type asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::symbol_type_value() const {
             asset_symbol_type result;
 
             FC_ASSERT(decimals < 15, "Precision should be less than 15");
@@ -48,14 +175,16 @@ namespace steemit {
             return result;
         }
 
-        int64_t asset::precision() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        int64_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::precision() const {
             static int64_t table[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000ll, 1000000000ll,
                                       10000000000ll, 100000000000ll, 1000000000000ll, 10000000000000ll,
                                       100000000000000ll};
             return table[decimals];
         }
 
-        string asset::to_string() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        string asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::to_string() const {
             int64_t prec = precision();
             string result = fc::to_string(amount.value / prec);
             if (prec > 1) {
@@ -69,7 +198,8 @@ namespace steemit {
             return result + " " + symbol;
         }
 
-        asset asset::from_string(const string &from) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        asset<Major, Hardfork, Release> asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::from_string(const string &from) {
             try {
                 string s = fc::trim(from);
                 auto space_pos = s.find(' ');
@@ -109,88 +239,23 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((from))
         }
 
-        bool operator==(const price &a, const price &b) {
-            if (std::tie(a.base.symbol, a.quote.symbol) != std::tie(b.base.symbol, b.quote.symbol)) {
-                return false;
-            }
-
-            const auto amult = uint128_t(b.quote.amount.value) * a.base.amount.value;
-            const auto bmult = uint128_t(a.quote.amount.value) * b.base.amount.value;
-
-            return amult == bmult;
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        price<Major, Hardfork, Release> price<Major, Hardfork, Release>::max(asset_name_type base, asset_name_type quote) {
+            return asset<Major, Hardfork, Release>(share_type(STEEMIT_MAX_SHARE_SUPPLY), base) / asset<Major, Hardfork, Release>(share_type(1), quote);
         }
 
-        bool operator<(const price &a, const price &b) {
-            if (a.base.symbol < b.base.symbol) {
-                return true;
-            }
-            if (a.base.symbol > b.base.symbol) {
-                return false;
-            }
-            if (a.quote.symbol < b.quote.symbol) {
-                return true;
-            }
-            if (a.quote.symbol > b.quote.symbol) {
-                return false;
-            }
-
-            const auto amult = uint128_t(b.quote.amount.value) * a.base.amount.value;
-            const auto bmult = uint128_t(a.quote.amount.value) * b.base.amount.value;
-
-            return amult < bmult;
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        price<Major, Hardfork, Release> price<Major, Hardfork, Release>::min(asset_name_type base, asset_name_type quote) {
+            return asset<Major, Hardfork, Release>(1, base) / asset<Major, Hardfork, Release>(STEEMIT_MAX_SHARE_SUPPLY, quote);
         }
 
-        bool operator<=(const price &a, const price &b) {
-            return (a == b) || (a < b);
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        bool price<Major, Hardfork, Release>::is_null() const {
+            return *this == price<Major, Hardfork, Release>();
         }
 
-        bool operator!=(const price &a, const price &b) {
-            return !(a == b);
-        }
-
-        bool operator>(const price &a, const price &b) {
-            return !(a <= b);
-        }
-
-        bool operator>=(const price &a, const price &b) {
-            return !(a < b);
-        }
-
-        asset operator*(const asset &a, const price &b) {
-            if (a.symbol == b.base.symbol) {
-                FC_ASSERT(b.base.amount.value > 0);
-                uint128_t result = (uint128_t(a.amount.value) * b.quote.amount.value) / b.base.amount.value;
-                FC_ASSERT(result.hi == 0);
-                return asset(result.to_uint64(), b.quote.symbol);
-            } else if (a.symbol == b.quote.symbol) {
-                FC_ASSERT(b.quote.amount.value > 0);
-                uint128_t result = (uint128_t(a.amount.value) * b.base.amount.value) / b.quote.amount.value;
-                FC_ASSERT(result.hi == 0);
-                return asset(result.to_uint64(), b.base.symbol);
-            }
-            FC_THROW_EXCEPTION(fc::assert_exception, "invalid asset * price", ("asset", a)("price", b));
-        }
-
-        price operator/(const asset &base, const asset &quote) {
-            try {
-                FC_ASSERT(base.symbol != quote.symbol);
-                return price{base, quote};
-            } FC_CAPTURE_AND_RETHROW((base)(quote))
-        }
-
-        price price::max(asset_name_type base, asset_name_type quote) {
-            return asset(share_type(STEEMIT_MAX_SHARE_SUPPLY), base) / asset(share_type(1), quote);
-        }
-
-        price price::min(asset_name_type base, asset_name_type quote) {
-            return asset(1, base) / asset(STEEMIT_MAX_SHARE_SUPPLY, quote);
-        }
-
-        bool price::is_null() const {
-            return *this == price();
-        }
-
-        void price::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void price<Major, Hardfork, Release>::validate() const {
             try {
                 FC_ASSERT(base.amount > share_type(0));
                 FC_ASSERT(quote.amount > share_type(0));
@@ -198,7 +263,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
-        price price::call_price(const asset &debt, const asset &collateral, uint16_t collateral_ratio) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        price<Major, Hardfork, Release> price<Major, Hardfork, Release>::call_price(const asset<Major, Hardfork, Release> &debt, const asset<Major, Hardfork, Release> &collateral,
+                                                  uint16_t collateral_ratio) {
             try {
                 //wdump((debt)(collateral)(collateral_ratio));
                 boost::rational<int128_t> swan(debt.amount.value, collateral.amount.value);
@@ -209,12 +276,13 @@ namespace steemit {
                     cp = boost::rational<int128_t>((cp.numerator() >> 1) + 1, (cp.denominator() >> 1) + 1);
                 }
 
-                return ~(asset(cp.numerator().convert_to<int64_t>(), debt.symbol) /
-                         asset(cp.denominator().convert_to<int64_t>(), collateral.symbol));
+                return ~(asset<Major, Hardfork, Release>(cp.numerator().convert_to<int64_t>(), debt.symbol) /
+                         asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(), collateral.symbol));
             } FC_CAPTURE_AND_RETHROW((debt)(collateral)(collateral_ratio))
         }
 
-        void price_feed::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void price_feed<Major, Hardfork, Release>::validate() const {
             try {
                 if (!settlement_price.is_null()) {
                     settlement_price.validate();
@@ -229,7 +297,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
-        bool price_feed::is_for(asset_name_type asset_name) const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        bool price_feed<Major, Hardfork, Release>::is_for(asset_name_type asset_name) const {
             try {
                 if (!settlement_price.is_null()) {
                     return (settlement_price.base.symbol == asset_name);
@@ -242,7 +311,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
-        price price_feed::max_short_squeeze_price() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        price<Major, Hardfork, Release> price_feed<Major, Hardfork, Release>::max_short_squeeze_price() const {
             boost::rational<int128_t> sp(settlement_price.base.amount.value,
                                          settlement_price.quote.amount.value); //debt.amount.value,collateral.amount.value);
             boost::rational<int128_t> ratio(STEEMIT_COLLATERAL_RATIO_DENOM, maximum_short_squeeze_ratio);
@@ -253,8 +323,8 @@ namespace steemit {
                                                (cp.denominator() >> 1) + (cp.denominator() & 1));
             }
 
-            return (asset(cp.numerator().convert_to<int64_t>(), settlement_price.base.symbol) /
-                    asset(cp.denominator().convert_to<int64_t>(), settlement_price.quote.symbol));
+            return (asset<Major, Hardfork, Release>(cp.numerator().convert_to<int64_t>(), settlement_price.base.symbol) /
+                    asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(), settlement_price.quote.symbol));
         }
 
         // compile-time table of powers of 10 using template metaprogramming
