@@ -17,7 +17,8 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        void account_create_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_create_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(new_account_name);
             FC_ASSERT(fee.symbol == STEEM_SYMBOL_NAME, "Account creation fee must be STEEM");
             owner.validate();
@@ -30,7 +31,8 @@ namespace steemit {
             FC_ASSERT(fee >= asset(0, STEEM_SYMBOL_NAME), "Account creation fee cannot be negative");
         }
 
-        void account_create_with_delegation_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_create_with_delegation_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(new_account_name);
             validate_account_name(creator);
             FC_ASSERT(fee.symbol == STEEM_SYMBOL_NAME, "Account creation fee must be STEEM");
@@ -49,7 +51,8 @@ namespace steemit {
             FC_ASSERT(delegation >= asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
         }
 
-        void account_update_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_update_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
             /*if( owner )
                owner->validate();
@@ -62,6 +65,12 @@ namespace steemit {
                 FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_whitelist_operation<Major, Hardfork, Release>::validate() const {
+            FC_ASSERT(fee.amount >= 0);
+            FC_ASSERT(new_listing < 0x4);
         }
     }
 }

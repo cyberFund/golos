@@ -13,6 +13,7 @@ namespace steemit {
          *
          * @note Changes to this struct will break protocol compatibility
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_options {
             /// The maximum supply of this asset which may exist at any given time. This can be as large as
             /// STEEMIT_MAX_SHARE_SUPPLY
@@ -33,7 +34,7 @@ namespace steemit {
             /// order to accept the fee. If this asset's fee pool is funded, the chain will automatically deposite fees
             /// in this asset to its accumulated fees, and withdraw from the fee pool the same amount as converted at
             /// the core exchange rate.
-            price core_exchange_rate;
+            price<Major, Hardfork, Release> core_exchange_rate;
 
             /// A set of accounts which maintain whitelists to consult for this asset. If whitelist_authorities
             /// is non-empty, then only accounts in whitelist_authorities are allowed to hold, use, or transfer the asset.
@@ -95,6 +96,7 @@ namespace steemit {
         /**
          * @ingroup operations
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_create_operation : public base_operation {
             /// This account must sign and pay the fee for this operation. Later, this account may update the asset
             account_name_type issuer;
@@ -108,7 +110,7 @@ namespace steemit {
             /// @note common_options.core_exchange_rate technically needs to store the asset ID of this new asset. Since this
             /// ID is not known at the time this operation is created, create this price as though the new asset has instance
             /// ID 1, and the chain will overwrite it with the new asset's ID.
-            asset_options common_options;
+            asset_options<Major, Hardfork, Release> common_options;
             /// Options only available for BitAssets. MUST be non-null if and only if the @ref market_issued flag is set in
             /// common_options.flags
             optional<bitasset_options> bitasset_opts;
@@ -137,10 +139,11 @@ namespace steemit {
          *  used as backing for other bitassets, those bitassets will be force settled at their current
          *  feed price.
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_global_settle_operation : public base_operation {
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
             asset_name_type asset_to_settle;
-            price settle_price;
+            price<Major, Hardfork, Release> settle_price;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -167,11 +170,12 @@ namespace steemit {
          *
          * The fee is paid by @ref account, and @ref account must authorize this operation
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_settle_operation : public base_operation {
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
-            asset amount;
+            asset<Major, Hardfork, Release> amount;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -198,11 +202,12 @@ namespace steemit {
          *
          * The fee is paid by @ref account, and @ref account must authorize this operation
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_force_settle_operation : public base_operation {
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
-            asset amount;
+            asset<Major, Hardfork, Release> amount;
             integral_id_type settlement_id;
             extensions_type extensions;
 
@@ -220,6 +225,7 @@ namespace steemit {
         /**
          * @ingroup operations
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_fund_fee_pool_operation : public base_operation {
         public:
             account_name_type from_account;
@@ -253,13 +259,14 @@ namespace steemit {
          * @pre @ref new_options SHALL be internally consistent, as verified by @ref validate()
          * @post @ref asset_to_update will have options matching those of new_options
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_update_operation : public base_operation {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
             /// If the asset is to be given a new issuer, specify his ID here.
             optional<account_name_type> new_issuer;
-            asset_options new_options;
+            asset_options<Major, Hardfork, Release> new_options;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -286,6 +293,7 @@ namespace steemit {
          * @pre @ref new_options SHALL be internally consistent, as verified by @ref validate()
          * @post @ref asset_to_update will have BitAsset-specific options matching those of new_options
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_update_bitasset_operation : public base_operation {
             account_name_type issuer;
             asset_name_type asset_to_update;
@@ -320,6 +328,7 @@ namespace steemit {
          * @post All valid feeds supplied by feed producers in @ref new_feed_producers, which were already feed producers
          * prior to execution of this operation, will be preserved
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_update_feed_producers_operation : public base_operation {
             account_name_type issuer;
             asset_name_type asset_to_update;
@@ -354,10 +363,11 @@ namespace steemit {
          * settlement price may be flipped either direction, as long as it is a ratio between the market-issued asset and
          * its collateral.
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_publish_feed_operation : public base_operation {
             account_name_type publisher;
             asset_name_type asset_name; ///< asset for which the feed is published
-            price_feed feed;
+            price_feed<Major, Hardfork, Release> feed;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -374,9 +384,10 @@ namespace steemit {
         /**
          * @ingroup operations
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_issue_operation : public base_operation {
             account_name_type issuer; ///< Must be asset_to_issue->asset_id->issuer
-            asset asset_to_issue;
+            asset<Major, Hardfork, Release> asset_to_issue;
             account_name_type issue_to_account;
 
 
@@ -401,9 +412,10 @@ namespace steemit {
          *
          * @note You cannot use this operation on market-issued assets.
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_reserve_operation : public base_operation {
             account_name_type payer;
-            asset amount_to_reserve;
+            asset<Major, Hardfork, Release> amount_to_reserve;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -420,9 +432,10 @@ namespace steemit {
         /**
          * @brief used to transfer accumulated fees back to the issuer's balance.
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_claim_fees_operation : public base_operation {
             account_name_type issuer;
-            asset amount_to_claim; /// amount_to_claim.asset_id->issuer must == issuer
+            asset<Major, Hardfork, Release> amount_to_claim; /// amount_to_claim.asset_id->issuer must == issuer
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -435,68 +448,37 @@ namespace steemit {
 
             void validate() const;
         };
+
+        namespace definitions {
+            typedef asset_claim_fees_operation<0, 17, 0> named_asset_claim_fees_operation;
+
+            typedef asset_options<0, 17, 0> named_asset_options;
+        }
     }
 } // steemit::protocol
 
-FC_REFLECT(steemit::protocol::asset_claim_fees_operation, (issuer)(amount_to_claim)(extensions))
+FC_REFLECT(steemit::protocol::definitions::named_asset_claim_fees_operation, (issuer)(amount_to_claim)(extensions))
 
-FC_REFLECT(steemit::protocol::asset_options,
-        (max_supply)
-                (market_fee_percent)
-                (max_market_fee)
-                (issuer_permissions)
-                (flags)
-                (core_exchange_rate)
-                (whitelist_authorities)
-                (blacklist_authorities)
-                (whitelist_markets)
-                (blacklist_markets)
-                (description)
-                (extensions)
-)
+FC_REFLECT(steemit::protocol::definitions::named_asset_options,
+           (max_supply)(market_fee_percent)(max_market_fee)(issuer_permissions)(flags)(core_exchange_rate)(
+                   whitelist_authorities)(blacklist_authorities)(whitelist_markets)(blacklist_markets)(description)(
+                   extensions))
+
 FC_REFLECT(steemit::protocol::bitasset_options,
-        (feed_lifetime_sec)
-                (minimum_feeds)
-                (force_settlement_delay_sec)
-                (force_settlement_offset_percent)
-                (maximum_force_settlement_volume)
-                (short_backing_asset)
-                (extensions)
-)
+           (feed_lifetime_sec)(minimum_feeds)(force_settlement_delay_sec)(force_settlement_offset_percent)(
+                   maximum_force_settlement_volume)(short_backing_asset)(extensions))
 
 FC_REFLECT(steemit::protocol::asset_create_operation,
-                (issuer)
-                (asset_name)
-                (precision)
-                (common_options)
-                (bitasset_opts)
-                (is_prediction_market)
-                (extensions)
-)
-FC_REFLECT(steemit::protocol::asset_update_operation,
-                (issuer)
-                (asset_to_update)
-                (new_issuer)
-                (new_options)
-                (extensions)
-)
-FC_REFLECT(steemit::protocol::asset_update_bitasset_operation,
-                (issuer)
-                (asset_to_update)
-                (new_options)
-                (extensions)
-)
+           (issuer)(asset_name)(precision)(common_options)(bitasset_opts)(is_prediction_market)(extensions))
+FC_REFLECT(steemit::protocol::asset_update_operation, (issuer)(asset_to_update)(new_issuer)(new_options)(extensions))
+FC_REFLECT(steemit::protocol::asset_update_bitasset_operation, (issuer)(asset_to_update)(new_options)(extensions))
 FC_REFLECT(steemit::protocol::asset_update_feed_producers_operation,
-        (issuer)(asset_to_update)(new_feed_producers)(extensions)
-)
-FC_REFLECT(steemit::protocol::asset_publish_feed_operation,
-        (publisher)(asset_name)(feed)(extensions))
+           (issuer)(asset_to_update)(new_feed_producers)(extensions))
+FC_REFLECT(steemit::protocol::asset_publish_feed_operation, (publisher)(asset_name)(feed)(extensions))
 FC_REFLECT(steemit::protocol::asset_settle_operation, (account)(amount)(extensions))
 FC_REFLECT(steemit::protocol::asset_force_settle_operation, (account)(amount)(settlement_id)(extensions))
 FC_REFLECT(steemit::protocol::asset_global_settle_operation, (issuer)(asset_to_settle)(settle_price)(extensions))
-FC_REFLECT(steemit::protocol::asset_issue_operation,
-        (issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
-FC_REFLECT(steemit::protocol::asset_reserve_operation,
-        (payer)(amount_to_reserve)(extensions))
+FC_REFLECT(steemit::protocol::asset_issue_operation, (issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
+FC_REFLECT(steemit::protocol::asset_reserve_operation, (payer)(amount_to_reserve)(extensions))
 
 FC_REFLECT(steemit::protocol::asset_fund_fee_pool_operation, (from_account)(asset_name)(amount)(extensions));

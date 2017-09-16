@@ -10,10 +10,11 @@ namespace steemit {
          *  This operation instructs the blockchain to start a conversion between STEEM and SBD,
          *  The funds are deposited after STEEMIT_CONVERSION_DELAY
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct convert_operation : public base_operation {
             account_name_type owner;
             uint32_t request_id = 0;
-            asset amount;
+            asset<Major, Hardfork, Release> amount;
 
             void validate() const;
 
@@ -41,11 +42,12 @@ namespace steemit {
          *  in the block chain.
          */
 
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct limit_order_create_operation : public base_operation {
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
-            asset amount_to_sell;
-            asset min_to_receive;
+            asset<Major, Hardfork, Release> amount_to_sell;
+            asset<Major, Hardfork, Release> min_to_receive;
             bool fill_or_kill = false;
             time_point_sec expiration = time_point_sec::maximum();
 
@@ -55,11 +57,12 @@ namespace steemit {
                 a.insert(owner);
             }
 
-            price get_price() const {
+            price<Major, Hardfork, Release> get_price() const {
                 return amount_to_sell / min_to_receive;
             }
 
-            pair<asset_name_type, asset_name_type> get_market() const {
+            pair<asset<Major, Hardfork, Release>::asset_container_type,
+                    asset<Major, Hardfork, Release>::asset_container_type> get_market() const {
                 return amount_to_sell.symbol < min_to_receive.symbol ? std::make_pair(amount_to_sell.symbol,
                                                                                       min_to_receive.symbol)
                                                                      : std::make_pair(min_to_receive.symbol,
@@ -72,12 +75,13 @@ namespace steemit {
          *  than calculating it from other fields.
          */
 
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct limit_order_create2_operation : public base_operation {
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
-            asset amount_to_sell;
+            asset<Major, Hardfork, Release> amount_to_sell;
             bool fill_or_kill = false;
-            price exchange_rate;
+            price<Major, Hardfork, Release> exchange_rate;
             time_point_sec expiration = time_point_sec::maximum();
 
             void validate() const;
@@ -86,11 +90,12 @@ namespace steemit {
                 a.insert(owner);
             }
 
-            price get_price() const {
+            price<Major, Hardfork, Release> get_price() const {
                 return exchange_rate;
             }
 
-            pair<asset_name_type, asset_name_type> get_market() const {
+            pair<asset<Major, Hardfork, Release>::asset_container_type,
+                    asset<Major, Hardfork, Release>::asset_container_type> get_market() const {
                 return exchange_rate.base.symbol < exchange_rate.quote.symbol ? std::make_pair(
                         exchange_rate.base.symbol, exchange_rate.quote.symbol) : std::make_pair(
                         exchange_rate.quote.symbol, exchange_rate.base.symbol);
@@ -105,6 +110,7 @@ namespace steemit {
          *  @return the amount actually refunded
          */
 
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct limit_order_cancel_operation : public base_operation {
             account_name_type owner;
             integral_id_type order_id = 0;
@@ -128,11 +134,13 @@ namespace steemit {
          *
          *  @note this operation can be used to force a market order using the collateral without requiring outside funds.
          */
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct call_order_update_operation : public base_operation {
             integral_id_type order_id = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
-            asset delta_collateral; ///< the amount of collateral to add to the margin position
-            asset delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt
+            asset<Major, Hardfork, Release> delta_collateral; ///< the amount of collateral to add to the margin position
+            asset<Major, Hardfork, Release> delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt
 
             void validate() const;
 
@@ -147,15 +155,20 @@ namespace steemit {
          *  This operation can be used after a black swan to bid collateral for
          *  taking over part of the debt and the settlement_fund (see BSIP-0018).
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct bid_collateral_operation : public base_operation {
             /** should be equivalent to call_order_update fee */
             account_name_type bidder; ///< pays fee and additional collateral
-            asset additional_collateral; ///< the amount of collateral to bid for the debt
-            asset debt_covered; ///< the amount of debt to take over
+            asset<Major, Hardfork, Release> additional_collateral; ///< the amount of collateral to bid for the debt
+            asset<Major, Hardfork, Release> debt_covered; ///< the amount of debt to take over
             extensions_type extensions;
 
             void validate() const;
         };
+
+        namespace definitions {
+            typedef convert_operation<0, 16, 0> symboled_convert_operation;
+        }
     }
 }
 

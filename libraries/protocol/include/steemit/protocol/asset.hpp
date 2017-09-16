@@ -12,22 +12,27 @@ namespace steemit {
 
         extern const int64_t scaled_precision_lut[];
 
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType>
+        struct asset_interface : public static_version<Major, Hardfork, Release> {
+            typedef StorageType asset_container_type;
+
+            asset_container_type symbol;
+        };
+
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
-        struct asset : public static_version<Major, Hardfork, Release> {
+        struct asset : public asset_interface<Major, Hardfork, Release, void_t> {
 
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public static_version<Major,
-                Hardfork, Release> {
+        struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public asset_interface<Major, Hardfork, Release, asset_symbol_type> {
             asset();
 
-            asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
+            asset(share_type a, asset_container_type id = STEEM_SYMBOL);
 
             asset(share_type a, asset_name_type name);
 
             share_type amount;
-            asset_symbol_type symbol;
 
             double to_real() const {
                 return double(amount.value) / precision();
@@ -105,16 +110,15 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public static_version<Major,
-                Hardfork, Release> {
+        struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public asset_interface<
+                Major, Hardfork, Release, asset_name_type> {
             asset();
 
             asset(share_type a, asset_symbol_type name);
 
-            asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
+            asset(share_type a, asset_container_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
             share_type amount;
-            asset_name_type symbol;
             uint8_t decimals;
 
             double to_real() const {
@@ -428,8 +432,12 @@ namespace fc {
     }
 }
 
-FC_REFLECT(steemit::protocol::definitions::symboled_asset, (amount)(symbol))
-FC_REFLECT(steemit::protocol::definitions::named_asset, (amount)(symbol)(decimals))
+FC_REFLECT_DERIVED((typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 16, 0>))),
+                   (typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 16, 0, asset_symbol_type>))),
+                   (amount)(symbol))
+FC_REFLECT_DERIVED((typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 17, 0>))),
+                   (typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 17, 0, asset_named_type>))),
+                   (amount)(symbol))
 
 FC_REFLECT(steemit::protocol::definitions::symboled_price, (base)(quote))
 FC_REFLECT(steemit::protocol::definitions::named_price, (base)(quote))
