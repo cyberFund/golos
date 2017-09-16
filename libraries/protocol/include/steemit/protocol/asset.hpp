@@ -12,30 +12,35 @@ namespace steemit {
 
         extern const int64_t scaled_precision_lut[];
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType, typename AmountType>
         struct asset_interface : public static_version<Major, Hardfork, Release> {
             typedef StorageType asset_container_type;
+            typedef AmountType amount_container_type;
 
+            asset_interface(amount_container_type a, asset_container_type s) : amount(a), symbol(s) {
+
+            }
+
+            amount_container_type amount;
             asset_container_type symbol;
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
-        struct asset : public asset_interface<Major, Hardfork, Release, void_t> {
+        struct asset : public asset_interface<Major, Hardfork, Release, void_t, void_t> {
 
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public asset_interface<Major, Hardfork, Release, asset_symbol_type> {
+        struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public asset_interface<
+                Major, Hardfork, Release, asset_symbol_type, share_type> {
             asset();
 
             asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
 
             asset(share_type a, asset_name_type name);
 
-            share_type amount;
-
             double to_real() const {
-                return double(amount.value) / precision();
+                return double(this->amount.value) / precision();
             }
 
             uint8_t decimals() const;
@@ -52,18 +57,18 @@ namespace steemit {
 
             asset<Major, Hardfork, Release> &operator+=(const asset<Major, Hardfork, Release> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
-                amount += o.amount;
+                this->amount += o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> &operator-=(const asset<Major, Hardfork, Release> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
-                amount -= o.amount;
+                this->amount -= o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return {-amount, this->symbol};
+                return {-this->amount, this->symbol};
             }
 
             friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
@@ -111,18 +116,17 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public asset_interface<
-                Major, Hardfork, Release, asset_name_type> {
+                Major, Hardfork, Release, asset_name_type, share_type> {
             asset();
 
             asset(share_type a, asset_symbol_type name);
 
             asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
-            share_type amount;
             uint8_t decimals;
 
             double to_real() const {
-                return double(amount.value) / precision();
+                return double(this->amount.value) / precision();
             }
 
             asset_symbol_type symbol_type_value() const;
@@ -135,18 +139,18 @@ namespace steemit {
 
             asset<Major, Hardfork, Release> &operator+=(const asset<Major, Hardfork, Release> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
-                amount += o.amount;
+                this->amount += o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> &operator-=(const asset<Major, Hardfork, Release> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
-                amount -= o.amount;
+                this->amount -= o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return {-amount, this->symbol};
+                return {-this->amount, this->symbol};
             }
 
             friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
@@ -408,9 +412,6 @@ namespace steemit {
         };
 
         namespace definitions {
-            typedef asset<0, 16, 0> symboled_asset;
-            typedef asset<0, 17, 0> named_asset;
-
             typedef price<0, 16, 0> symboled_price;
             typedef price<0, 17, 0> named_price;
 
@@ -432,12 +433,18 @@ namespace fc {
     }
 }
 
-FC_REFLECT_DERIVED((typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 16, 0>))),
-                   (typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 16, 0, asset_symbol_type>))),
-                   (amount)(symbol))
-FC_REFLECT_DERIVED((typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 17, 0>))),
-                   (typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 17, 0, asset_named_type>))),
-                   (amount)(symbol))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
+                steemit::protocol::share_type>)), (amount)(symbol))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
+                steemit::protocol::share_type>)), (amount)(symbol))
+
+FC_REFLECT_DERIVED(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 16, 0>)), (typename BOOST_IDENTITY_TYPE(
+        (steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
+                steemit::protocol::share_type>))),)
+FC_REFLECT_DERIVED(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 17, 0>)), (typename BOOST_IDENTITY_TYPE(
+        (steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
+                steemit::protocol::share_type>))), (decimals))
 
 FC_REFLECT(steemit::protocol::definitions::symboled_price, (base)(quote))
 FC_REFLECT(steemit::protocol::definitions::named_price, (base)(quote))
