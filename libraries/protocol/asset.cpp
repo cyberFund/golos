@@ -20,7 +20,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a, asset_container_type id) : amount(a),
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a, asset_symbol_type id) : amount(a),
                 symbol(id) {
         }
 
@@ -153,7 +153,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a, asset_container_type name, uint8_t d)
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a, asset_name_type name, uint8_t d)
                 : amount(a), symbol(name), decimals(d) {
 
         }

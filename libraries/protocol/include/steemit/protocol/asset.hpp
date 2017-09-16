@@ -28,7 +28,7 @@ namespace steemit {
         struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public asset_interface<Major, Hardfork, Release, asset_symbol_type> {
             asset();
 
-            asset(share_type a, asset_container_type id = STEEM_SYMBOL);
+            asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
 
             asset(share_type a, asset_name_type name);
 
@@ -51,19 +51,19 @@ namespace steemit {
             string to_string() const;
 
             asset<Major, Hardfork, Release> &operator+=(const asset<Major, Hardfork, Release> &o) {
-                FC_ASSERT(symbol == o.symbol);
+                FC_ASSERT(this->symbol == o.symbol);
                 amount += o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> &operator-=(const asset<Major, Hardfork, Release> &o) {
-                FC_ASSERT(symbol == o.symbol);
+                FC_ASSERT(this->symbol == o.symbol);
                 amount -= o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return {-amount, symbol};
+                return {-amount, this->symbol};
             }
 
             friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
@@ -116,7 +116,7 @@ namespace steemit {
 
             asset(share_type a, asset_symbol_type name);
 
-            asset(share_type a, asset_container_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
+            asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
             share_type amount;
             uint8_t decimals;
@@ -134,19 +134,19 @@ namespace steemit {
             string to_string() const;
 
             asset<Major, Hardfork, Release> &operator+=(const asset<Major, Hardfork, Release> &o) {
-                FC_ASSERT(symbol == o.symbol);
+                FC_ASSERT(this->symbol == o.symbol);
                 amount += o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> &operator-=(const asset<Major, Hardfork, Release> &o) {
-                FC_ASSERT(symbol == o.symbol);
+                FC_ASSERT(this->symbol == o.symbol);
                 amount -= o.amount;
                 return *this;
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return {-amount, symbol};
+                return {-amount, this->symbol};
             }
 
             friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
