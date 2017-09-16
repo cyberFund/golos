@@ -412,9 +412,6 @@ namespace steemit {
         };
 
         namespace definitions {
-            typedef price<0, 16, 0> symboled_price;
-            typedef price<0, 17, 0> named_price;
-
             typedef price_feed<0, 16, 0> symboled_price_feed;
             typedef price_feed<0, 17, 0> named_price_feed;
         }
@@ -446,10 +443,10 @@ FC_REFLECT_DERIVED(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 17,
         (steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
                 steemit::protocol::share_type>))), (decimals))
 
-FC_REFLECT(steemit::protocol::definitions::symboled_price, (base)(quote))
-FC_REFLECT(steemit::protocol::definitions::named_price, (base)(quote))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price<0, 16, 0>)), (base)(quote))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price<0, 17, 0>)), (base)(quote))
 
-FC_REFLECT(steemit::protocol::definitions::symboled_price_feed,
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price_feed<0, 16, 0>)),
            (settlement_price)(maintenance_collateral_ratio)(maximum_short_squeeze_ratio)(core_exchange_rate))
-FC_REFLECT(steemit::protocol::definitions::named_price_feed,
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price_feed<0, 17, 0>)),
            (settlement_price)(maintenance_collateral_ratio)(maximum_short_squeeze_ratio)(core_exchange_rate))
