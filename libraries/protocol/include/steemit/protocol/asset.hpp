@@ -17,6 +17,10 @@ namespace steemit {
             typedef StorageType asset_container_type;
             typedef AmountType amount_container_type;
 
+            asset_interface() {
+
+            }
+
             asset_interface(amount_container_type a, asset_container_type s) : amount(a), symbol(s) {
 
             }
@@ -410,11 +414,6 @@ namespace steemit {
 
             bool is_for(asset_name_type asset_name) const;
         };
-
-        namespace definitions {
-            typedef price_feed<0, 16, 0> symboled_price_feed;
-            typedef price_feed<0, 17, 0> named_price_feed;
-        }
     }
 } // steemit::protocol
 
