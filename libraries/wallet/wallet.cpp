@@ -620,12 +620,16 @@ namespace steemit {
                         operation.timestamp = timestamp;
                         operation.owner = owner;
 
-                        signed_transaction tx;
+                        custom_json_operation jop;
+                        jop.id = "create_first_key_value";
+                        jop.json = fc::json::to_string(operation);
+                        jop.required_posting_auths.insert(owner);
 
-                        tx.operations.push_back(operation);
-                        tx.validate();
+                        signed_transaction trx;
+                        trx.operations.push_back(jop);
+                        trx.validate();
 
-                        return sign_transaction(tx, broadcast);
+                        return sign_transaction(trx, broadcast);
                     } FC_CAPTURE_AND_RETHROW();
                 }
 
