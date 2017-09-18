@@ -137,13 +137,21 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::protocol::transfer_operation, (from)(to)(amount)(memo))
-FC_REFLECT(steemit::protocol::transfer_to_vesting_operation, (from)(to)(amount))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_operation<0, 16, 0>)), (from)(to)(amount)(memo))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_operation<0, 17, 0>)), (from)(to)(amount)(memo))
 
-FC_REFLECT(steemit::protocol::transfer_to_savings_operation, (from)(to)(amount)(memo))
-FC_REFLECT(steemit::protocol::transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo))
-FC_REFLECT(steemit::protocol::cancel_transfer_from_savings_operation, (from)(request_id))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_to_vesting_operation<0, 16, 0>)), (from)(to)(amount))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_to_vesting_operation<0, 17, 0>)), (from)(to)(amount))
 
-FC_REFLECT(steemit::protocol::override_transfer_operation, (issuer)(from)(to)(amount)(memo)(extensions))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_to_savings_operation<0, 16, 0>)), (from)(to)(amount)(memo))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_to_savings_operation<0, 17, 0>)), (from)(to)(amount)(memo))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_from_savings_operation<0, 16, 0>)), (from)(request_id)(to)(amount)(memo))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::transfer_from_savings_operation<0, 17, 0>)), (from)(request_id)(to)(amount)(memo))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::cancel_transfer_from_savings_operation<0, 16, 0>)), (from)(request_id))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::cancel_transfer_from_savings_operation<0, 17, 0>)), (from)(request_id))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::override_transfer_operation<0, 17, 0>)), (issuer)(from)(to)(amount)(memo)(extensions))
 
 #endif //GOLOS_TRANSFER_OPERATIONS_HPP
