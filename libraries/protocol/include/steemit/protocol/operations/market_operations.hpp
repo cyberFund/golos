@@ -11,7 +11,7 @@ namespace steemit {
          *  The funds are deposited after STEEMIT_CONVERSION_DELAY
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct convert_operation : public base_operation {
+        struct convert_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             uint32_t request_id = 0;
             asset<Major, Hardfork, Release> amount;
@@ -43,7 +43,7 @@ namespace steemit {
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct limit_order_create_operation : public base_operation {
+        struct limit_order_create_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset<Major, Hardfork, Release> amount_to_sell;
@@ -76,7 +76,7 @@ namespace steemit {
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct limit_order_create2_operation : public base_operation {
+        struct limit_order_create2_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
             asset<Major, Hardfork, Release> amount_to_sell;
@@ -111,7 +111,7 @@ namespace steemit {
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct limit_order_cancel_operation : public base_operation {
+        struct limit_order_cancel_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type order_id = 0;
 
@@ -136,7 +136,7 @@ namespace steemit {
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct call_order_update_operation : public base_operation {
+        struct call_order_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             integral_id_type order_id = 0;
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset<Major, Hardfork, Release> delta_collateral; ///< the amount of collateral to add to the margin position
@@ -156,7 +156,7 @@ namespace steemit {
          *  taking over part of the debt and the settlement_fund (see BSIP-0018).
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct bid_collateral_operation : public base_operation {
+        struct bid_collateral_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             /** should be equivalent to call_order_update fee */
             account_name_type bidder; ///< pays fee and additional collateral
             asset<Major, Hardfork, Release> additional_collateral; ///< the amount of collateral to bid for the debt

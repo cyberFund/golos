@@ -49,7 +49,8 @@ namespace steemit {
          * expiration_time cannot be farther in the future than the maximum expiration time set in the global properties
          * object.
          */
-        struct proposal_create_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct proposal_create_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type proposal_id;
             vector <operation_wrapper> proposed_operations;
@@ -82,7 +83,8 @@ namespace steemit {
          * If an account's owner and active authority are both required, only the owner authority may approve. An attempt to
          * add or remove active authority approval to such a proposal will fail.
          */
-        struct proposal_update_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct proposal_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type proposal_id;
             flat_set <account_name_type> active_approvals_to_add;
@@ -115,7 +117,8 @@ namespace steemit {
          * proposal expires. Using this operation, he can prevent any further breath from being wasted on such an absurd
          * proposal.
          */
-        struct proposal_delete_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct proposal_delete_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type owner;
             bool using_owner_authority = false;
             integral_id_type proposal_id;

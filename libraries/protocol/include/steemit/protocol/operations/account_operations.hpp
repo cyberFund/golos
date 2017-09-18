@@ -11,7 +11,7 @@ namespace steemit {
         *  @ingroup operations
         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_create_operation : public base_operation {
+        struct account_create_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             asset <Major, Hardfork, Release> fee;
             account_name_type creator;
             account_name_type new_account_name;
@@ -32,7 +32,7 @@ namespace steemit {
          *  @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_create_with_delegation_operation : public base_operation {
+        struct account_create_with_delegation_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             asset <Major, Hardfork, Release> fee;
             asset <Major, Hardfork, Release> delegation;
             account_name_type creator;
@@ -60,7 +60,7 @@ namespace steemit {
         * See @ref account_object::options_type for the options which may be updated.
         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_update_operation : public base_operation {
+        struct account_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type account;
             optional <authority> owner;
             optional <authority> active;
@@ -103,7 +103,7 @@ namespace steemit {
          * authorizing_account.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_whitelist_operation : public base_operation {
+        struct account_whitelist_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             enum account_listing {
                 no_listing = 0x0, ///< No opinion is specified about this account
                 white_listed = 0x1, ///< This account is whitelisted, but not blacklisted

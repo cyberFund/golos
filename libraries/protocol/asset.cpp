@@ -15,21 +15,21 @@ namespace steemit {
         typedef boost::multiprecision::int128_t int128_t;
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset() : asset_interface(0,
-                                                                                                              STEEM_SYMBOL) {
+        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset() : asset_interface<Major,
+                Hardfork, Release, asset_symbol_type, share_type>(0, STEEM_SYMBOL) {
 
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a,
                                                                                           asset_symbol_type id)
-                : asset_interface(a, id) {
+                : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, id) {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a,
                                                                                           asset_name_type name)
-                : asset_interface(a, STEEM_SYMBOL) {
+                : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, STEEM_SYMBOL) {
             string s = fc::trim(name);
 
             this->symbol = uint64_t(3);
@@ -143,14 +143,15 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset()
-                : asset_interface(0, STEEM_SYMBOL_NAME), decimals(3) {
+                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(0, STEEM_SYMBOL_NAME),
+                decimals(3) {
 
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a,
                                                                                           asset_symbol_type name)
-                : asset_interface(a, name), decimals(3) {
+                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(3) {
             auto ta = (const char *) &name;
             FC_ASSERT(ta[7] == 0);
             this->symbol = &ta[1];
@@ -164,7 +165,7 @@ namespace steemit {
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a,
                                                                                           asset_name_type name,
                                                                                           uint8_t d)
-                : asset_interface(a, name), decimals(d) {
+                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(d) {
 
         }
 
@@ -178,7 +179,7 @@ namespace steemit {
             memcpy(&result, &this->decimals, sizeof(this->decimals));
 
             if (this->symbol.size() > 0) {
-                FC_ASSERT(symbol.size() <= 6,
+                FC_ASSERT(this->symbol.size() <= 6,
                           "Asset symbol type can only present symbols with length less or equal than 6");
                 memcpy(&result + 1, this->symbol.operator std::string().c_str(), this->symbol.size());
             }
