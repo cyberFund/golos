@@ -28,7 +28,7 @@ namespace steemit {
                 FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }
-            FC_ASSERT(fee >= asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME), "Account creation fee cannot be negative");
+            FC_ASSERT(fee >= {0, STEEM_SYMBOL_NAME}, "Account creation fee cannot be negative");
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -47,8 +47,9 @@ namespace steemit {
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }
 
-            FC_ASSERT(fee >= asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME), "Account creation fee cannot be negative");
-            FC_ASSERT(delegation >= asset<Major, Hardfork, Release>(0, VESTS_SYMBOL), "Delegation cannot be negative");
+            FC_ASSERT(fee >= {0, STEEM_SYMBOL_NAME},
+                      "Account creation fee cannot be negative");
+            FC_ASSERT(delegation >= {0, VESTS_SYMBOL}, "Delegation cannot be negative");
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
