@@ -141,7 +141,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void asset_global_settle_operation<Major, Hardfork, Release>::validate() const {
-            FC_ASSERT(asset_to_settle == asset(0, settle_price.base.symbol).symbol);
+            FC_ASSERT(asset_to_settle == settle_price.base.symbol);
         }
 
         void bitasset_options::validate() const {

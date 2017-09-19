@@ -1,7 +1,8 @@
 #include <steemit/protocol/get_config.hpp>
 #include <steemit/protocol/config.hpp>
 #include <steemit/protocol/asset.hpp>
-#include "../version/include/steemit/version/version.hpp"
+
+#include <steemit/version/version.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -85,18 +86,18 @@ namespace steemit {
             result["STEEMIT_MIN_ACCOUNT_CREATION_FEE"] = STEEMIT_MIN_ACCOUNT_CREATION_FEE;
             result["STEEMIT_MIN_ACCOUNT_NAME_LENGTH"] = STEEMIT_MIN_ACCOUNT_NAME_LENGTH;
             result["STEEMIT_MIN_BLOCK_SIZE_LIMIT"] = STEEMIT_MIN_BLOCK_SIZE_LIMIT;
-            result["STEEMIT_MIN_CONTENT_REWARD"] = STEEMIT_MIN_CONTENT_REWARD;
-            result["STEEMIT_MIN_CURATE_REWARD"] = STEEMIT_MIN_CURATE_REWARD;
+            result["STEEMIT_MIN_CONTENT_REWARD"] = asset<0, 17, 0>STEEMIT_MIN_CONTENT_REWARD;
+            result["STEEMIT_MIN_CURATE_REWARD"] = asset<0, 17, 0>STEEMIT_MIN_CURATE_REWARD;
             result["STEEMIT_MINER_ACCOUNT"] = STEEMIT_MINER_ACCOUNT;
             result["STEEMIT_MINER_PAY_PERCENT"] = STEEMIT_MINER_PAY_PERCENT;
-            result["STEEMIT_MIN_FEEDS"] = STEEMIT_MIN_FEEDS;
-            result["STEEMIT_MINING_REWARD"] = STEEMIT_MINING_REWARD;
+            result["STEEMIT_MIN_FEEDS"] = asset<0, 17, 0>STEEMIT_MIN_FEEDS;
+            result["STEEMIT_MINING_REWARD"] = asset<0, 17, 0>STEEMIT_MINING_REWARD;
             result["STEEMIT_MINING_TIME"] = STEEMIT_MINING_TIME;
-            result["STEEMIT_MIN_LIQUIDITY_REWARD"] = STEEMIT_MIN_LIQUIDITY_REWARD;
+            result["STEEMIT_MIN_LIQUIDITY_REWARD"] = asset<0, 17, 0>STEEMIT_MIN_LIQUIDITY_REWARD;
             result["STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC"] = STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC;
-            result["STEEMIT_MIN_PAYOUT_SBD"] = STEEMIT_MIN_PAYOUT_SBD;
-            result["STEEMIT_MIN_POW_REWARD"] = STEEMIT_MIN_POW_REWARD;
-            result["STEEMIT_MIN_PRODUCER_REWARD"] = STEEMIT_MIN_PRODUCER_REWARD;
+            result["STEEMIT_MIN_PAYOUT_SBD"] = asset<0, 17, 0>STEEMIT_MIN_PAYOUT_SBD;
+            result["STEEMIT_MIN_POW_REWARD"] = asset<0, 17, 0>STEEMIT_MIN_POW_REWARD;
+            result["STEEMIT_MIN_PRODUCER_REWARD"] = asset<0, 17, 0>STEEMIT_MIN_PRODUCER_REWARD;
             result["STEEMIT_MIN_RATION"] = STEEMIT_MIN_RATION;
             result["STEEMIT_MIN_TRANSACTION_EXPIRATION_LIMIT"] = STEEMIT_MIN_TRANSACTION_EXPIRATION_LIMIT;
             result["STEEMIT_MIN_TRANSACTION_SIZE_LIMIT"] = STEEMIT_MIN_TRANSACTION_SIZE_LIMIT;
