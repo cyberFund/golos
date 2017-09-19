@@ -122,10 +122,15 @@ namespace steemit {
 
 FC_REFLECT_TYPENAME(steemit::protocol::market_virtual_operations)
 
-FC_REFLECT(steemit::protocol::fill_order_operation,
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_order_operation<0, 16, 0>)),
            (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
-FC_REFLECT(steemit::protocol::fill_call_order_operation, (order_id)(owner)(pays)(receives)(fee))
-FC_REFLECT(steemit::protocol::fill_settlement_order_operation, (order_id)(owner)(pays)(receives)(fee))
-FC_REFLECT(steemit::protocol::execute_bid_operation, (bidder)(debt)(collateral))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_order_operation<0, 17, 0>)),
+           (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_call_order_operation<0, 17, 0>)), (order_id)(owner)(pays)(receives)(fee))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_settlement_order_operation<0, 17, 0>)), (order_id)(owner)(pays)(receives)(fee))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::execute_bid_operation<0, 17, 0>)), (bidder)(debt)(collateral))
 
 #endif //GOLOS_MARKET_VIRTUAL_OPERATIONS_HPP

@@ -10,6 +10,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/block.hpp
      include/steemit/protocol/block_header.hpp
      include/steemit/protocol/config.hpp
+     include/steemit/protocol/chain_properties.hpp
      include/steemit/protocol/exceptions.hpp
      include/steemit/protocol/get_config.hpp
      include/steemit/protocol/operations/market_operations.hpp

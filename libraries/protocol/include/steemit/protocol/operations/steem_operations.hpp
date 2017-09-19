@@ -1,8 +1,9 @@
 #pragma once
 
+#include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/base.hpp>
 #include <steemit/protocol/block_header.hpp>
-#include <steemit/protocol/asset.hpp>
+#include <steemit/protocol/chain_properties.hpp>
 
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
@@ -327,39 +328,6 @@ namespace steemit {
                 a.insert(from_account);
             }
         };
-
-
-        /**
-         * Witnesses must vote on how to set certain chain properties to ensure a smooth
-         * and well functioning network.  Any time @owner is in the active set of witnesses these
-         * properties will be used to control the blockchain configuration.
-         */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct chain_properties {
-            /**
-             *  This fee, paid in STEEM, is converted into VESTING SHARES for the new account. Accounts
-             *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
-             *  fee requires all accounts to have some kind of commitment to the network that includes the
-             *  ability to vote and make transactions.
-             */
-            asset <Major, Hardfork, Release> account_creation_fee = asset(STEEMIT_MIN_ACCOUNT_CREATION_FEE,
-                                                                          STEEM_SYMBOL_NAME);
-
-            /**
-             *  This witnesses vote for the maximum_block_size which is used by the network
-             *  to tune rate limiting and capacity
-             */
-            uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-            uint16_t sbd_interest_rate = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
-
-            void validate() const {
-                FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
-                FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-                FC_ASSERT(sbd_interest_rate >= 0);
-                FC_ASSERT(sbd_interest_rate <= STEEMIT_100_PERCENT);
-            }
-        };
-
 
         /**
          *  Users who wish to become a witness must pay a fee acceptable to
@@ -843,12 +811,18 @@ namespace steemit {
 } // steemit::protocol
 
 
-FC_REFLECT(steemit::protocol::reset_account_operation, (reset_account)(account_to_reset)(new_owner_authority))
-FC_REFLECT(steemit::protocol::set_reset_account_operation, (account)(current_reset_account)(reset_account))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::reset_account_operation<0, 16, 0>)), (reset_account)(account_to_reset)(new_owner_authority))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::reset_account_operation<0, 17, 0>)), (reset_account)(account_to_reset)(new_owner_authority))
 
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_reset_account_operation<0, 16, 0>)), (account)(current_reset_account)(reset_account))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_reset_account_operation<0, 17, 0>)), (account)(current_reset_account)(reset_account))
 
-FC_REFLECT(steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block))
-FC_REFLECT(steemit::protocol::feed_publish_operation, (publisher)(exchange_rate))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::report_over_production_operation<0, 16, 0>)), (reporter)(first_block)(second_block))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::report_over_production_operation<0, 17, 0>)), (reporter)(first_block)(second_block))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::feed_publish_operation<0, 16, 0>)), (publisher)(exchange_rate))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::feed_publish_operation<0, 17, 0>)), (publisher)(exchange_rate))
+
 FC_REFLECT(steemit::protocol::pow, (worker)(input)(signature)(work))
 FC_REFLECT(steemit::protocol::pow2, (input)(pow_summary))
 FC_REFLECT(steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce))
