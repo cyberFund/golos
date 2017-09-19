@@ -1,5 +1,8 @@
 #include <steemit/protocol/operations/escrow_operations.hpp>
 
+#include <fc/utf8.hpp>
+#include <fc/io/json.hpp>
+
 namespace steemit {
     namespace protocol {
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before

@@ -1,13 +1,14 @@
 #include <steemit/protocol/operations/comment_operations.hpp>
 
+#include <fc/utf8.hpp>
+
 namespace steemit {
     namespace protocol {
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before
         ///  Issue #56 contains the justificiation for allowing any UTF-8 string to serve as a permlink, content will be grouped by tags
         ///  going forward.
         inline void validate_permlink(const string &permlink) {
-            FC_ASSERT(permlink.size() <
-                      STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
+            FC_ASSERT(permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -42,28 +43,30 @@ namespace steemit {
             }
         };
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void comment_payout_beneficiaries<Major, Hardfork, Release>::validate() const {
+        void comment_payout_beneficiaries::validate() const {
             uint32_t sum = 0;
 
-            FC_ASSERT(this->beneficiaries.size(), "Must specify at least one beneficiary");
-            FC_ASSERT(this->beneficiaries.size() < 128, "Cannot specify more than 127 beneficiaries."); // Require size serializtion fits in one byte.
+            FC_ASSERT(beneficiaries.size(), "Must specify at least one beneficiary");
+            FC_ASSERT(beneficiaries.size() < 128,
+                      "Cannot specify more than 127 beneficiaries."); // Require size serialization fits in one byte.
 
-            validate_account_name(this->beneficiaries[0].account);
-            FC_ASSERT(this->beneficiaries[0].weight <=
-                      STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");
-            sum += this->beneficiaries[0].weight;
-            FC_ASSERT(sum <=
-                      STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
+            validate_account_name(beneficiaries[0].account);
+            FC_ASSERT(beneficiaries[0].weight <= STEEMIT_100_PERCENT,
+                      "Cannot allocate more than 100% of rewards to one account");
+            sum += beneficiaries[0].weight;
+            FC_ASSERT(sum <= STEEMIT_100_PERCENT,
+                      "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
 
-            for (size_t i = 1; i < this->beneficiaries.size(); i++) {
-                validate_account_name(this->beneficiaries[i].account);
-                FC_ASSERT(this->beneficiaries[i].weight <= STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to one account");
-                sum += this->beneficiaries[i].weight;
+            for (size_t i = 1; i < beneficiaries.size(); i++) {
+                validate_account_name(beneficiaries[i].account);
+                FC_ASSERT(beneficiaries[i].weight <= STEEMIT_100_PERCENT,
+                          "Cannot allocate more than 100% of rewards to one account");
+                sum += beneficiaries[i].weight;
 
-                FC_ASSERT(sum <= STEEMIT_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
-                FC_ASSERT(this->beneficiaries[i - 1] <
-                          this->beneficiaries[i], "Benficiaries must be specified in sorted order (account ascending)");
+                FC_ASSERT(sum <= STEEMIT_100_PERCENT,
+                          "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
+                FC_ASSERT(beneficiaries[i - 1] < beneficiaries[i],
+                          "Benficiaries must be specified in sorted order (account ascending)");
             }
         }
 
@@ -73,33 +76,29 @@ namespace steemit {
             validate_account_name(this->author);
             validate_permlink(this->permlink);
 
-            FC_ASSERT((this->amount || this->extension_time) && !(this->amount &&
-                    this->extension_time), "Payout window can be extended by required SBD amount or by required time amount");
+            FC_ASSERT((this->amount || this->extension_time) && !(this->amount && this->extension_time),
+                      "Payout window can be extended by required SBD amount or by required time amount");
 
             if (this->amount) {
-                FC_ASSERT(this->amount->symbol ==
-                          SBD_SYMBOL_NAME, "Payout window extension is only available with SBD");
-                FC_ASSERT(this->amount->amount >
-                          0, "Cannot extend payout window with 0 SBD");
+                FC_ASSERT(this->amount->symbol == SBD_SYMBOL_NAME,
+                          "Payout window extension is only available with SBD");
+                FC_ASSERT(this->amount->amount > 0, "Cannot extend payout window with 0 SBD");
             }
 
             if (this->extension_time) {
-                FC_ASSERT(*this->extension_time <=
-                          fc::time_point_sec(STEEMIT_CASHOUT_WINDOW_SECONDS), "Payout window extension cannot be larger than a week");
-                FC_ASSERT(*this->extension_time >
-                          fc::time_point_sec(0), "Payout window extension cannot be extended for 0 seconds");
+                FC_ASSERT(*this->extension_time <= fc::time_point_sec(STEEMIT_CASHOUT_WINDOW_SECONDS),
+                          "Payout window extension cannot be larger than a week");
+                FC_ASSERT(*this->extension_time > fc::time_point_sec(0),
+                          "Payout window extension cannot be extended for 0 seconds");
             }
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void comment_options_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(this->author);
-            FC_ASSERT(this->percent_steem_dollars <=
-                      STEEMIT_100_PERCENT, "Percent cannot exceed 100%");
-            FC_ASSERT(this->max_accepted_payout.symbol ==
-                      SBD_SYMBOL_NAME, "Max accepted payout must be in SBD");
-            FC_ASSERT(this->max_accepted_payout.amount.value >=
-                      0, "Cannot accept less than 0 payout");
+            FC_ASSERT(this->percent_steem_dollars <= STEEMIT_100_PERCENT, "Percent cannot exceed 100%");
+            FC_ASSERT(this->max_accepted_payout.symbol == SBD_SYMBOL_NAME, "Max accepted payout must be in SBD");
+            FC_ASSERT(this->max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout");
             validate_permlink(this->permlink);
             for (auto &e : this->extensions) {
                 e.visit(comment_options_extension_validate_visitor());

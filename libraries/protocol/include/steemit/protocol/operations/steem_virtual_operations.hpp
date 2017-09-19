@@ -201,16 +201,41 @@ namespace steemit {
     }
 } //steemit::protocol
 
-FC_REFLECT(steemit::protocol::author_reward_operation, (author)(permlink)(sbd_payout)(steem_payout)(vesting_payout))
-FC_REFLECT(steemit::protocol::curation_reward_operation, (curator)(reward)(comment_author)(comment_permlink))
-FC_REFLECT(steemit::protocol::comment_reward_operation, (author)(permlink)(payout))
-FC_REFLECT(steemit::protocol::fill_convert_request_operation, (owner)(requestid)(amount_in)(amount_out))
-FC_REFLECT(steemit::protocol::liquidity_reward_operation, (owner)(payout))
-FC_REFLECT(steemit::protocol::interest_operation, (owner)(interest))
-FC_REFLECT(steemit::protocol::fill_vesting_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited))
-FC_REFLECT(steemit::protocol::shutdown_witness_operation, (owner))
-FC_REFLECT(steemit::protocol::fill_transfer_from_savings_operation, (from)(to)(amount)(request_id)(memo))
-FC_REFLECT(steemit::protocol::hardfork_operation, (hardfork_id))
-FC_REFLECT(steemit::protocol::comment_payout_update_operation, (author)(permlink))
-FC_REFLECT(steemit::protocol::comment_benefactor_reward_operation, (benefactor)(author)(permlink)(reward))
-FC_REFLECT(steemit::protocol::return_vesting_delegation_operation, (account)(vesting_shares))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::author_reward_operation<0, 16, 0>)), (author)(permlink)(sbd_payout)(steem_payout)(vesting_payout))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::author_reward_operation<0, 17, 0>)), (author)(permlink)(sbd_payout)(steem_payout)(vesting_payout))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::curation_reward_operation<0, 16, 0>)), (curator)(reward)(comment_author)(comment_permlink))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::curation_reward_operation<0, 17, 0>)), (curator)(reward)(comment_author)(comment_permlink))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_reward_operation<0, 16, 0>)), (author)(permlink)(payout))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_reward_operation<0, 17, 0>)), (author)(permlink)(payout))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_convert_request_operation<0, 16, 0>)), (owner)(requestid)(amount_in)(amount_out))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_convert_request_operation<0, 17, 0>)), (owner)(requestid)(amount_in)(amount_out))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::liquidity_reward_operation<0, 16, 0>)), (owner)(payout))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::liquidity_reward_operation<0, 17, 0>)), (owner)(payout))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::interest_operation<0, 16, 0>)), (owner)(interest))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::interest_operation<0, 17, 0>)), (owner)(interest))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_vesting_withdraw_operation<0, 16, 0>)), (from_account)(to_account)(withdrawn)(deposited))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_vesting_withdraw_operation<0, 17, 0>)), (from_account)(to_account)(withdrawn)(deposited))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::shutdown_witness_operation<0, 16, 0>)), (owner))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::shutdown_witness_operation<0, 17, 0>)), (owner))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_transfer_from_savings_operation<0, 16, 0>)), (from)(to)(amount)(request_id)(memo))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::fill_transfer_from_savings_operation<0, 17, 0>)), (from)(to)(amount)(request_id)(memo))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::hardfork_operation<0, 16, 0>)), (hardfork_id))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::hardfork_operation<0, 17, 0>)), (hardfork_id))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_payout_update_operation<0, 16, 0>)), (author)(permlink))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_payout_update_operation<0, 17, 0>)), (author)(permlink))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_benefactor_reward_operation<0, 16, 0>)), (benefactor)(author)(permlink)(reward))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_benefactor_reward_operation<0, 17, 0>)), (benefactor)(author)(permlink)(reward))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::return_vesting_delegation_operation<0, 16, 0>)), (account)(vesting_shares))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::return_vesting_delegation_operation<0, 17, 0>)), (account)(vesting_shares))

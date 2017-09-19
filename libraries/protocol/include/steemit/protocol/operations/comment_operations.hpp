@@ -5,8 +5,6 @@
 #include <steemit/protocol/base.hpp>
 #include <steemit/protocol/block_header.hpp>
 
-#include <fc/utf8.hpp>
-
 namespace steemit {
     namespace protocol {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
