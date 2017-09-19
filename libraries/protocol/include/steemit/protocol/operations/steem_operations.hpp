@@ -348,7 +348,7 @@ namespace steemit {
             account_name_type owner;
             string url;
             public_key_type block_signing_key;
-            chain_properties props;
+            chain_properties<Major, Hardfork, Release> props;
             asset <Major, Hardfork, Release> fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
             void validate() const;
@@ -827,7 +827,6 @@ FC_REFLECT(steemit::protocol::pow, (worker)(input)(signature)(work))
 FC_REFLECT(steemit::protocol::pow2, (input)(pow_summary))
 FC_REFLECT(steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce))
 FC_REFLECT(steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary))
-FC_REFLECT(steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
 
 FC_REFLECT_TYPENAME(steemit::protocol::pow2_work)
 FC_REFLECT(steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props))

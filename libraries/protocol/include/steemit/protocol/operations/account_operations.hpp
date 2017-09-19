@@ -142,7 +142,9 @@ FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_create_with_
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_update_operation<0, 16, 0>)), (account)(owner)(active)(posting)(memo_key)(json_metadata))
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_update_operation<0, 17, 0>)), (account)(owner)(active)(posting)(memo_key)(json_metadata))
 
-FC_REFLECT_ENUM(steemit::protocol::account_whitelist_operation::account_listing,
+FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>))::account_listing,
+                (no_listing)(white_listed)(black_listed)(white_and_black_listed));
+FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 17, 0>))::account_listing,
                 (no_listing)(white_listed)(black_listed)(white_and_black_listed));
 
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>)),
