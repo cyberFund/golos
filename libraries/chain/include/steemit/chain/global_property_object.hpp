@@ -21,11 +21,11 @@ namespace steemit {
          * This is an implementation detail. The values here are calculated during normal chain operations and reflect the
          * current values of global blockchain properties.
          */
-        class dynamic_global_property_object
-                : public object<dynamic_global_property_object_type, dynamic_global_property_object> {
+        class dynamic_global_property_object : public object<dynamic_global_property_object_type,
+                dynamic_global_property_object> {
         public:
             template<typename Constructor, typename Allocator>
-            dynamic_global_property_object(Constructor &&c, allocator<Allocator> a) {
+            dynamic_global_property_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -51,19 +51,18 @@ namespace steemit {
              */
             uint32_t num_pow_witnesses = 0;
 
-            asset virtual_supply = asset(0, STEEM_SYMBOL_NAME);
-            asset current_supply = asset(0, STEEM_SYMBOL_NAME);
-            asset confidential_supply = asset(0, STEEM_SYMBOL_NAME); ///< total asset held in confidential balances
-            asset current_sbd_supply = asset(0, SBD_SYMBOL_NAME);
-            asset confidential_sbd_supply = asset(0, SBD_SYMBOL_NAME); ///< total asset held in confidential balances
-            asset total_vesting_fund_steem = asset(0, STEEM_SYMBOL_NAME);
-            asset total_vesting_shares = asset(0, VESTS_SYMBOL);
-            asset total_reward_fund_steem = asset(0, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> virtual_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> current_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> confidential_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset<0, 17, 0> current_sbd_supply = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> confidential_sbd_supply = asset<0, 17, 0>(0, SBD_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset<0, 17, 0> total_vesting_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> total_vesting_shares = asset<0, 17, 0>(0, VESTS_SYMBOL);
+            asset<0, 17, 0> total_reward_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
 
             price get_vesting_share_price() const {
-                if (total_vesting_fund_steem.amount == 0 ||
-                    total_vesting_shares.amount == 0) {
+                if (total_vesting_fund_steem.amount == 0 || total_vesting_shares.amount == 0) {
                     return price(asset(1000, STEEM_SYMBOL_NAME), asset(1000000, VESTS_SYMBOL));
                 }
 
@@ -139,44 +138,21 @@ namespace steemit {
             uint32_t vote_regeneration_per_day = 40;
         };
 
-        typedef multi_index_container<
-                dynamic_global_property_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>,
-                                member<dynamic_global_property_object, dynamic_global_property_object::id_type, &dynamic_global_property_object::id>>
-                >, allocator<dynamic_global_property_object>
-        > dynamic_global_property_index;
+        typedef multi_index_container <dynamic_global_property_object, indexed_by<ordered_unique < tag < by_id>, member<
+                dynamic_global_property_object, dynamic_global_property_object::id_type,
+                &dynamic_global_property_object::id>>
+        >, allocator <dynamic_global_property_object>
+        >
+        dynamic_global_property_index;
 
     }
 } // steemit::chain
 
 FC_REFLECT(steemit::chain::dynamic_global_property_object,
-        (id)
-                (head_block_number)
-                (head_block_id)
-                (time)
-                (current_witness)
-                (total_pow)
-                (num_pow_witnesses)
-                (virtual_supply)
-                (current_supply)
-                (confidential_supply)
-                (current_sbd_supply)
-                (confidential_sbd_supply)
-                (total_vesting_fund_steem)
-                (total_vesting_shares)
-                (total_reward_fund_steem)
-                (total_reward_shares2)
-                (sbd_interest_rate)
-                (sbd_print_rate)
-                (average_block_size)
-                (maximum_block_size)
-                (current_aslot)
-                (recent_slots_filled)
-                (participation_count)
-                (last_irreversible_block_num)
-                (max_virtual_bandwidth)
-                (current_reserve_ratio)
-                (vote_regeneration_per_day)
-)
+           (id)(head_block_number)(head_block_id)(time)(current_witness)(total_pow)(num_pow_witnesses)(virtual_supply)(
+                   current_supply)(confidential_supply)(current_sbd_supply)(confidential_sbd_supply)(
+                   total_vesting_fund_steem)(total_vesting_shares)(total_reward_fund_steem)(total_reward_shares2)(
+                   sbd_interest_rate)(sbd_print_rate)(average_block_size)(maximum_block_size)(current_aslot)(
+                   recent_slots_filled)(participation_count)(last_irreversible_block_num)(max_virtual_bandwidth)(
+                   current_reserve_ratio)(vote_regeneration_per_day))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::dynamic_global_property_object, steemit::chain::dynamic_global_property_index)
