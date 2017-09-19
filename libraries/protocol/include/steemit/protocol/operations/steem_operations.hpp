@@ -68,8 +68,7 @@ namespace steemit {
             account_name_type author;
             string permlink;
 
-            asset <Major, Hardfork, Release> max_accepted_payout = asset(1000000000,
-                                                                         SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
+            asset <Major, Hardfork, Release> max_accepted_payout = {1000000000, SBD_SYMBOL_NAME};       /// SBD value of the maximum payout this post will receive
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
@@ -163,123 +162,6 @@ namespace steemit {
 
             void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(voter);
-            }
-        };
-
-        /**
-         *  The purpose of this operation is to enable someone to send money contingently to
-         *  another individual. The funds leave the *from* account and go into a temporary balance
-         *  where they are held until *from* releases it to *to* or *to* refunds it to *from*.
-         *
-         *  In the event of a dispute the *agent* can divide the funds between the to/from account.
-         *  Disputes can be raised any time before or on the dispute deadline time, after the escrow
-         *  has been approved by all parties.
-         *
-         *  This operation only creates a proposed escrow transfer. Both the *agent* and *to* must
-         *  agree to the terms of the arrangement by approving the escrow.
-         *
-         *  The escrow agent is paid the fee on approval of all parties. It is up to the escrow agent
-         *  to determine the fee.
-         *
-         *  Escrow transactions are uniquely identified by 'from' and 'escrow_id', the 'escrow_id' is defined
-         *  by the sender.
-         */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_transfer_operation : public base_operation, public static_version<Major, Hardfork, Release> {
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
-            uint32_t escrow_id = 30;
-
-            asset <Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME};
-            asset <Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME};
-            asset <Major, Hardfork, Release> fee;
-
-            time_point_sec ratification_deadline;
-            time_point_sec escrow_expiration;
-
-            string json_meta;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                a.insert(from);
-            }
-        };
-
-
-        /**
-         *  The agent and to accounts must approve an escrow transaction for it to be valid on
-         *  the blockchain. Once a part approves the escrow, the cannot revoke their approval.
-         *  Subsequent escrow approve operations, regardless of the approval, will be rejected.
-         */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_approve_operation : public base_operation, public static_version<Major, Hardfork, Release> {
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
-            account_name_type who; // Either to or agent
-
-            uint32_t escrow_id = 30;
-            bool approve = true;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                a.insert(who);
-            }
-        };
-
-
-        /**
-         *  If either the sender or receiver of an escrow payment has an issue, they can
-         *  raise it for dispute. Once a payment is in dispute, the agent has authority over
-         *  who gets what.
-         */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_dispute_operation : public base_operation, public static_version<Major, Hardfork, Release> {
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
-            account_name_type who;
-
-            uint32_t escrow_id = 30;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                a.insert(who);
-            }
-        };
-
-
-        /**
-         *  This operation can be used by anyone associated with the escrow transfer to
-         *  release funds if they have permission.
-         *
-         *  The permission scheme is as follows:
-         *  If there is no dispute and escrow has not expired, either party can release funds to the other.
-         *  If escrow expires and there is no dispute, either party can release funds to either party.
-         *  If there is a dispute regardless of expiration, the agent can release funds to either party
-         *     following whichever agreement was in place between the parties.
-         */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_release_operation : public base_operation, public static_version<Major, Hardfork, Release> {
-            account_name_type from;
-            account_name_type to; ///< the original 'to'
-            account_name_type agent;
-            account_name_type who; ///< the account that is attempting to release the funds, determines valid 'receiver'
-            account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
-
-            uint32_t escrow_id = 30;
-            asset <Major, Hardfork, Release> sbd_amount = asset(0, SBD_SYMBOL_NAME); ///< the amount of sbd to release
-            asset <Major, Hardfork, Release> steem_amount = asset(0,
-                                                                  STEEM_SYMBOL_NAME); ///< the amount of steem to release
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                a.insert(who);
             }
         };
 
@@ -483,7 +365,7 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct feed_publish_operation : public base_operation, public static_version<Major, Hardfork, Release> {
             account_name_type publisher;
-            price exchange_rate;
+            price<Major, Hardfork, Release> exchange_rate;
 
             void validate() const;
 
@@ -829,46 +711,70 @@ FC_REFLECT(steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce))
 FC_REFLECT(steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary))
 
 FC_REFLECT_TYPENAME(steemit::protocol::pow2_work)
-FC_REFLECT(steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props))
-FC_REFLECT(steemit::protocol::pow2_operation, (work)(new_owner_key)(props))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow_operation<0, 16, 0>)), (worker_account)(block_id)(nonce)(work)(props))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow_operation<0, 17, 0>)), (worker_account)(block_id)(nonce)(work)(props))
 
-FC_REFLECT(steemit::protocol::withdraw_vesting_operation, (account)(vesting_shares))
-FC_REFLECT(steemit::protocol::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest))
-FC_REFLECT(steemit::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee))
-FC_REFLECT(steemit::protocol::account_witness_vote_operation, (account)(witness)(approve))
-FC_REFLECT(steemit::protocol::account_witness_proxy_operation, (account)(proxy))
-FC_REFLECT(steemit::protocol::comment_operation,
-           (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
-FC_REFLECT(steemit::protocol::vote_operation, (voter)(author)(permlink)(weight))
-FC_REFLECT(steemit::protocol::custom_operation, (required_auths)(id)(data))
-FC_REFLECT(steemit::protocol::custom_json_operation, (required_auths)(required_posting_auths)(id)(json))
-FC_REFLECT(steemit::protocol::custom_binary_operation,
-           (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow2_operation<0, 16, 0>)), (work)(new_owner_key)(props))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow2_operation<0, 17, 0>)), (work)(new_owner_key)(props))
 
-FC_REFLECT(steemit::protocol::delete_comment_operation, (author)(permlink));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::withdraw_vesting_operation<0, 16, 0>)), (account)(vesting_shares))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::withdraw_vesting_operation<0, 17, 0>)), (account)(vesting_shares))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_withdraw_vesting_route_operation<0, 16, 0>)), (from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_withdraw_vesting_route_operation<0, 17, 0>)), (from_account)(to_account)(percent)(auto_vest))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::witness_update_operation<0, 16, 0>)), (owner)(url)(block_signing_key)(props)(fee))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::witness_update_operation<0, 17, 0>)), (owner)(url)(block_signing_key)(props)(fee))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_vote_operation<0, 16, 0>)), (account)(witness)(approve))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_vote_operation<0, 17, 0>)), (account)(witness)(approve))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_proxy_operation<0, 16, 0>)), (account)(proxy))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_proxy_operation<0, 17, 0>)), (account)(proxy))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_operation<0, 16, 0>)), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_operation<0, 17, 0>)), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 16, 0>)), (voter)(author)(permlink)(weight))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 17, 0>)), (voter)(author)(permlink)(weight))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation<0, 16, 0>)), (required_auths)(id)(data))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation<0, 17, 0>)), (required_auths)(id)(data))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation<0, 16, 0>)), (required_auths)(required_posting_auths)(id)(json))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation<0, 17, 0>)), (required_auths)(required_posting_auths)(id)(json))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation<0, 16, 0>)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation<0, 17, 0>)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::delete_comment_operation<0, 16, 0>)), (author)(permlink));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::delete_comment_operation<0, 17, 0>)), (author)(permlink));
 
 FC_REFLECT(steemit::protocol::beneficiary_route_type, (account)(weight))
 FC_REFLECT(steemit::protocol::comment_payout_beneficiaries, (beneficiaries))
-FC_REFLECT_TYPENAME(steemit::protocol::comment_options_extension)
-FC_REFLECT(steemit::protocol::comment_options_operation,
-           (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(
-                   extensions))
 
-FC_REFLECT(steemit::protocol::escrow_transfer_operation,
-           (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(
-                   escrow_expiration));
-FC_REFLECT(steemit::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve));
-FC_REFLECT(steemit::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id));
-FC_REFLECT(steemit::protocol::escrow_release_operation,
-           (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount));
-FC_REFLECT(steemit::protocol::challenge_authority_operation, (challenger)(challenged)(require_owner));
-FC_REFLECT(steemit::protocol::prove_authority_operation, (challenged)(require_owner));
-FC_REFLECT(steemit::protocol::request_account_recovery_operation,
-           (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
-FC_REFLECT(steemit::protocol::recover_account_operation,
-           (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
-FC_REFLECT(steemit::protocol::change_recovery_account_operation,
-           (account_to_recover)(new_recovery_account)(extensions));
-FC_REFLECT(steemit::protocol::decline_voting_rights_operation, (account)(decline));
-FC_REFLECT(steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares));
-FC_REFLECT(steemit::protocol::comment_payout_extension_operation, (payer)(author)(permlink)(extension_time)(amount));
+FC_REFLECT_TYPENAME(steemit::protocol::comment_options_extension)
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_options_operation<0, 16, 0>)), (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_options_operation<0, 17, 0>)), (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions))
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 16, 0>)), (challenger)(challenged)(require_owner));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 17, 0>)), (challenger)(challenged)(require_owner));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::prove_authority_operation<0, 16, 0>)), (challenged)(require_owner));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::prove_authority_operation<0, 17, 0>)), (challenged)(require_owner));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::request_account_recovery_operation<0, 16, 0>)), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::request_account_recovery_operation<0, 17, 0>)), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::recover_account_operation<0, 16, 0>)), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::recover_account_operation<0, 17, 0>)), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::change_recovery_account_operation<0, 16, 0>)), (account_to_recover)(new_recovery_account)(extensions));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::change_recovery_account_operation<0, 17, 0>)), (account_to_recover)(new_recovery_account)(extensions));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::decline_voting_rights_operation<0, 16, 0>)), (account)(decline));
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::decline_voting_rights_operation<0, 17, 0>)), (account)(decline));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::delegate_vesting_shares_operation<0, 17, 0>)), (delegator)(delegatee)(vesting_shares));
+
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_payout_extension_operation<0, 17, 0>)), (payer)(author)(permlink)(extension_time)(amount));

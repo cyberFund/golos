@@ -11,6 +11,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/block_header.hpp
      include/steemit/protocol/config.hpp
      include/steemit/protocol/chain_properties.hpp
+     include/steemit/protocol/operations/escrow_operations.hpp
      include/steemit/protocol/exceptions.hpp
      include/steemit/protocol/get_config.hpp
      include/steemit/protocol/operations/market_operations.hpp
@@ -35,6 +36,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      authority.cpp
      base.cpp
      block.cpp
+     operations/escrow_operations.cpp
      get_config.cpp
      operations/market_operations.cpp
      operations/operation_utilities_impl.cpp
