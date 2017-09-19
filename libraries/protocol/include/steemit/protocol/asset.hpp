@@ -133,7 +133,7 @@ namespace steemit {
                 return double(this->amount.value) / precision();
             }
 
-            asset_symbol_type symbol_type_value() const;
+            asset_symbol_type symbol_name() const;
 
             int64_t precision() const;
 

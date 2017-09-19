@@ -1,7 +1,7 @@
 #ifndef GOLOS_TRANSFER_OPERATIONS_HPP
 #define GOLOS_TRANSFER_OPERATIONS_HPP
 
-#include <steemit/protocol/asset<Major, Hardfork, Release>.hpp>
+#include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/base.hpp>
 #include <steemit/protocol/block_header.hpp>
 
@@ -35,13 +35,13 @@ namespace steemit {
             void validate() const;
 
             void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                if (amount.symbol_type_value() != VESTS_SYMBOL) {
+                if (amount.symbol_name() != VESTS_SYMBOL) {
                     a.insert(from);
                 }
             }
 
             void get_required_owner_authorities(flat_set <account_name_type> &a) const {
-                if (amount.symbol_type_value() == VESTS_SYMBOL) {
+                if (amount.symbol_name() == VESTS_SYMBOL) {
                     a.insert(from);
                 }
             }

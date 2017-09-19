@@ -17,48 +17,58 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        void challenge_authority_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void challenge_authority_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(challenger);
             validate_account_name(challenged);
             FC_ASSERT(challenged != challenger, "cannot challenge yourself");
         }
 
-        void prove_authority_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void prove_authority_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(challenged);
         }
 
-        void vote_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void vote_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(voter);
             validate_account_name(author);
             FC_ASSERT(abs(weight) <= STEEMIT_100_PERCENT, "Weight is not a STEEMIT percentage");
             validate_permlink(permlink);
         }
 
-        void withdraw_vesting_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void withdraw_vesting_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
-            FC_ASSERT(vesting_shares.symbol_type_value() == VESTS_SYMBOL, "Amount must be VESTS");
+            FC_ASSERT(vesting_shares.symbol_name() == VESTS_SYMBOL, "Amount must be VESTS");
         }
 
-        void set_withdraw_vesting_route_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void set_withdraw_vesting_route_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from_account);
             validate_account_name(to_account);
             FC_ASSERT(0 <= percent && percent <= STEEMIT_100_PERCENT, "Percent must be valid steemit percent");
         }
 
-        void witness_update_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void witness_update_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(owner);
             FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
             FC_ASSERT(fc::is_utf8(url), "URL is not valid UTF8");
-            FC_ASSERT(fee >= asset(0, STEEM_SYMBOL_NAME), "Fee cannot be negative");
+
+            asset<Major, Hardfork, Release> default_steem(0, STEEM_SYMBOL_NAME);
+            FC_ASSERT(fee >= default_steem, "Fee cannot be negative");
             props.validate();
         }
 
-        void account_witness_vote_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_witness_vote_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
             validate_account_name(witness);
         }
 
-        void account_witness_proxy_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_witness_proxy_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
             if (proxy.size()) {
                 validate_account_name(proxy);
@@ -66,12 +76,14 @@ namespace steemit {
             FC_ASSERT(proxy != account, "Cannot proxy to self");
         }
 
-        void custom_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void custom_operation<Major, Hardfork, Release>::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT(required_auths.size() > 0, "at least on account must be specified");
         }
 
-        void custom_json_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void custom_json_operation<Major, Hardfork, Release>::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT((required_auths.size() + required_posting_auths.size()) > 0,
                       "at least on account must be specified");
@@ -80,7 +92,8 @@ namespace steemit {
             FC_ASSERT(fc::json::is_valid(json), "JSON Metadata not valid JSON");
         }
 
-        void custom_binary_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void custom_binary_operation<Major, Hardfork, Release>::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT((required_owner_auths.size() + required_active_auths.size() + required_posting_auths.size()) > 0,
                       "at least on account must be specified");
@@ -90,14 +103,15 @@ namespace steemit {
             }
         }
 
-
-        fc::sha256 pow_operation::work_input() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        fc::sha256 pow_operation<Major, Hardfork, Release>::work_input() const {
             auto hash = fc::sha256::hash(block_id);
             hash._hash[0] = nonce;
             return fc::sha256::hash(hash);
         }
 
-        void pow_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow_operation<Major, Hardfork, Release>::validate() const {
             props.validate();
             validate_account_name(worker_account);
             FC_ASSERT(work_input() == work.input, "Determninistic input does not match recorded input");
@@ -113,7 +127,8 @@ namespace steemit {
             }
         };
 
-        void pow2_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow2_operation<Major, Hardfork, Release>::validate() const {
             props.validate();
             work.visit(pow2_operation_validate_visitor());
         }
@@ -133,7 +148,9 @@ namespace steemit {
             flat_set<account_name_type> &_required_active;
         };
 
-        void pow2_operation::get_required_active_authorities(flat_set<account_name_type> &a) const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow2_operation<Major, Hardfork, Release>::get_required_active_authorities(
+                flat_set<account_name_type> &a) const {
             if (!new_owner_key) {
                 pow2_operation_get_required_active_visitor vtor(a);
                 work.visit(vtor);
@@ -203,7 +220,8 @@ namespace steemit {
             FC_ASSERT(pow_summary == fc::sha256::hash(proof.inputs).approx_log_32());
         }
 
-        void feed_publish_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void feed_publish_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(publisher);
             FC_ASSERT(
                     (exchange_rate.base.symbol == STEEM_SYMBOL_NAME && exchange_rate.quote.symbol == SBD_SYMBOL_NAME) ||
@@ -212,7 +230,8 @@ namespace steemit {
             exchange_rate.validate();
         }
 
-        void report_over_production_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void report_over_production_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(reporter);
             validate_account_name(first_block.witness);
             FC_ASSERT(first_block.witness == second_block.witness);
@@ -221,13 +240,15 @@ namespace steemit {
             FC_ASSERT(first_block.id() != second_block.id());
         }
 
-        void request_account_recovery_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void request_account_recovery_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(recovery_account);
             validate_account_name(account_to_recover);
             new_owner_authority.validate();
         }
 
-        void recover_account_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void recover_account_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account_to_recover);
             FC_ASSERT(!(new_owner_authority == recent_owner_authority),
                       "Cannot set new owner authority to the recent owner authority");
@@ -238,16 +259,19 @@ namespace steemit {
             recent_owner_authority.validate();
         }
 
-        void change_recovery_account_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void change_recovery_account_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account_to_recover);
             validate_account_name(new_recovery_account);
         }
 
-        void decline_voting_rights_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void decline_voting_rights_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
         }
 
-        void reset_account_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void reset_account_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(reset_account);
             validate_account_name(account_to_reset);
             FC_ASSERT(!new_owner_authority.is_impossible(), "new owner authority cannot be impossible");
@@ -255,7 +279,8 @@ namespace steemit {
             new_owner_authority.validate();
         }
 
-        void set_reset_account_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void set_reset_account_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
             if (current_reset_account.size()) {
                 validate_account_name(current_reset_account);
@@ -264,12 +289,16 @@ namespace steemit {
             FC_ASSERT(current_reset_account != reset_account, "new reset account cannot be current reset account");
         }
 
-        void delegate_vesting_shares_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void delegate_vesting_shares_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(delegator);
             validate_account_name(delegatee);
+
+            asset<Major, Hardfork, Release> default_vests(0, VESTS_SYMBOL);
+
             FC_ASSERT(delegator != delegatee, "You cannot delegate VESTS to yourself");
-            FC_ASSERT(vesting_shares.symbol_type_value() == VESTS_SYMBOL, "Delegation must be VESTS");
-            FC_ASSERT(vesting_shares >= asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
+            FC_ASSERT(vesting_shares.symbol_name() == VESTS_SYMBOL, "Delegation must be VESTS");
+            FC_ASSERT(vesting_shares >= default_vests, "Delegation cannot be negative");
         }
     }
 } // steemit::protocol

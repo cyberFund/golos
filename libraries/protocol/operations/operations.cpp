@@ -13,31 +13,38 @@ namespace steemit {
                 return false;
             }
 
-            bool operator()(const limit_order_create_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const limit_order_create_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
 
-            bool operator()(const limit_order_create2_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const limit_order_create2_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
 
-            bool operator()(const limit_order_cancel_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const limit_order_cancel_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
 
-            bool operator()(const call_order_update_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const call_order_update_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
 
-            bool operator()(const bid_collateral_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const bid_collateral_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
 
-            bool operator()(const transfer_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const transfer_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
 
-            bool operator()(const transfer_to_vesting_operation &) const {
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            bool operator()(const transfer_to_vesting_operation<Major, Hardfork, Release> &) const {
                 return true;
             }
         };

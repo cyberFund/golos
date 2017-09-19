@@ -171,7 +171,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset_symbol_type asset<Major, Hardfork, Release,
-                type_traits::static_range<Hardfork >= 17>>::symbol_type_value() const {
+                type_traits::static_range<Hardfork >= 17>>::symbol_name() const {
             asset_symbol_type result;
 
             FC_ASSERT(this->decimals < 15, "Precision should be less than 15");

@@ -73,34 +73,6 @@ namespace steemit {
                 reset_account_operation<0, 16, 0>,
                 set_reset_account_operation<0, 16, 0>,
                 comment_benefactor_reward_operation<0, 16, 0>,
-                delegate_vesting_shares_operation<0, 16, 0>,
-                account_create_with_delegation_operation<0, 16, 0>,
-                comment_payout_extension_operation<0, 16, 0>,
-
-                asset_create_operation<0, 16, 0>,
-                asset_update_operation<0, 16, 0>,
-                asset_update_bitasset_operation<0, 16, 0>,
-                asset_update_feed_producers_operation<0, 16, 0>,
-                asset_issue_operation<0, 16, 0>,
-                asset_reserve_operation<0, 16, 0>,
-                asset_fund_fee_pool_operation<0, 16, 0>,
-                asset_settle_operation<0, 16, 0>,
-                asset_force_settle_operation<0, 16, 0>,
-                asset_global_settle_operation<0, 16, 0>,
-                asset_publish_feed_operation<0, 16, 0>,
-                asset_claim_fees_operation<0, 16, 0>,
-
-                call_order_update_operation<0, 16, 0>,
-
-                account_whitelist_operation<0, 16, 0>,
-
-                override_transfer_operation<0, 16, 0>,
-
-                proposal_create_operation<0, 16, 0>,
-                proposal_update_operation<0, 16, 0>,
-                proposal_delete_operation<0, 16, 0>,
-
-                bid_collateral_operation<0, 16, 0>,
 
                 vote_operation<0, 17, 0>,
                 comment_operation<0, 17, 0>,
@@ -197,11 +169,6 @@ namespace steemit {
                 fill_transfer_from_savings_operation<0, 16, 0>,
                 hardfork_operation<0, 16, 0>,
                 comment_payout_update_operation<0, 16, 0>,
-                return_vesting_delegation_operation<0, 16, 0>,
-                asset_settle_cancel_operation<0, 16, 0>,
-                fill_call_order_operation<0, 16, 0>,
-                fill_settlement_order_operation<0, 16, 0>,
-                execute_bid_operation<0, 16, 0>,
 
                 fill_convert_request_operation<0, 17, 0>,
                 author_reward_operation<0, 17, 0>,
@@ -230,9 +197,9 @@ namespace steemit {
 
         void operation_validate( const operation& op );*/
 
-        bool is_market_operation<0, 16, 0>(const operation &op);
+        bool is_market_operation(const operation &op);
 
-        bool is_virtual_operation<0, 16, 0>(const operation &op);
+        bool is_virtual_operation(const operation &op);
 
         struct operation_wrapper {
         public:

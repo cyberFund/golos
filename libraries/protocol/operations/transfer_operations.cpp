@@ -18,11 +18,12 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        void transfer_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_operation<Major, Hardfork, Release>::validate() const {
             try {
                 validate_account_name(from);
                 validate_account_name(to);
-                FC_ASSERT(amount.symbol_type_value() !=
+                FC_ASSERT(amount.symbol_name() !=
                           VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
                 FC_ASSERT(amount.amount >
                           0, "Cannot transfer a negative amount (aka: stealing)");
@@ -32,17 +33,20 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
-        void transfer_to_vesting_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_to_vesting_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from);
             FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME, "Amount must be STEEM");
             if (to != account_name_type()) {
                 validate_account_name(to);
             }
-            FC_ASSERT(amount >
-                      asset(0, STEEM_SYMBOL_NAME), "Must transfer a nonzero amount");
+
+            asset<Major, Hardfork, Release> default_steem(0, STEEM_SYMBOL_NAME);
+            FC_ASSERT(amount > default_steem, "Must transfer a nonzero amount");
         }
 
-        void transfer_to_savings_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_to_savings_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
@@ -52,7 +56,8 @@ namespace steemit {
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }
 
-        void transfer_from_savings_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_from_savings_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
@@ -62,12 +67,13 @@ namespace steemit {
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }
 
-        void cancel_transfer_from_savings_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void cancel_transfer_from_savings_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from);
         }
 
-
-        void override_transfer_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void override_transfer_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(from != to);
             FC_ASSERT(amount.amount > 0);
             FC_ASSERT(issuer != from);
