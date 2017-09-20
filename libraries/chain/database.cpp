@@ -2293,9 +2293,8 @@ namespace steemit {
 
         void database::set_custom_operation_interpreter(const std::string &id,
                                                         std::shared_ptr<custom_operation_interpreter> registry) {
-            bool inserted = _custom_operation_interpreters.emplace(id, registry).second;
             // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
-            FC_ASSERT(inserted);
+            FC_ASSERT(_custom_operation_interpreters.emplace(id, registry).second);
         }
 
         std::shared_ptr<custom_operation_interpreter> database::get_custom_json_evaluator(const std::string &id) {
