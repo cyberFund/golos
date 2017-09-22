@@ -26,7 +26,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct transfer_operation<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public  base_operation, public static_version <Major, Hardfork, Release> {
+        struct transfer_operation<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public  base_operation<Major, Hardfork, Release> {
         account_name_type from;
         /// Account to transfer asset<Major, Hardfork, Release> to
         account_name_type to;
@@ -53,7 +53,7 @@ namespace steemit {
     };
 
     template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-    struct transfer_operation<Major, Hardfork, Release, type_traits::static_range < Hardfork >= 17>> : public  base_operation, public static_version <Major, Hardfork, Release> {
+    struct transfer_operation<Major, Hardfork, Release, type_traits::static_range < Hardfork >= 17>> : public  base_operation<Major, Hardfork, Release> {
     account_name_type from;
     /// Account to transfer asset<Major, Hardfork, Release> to
     account_name_type to;
