@@ -2883,9 +2883,6 @@ namespace steemit {
                                                         bool broadcast) {
             auto follwer_account = get_account(follower);
             FC_ASSERT(following.size());
-            if (following[0] != '@' || following[0] != '#') {
-                following = '@' + following;
-            }
             if (following[0] == '@') {
                 get_account(following.substr(1));
             }
