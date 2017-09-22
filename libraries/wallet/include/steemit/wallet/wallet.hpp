@@ -914,7 +914,7 @@ namespace steemit {
              *  @param expiration the time the order should expire if it has not been filled
              *  @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction create_order(string owner, uint32_t order_id, asset amount_to_sell,
+            annotated_signed_transaction create_order(string owner, protocol::integral_id_type order_id, asset amount_to_sell,
                                                       asset min_to_receive, bool fill_or_kill, uint32_t expiration,
                                                       bool broadcast);
 
@@ -925,7 +925,7 @@ namespace steemit {
              * @param order_id The unique identifier assigned to the order by its creator
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction cancel_order(string owner, uint32_t order_id, bool broadcast);
+            annotated_signed_transaction cancel_order(string owner, protocol::integral_id_type order_id, bool broadcast);
 
             /** Place a limit order attempting to sell one asset for another.
              *
@@ -966,7 +966,8 @@ namespace steemit {
              * @returns the signed transaction selling the funds
              */
             signed_transaction sell_asset(string seller_account, asset amount_to_sell, asset amount_to_receive,
-                                          uint32_t timeout_sec, bool fill_or_kill, bool broadcast);
+                                          uint32_t timeout_sec, protocol::integral_id_type order_id, bool fill_or_kill,
+                                          bool broadcast);
 
             /** Place a limit order attempting to sell one asset for another.
              *
@@ -984,8 +985,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network.
              * @returns The signed transaction selling the funds.
              */
-            signed_transaction sell(string seller_account, string base, string quote, double rate, double amount,
-                                    bool broadcast);
+            signed_transaction sell(string seller_account, string base, string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast);
 
             /** Place a limit order attempting to buy one asset with another.
              *
