@@ -93,9 +93,9 @@ namespace steemit {
                     a.precision = op.precision;
                     a.options = op.common_options;
                     if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL_NAME) {
-                        a.options.core_exchange_rate.quote.symbol = asset(0, op.asset_name).symbol;
+                        a.options.core_exchange_rate.quote.symbol = op.asset_name;
                     } else {
-                        a.options.core_exchange_rate.base.symbol = asset(0, op.asset_name).symbol;
+                        a.options.core_exchange_rate.base.symbol = op.asset_name;
                     }
                     if (op.bitasset_opts.valid()) {
                         a.market_issued = true;

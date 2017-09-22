@@ -25,8 +25,8 @@ namespace steemit {
 
         void asset_bitasset_data_object::update_median_feeds(time_point_sec current_time) {
             current_feed_publication_time = current_time;
-            vector<std::reference_wrapper<const price_feed>> current_feeds;
-            for (const pair<account_name_type, pair<time_point_sec, price_feed>> &f : feeds) {
+            vector<std::reference_wrapper<const price_feed<0, 17, 0>>> current_feeds;
+            for (const pair<account_name_type, pair<time_point_sec, price_feed<0, 17, 0>>> &f : feeds) {
                 if ((current_time - f.second.first).to_seconds() <
                     options.feed_lifetime_sec &&
                     f.second.first != time_point_sec()) {
@@ -39,7 +39,7 @@ namespace steemit {
             if (current_feeds.size() < options.minimum_feeds) {
                 //... don't calculate a median, and set a null feed
                 current_feed_publication_time = current_time;
-                current_feed = price_feed();
+                current_feed = price_feed<0, 17, 0>();
                 return;
             }
             if (current_feeds.size() == 1) {
@@ -48,12 +48,12 @@ namespace steemit {
             }
 
             // *** Begin Median Calculations ***
-            price_feed median_feed;
+            price_feed<0, 17, 0> median_feed;
             const auto median_itr =
                     current_feeds.begin() + current_feeds.size() / 2;
 #define CALCULATE_MEDIAN_VALUE(r, data, field_name) \
    std::nth_element( current_feeds.begin(), median_itr, current_feeds.end(), \
-                     [](const price_feed& a, const price_feed& b) { \
+                     [](const price_feed<0, 17, 0>& a, const price_feed<0, 17, 0>& b) { \
       return a.field_name < b.field_name; \
    }); \
    median_feed.field_name = median_itr->get().field_name;
@@ -66,7 +66,7 @@ namespace steemit {
         }
 
 
-        asset asset_object::amount_from_string(string amount_string) const {
+        asset<0, 17, 0> asset_object::amount_from_string(string amount_string) const {
             try {
                 bool negative_found = false;
                 bool decimal_found = false;

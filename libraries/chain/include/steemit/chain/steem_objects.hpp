@@ -13,7 +13,6 @@
 namespace steemit {
     namespace chain {
 
-        using steemit::protocol::asset;
         using steemit::protocol::price;
         using steemit::protocol::asset_symbol_type;
 
@@ -35,15 +34,16 @@ namespace steemit {
             id_type id;
 
             account_name_type owner;
-            uint32_t requestid = 0; ///< id set by owner, the owner,requestid pair must be unique
-            asset amount;
+            uint32_t request_id = 0; ///< id set by owner, the owner,request_id pair must be unique
+            protocol::asset<0, 17, 0>  amount;
             time_point_sec conversion_date; ///< at this time the feed_history_median_price * amount
         };
 
 
         class escrow_object : public object<escrow_object_type, escrow_object> {
         public:
-            template<typename Constructor, typename Allocator> escrow_object(Constructor &&c, allocator <Allocator> a) {
+            template<typename Constructor, typename Allocator>
+            escrow_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -58,9 +58,9 @@ namespace steemit {
             account_name_type agent;
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
-            asset sbd_balance;
-            asset steem_balance;
-            asset pending_fee;
+            protocol::asset<0, 17, 0>  sbd_balance;
+            protocol::asset<0, 17, 0>  steem_balance;
+            protocol::asset<0, 17, 0>  pending_fee;
             bool to_approved = false;
             bool agent_approved = false;
             bool disputed = false;
@@ -87,7 +87,7 @@ namespace steemit {
             account_name_type to;
             shared_string memo;
             uint32_t request_id = 0;
-            asset amount;
+            protocol::asset<0, 17, 0>  amount;
             time_point_sec complete;
         };
 
@@ -214,7 +214,7 @@ namespace steemit {
 
             reward_fund_object::id_type id;
             reward_fund_name_type name;
-            asset reward_balance = asset(0, STEEM_SYMBOL_NAME);
+            protocol::asset<0, 17, 0>  reward_balance = asset(0, STEEM_SYMBOL_NAME);
             uint128_t recent_claims = 0;
             time_point_sec last_update;
             uint128_t content_constant = 0;
@@ -232,7 +232,7 @@ namespace steemit {
         >,
         ordered_unique <tag<by_owner>, composite_key<convert_request_object, member < convert_request_object,
                 account_name_type, &convert_request_object::owner>, member<convert_request_object, uint32_t,
-                &convert_request_object::requestid>>
+                &convert_request_object::request_id>>
         >
         >,
         allocator <convert_request_object>
@@ -377,7 +377,7 @@ namespace steemit {
 FC_REFLECT(steemit::chain::feed_history_object, (id)(current_median_history)(price_history))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::feed_history_object, steemit::chain::feed_history_index)
 
-FC_REFLECT(steemit::chain::convert_request_object, (id)(owner)(requestid)(amount)(conversion_date))
+FC_REFLECT(steemit::chain::convert_request_object, (id)(owner)(request_id)(amount)(conversion_date))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::convert_request_object, steemit::chain::convert_request_index)
 
 FC_REFLECT(steemit::chain::liquidity_reward_balance_object, (id)(owner)(steem_volume)(sbd_volume)(weight)(last_update))

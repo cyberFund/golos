@@ -22,8 +22,7 @@ namespace steemit {
             typedef OperationType operation_sv_type;
             // typedef typename EvaluatorType::operation_type op_type;
 
-            evaluator(database &d)
-                    : db(d) {
+            evaluator(database &d) : db(d) {
             }
 
             virtual void apply(const OperationType &o) final override {
@@ -43,6 +42,5 @@ namespace steemit {
         protected:
             database &db;
         };
-
     }
 }

@@ -109,11 +109,11 @@ namespace steemit {
             protocol::asset_name_type asset_name;
             share_type balance = 0; ///< total liquid shares held by this account
 
-            protocol::asset get_balance() const {
+            protocol::asset<0, 17, 0> get_balance() const {
                 return {balance, asset_name};
             }
 
-            void adjust_balance(const protocol::asset &delta);
+            void adjust_balance(const protocol::asset<0, 17, 0> &delta);
         };
 
         /**
@@ -162,8 +162,8 @@ namespace steemit {
             uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
             time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-            protocol::asset balance = protocol::asset(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
-            protocol::asset savings_balance = protocol::asset(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
+            protocol::asset<0, 17, 0> balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
+            protocol::asset<0, 17, 0> savings_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
 
             /**
              *  SBD Deposits pay interest based upon the interest rate set by witnesses. The purpose of these
@@ -179,13 +179,13 @@ namespace steemit {
              *  @defgroup sbd_data SBD Balance Data
              */
             ///@{
-            protocol::asset sbd_balance = protocol::asset(0, SBD_SYMBOL_NAME); /// total sbd balance
+            protocol::asset<0, 17, 0> sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// total sbd balance
             uint128_t sbd_seconds; ///< total sbd * how long it has been hel
             time_point_sec sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec sbd_last_interest_payment; ///< used to pay interest at most once per month
 
 
-            protocol::asset savings_sbd_balance = protocol::asset(0, SBD_SYMBOL_NAME); /// total sbd balance
+            protocol::asset<0, 17, 0> savings_sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// total sbd balance
             uint128_t savings_sbd_seconds; ///< total sbd * how long it has been hel
             time_point_sec savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec savings_sbd_last_interest_payment; ///< used to pay interest at most once per month
@@ -196,11 +196,11 @@ namespace steemit {
             share_type curation_rewards = 0;
             share_type posting_rewards = 0;
 
-            protocol::asset vesting_shares = protocol::asset(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
-            protocol::asset delegated_vesting_shares = protocol::asset(0, VESTS_SYMBOL);
-            protocol::asset received_vesting_shares = protocol::asset(0, VESTS_SYMBOL);
+            protocol::asset<0, 17, 0> vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
+            protocol::asset<0, 17, 0> delegated_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL);
+            protocol::asset<0, 17, 0> received_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL);
 
-            protocol::asset vesting_withdraw_rate = protocol::asset(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
+            protocol::asset<0, 17, 0> vesting_withdraw_rate = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
             time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
             share_type withdrawn = 0; /// Track how many shares have been withdrawn
             share_type to_withdraw = 0; /// Might be able to look this up with operation history.
@@ -263,7 +263,7 @@ namespace steemit {
                         share_type());
             }
 
-            protocol::asset effective_vesting_shares() const {
+            protocol::asset<0, 17, 0> effective_vesting_shares() const {
                 return vesting_shares - delegated_vesting_shares +
                        received_vesting_shares;
             }
@@ -334,7 +334,7 @@ namespace steemit {
             id_type id;
             account_name_type delegator;
             account_name_type delegatee;
-            protocol::asset vesting_shares;
+            protocol::asset<0, 17, 0> vesting_shares;
             time_point_sec min_delegation_time;
         };
 
@@ -351,7 +351,7 @@ namespace steemit {
 
             id_type id;
             account_name_type delegator;
-            protocol::asset vesting_shares;
+            protocol::asset<0, 17, 0> vesting_shares;
             time_point_sec expiration;
         };
 
@@ -488,10 +488,10 @@ namespace steemit {
                         >,
                         ordered_unique<tag<by_smp_balance>,
                                 composite_key<account_object,
-                                        member<account_object, protocol::asset, &account_object::vesting_shares>,
+                                        member<account_object, protocol::asset<0, 17, 0>, &account_object::vesting_shares>,
                                         member<account_object, account_object::id_type, &account_object::id>
                                 >,
-                                composite_key_compare<std::greater<protocol::asset>, std::less<account_object::id_type>>
+                                composite_key_compare<std::greater<protocol::asset<0, 17, 0>>, std::less<account_object::id_type>>
                         >,
                         ordered_unique<tag<by_post_count>,
                                 composite_key<account_object,

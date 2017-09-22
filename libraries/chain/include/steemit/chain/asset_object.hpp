@@ -116,19 +116,19 @@ namespace steemit {
             }
 
             /// Helper function to get an asset object with the given amount in this asset's type
-            protocol::asset amount(share_type a) const {
+            protocol::asset<0, 17, 0> amount(share_type a) const {
                 return {a, asset_name};
             }
 
             /// Convert a string amount (i.e. "123.45") to an asset object with this asset's type
             /// The string may have a decimal and/or a negative sign.
-            protocol::asset amount_from_string(string amount_string) const;
+            protocol::asset<0, 17, 0> amount_from_string(string amount_string) const;
 
             /// Convert an asset to a textual representation, i.e. "123.45"
             string amount_to_string(share_type amount) const;
 
             /// Convert an asset to a textual representation, i.e. "123.45"
-            string amount_to_string(const protocol::asset &amount) const {
+            string amount_to_string(const protocol::asset<0, 17, 0> &amount) const {
                 FC_ASSERT(amount.symbol == asset_name);
                 return amount_to_string(amount.amount);
             }
@@ -139,7 +139,7 @@ namespace steemit {
             }
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
-            string amount_to_pretty_string(const protocol::asset &amount) const {
+            string amount_to_pretty_string(const protocol::asset<0, 17, 0> &amount) const {
                 FC_ASSERT(amount.symbol == asset_name);
                 return amount_to_pretty_string(amount.amount);
             }
@@ -151,7 +151,7 @@ namespace steemit {
             /// ID of the account which issued this asset.
             account_name_type issuer;
 
-            protocol::asset_options options;
+            protocol::asset_options<0, 17, 0> options;
 
             /// Extra data associated with BitAssets. This field is non-null if and only if is_market_issued() returns true
             bool market_issued = false;
@@ -202,10 +202,10 @@ namespace steemit {
             /// Feeds published for this asset. If issuer is not committee, the keys in this map are the feed publishing
             /// accounts; otherwise, the feed publishers are the currently active committee_members and witnesses and this map
             /// should be treated as an implementation detail. The timestamp on each feed is the time it was published.
-            flat_map<account_name_type, pair<time_point_sec, protocol::price_feed>> feeds;
+            flat_map<account_name_type, pair<time_point_sec, protocol::price_feed<0, 17, 0>>> feeds;
             /// This is the currently active price feed, calculated as the median of values from the currently active
             /// feeds.
-            protocol::price_feed current_feed;
+            protocol::price_feed<0, 17, 0> current_feed;
             /// This is the publication time of the oldest feed which was factored into current_feed.
             time_point_sec current_feed_publication_time;
 
@@ -231,7 +231,7 @@ namespace steemit {
              */
             ///@{
             /// Price at which force settlements of a black swanned asset will occur
-            protocol::price settlement_price;
+            protocol::price<0, 17, 0> settlement_price;
             /// Amount of collateral which is available for force settlement
             share_type settlement_fund;
             ///@}

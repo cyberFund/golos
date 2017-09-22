@@ -31,7 +31,7 @@ namespace steemit {
             account_name_type seller;
             protocol::integral_id_type order_id = 0;
             share_type for_sale; ///< asset id is sell_price.base.symbol
-            protocol::price sell_price;
+            protocol::price<0, 17, 0> sell_price;
             share_type deferred_fee;
 
             pair <protocol::asset_name_type, protocol::asset_name_type> get_market() const {
@@ -42,11 +42,11 @@ namespace steemit {
                 return tmp;
             }
 
-            protocol::asset amount_for_sale() const {
+            protocol::asset<0, 17, 0> amount_for_sale() const {
                 return {for_sale, sell_price.base.symbol};
             }
 
-            protocol::asset amount_to_receive() const {
+            protocol::asset<0, 17, 0> amount_to_receive() const {
                 return amount_for_sale() * sell_price;
             }
         };
@@ -71,15 +71,15 @@ namespace steemit {
 
             id_type id;
 
-            protocol::asset get_collateral() const {
+            protocol::asset<0, 17, 0> get_collateral() const {
                 return {collateral, call_price.base.symbol};
             }
 
-            protocol::asset get_debt() const {
+            protocol::asset<0, 17, 0> get_debt() const {
                 return {debt, debt_type()};
             }
 
-            protocol::asset amount_to_receive() const {
+            protocol::asset<0, 17, 0> amount_to_receive() const {
                 return get_debt();
             }
 
@@ -87,7 +87,7 @@ namespace steemit {
                 return call_price.quote.symbol;
             }
 
-            protocol::price collateralization() const {
+            protocol::price<0, 17, 0> collateralization() const {
                 return get_collateral() / get_debt();
             }
 
@@ -95,7 +95,7 @@ namespace steemit {
             account_name_type borrower;
             share_type collateral;  ///< call_price.base.asset_id, access via get_collateral
             share_type debt;        ///< call_price.quote.asset_id, access via get_collateral
-            protocol::price call_price;  ///< Debt / Collateral
+            protocol::price<0, 17, 0> call_price;  ///< Debt / Collateral
 
             pair <protocol::asset_name_type, protocol::asset_name_type> get_market() const {
                 auto tmp = std::make_pair(call_price.base.symbol, call_price.quote.symbol);
@@ -127,7 +127,7 @@ namespace steemit {
 
             account_name_type owner;
             protocol::integral_id_type settlement_id;
-            protocol::asset balance;
+            protocol::asset<0, 17, 0> balance;
             time_point_sec settlement_date;
 
             protocol::asset_name_type settlement_asset_symbol() const {
@@ -155,11 +155,11 @@ namespace steemit {
 
             id_type id;
 
-            protocol::asset get_additional_collateral() const {
+            protocol::asset<0, 17, 0> get_additional_collateral() const {
                 return inv_swan_price.base;
             }
 
-            protocol::asset get_debt_covered() const {
+            protocol::asset<0, 17, 0> get_debt_covered() const {
                 return inv_swan_price.quote;
             }
 
@@ -168,7 +168,7 @@ namespace steemit {
             }
 
             protocol::account_name_type bidder;
-            protocol::price inv_swan_price;  // Collateral / Debt
+            protocol::price<0, 17, 0> inv_swan_price;  // Collateral / Debt
         };
 
         struct by_price;

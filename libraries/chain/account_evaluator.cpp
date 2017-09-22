@@ -9,7 +9,6 @@
 
 namespace steemit {
     namespace chain {
-
         void account_create_evaluator::do_apply(const account_create_operation &o) {
             const auto &creator = db.get_account(o.creator);
 
@@ -21,11 +20,9 @@ namespace steemit {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >= asset(wso.median_props.account_creation_fee.amount *
+                FC_ASSERT(o.fee >= asset<0, 17, 0>(wso.median_props.account_creation_fee.amount *
                                          STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME),
-                          "Insufficient Fee: ${f} required, ${p} provided.", ("f", asset(
-                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME))("p", o.fee));
+                          "Insufficient Fee: ${f} required, ${p} provided.", ("f", asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME))("p", o.fee));
             } else if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
@@ -118,13 +115,13 @@ namespace steemit {
                                                                                                            o.delegation));
 
             auto target_delegation =
-                    asset(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                    asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
                           STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) * props.get_vesting_share_price();
 
-            auto current_delegation = asset(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) *
+            auto current_delegation = asset<0, 17, 0>(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) *
                                       props.get_vesting_share_price() + o.delegation;
 
-            FC_ASSERT(current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
+            FC_ASSERT(current_delegation >= target_delegation, "Insufficient Delegation ${f} required, ${p} provided.",
                       ("f", target_delegation)("p", current_delegation)("account_creation_fee",
                                                                         wso.median_props.account_creation_fee)("o.fee",
                                                                                                                o.fee)(

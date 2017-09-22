@@ -8,7 +8,6 @@
 
 namespace steemit {
     namespace chain {
-
         class asset_create_evaluator
                 : public evaluator<asset_create_evaluator> {
         public:

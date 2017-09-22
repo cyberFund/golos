@@ -25,7 +25,7 @@ namespace steemit {
                 dynamic_global_property_object> {
         public:
             template<typename Constructor, typename Allocator>
-            dynamic_global_property_object(Constructor &&c, allocator <Allocator> a) {
+            dynamic_global_property_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             }
 
@@ -53,20 +53,22 @@ namespace steemit {
 
             asset<0, 17, 0> virtual_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             asset<0, 17, 0> current_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
-            asset<0, 17, 0> confidential_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset<0, 17, 0> confidential_supply = asset<0, 17, 0>(0,
+                                                                  STEEM_SYMBOL_NAME); ///< total asset held in confidential balances
             asset<0, 17, 0> current_sbd_supply = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
-            asset<0, 17, 0> confidential_sbd_supply = asset<0, 17, 0>(0, SBD_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset<0, 17, 0> confidential_sbd_supply = asset<0, 17, 0>(0,
+                                                                      SBD_SYMBOL_NAME); ///< total asset held in confidential balances
             asset<0, 17, 0> total_vesting_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             asset<0, 17, 0> total_vesting_shares = asset<0, 17, 0>(0, VESTS_SYMBOL);
             asset<0, 17, 0> total_reward_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
 
-            price get_vesting_share_price() const {
+            price<0, 17, 0> get_vesting_share_price() const {
                 if (total_vesting_fund_steem.amount == 0 || total_vesting_shares.amount == 0) {
-                    return price(asset(1000, STEEM_SYMBOL_NAME), asset(1000000, VESTS_SYMBOL));
+                    return {asset<0, 17, 0>(1000, STEEM_SYMBOL_NAME), asset<0, 17, 0>(1000000, VESTS_SYMBOL)};
                 }
 
-                return price(total_vesting_shares, total_vesting_fund_steem);
+                return {total_vesting_shares, total_vesting_fund_steem};
             }
 
             /**
@@ -138,12 +140,10 @@ namespace steemit {
             uint32_t vote_regeneration_per_day = 40;
         };
 
-        typedef multi_index_container <dynamic_global_property_object, indexed_by<ordered_unique < tag < by_id>, member<
-                dynamic_global_property_object, dynamic_global_property_object::id_type,
-                &dynamic_global_property_object::id>>
-        >, allocator <dynamic_global_property_object>
-        >
-        dynamic_global_property_index;
+        typedef multi_index_container<dynamic_global_property_object, indexed_by<ordered_unique<tag<by_id>,
+                member<dynamic_global_property_object, dynamic_global_property_object::id_type,
+                        &dynamic_global_property_object::id>>>,
+                allocator<dynamic_global_property_object> > dynamic_global_property_index;
 
     }
 } // steemit::chain
