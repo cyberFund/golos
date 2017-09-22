@@ -26,7 +26,7 @@ namespace steemit {
          *  by the sender.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_transfer_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct escrow_transfer_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
             account_name_type to;
             account_name_type agent;
@@ -55,7 +55,7 @@ namespace steemit {
          *  Subsequent escrow approve operations, regardless of the approval, will be rejected.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_approve_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct escrow_approve_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
             account_name_type to;
             account_name_type agent;
@@ -78,7 +78,7 @@ namespace steemit {
          *  who gets what.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_dispute_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct escrow_dispute_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
             account_name_type to;
             account_name_type agent;
@@ -105,7 +105,7 @@ namespace steemit {
          *     following whichever agreement was in place between the parties.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct escrow_release_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct escrow_release_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
             account_name_type to; ///< the original 'to'
             account_name_type agent;

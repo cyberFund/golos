@@ -50,7 +50,7 @@ namespace steemit {
          * object.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct proposal_create_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct proposal_create_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type proposal_id;
             vector <operation_wrapper> proposed_operations;
@@ -84,7 +84,7 @@ namespace steemit {
          * add or remove active authority approval to such a proposal will fail.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct proposal_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct proposal_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type proposal_id;
             flat_set <account_name_type> active_approvals_to_add;
@@ -118,7 +118,7 @@ namespace steemit {
          * proposal.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct proposal_delete_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct proposal_delete_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             bool using_owner_authority = false;
             integral_id_type proposal_id;

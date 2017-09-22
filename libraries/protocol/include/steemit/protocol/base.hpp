@@ -60,7 +60,8 @@ namespace steemit {
          *  @{
          */
 
-        struct base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct base_operation : public static_version<Major, Hardfork, Release> {
             void get_required_authorities(vector<authority> &) const {
             }
 
@@ -83,7 +84,8 @@ namespace steemit {
             static uint64_t calculate_data_fee(uint64_t bytes, uint64_t price_per_kbyte);
         };
 
-        struct virtual_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct virtual_operation : public base_operation<Major, Hardfork, Release> {
             bool is_virtual() const {
                 return true;
             }

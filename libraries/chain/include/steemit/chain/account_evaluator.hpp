@@ -2,6 +2,7 @@
 #define GOLOS_ACCOUNT_EVALUATOR_HPP
 
 #include <steemit/chain/evaluator.hpp>
+
 #include <steemit/protocol/operations/account_operations.hpp>
 
 namespace steemit {

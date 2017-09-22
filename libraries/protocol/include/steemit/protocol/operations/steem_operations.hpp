@@ -11,7 +11,7 @@
 namespace steemit {
     namespace protocol {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct challenge_authority_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct challenge_authority_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type challenger;
             account_name_type challenged;
             bool require_owner = false;
@@ -24,7 +24,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct prove_authority_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct prove_authority_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type challenged;
             bool require_owner = false;
 
@@ -44,7 +44,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct vote_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct vote_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type voter;
             account_name_type author;
             string permlink;
@@ -69,7 +69,7 @@ namespace steemit {
          * This operation is not valid if the user has no vesting shares.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct withdraw_vesting_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct withdraw_vesting_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             asset <Major, Hardfork, Release> vesting_shares;
 
@@ -90,7 +90,7 @@ namespace steemit {
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct set_withdraw_vesting_route_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type from_account;
             account_name_type to_account;
             uint16_t percent = 0;
@@ -118,7 +118,7 @@ namespace steemit {
          *  producing blocks.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct witness_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct witness_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             string url;
             public_key_type block_signing_key;
@@ -139,7 +139,7 @@ namespace steemit {
          * If a proxy is specified then all existing votes are removed.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_witness_vote_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct account_witness_vote_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             account_name_type witness;
             bool approve = true;
@@ -153,7 +153,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_witness_proxy_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             account_name_type proxy;
 
@@ -172,7 +172,7 @@ namespace steemit {
          * There is no validation for this operation other than that required auths are valid
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct custom_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct custom_operation : public base_operation<Major, Hardfork, Release> {
             flat_set <account_name_type> required_auths;
             uint16_t id = 0;
             vector<char> data;
@@ -191,7 +191,7 @@ namespace steemit {
          * this operation is designed to be human readable/developer friendly.
          **/
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct custom_json_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct custom_json_operation : public base_operation<Major, Hardfork, Release> {
             flat_set <account_name_type> required_auths;
             flat_set <account_name_type> required_posting_auths;
             string id; ///< must be less than 32 characters long
@@ -213,7 +213,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct custom_binary_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct custom_binary_operation : public base_operation<Major, Hardfork, Release> {
             flat_set <account_name_type> required_owner_auths;
             flat_set <account_name_type> required_active_auths;
             flat_set <account_name_type> required_posting_auths;
@@ -255,7 +255,7 @@ namespace steemit {
          *  used to define the exchange rate between steem and the dollar.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct feed_publish_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct feed_publish_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type publisher;
             price<Major, Hardfork, Release> exchange_rate;
 
@@ -278,7 +278,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct pow_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct pow_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type worker_account;
             block_id_type block_id;
             uint64_t nonce = 0;
@@ -327,7 +327,7 @@ namespace steemit {
         typedef fc::static_variant<pow2, equihash_pow> pow2_work;
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct pow2_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct pow2_operation : public base_operation<Major, Hardfork, Release> {
             pow2_work work;
             optional <public_key_type> new_owner_key;
             chain_properties<Major, Hardfork, Release> props;
@@ -359,7 +359,7 @@ namespace steemit {
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct report_over_production_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type reporter;
             signed_block_header first_block;
             signed_block_header second_block;
@@ -396,8 +396,7 @@ namespace steemit {
          * the recover account operation.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct request_account_recovery_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct request_account_recovery_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type recovery_account;       ///< The recovery account is listed as the recovery account on the account to recover.
 
             account_name_type account_to_recover;     ///< The account to recover. This is likely due to a compromised owner authority.
@@ -453,7 +452,7 @@ namespace steemit {
          * concern.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct recover_account_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct recover_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account_to_recover;        ///< The account to be recovered
 
             authority new_owner_authority;       ///< The new owner authority as specified in the request account recovery operation.
@@ -476,7 +475,7 @@ namespace steemit {
          *  new_owner_authority after 60 days of inactivity.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct reset_account_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct reset_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type reset_account;
             account_name_type account_to_reset;
             authority new_owner_authority;
@@ -493,7 +492,7 @@ namespace steemit {
          * to execute the 'reset_account_operation' after 60 days.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct set_reset_account_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct set_reset_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             account_name_type current_reset_account;
             account_name_type reset_account;
@@ -534,7 +533,7 @@ namespace steemit {
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct change_recovery_account_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type account_to_recover;     ///< The account that would be recovered in case of compromise
             account_name_type new_recovery_account;   ///< The account that creates the recover request
             extensions_type extensions;             ///< Extensions. Not currently used.
@@ -548,7 +547,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct decline_voting_rights_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             bool decline = true;
 
@@ -570,7 +569,7 @@ namespace steemit {
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct delegate_vesting_shares_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type delegator;        ///< The account delegating vesting shares
             account_name_type delegatee;        ///< The account receiving vesting shares
             asset <Major, Hardfork, Release> vesting_shares;   ///< The amount of vesting shares delegated

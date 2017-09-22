@@ -21,7 +21,7 @@ namespace steemit {
          *  @return n/a
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
-        struct transfer_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct transfer_operation : public base_operation<Major, Hardfork, Release> {
 
         };
 
@@ -86,7 +86,7 @@ namespace steemit {
  *  pre-fund new accounts with vesting shares.
  */
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-struct transfer_to_vesting_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+struct transfer_to_vesting_operation : public base_operation<Major, Hardfork, Release> {
     account_name_type from;
     account_name_type to; ///< if null, then same as from
     asset <Major, Hardfork, Release> amount; ///< must be STEEM
@@ -99,7 +99,7 @@ struct transfer_to_vesting_operation : public base_operation, public static_vers
 };
 
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-struct transfer_to_savings_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+struct transfer_to_savings_operation : public base_operation<Major, Hardfork, Release> {
     account_name_type from;
     account_name_type to;
     asset <Major, Hardfork, Release> amount;
@@ -113,7 +113,7 @@ struct transfer_to_savings_operation : public base_operation, public static_vers
 };
 
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-struct transfer_from_savings_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+struct transfer_from_savings_operation : public base_operation<Major, Hardfork, Release> {
     account_name_type from;
     integral_id_type request_id = 0;
     account_name_type to;
@@ -129,7 +129,7 @@ struct transfer_from_savings_operation : public base_operation, public static_ve
 
 
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-struct cancel_transfer_from_savings_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+struct cancel_transfer_from_savings_operation : public base_operation<Major, Hardfork, Release> {
     account_name_type from;
     integral_id_type request_id = 0;
 
@@ -149,7 +149,7 @@ struct cancel_transfer_from_savings_operation : public base_operation, public st
  *  @pre issuer != from  because this is pointless, use a normal transfer operation
  */
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-struct override_transfer_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+struct override_transfer_operation : public base_operation<Major, Hardfork, Release> {
     account_name_type issuer;
     /// Account to transfer asset from
     account_name_type from;

@@ -10,7 +10,7 @@ namespace steemit {
     namespace protocol {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct author_reward_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct author_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             author_reward_operation() {
             }
 
@@ -29,7 +29,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct curation_reward_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct curation_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             curation_reward_operation() {
             }
 
@@ -44,7 +44,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct comment_reward_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct comment_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             comment_reward_operation() {
             }
 
@@ -58,7 +58,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct liquidity_reward_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct liquidity_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             liquidity_reward_operation(string o = string(),
                                        asset <Major, Hardfork, Release> p = asset<Major, Hardfork, Release>()) : owner(
                     o), payout(p) {
@@ -69,7 +69,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct interest_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct interest_operation : public virtual_operation<Major, Hardfork, Release> {
             interest_operation(const string &o = "",
                                const asset <Major, Hardfork, Release> &i = asset<Major, Hardfork, Release>(0,
                                                                                                            SBD_SYMBOL_NAME))
@@ -82,7 +82,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_convert_request_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             fill_convert_request_operation() {
             }
 
@@ -100,7 +100,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_vesting_withdraw_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             fill_vesting_withdraw_operation() {
             }
 
@@ -116,7 +116,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct shutdown_witness_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct shutdown_witness_operation : public virtual_operation<Major, Hardfork, Release> {
             shutdown_witness_operation() {
             }
 
@@ -128,7 +128,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_transfer_from_savings_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             fill_transfer_from_savings_operation() {
             }
 
@@ -145,7 +145,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct hardfork_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct hardfork_operation : public virtual_operation<Major, Hardfork, Release> {
             hardfork_operation() {
             }
 
@@ -157,7 +157,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_payout_update_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             comment_payout_update_operation() {
             }
 
@@ -170,7 +170,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_benefactor_reward_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             comment_benefactor_reward_operation() {
             }
 
@@ -187,7 +187,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct return_vesting_delegation_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             return_vesting_delegation_operation() {
             }
 

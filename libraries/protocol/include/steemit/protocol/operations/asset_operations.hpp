@@ -97,7 +97,7 @@ namespace steemit {
          * @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_create_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_create_operation : public base_operation<Major, Hardfork, Release> {
             /// This account must sign and pay the fee for this operation. Later, this account may update the asset
             account_name_type issuer;
             /// The ticker symbol of this asset
@@ -140,7 +140,7 @@ namespace steemit {
          *  feed price.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_global_settle_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_global_settle_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
             asset_name_type asset_to_settle;
             price<Major, Hardfork, Release> settle_price;
@@ -171,7 +171,7 @@ namespace steemit {
          * The fee is paid by @ref account, and @ref account must authorize this operation
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_settle_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_settle_operation : public base_operation<Major, Hardfork, Release> {
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
@@ -203,7 +203,7 @@ namespace steemit {
          * The fee is paid by @ref account, and @ref account must authorize this operation
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_force_settle_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_force_settle_operation : public base_operation<Major, Hardfork, Release> {
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
@@ -226,7 +226,7 @@ namespace steemit {
          * @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_fund_fee_pool_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_fund_fee_pool_operation : public base_operation<Major, Hardfork, Release> {
         public:
             account_name_type from_account;
             asset_name_type asset_name;
@@ -260,7 +260,7 @@ namespace steemit {
          * @post @ref asset_to_update will have options matching those of new_options
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
@@ -294,7 +294,7 @@ namespace steemit {
          * @post @ref asset_to_update will have BitAsset-specific options matching those of new_options
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_update_bitasset_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_update_bitasset_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
@@ -329,7 +329,7 @@ namespace steemit {
          * prior to execution of this operation, will be preserved
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_update_feed_producers_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_update_feed_producers_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
@@ -364,7 +364,7 @@ namespace steemit {
          * its collateral.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_publish_feed_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_publish_feed_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type publisher;
             asset_name_type asset_name; ///< asset for which the feed is published
             price_feed<Major, Hardfork, Release> feed;
@@ -385,7 +385,7 @@ namespace steemit {
          * @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_issue_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_issue_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer; ///< Must be asset_to_issue->asset_id->issuer
             asset<Major, Hardfork, Release> asset_to_issue;
             account_name_type issue_to_account;
@@ -413,7 +413,7 @@ namespace steemit {
          * @note You cannot use this operation on market-issued assets.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_reserve_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_reserve_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type payer;
             asset<Major, Hardfork, Release> amount_to_reserve;
             extensions_type extensions;
@@ -433,7 +433,7 @@ namespace steemit {
          * @brief used to transfer accumulated fees back to the issuer's balance.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_claim_fees_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_claim_fees_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer;
             asset<Major, Hardfork, Release> amount_to_claim; /// amount_to_claim.asset_id->issuer must == issuer
             extensions_type extensions;

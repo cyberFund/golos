@@ -11,7 +11,7 @@ namespace steemit {
         *  @ingroup operations
         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_create_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct account_create_operation : public base_operation<Major, Hardfork, Release> {
             asset <Major, Hardfork, Release> fee;
             account_name_type creator;
             account_name_type new_account_name;
@@ -32,7 +32,8 @@ namespace steemit {
          *  @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_create_with_delegation_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct account_create_with_delegation_operation
+                : public base_operation<Major, Hardfork, Release> {
             asset <Major, Hardfork, Release> fee;
             asset <Major, Hardfork, Release> delegation;
             account_name_type creator;
@@ -60,7 +61,7 @@ namespace steemit {
         * See @ref account_object::options_type for the options which may be updated.
         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_update_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct account_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             optional <authority> owner;
             optional <authority> active;
@@ -103,16 +104,17 @@ namespace steemit {
          * authorizing_account.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_whitelist_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct account_whitelist_operation : public base_operation<Major, Hardfork, Release> {
             enum account_listing {
                 no_listing = 0x0, ///< No opinion is specified about this account
                 white_listed = 0x1, ///< This account is whitelisted, but not blacklisted
                 black_listed = 0x2, ///< This account is blacklisted, but not whitelisted
-                white_and_black_listed = white_listed | black_listed ///< This account is both whitelisted and blacklisted
+                white_and_black_listed =
+                white_listed | black_listed ///< This account is both whitelisted and blacklisted
             };
 
             /// Paid by authorizing_account
-            asset<Major, Hardfork, Release> fee;
+            asset <Major, Hardfork, Release> fee;
             /// The account which is specifying an opinion of another account
             account_name_type authorizing_account;
             /// The account being opined about
@@ -139,13 +141,15 @@ FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_create_opera
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_create_with_delegation_operation<0, 17, 0>)),
            (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_update_operation<0, 16, 0>)), (account)(owner)(active)(posting)(memo_key)(json_metadata))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_update_operation<0, 17, 0>)), (account)(owner)(active)(posting)(memo_key)(json_metadata))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_update_operation<0, 16, 0>)),
+           (account)(owner)(active)(posting)(memo_key)(json_metadata))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_update_operation<0, 17, 0>)),
+           (account)(owner)(active)(posting)(memo_key)(json_metadata))
 
-FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>))::account_listing,
-                (no_listing)(white_listed)(black_listed)(white_and_black_listed));
-FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 17, 0>))::account_listing,
-                (no_listing)(white_listed)(black_listed)(white_and_black_listed));
+FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>))
+                        ::account_listing, (no_listing)(white_listed)(black_listed)(white_and_black_listed));
+FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 17, 0>))
+                        ::account_listing, (no_listing)(white_listed)(black_listed)(white_and_black_listed));
 
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>)),
            (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))

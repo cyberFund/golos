@@ -16,7 +16,7 @@ namespace steemit {
          * a reindex.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct fill_order_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct fill_order_operation : public virtual_operation<Major, Hardfork, Release> {
             fill_order_operation() {
 
             }
@@ -43,7 +43,7 @@ namespace steemit {
          * a reindex.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct fill_call_order_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct fill_call_order_operation : public virtual_operation<Major, Hardfork, Release> {
             fill_call_order_operation() {
 
             }
@@ -77,7 +77,7 @@ namespace steemit {
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_settlement_order_operation
-                : public virtual_operation, public static_version<Major, Hardfork, Release> {
+                : public virtual_operation<Major, Hardfork, Release> {
             fill_settlement_order_operation() {
 
             }
@@ -109,7 +109,7 @@ namespace steemit {
          * bitasset from collateral bids.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct execute_bid_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct execute_bid_operation : public virtual_operation<Major, Hardfork, Release> {
             execute_bid_operation() {
             }
 

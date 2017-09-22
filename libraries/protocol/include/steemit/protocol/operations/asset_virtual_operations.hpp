@@ -11,7 +11,7 @@ namespace steemit {
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct asset_settle_cancel_operation : public virtual_operation, public static_version<Major, Hardfork, Release> {
+        struct asset_settle_cancel_operation : public virtual_operation<Major, Hardfork, Release> {
             integral_id_type settlement;
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;

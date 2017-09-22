@@ -56,8 +56,7 @@ namespace steemit {
             asset<0, 17, 0> confidential_supply = asset<0, 17, 0>(0,
                                                                   STEEM_SYMBOL_NAME); ///< total asset held in confidential balances
             asset<0, 17, 0> current_sbd_supply = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
-            asset<0, 17, 0> confidential_sbd_supply = asset<0, 17, 0>(0,
-                                                                      SBD_SYMBOL_NAME); ///< total asset held in confidential balances
+            asset<0, 17, 0> confidential_sbd_supply = asset<0, 17, 0>(0, SBD_SYMBOL_NAME); ///< total asset held in confidential balances
             asset<0, 17, 0> total_vesting_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             asset<0, 17, 0> total_vesting_shares = asset<0, 17, 0>(0, VESTS_SYMBOL);
             asset<0, 17, 0> total_reward_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);

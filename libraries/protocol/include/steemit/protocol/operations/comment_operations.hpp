@@ -8,7 +8,7 @@
 namespace steemit {
     namespace protocol {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct comment_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type parent_author;
             string parent_permlink;
 
@@ -61,7 +61,7 @@ namespace steemit {
          *
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct comment_options_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct comment_options_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type author;
             string permlink;
 
@@ -81,7 +81,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_payout_extension_operation
-                : public base_operation, public static_version<Major, Hardfork, Release> {
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type payer;
             account_name_type author;
             string permlink;
@@ -105,7 +105,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct delete_comment_operation : public base_operation, public static_version<Major, Hardfork, Release> {
+        struct delete_comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type author;
             string permlink;
 
