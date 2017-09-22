@@ -215,7 +215,7 @@ namespace steemit {
                 flat_map<std::string, operation> &name2op;
 
                 op_prototype_visitor(int _t, flat_map<std::string, operation> &_prototype_ops) : t(_t),
-                                                                                                 name2op(_prototype_ops) {
+                        name2op(_prototype_ops) {
                 }
 
                 template<typename Type>
@@ -258,16 +258,9 @@ namespace steemit {
                 wallet_api &self;
 
                 wallet_api_impl(wallet_api &s, const wallet_data &initial_data, fc::api<login_api> rapi) : self(s),
-                                                                                                           _remote_api(
-                                                                                                                   rapi),
-                                                                                                           _remote_db(
-                                                                                                                   rapi->get_api_by_name(
-                                                                                                                           "database_api")->as<
-                                                                                                                           database_api>()),
-                                                                                                           _remote_net_broadcast(
-                                                                                                                   rapi->get_api_by_name(
-                                                                                                                           "network_broadcast_api")->as<
-                                                                                                                           network_broadcast_api>()) {
+                        _remote_api(rapi), _remote_db(rapi->get_api_by_name("database_api")->as<database_api>()),
+                        _remote_net_broadcast(
+                                rapi->get_api_by_name("network_broadcast_api")->as<network_broadcast_api>()) {
                     init_prototype_ops();
 
                     _wallet.ws_server = initial_data.ws_server;
@@ -2449,9 +2442,10 @@ namespace steemit {
             return (*my->_remote_market_history_api)->get_settle_orders_by_owner(account_name);
         }
 
-        annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset amount_to_sell,
-                                                              asset min_to_receive, bool fill_or_kill,
-                                                              uint32_t expiration_sec, bool broadcast) {
+        annotated_signed_transaction wallet_api::create_order(string owner, protocol::integral_id_type order_id,
+                                                              asset amount_to_sell, asset min_to_receive,
+                                                              bool fill_or_kill, uint32_t expiration_sec,
+                                                              bool broadcast) {
             FC_ASSERT(!is_locked());
             limit_order_create_operation op;
             op.owner = owner;
@@ -2469,7 +2463,8 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::cancel_order(string owner, uint32_t order_id, bool broadcast) {
+        annotated_signed_transaction wallet_api::cancel_order(string owner, protocol::integral_id_type order_id,
+                                                              bool broadcast) {
             FC_ASSERT(!is_locked());
             limit_order_cancel_operation op;
             op.owner = owner;
@@ -2483,18 +2478,22 @@ namespace steemit {
         }
 
         signed_transaction wallet_api::sell_asset(string seller_account, asset amount_to_sell, asset amount_to_receive,
-                                                  uint32_t expiration, bool fill_or_kill, bool broadcast) {
+                                                  uint32_t expiration, protocol::integral_id_type order_id,
+                                                  bool fill_or_kill, bool broadcast) {
             FC_ASSERT(!is_locked());
 
             auto account = get_account(seller_account);
 
             limit_order_create_operation op;
             op.owner = account.name;
+            op.order_id = order_id;
             op.amount_to_sell = get_asset(amount_to_sell.symbol_name()).amount(amount_to_sell.amount);
             op.min_to_receive = get_asset(amount_to_receive.symbol_name()).amount(amount_to_receive.amount);
+
             if (expiration) {
                 op.expiration = fc::time_point::now() + fc::seconds(expiration);
             }
+
             op.fill_or_kill = fill_or_kill;
 
             signed_transaction tx;
@@ -2505,15 +2504,15 @@ namespace steemit {
         }
 
         signed_transaction wallet_api::sell(string seller_account, string base, string quote, double rate,
-                                            double amount, bool broadcast) {
+                                            double amount, protocol::integral_id_type order_id, bool broadcast) {
             return sell_asset(seller_account, asset(amount, asset::from_string(base).symbol),
-                              asset(rate * amount, asset::from_string(quote).symbol), 0, false, broadcast);
+                              asset(rate * amount, asset::from_string(quote).symbol), 0, 0, order_id, false, broadcast);
         }
 
         signed_transaction wallet_api::buy(string buyer_account, string base, string quote, double rate, double amount,
                                            bool broadcast) {
             return sell_asset(buyer_account, asset(rate * amount, asset::from_string(quote).symbol),
-                              asset(amount, asset::from_string(base).symbol), 0, false, broadcast);
+                              asset(amount, asset::from_string(base).symbol), 0, 0, order_id, false, broadcast);
         }
 
         signed_transaction wallet_api::borrow_asset(string seller_name, asset amount_to_borrow,
