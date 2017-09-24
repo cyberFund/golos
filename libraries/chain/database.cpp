@@ -33,6 +33,7 @@
 #include <steemit/chain/asset_evaluator.hpp>
 #include <steemit/chain/transfer_evaluator.hpp>
 #include <steemit/chain/proposal_evaluator.hpp>
+#include <steemit/chain/escrow_evaluator.hpp>
 
 namespace steemit {
     namespace chain {
@@ -226,16 +227,16 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        asset database::get_balance(account_name_type owner, asset_name_type asset_name) const {
+        asset<0, 17, 0> database::get_balance(account_name_type owner, asset_name_type asset_name) const {
             auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
             auto itr = index.find(boost::make_tuple(owner, asset_name));
             if (itr == index.end()) {
-                return asset(0, asset_name);
+                return {0, asset_name};
             }
             return itr->get_balance();
         }
 
-        asset database::get_balance(const account_object &owner, const asset_object &asset_obj) const {
+        asset<0, 17, 0> database::get_balance(const account_object &owner, const asset_object &asset_obj) const {
             return get_balance(owner.name, asset_obj.asset_name);
         }
 
@@ -560,7 +561,7 @@ namespace steemit {
                                                                 : STEEMIT_COMMENT_REWARD_FUND_NAME);
         }
 
-        void database::pay_fee(const account_object &account, asset fee) {
+        void database::pay_fee(const account_object &account, asset<0, 17, 0> fee) {
             FC_ASSERT(fee.amount >= 0); /// NOTE if this fails then validate() on some operation is probably wrong
             if (fee.amount == 0) {
                 return;
@@ -1103,8 +1104,8 @@ namespace steemit {
             return (when - first_slot_time).to_seconds() / STEEMIT_BLOCK_INTERVAL + 1;
         }
 
-        std::pair<asset, asset> database::create_sbd(const account_object &to_account, asset steem) {
-            std::pair<asset, asset> assets(asset(0, SBD_SYMBOL_NAME), asset(0, STEEM_SYMBOL_NAME));
+        std::pair<asset<0, 17, 0>, asset<0, 17, 0>> database::create_sbd(const account_object &to_account, asset<0, 17, 0> steem) {
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets({0, SBD_SYMBOL_NAME)}, {0, STEEM_SYMBOL_NAME});
 
             try {
                 if (steem.amount == 0) {
@@ -1135,10 +1136,10 @@ namespace steemit {
             return assets;
         }
 
-        asset database::create_vesting(const account_object &to_account, asset steem) {
+        asset<0, 17, 0> database::create_vesting(const account_object &to_account, asset<0, 17, 0> steem) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
-                asset new_vesting = steem * cprops.get_vesting_share_price();
+                asset<0, 17, 0> new_vesting = steem * cprops.get_vesting_share_price();
 
                 modify(to_account, [&](account_object &to) {
                     to.vesting_shares += new_vesting;
@@ -1495,8 +1496,8 @@ namespace steemit {
             }
         }
 
-        void database::adjust_total_payout(const comment_object &cur, const asset &sbd_created,
-                                           const asset &curator_sbd_value, const asset &beneficiary_value) {
+        void database::adjust_total_payout(const comment_object &cur, const asset<0, 17, 0> &sbd_created,
+                                           const asset<0, 17, 0> &curator_sbd_value, const asset<0, 17, 0> &beneficiary_value) {
             modify(cur, [&](comment_object &c) {
                 if (c.total_payout_value.symbol == sbd_created.symbol) {
                     c.total_payout_value += sbd_created;
@@ -1895,7 +1896,7 @@ namespace steemit {
             }
         }
 
-        asset database::get_liquidity_reward() const {
+        asset<0, 17, 0> database::get_liquidity_reward() const {
             if (has_hardfork(STEEMIT_HARDFORK_0_12__178)) {
                 return asset(0, STEEM_SYMBOL_NAME);
             }
@@ -1908,7 +1909,7 @@ namespace steemit {
             return std::max(percent, STEEMIT_MIN_LIQUIDITY_REWARD);
         }
 
-        asset database::get_content_reward() const {
+        asset<0, 17, 0> database::get_content_reward() const {
             const auto &props = get_dynamic_global_properties();
             auto reward = asset(255, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
@@ -1921,7 +1922,7 @@ namespace steemit {
             return reward;
         }
 
-        asset database::get_curation_reward() const {
+        asset<0, 17, 0> database::get_curation_reward() const {
             const auto &props = get_dynamic_global_properties();
             auto reward = asset(85, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
@@ -1934,7 +1935,7 @@ namespace steemit {
             return reward;
         }
 
-        asset database::get_producer_reward() {
+        asset<0, 17, 0> database::get_producer_reward() {
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             asset percent(
@@ -1964,7 +1965,7 @@ namespace steemit {
 
         }
 
-        asset database::get_pow_reward() const {
+        asset<0, 17, 0> database::get_pow_reward() const {
             const auto &props = get_dynamic_global_properties();
 
 #ifndef STEEMIT_BUILD_TESTNET
@@ -1988,7 +1989,7 @@ namespace steemit {
             }
         }
 
-        asset database::get_payout_extension_cost(const comment_object &input_comment,
+        asset<0, 17, 0> database::get_payout_extension_cost(const comment_object &input_comment,
                                                   const fc::time_point_sec &input_time) const {
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() > STEEMIT_CASHOUT_WINDOW_SECONDS / 7,
                       "Extension time should be equal or greater than a day");
@@ -2000,7 +2001,7 @@ namespace steemit {
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
-                                                           const asset &input_cost) const {
+                                                           const asset<0, 17, 0> &input_cost) const {
             FC_ASSERT(input_cost.symbol == SBD_SYMBOL_NAME, "Extension payment should be in SBD");
             FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY > 0,
                       "Extension payment should cover more than a day");
@@ -2119,11 +2120,11 @@ namespace steemit {
             });
         }
 
-        asset database::to_sbd(const asset &steem) const {
+        asset<0, 17, 0> database::to_sbd(const asset<0, 17, 0> &steem) const {
             return utilities::to_sbd(get_feed_history().current_median_history, steem);
         }
 
-        asset database::to_steem(const asset &sbd) const {
+        asset<0, 17, 0> database::to_steem(const asset<0, 17, 0> &sbd) const {
             return utilities::to_steem(get_feed_history().current_median_history, sbd);
         }
 
@@ -2289,6 +2290,7 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<bid_collateral_evaluator>();
+            _my->_evaluator_registry.register_evaluator<comment_payout_extension_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id,
@@ -3306,8 +3308,8 @@ namespace steemit {
             return find<limit_order_object>(order_id) == nullptr;
         }
 
-        asset database::match(const call_order_object &call, const force_settlement_object &settle,
-                              const price &match_price, asset max_settlement) {
+        asset<0, 17, 0> database::match(const call_order_object &call, const force_settlement_object &settle,
+                              const price<0, 17, 0> &match_price, asset<0, 17, 0> max_settlement) {
             try {
                 FC_ASSERT(call.get_debt().symbol == settle.balance.symbol);
                 FC_ASSERT(call.debt > 0 && call.collateral > 0 && settle.balance.amount > 0);
@@ -3315,10 +3317,10 @@ namespace steemit {
                 const auto &settle_for_sale = std::min(settle.balance, max_settlement);
                 auto call_debt = call.get_debt();
 
-                asset call_receives = std::min(settle_for_sale, call_debt);
-                asset call_pays = call_receives * match_price;
-                asset settle_pays = call_receives;
-                const asset &settle_receives = call_pays;
+                asset<0, 17, 0> call_receives = std::min(settle_for_sale, call_debt);
+                asset<0, 17, 0> call_pays = call_receives * match_price;
+                asset<0, 17, 0> settle_pays = call_receives;
+                const asset<0, 17, 0> &settle_receives = call_pays;
 
                 /**
                  *  If the least collateralized call position lacks sufficient
@@ -3349,7 +3351,7 @@ namespace steemit {
          *  3 - both were filled
          */
         int database::match(const limit_order_object &new_order, const limit_order_object &old_order,
-                            const price &match_price) {
+                            const price<0, 17, 0> &match_price) {
             assert(new_order.sell_price.quote.symbol == old_order.sell_price.base.symbol);
             assert(new_order.sell_price.base.symbol == old_order.sell_price.quote.symbol);
             assert(new_order.for_sale > 0 && old_order.for_sale > 0);
@@ -3359,7 +3361,7 @@ namespace steemit {
             auto new_order_for_sale = new_order.amount_for_sale();
             auto old_order_for_sale = old_order.amount_for_sale();
 
-            asset new_order_pays, new_order_receives, old_order_pays, old_order_receives;
+            asset<0, 17, 0> new_order_pays, new_order_receives, old_order_pays, old_order_receives;
 
             if (new_order_for_sale <= old_order_for_sale * match_price) {
                 old_order_receives = new_order_for_sale;
@@ -3407,7 +3409,7 @@ namespace steemit {
         }
 
 
-        void database::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sbd) {
+        void database::adjust_liquidity_reward(const account_object &owner, const asset<0, 17, 0> &volume, bool is_sbd) {
             const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
             auto itr = ridx.find(owner.id);
             if (itr != ridx.end()) {
@@ -3442,7 +3444,7 @@ namespace steemit {
             }
         }
 
-        bool database::fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
+        bool database::fill_order(const limit_order_object &order, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives) {
             try {
                 FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
                 FC_ASSERT(pays.symbol != receives.symbol);
@@ -3477,7 +3479,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
-        bool database::fill_order(const call_order_object &order, const asset &pays, const asset &receives) {
+        bool database::fill_order(const call_order_object &order, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives) {
             try {
                 //idump((pays)(receives)(order));
                 FC_ASSERT(order.get_debt().symbol == receives.symbol);
@@ -3534,7 +3536,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
-        bool database::fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives) {
+        bool database::fill_order(const force_settlement_object &settle, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives) {
             try {
                 bool filled = false;
 
@@ -3685,7 +3687,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::globally_settle_asset(const asset_object &mia, const price &settlement_price) {
+        void database::globally_settle_asset(const asset_object &mia, const price<0, 17, 0> &settlement_price) {
             try {
                 /*
                 elog( "BLACK SWAN!" );
@@ -3739,7 +3741,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((mia)(settlement_price))
         }
 
-        void database::pay_order(const account_object &receiver, const asset &receives, const asset &pays) {
+        void database::pay_order(const account_object &receiver, const asset<0, 17, 0> &receives, const asset<0, 17, 0> &pays) {
             modify(get_account_statistics(receiver.name), [&](account_statistics_object &b) {
                 if (pays.symbol == STEEM_SYMBOL_NAME) {
                     b.total_core_in_orders -= pays.amount;
@@ -3748,7 +3750,7 @@ namespace steemit {
             adjust_balance(receiver, receives);
         }
 
-        asset database::calculate_market_fee(const asset_object &trade_asset, const asset &trade_amount) {
+        asset<0, 17, 0> database::calculate_market_fee(const asset_object &trade_asset, const asset<0, 17, 0> &trade_amount) {
             assert(trade_asset.asset_name == trade_amount.symbol);
 
             if (!trade_asset.charges_market_fees()) {
@@ -3770,7 +3772,7 @@ namespace steemit {
             return percent_fee;
         }
 
-        asset database::pay_market_fees(const asset_object &recv_asset, const asset &receives) {
+        asset<0, 17, 0> database::pay_market_fees(const asset_object &recv_asset, const asset<0, 17, 0> &receives) {
             auto issuer_fees = calculate_market_fee(recv_asset, receives);
             assert(issuer_fees <= receives);
 
@@ -4110,11 +4112,11 @@ namespace steemit {
             }
         }
 
-        string database::to_pretty_string(const asset &a) const {
+        string database::to_pretty_string(const asset<0, 17, 0> &a) const {
             return get_asset(a.symbol).amount_to_pretty_string(a.amount);
         }
 
-        void database::adjust_balance(const account_object &a, const asset &delta) {
+        void database::adjust_balance(const account_object &a, const asset<0, 17, 0> &delta) {
             try {
                 if (delta.amount == 0) {
                     return;
@@ -4209,7 +4211,7 @@ namespace steemit {
             }
         }
 
-        void database::adjust_savings_balance(const account_object &a, const asset &delta) {
+        void database::adjust_savings_balance(const account_object &a, const asset<0, 17, 0> &delta) {
             modify(a, [&](account_object &acnt) {
                 if (delta.symbol == STEEM_SYMBOL_NAME) {
                     acnt.savings_balance += delta;
@@ -4248,7 +4250,7 @@ namespace steemit {
             });
         }
 
-        void database::adjust_supply(const asset &delta, bool adjust_vesting) {
+        void database::adjust_supply(const asset<0, 17, 0> &delta, bool adjust_vesting) {
 
             const auto &props = get_dynamic_global_properties();
             if (props.head_block_number < STEEMIT_BLOCKS_PER_DAY * 7) {
@@ -4275,7 +4277,7 @@ namespace steemit {
             });
         }
 
-        asset database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
+        asset<0, 17, 0> database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
             try {
                 const account_balance_object &b = get<account_balance_object, by_account_asset>(
                         boost::make_tuple(a.name, asset_name));
@@ -4283,7 +4285,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((asset_name))
         }
 
-        asset database::get_savings_balance(const account_object &a, const asset_name_type &asset_name) const {
+        asset<0, 17, 0> database::get_savings_balance(const account_object &a, const asset_name_type &asset_name) const {
             if (asset_name == STEEM_SYMBOL_NAME) {
                 return a.savings_balance;
             } else if (asset_name == SBD_SYMBOL_NAME) {
@@ -4425,6 +4427,8 @@ namespace steemit {
             if (_log_hardforks) {
                 elog("HARDFORK ${hf} at block ${b}", ("hf", hardfork)("b", head_block_num()));
             }
+
+            version::state::instance().current_version = version::hardfork_version(0, hardfork);
 
             switch (hardfork) {
                 case STEEMIT_HARDFORK_0_1:

@@ -7,8 +7,8 @@
 
 namespace steemit {
     namespace chain {
-
-        void proposal_create_evaluator::do_apply(const protocol::proposal_create_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void proposal_create_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 FC_ASSERT(o.expiration_time >
                           db.head_block_time(), "Proposal has already expired on creation.");
@@ -81,7 +81,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void proposal_update_evaluator::do_apply(const protocol::proposal_update_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void proposal_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 _proposal = db.find_proposal(o.owner, o.proposal_id);
 
@@ -142,7 +143,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void proposal_delete_evaluator::do_apply(const protocol::proposal_delete_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void proposal_delete_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 _proposal = db.find_proposal(o.owner, o.proposal_id);
 

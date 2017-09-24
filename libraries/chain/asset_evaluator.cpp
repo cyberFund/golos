@@ -11,7 +11,8 @@
 
 namespace steemit {
     namespace chain {
-        void asset_create_evaluator::do_apply(const asset_create_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_create_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             try {
                 FC_ASSERT(op.common_options.whitelist_authorities.size() <=
                           STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
@@ -104,7 +105,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
-        void asset_issue_evaluator::do_apply(const asset_issue_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_issue_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = db.get_asset(o.asset_to_issue.symbol);
                 FC_ASSERT(o.issuer == a.issuer);
@@ -126,7 +128,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_reserve_evaluator::do_apply(const asset_reserve_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_reserve_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = db.get_asset(o.amount_to_reserve.symbol);
                 STEEMIT_ASSERT(!a.is_market_issued(), asset_reserve_invalid_on_mia,
@@ -149,7 +152,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_fund_fee_pool_evaluator::do_apply(const asset_fund_fee_pool_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_fund_fee_pool_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 FC_ASSERT(db.find_asset(o.asset_name));
                 FC_ASSERT(db.find_asset_dynamic_data(o.asset_name));
@@ -162,7 +166,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_update_evaluator::do_apply(const asset_update_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = db.get_asset(o.asset_to_update);
                 auto a_copy = a;
@@ -232,7 +237,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_update_bitasset_evaluator::do_apply(const asset_update_bitasset_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_update_bitasset_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = db.get_asset(o.asset_to_update);
 
@@ -281,8 +287,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_update_feed_producers_evaluator::do_apply(
-                const asset_update_feed_producers_evaluator::operation_type &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_update_feed_producers_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 FC_ASSERT(o.new_feed_producers.size() <= STEEMIT_DEFAULT_MAX_ASSET_WHITELIST_AUTHORITIES);
                 for (const auto &id : o.new_feed_producers) {
@@ -327,7 +333,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_global_settle_evaluator::do_apply(const asset_global_settle_evaluator::operation_type &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_global_settle_evaluator<Major, Hardfork, Release>::do_apply(operation_type &op) {
             try {
                 asset_to_settle = db.find_asset(op.asset_to_settle);
                 FC_ASSERT(asset_to_settle->is_market_issued());
@@ -352,7 +359,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
-        void asset_settle_evaluator::do_apply(const asset_settle_evaluator::operation_type &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_settle_evaluator<Major, Hardfork, Release>::do_apply(operation_type &op) {
             try {
                 asset_to_settle = db.find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());
@@ -398,7 +406,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
-        void asset_force_settle_evaluator::do_apply(const asset_force_settle_evaluator::operation_type &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_force_settle_evaluator<Major, Hardfork, Release>::do_apply(operation_type &op) {
             try {
                 asset_to_settle = db.find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());
@@ -443,7 +452,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
-        void asset_publish_feeds_evaluator::do_apply(const asset_publish_feed_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_publish_feeds_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &base = db.get_asset(o.asset_name);
                 //Verify that this feed is for a market-issued asset and that asset is backed by the base
@@ -505,7 +515,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void asset_claim_fees_evaluator::do_apply(const asset_claim_fees_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_claim_fees_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 FC_ASSERT(db.get_asset(o.amount_to_claim.symbol).issuer == o.issuer,
                           "Asset fees may only be claimed by the issuer");

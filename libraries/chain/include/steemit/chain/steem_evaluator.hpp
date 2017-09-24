@@ -6,364 +6,339 @@
 
 namespace steemit {
     namespace chain {
-        class witness_update_evaluator
-                : public steemit::chain::evaluator<witness_update_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class witness_update_evaluator : public evaluator<witness_update_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::witness_update_operation operation_type;
+            typedef protocol::witness_update_operation<Major, Hardfork, Release> operation_type;
 
-            witness_update_evaluator(database &db)
-                    : steemit::chain::evaluator<witness_update_evaluator>(db) {
+            witness_update_evaluator(database &db) : evaluator<witness_update_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::witness_update_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class account_witness_vote_evaluator
-                : public steemit::chain::evaluator<account_witness_vote_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class account_witness_vote_evaluator : public evaluator<
+                account_witness_vote_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::account_witness_vote_operation operation_type;
+            typedef protocol::account_witness_vote_operation<Major, Hardfork, Release> operation_type;
 
-            account_witness_vote_evaluator(database &db)
-                    : steemit::chain::evaluator<account_witness_vote_evaluator>(db) {
+            account_witness_vote_evaluator(database &db) : evaluator<
+                    account_witness_vote_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::account_witness_vote_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class account_witness_proxy_evaluator
-                : public steemit::chain::evaluator<account_witness_proxy_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class account_witness_proxy_evaluator : public evaluator<
+                account_witness_proxy_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::account_witness_proxy_operation operation_type;
+            typedef protocol::account_witness_proxy_operation<Major, Hardfork, Release> operation_type;
 
-            account_witness_proxy_evaluator(database &db)
-                    : steemit::chain::evaluator<account_witness_proxy_evaluator>(db) {
+            account_witness_proxy_evaluator(database &db) : evaluator<
+                    account_witness_proxy_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::account_witness_proxy_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class withdraw_vesting_evaluator
-                : public steemit::chain::evaluator<withdraw_vesting_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class withdraw_vesting_evaluator : public evaluator<withdraw_vesting_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::withdraw_vesting_operation operation_type;
+            typedef protocol::withdraw_vesting_operation<Major, Hardfork, Release> operation_type;
 
-            withdraw_vesting_evaluator(database &db)
-                    : steemit::chain::evaluator<withdraw_vesting_evaluator>(db) {
+            withdraw_vesting_evaluator(database &db) : evaluator<withdraw_vesting_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::withdraw_vesting_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class set_withdraw_vesting_route_evaluator
-                : public steemit::chain::evaluator<set_withdraw_vesting_route_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class set_withdraw_vesting_route_evaluator : public evaluator<
+                set_withdraw_vesting_route_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::set_withdraw_vesting_route_operation operation_type;
+            typedef protocol::set_withdraw_vesting_route_operation<Major, Hardfork, Release> operation_type;
 
-            set_withdraw_vesting_route_evaluator(database &db)
-                    : steemit::chain::evaluator<set_withdraw_vesting_route_evaluator>(db) {
+            set_withdraw_vesting_route_evaluator(database &db) : evaluator<
+                    set_withdraw_vesting_route_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::set_withdraw_vesting_route_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class comment_evaluator
-                : public steemit::chain::evaluator<comment_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class comment_evaluator : public evaluator<comment_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                Release> {
         public:
-            typedef protocol::comment_operation operation_type;
+            typedef protocol::comment_operation<Major, Hardfork, Release> operation_type;
 
-            comment_evaluator(database &db)
-                    : steemit::chain::evaluator<comment_evaluator>(db) {
+            comment_evaluator(database &db) : evaluator<comment_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                    Release>(db) {
             }
 
-            void do_apply(const protocol::comment_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class comment_options_evaluator
-                : public steemit::chain::evaluator<comment_options_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class comment_options_evaluator : public evaluator<comment_options_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::comment_options_operation operation_type;
+            typedef protocol::comment_options_operation<Major, Hardfork, Release> operation_type;
 
-            comment_options_evaluator(database &db)
-                    : steemit::chain::evaluator<comment_options_evaluator>(db) {
+            comment_options_evaluator(database &db) : evaluator<comment_options_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::comment_options_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class comment_payout_extension_evaluator
-                : public steemit::chain::evaluator<comment_payout_extension_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class comment_payout_extension_evaluator : public evaluator<
+                comment_payout_extension_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::comment_payout_extension_operation operation_type;
+            typedef protocol::comment_payout_extension_operation<Major, Hardfork, Release> operation_type;
 
-            comment_payout_extension_evaluator(database &db)
-                    : steemit::chain::evaluator<comment_payout_extension_evaluator>(db) {
+            comment_payout_extension_evaluator(database &db) : evaluator<
+                    comment_payout_extension_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::comment_payout_extension_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class delete_comment_evaluator
-                : public steemit::chain::evaluator<delete_comment_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class delete_comment_evaluator : public evaluator<delete_comment_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::delete_comment_operation operation_type;
+            typedef protocol::delete_comment_operation<Major, Hardfork, Release> operation_type;
 
-            delete_comment_evaluator(database &db)
-                    : steemit::chain::evaluator<delete_comment_evaluator>(db) {
+            delete_comment_evaluator(database &db) : evaluator<delete_comment_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::delete_comment_operation &o);
+            void do_apply(const protocol::delete_comment_operation<Major, Hardfork, Release> &o);
         };
 
-        class vote_evaluator
-                : public steemit::chain::evaluator<vote_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class vote_evaluator : public evaluator<vote_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::vote_operation operation_type;
+            typedef protocol::vote_operation<Major, Hardfork, Release> operation_type;
 
-            vote_evaluator(database &db)
-                    : steemit::chain::evaluator<vote_evaluator>(db) {
+            vote_evaluator(database &db) : evaluator<vote_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                    Release>(db) {
             }
 
-            void do_apply(const protocol::vote_operation &o);
+            void do_apply(const protocol::vote_operation<Major, Hardfork, Release> &o);
         };
 
-        class custom_evaluator
-                : public steemit::chain::evaluator<custom_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class custom_evaluator : public evaluator<custom_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                Release> {
         public:
-            typedef protocol::custom_operation operation_type;
+            typedef protocol::custom_operation<Major, Hardfork, Release> operation_type;
 
-            custom_evaluator(database &db)
-                    : steemit::chain::evaluator<custom_evaluator>(db) {
+            custom_evaluator(database &db) : evaluator<custom_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                    Release>(db) {
             }
 
-            void do_apply(const protocol::custom_operation &o);
+            void do_apply(const protocol::custom_operation<Major, Hardfork, Release> &o);
         };
 
-        class custom_json_evaluator
-                : public steemit::chain::evaluator<custom_json_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class custom_json_evaluator : public evaluator<custom_json_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                Release> {
         public:
-            typedef protocol::custom_json_operation operation_type;
+            typedef protocol::custom_json_operation<Major, Hardfork, Release> operation_type;
 
-            custom_json_evaluator(database &db)
-                    : steemit::chain::evaluator<custom_json_evaluator>(db) {
+            custom_json_evaluator(database &db) : evaluator<custom_json_evaluator<Major, Hardfork, Release>, Major,
+                    Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::custom_json_operation &o);
+            void do_apply(const protocol::custom_json_operation<Major, Hardfork, Release> &o);
         };
 
-        class custom_binary_evaluator
-                : public steemit::chain::evaluator<custom_binary_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class custom_binary_evaluator : public evaluator<custom_binary_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::custom_binary_operation operation_type;
+            typedef protocol::custom_binary_operation<Major, Hardfork, Release> operation_type;
 
-            custom_binary_evaluator(database &db)
-                    : steemit::chain::evaluator<custom_binary_evaluator>(db) {
+            custom_binary_evaluator(database &db) : evaluator<custom_binary_evaluator<Major, Hardfork, Release>, Major,
+                    Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::custom_binary_operation &o);
+            void do_apply(const protocol::custom_binary_operation<Major, Hardfork, Release> &o);
         };
 
-        class pow_evaluator
-                : public steemit::chain::evaluator<pow_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class pow_evaluator : public evaluator<pow_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::pow_operation operation_type;
+            typedef protocol::pow_operation<Major, Hardfork, Release> operation_type;
 
-            pow_evaluator(database &db)
-                    : steemit::chain::evaluator<pow_evaluator>(db) {
+            pow_evaluator(database &db) : evaluator<pow_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(
+                    db) {
             }
 
-            void do_apply(const protocol::pow_operation &o);
+            void do_apply(const protocol::pow_operation<Major, Hardfork, Release> &o);
         };
 
-        class pow2_evaluator
-                : public steemit::chain::evaluator<pow2_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class pow2_evaluator : public evaluator<pow2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::pow2_operation operation_type;
+            typedef protocol::pow2_operation<Major, Hardfork, Release> operation_type;
 
-            pow2_evaluator(database &db)
-                    : steemit::chain::evaluator<pow2_evaluator>(db) {
+            pow2_evaluator(database &db) : evaluator<pow2_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                    Release>(db) {
             }
 
-            void do_apply(const protocol::pow2_operation &o);
+            void do_apply(const protocol::pow2_operation<Major, Hardfork, Release> &o);
         };
 
-        class feed_publish_evaluator
-                : public steemit::chain::evaluator<feed_publish_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class feed_publish_evaluator : public evaluator<feed_publish_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::feed_publish_operation operation_type;
+            typedef protocol::feed_publish_operation<Major, Hardfork, Release> operation_type;
 
-            feed_publish_evaluator(database &db)
-                    : steemit::chain::evaluator<feed_publish_evaluator>(db) {
+            feed_publish_evaluator(database &db) : evaluator<feed_publish_evaluator<Major, Hardfork, Release>, Major,
+                    Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::feed_publish_operation &o);
+            void do_apply(const protocol::feed_publish_operation<Major, Hardfork, Release> &o);
         };
 
-        class report_over_production_evaluator
-                : public steemit::chain::evaluator<report_over_production_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class report_over_production_evaluator : public evaluator<
+                report_over_production_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::report_over_production_operation operation_type;
+            typedef protocol::report_over_production_operation<Major, Hardfork, Release> operation_type;
 
-            report_over_production_evaluator(database &db)
-                    : steemit::chain::evaluator<report_over_production_evaluator>(db) {
+            report_over_production_evaluator(database &db) : evaluator<
+                    report_over_production_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::report_over_production_operation &o);
+            void do_apply(const protocol::report_over_production_operation<Major, Hardfork, Release> &o);
         };
 
-        class escrow_transfer_evaluator
-                : public steemit::chain::evaluator<escrow_transfer_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class challenge_authority_evaluator : public evaluator<challenge_authority_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::escrow_transfer_operation operation_type;
+            typedef protocol::challenge_authority_operation<Major, Hardfork, Release> operation_type;
 
-            escrow_transfer_evaluator(database &db)
-                    : steemit::chain::evaluator<escrow_transfer_evaluator>(db) {
+            challenge_authority_evaluator(database &db) : evaluator<
+                    challenge_authority_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::escrow_transfer_operation &o);
+            void do_apply(const protocol::challenge_authority_operation<Major, Hardfork, Release> &o);
         };
 
-        class escrow_approve_evaluator
-                : public steemit::chain::evaluator<escrow_approve_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class prove_authority_evaluator : public evaluator<prove_authority_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::escrow_approve_operation operation_type;
+            typedef protocol::prove_authority_operation<Major, Hardfork, Release> operation_type;
 
-            escrow_approve_evaluator(database &db)
-                    : steemit::chain::evaluator<escrow_approve_evaluator>(db) {
+            prove_authority_evaluator(database &db) : evaluator<prove_authority_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::escrow_approve_operation &o);
+            void do_apply(const protocol::prove_authority_operation<Major, Hardfork, Release> &o);
         };
 
-        class escrow_dispute_evaluator
-                : public steemit::chain::evaluator<escrow_dispute_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class request_account_recovery_evaluator : public evaluator<
+                request_account_recovery_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::escrow_dispute_operation operation_type;
+            typedef protocol::request_account_recovery_operation<Major, Hardfork, Release> operation_type;
 
-            escrow_dispute_evaluator(database &db)
-                    : steemit::chain::evaluator<escrow_dispute_evaluator>(db) {
+            request_account_recovery_evaluator(database &db) : evaluator<
+                    request_account_recovery_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::escrow_dispute_operation &o);
+            void do_apply(const protocol::request_account_recovery_operation<Major, Hardfork, Release> &o);
         };
 
-        class escrow_release_evaluator
-                : public steemit::chain::evaluator<escrow_release_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class recover_account_evaluator : public evaluator<recover_account_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::escrow_release_operation operation_type;
+            typedef protocol::recover_account_operation<Major, Hardfork, Release> operation_type;
 
-            escrow_release_evaluator(database &db)
-                    : steemit::chain::evaluator<escrow_release_evaluator>(db) {
+            recover_account_evaluator(database &db) : evaluator<recover_account_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::escrow_release_operation &o);
+            void do_apply(const protocol::recover_account_operation<Major, Hardfork, Release> &o);
         };
 
-        class challenge_authority_evaluator
-                : public steemit::chain::evaluator<challenge_authority_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class change_recovery_account_evaluator : public evaluator<
+                change_recovery_account_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::challenge_authority_operation operation_type;
+            typedef protocol::change_recovery_account_operation<Major, Hardfork, Release> operation_type;
 
-            challenge_authority_evaluator(database &db)
-                    : steemit::chain::evaluator<challenge_authority_evaluator>(db) {
+            change_recovery_account_evaluator(database &db) : evaluator<
+                    change_recovery_account_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::challenge_authority_operation &o);
+            void do_apply(const protocol::change_recovery_account_operation<Major, Hardfork, Release> &o);
         };
 
-        class prove_authority_evaluator
-                : public steemit::chain::evaluator<prove_authority_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class decline_voting_rights_evaluator : public evaluator<
+                decline_voting_rights_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::prove_authority_operation operation_type;
+            typedef protocol::decline_voting_rights_operation<Major, Hardfork, Release> operation_type;
 
-            prove_authority_evaluator(database &db)
-                    : steemit::chain::evaluator<prove_authority_evaluator>(db) {
+            decline_voting_rights_evaluator(database &db) : evaluator<
+                    decline_voting_rights_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::prove_authority_operation &o);
+            void do_apply(const protocol::decline_voting_rights_operation<Major, Hardfork, Release> &o);
         };
 
-        class request_account_recovery_evaluator
-                : public steemit::chain::evaluator<request_account_recovery_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class reset_account_evaluator : public evaluator<reset_account_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::request_account_recovery_operation operation_type;
+            typedef protocol::reset_account_operation<Major, Hardfork, Release> operation_type;
 
-            request_account_recovery_evaluator(database &db)
-                    : steemit::chain::evaluator<request_account_recovery_evaluator>(db) {
+            reset_account_evaluator(database &db) : evaluator<reset_account_evaluator<Major, Hardfork, Release>, Major,
+                    Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::request_account_recovery_operation &o);
+            void do_apply(const protocol::reset_account_operation<Major, Hardfork, Release> &o);
         };
 
-        class recover_account_evaluator
-                : public steemit::chain::evaluator<recover_account_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class set_reset_account_evaluator : public evaluator<set_reset_account_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::recover_account_operation operation_type;
+            typedef protocol::set_reset_account_operation<Major, Hardfork, Release> operation_type;
 
-            recover_account_evaluator(database &db)
-                    : steemit::chain::evaluator<recover_account_evaluator>(db) {
+            set_reset_account_evaluator(database &db) : evaluator<set_reset_account_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::recover_account_operation &o);
+            void do_apply(const protocol::set_reset_account_operation<Major, Hardfork, Release> &o);
         };
 
-        class change_recovery_account_evaluator
-                : public steemit::chain::evaluator<change_recovery_account_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class delegate_vesting_shares_evaluator : public evaluator<
+                delegate_vesting_shares_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::change_recovery_account_operation operation_type;
+            typedef protocol::delegate_vesting_shares_operation<Major, Hardfork, Release> operation_type;
 
-            change_recovery_account_evaluator(database &db)
-                    : steemit::chain::evaluator<change_recovery_account_evaluator>(db) {
+            delegate_vesting_shares_evaluator(database &db) : evaluator<
+                    delegate_vesting_shares_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::change_recovery_account_operation &o);
-        };
-
-        class decline_voting_rights_evaluator
-                : public steemit::chain::evaluator<decline_voting_rights_evaluator> {
-        public:
-            typedef protocol::decline_voting_rights_operation operation_type;
-
-            decline_voting_rights_evaluator(database &db)
-                    : steemit::chain::evaluator<decline_voting_rights_evaluator>(db) {
-            }
-
-            void do_apply(const protocol::decline_voting_rights_operation &o);
-        };
-
-        class reset_account_evaluator
-                : public steemit::chain::evaluator<reset_account_evaluator> {
-        public:
-            typedef protocol::reset_account_operation operation_type;
-
-            reset_account_evaluator(database &db)
-                    : steemit::chain::evaluator<reset_account_evaluator>(db) {
-            }
-
-            void do_apply(const protocol::reset_account_operation &o);
-        };
-
-        class set_reset_account_evaluator
-                : public steemit::chain::evaluator<set_reset_account_evaluator> {
-        public:
-            typedef protocol::set_reset_account_operation operation_type;
-
-            set_reset_account_evaluator(database &db)
-                    : steemit::chain::evaluator<set_reset_account_evaluator>(db) {
-            }
-
-            void do_apply(const protocol::set_reset_account_operation &o);
-        };
-
-        class delegate_vesting_shares_evaluator
-                : public steemit::chain::evaluator<delegate_vesting_shares_evaluator> {
-        public:
-            typedef protocol::delegate_vesting_shares_operation operation_type;
-
-            delegate_vesting_shares_evaluator(database &db)
-                    : steemit::chain::evaluator<delegate_vesting_shares_evaluator>(db) {
-            }
-
-            void do_apply(const protocol::delegate_vesting_shares_operation &o);
+            void do_apply(const protocol::delegate_vesting_shares_operation<Major, Hardfork, Release> &o);
         };
     }
 } // steemit::chain

@@ -2,10 +2,12 @@ set(CURRENT_TARGET version)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/${CURRENT_TARGET}/version.hpp
+     include/steemit/${CURRENT_TARGET}/version_state.hpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
      version.cpp
+     version_state.cpp
      )
 
 if(BUILD_SHARED_LIBRARIES)

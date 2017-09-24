@@ -182,10 +182,10 @@ namespace steemit {
                 &collateral_bid_object::bidder>>
         >,
         ordered_unique <tag<by_price>, composite_key<collateral_bid_object, const_mem_fun < collateral_bid_object,
-                protocol::asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, protocol::price,
+                protocol::asset_name_type, &collateral_bid_object::debt_type>, member<collateral_bid_object, protocol::price<0, 17, 0>,
                 &collateral_bid_object::inv_swan_price>, member<collateral_bid_object, collateral_bid_object::id_type,
                 &collateral_bid_object::id>>,
-        composite_key_compare <std::less<protocol::asset_name_type>, std::greater<protocol::price>, std::less<
+        composite_key_compare <std::less<protocol::asset_name_type>, std::greater<protocol::price<0, 17, 0>>, std::less<
                 collateral_bid_object::id_type>>
         >
         >,
@@ -198,10 +198,10 @@ namespace steemit {
                 limit_order_object, limit_order_object::id_type, &limit_order_object::id>>,
         ordered_non_unique <tag<by_expiration>, member<limit_order_object, time_point_sec,
                 &limit_order_object::expiration>>,
-        ordered_unique <tag<by_price>, composite_key<limit_order_object, member < limit_order_object, protocol::price,
+        ordered_unique <tag<by_price>, composite_key<limit_order_object, member < limit_order_object, protocol::price<0, 17, 0>,
                 &limit_order_object::sell_price>, member<limit_order_object, limit_order_object::id_type,
                 &limit_order_object::id>>,
-        composite_key_compare <std::greater<protocol::price>, std::less<limit_order_object::id_type>>
+        composite_key_compare <std::greater<protocol::price<0, 17, 0>>, std::less<limit_order_object::id_type>>
         >,
         ordered_unique <tag<by_account>, composite_key<limit_order_object, member < limit_order_object,
                 account_name_type, &limit_order_object::seller>, member<limit_order_object, protocol::integral_id_type,
@@ -217,17 +217,17 @@ namespace steemit {
         struct by_price;
         typedef multi_index_container <call_order_object, indexed_by<ordered_unique < tag < by_id>, member<
                 call_order_object, call_order_object::id_type, &call_order_object::id>>,
-        ordered_unique <tag<by_price>, composite_key<call_order_object, member < call_order_object, protocol::price,
+        ordered_unique <tag<by_price>, composite_key<call_order_object, member < call_order_object, protocol::price<0, 17, 0>,
                 &call_order_object::call_price>, member<call_order_object, protocol::integral_id_type,
                 &call_order_object::order_id>>,
-        composite_key_compare <std::less<protocol::price>, std::less<protocol::integral_id_type>>
+        composite_key_compare <std::less<protocol::price<0, 17, 0>>, std::less<protocol::integral_id_type>>
         >,
         ordered_unique <tag<by_account>, composite_key<call_order_object, member < call_order_object, account_name_type,
                 &call_order_object::borrower>, const_mem_fun<call_order_object, protocol::asset_name_type,
                 &call_order_object::debt_type>>
         >,
         ordered_unique <tag<by_collateral>, composite_key<call_order_object, const_mem_fun < call_order_object,
-                protocol::price, &call_order_object::collateralization>, member<call_order_object,
+                protocol::price<0, 17, 0>, &call_order_object::collateralization>, member<call_order_object,
                 protocol::integral_id_type, &call_order_object::order_id>>
         >
         >,allocator <call_order_object>

@@ -10,32 +10,33 @@
 
 namespace steemit {
     namespace chain {
-
-        class proposal_create_evaluator
-                : public steemit::chain::evaluator<proposal_create_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class proposal_create_evaluator : public steemit::chain::evaluator<
+                proposal_create_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef proposal_create_operation operation_type;
+            typedef proposal_create_operation<Major, Hardfork, Release> operation_type;
 
-            proposal_create_evaluator(database &db)
-                    : steemit::chain::evaluator<proposal_create_evaluator>(db) {
+            proposal_create_evaluator(database &db) : steemit::chain::evaluator<
+                    proposal_create_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const proposal_create_operation &o);
+            void do_apply(const operation_type &o);
 
         protected:
             transaction _proposed_trx;
         };
 
-        class proposal_update_evaluator
-                : public steemit::chain::evaluator<proposal_update_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class proposal_update_evaluator : public steemit::chain::evaluator<
+                proposal_update_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef proposal_update_operation operation_type;
+            typedef proposal_update_operation<Major, Hardfork, Release> operation_type;
 
-            proposal_update_evaluator(database &db)
-                    : steemit::chain::evaluator<proposal_update_evaluator>(db) {
+            proposal_update_evaluator(database &db) : steemit::chain::evaluator<
+                    proposal_update_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const proposal_update_operation &o);
+            void do_apply(const operation_type &o);
 
         protected:
             const proposal_object *_proposal = nullptr;
@@ -43,21 +44,22 @@ namespace steemit {
             bool proposal_failed = false;
         };
 
-        class proposal_delete_evaluator
-                : public steemit::chain::evaluator<proposal_delete_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class proposal_delete_evaluator : public steemit::chain::evaluator<
+                proposal_delete_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef proposal_delete_operation operation_type;
+            typedef proposal_delete_operation<Major, Hardfork, Release> operation_type;
 
-            proposal_delete_evaluator(database &db)
-                    : steemit::chain::evaluator<proposal_delete_evaluator>(db) {
+            proposal_delete_evaluator(database &db) : steemit::chain::evaluator<
+                    proposal_delete_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
 
             }
 
-            void do_apply(const proposal_delete_operation &);
+            void do_apply(const operation_type &);
+
         protected:
 
             const proposal_object *_proposal = nullptr;
         };
-
     }
 } // graphene::chain

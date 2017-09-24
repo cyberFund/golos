@@ -7,52 +7,56 @@
 
 namespace steemit {
     namespace chain {
-        class account_create_evaluator
-                : public evaluator<account_create_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class account_create_evaluator : public evaluator<account_create_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::account_create_operation operation_type;
+            typedef protocol::account_create_operation<Major, Hardfork, Release> operation_type;
 
-            account_create_evaluator(database &db)
-                    : evaluator<account_create_evaluator>(db) {
+            account_create_evaluator(database &db) : evaluator<account_create_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::account_create_operation &o);
+            void do_apply(const protocol::account_create_operation<Major, Hardfork, Release> &o);
         };
 
-        class account_create_with_delegation_evaluator
-                : public evaluator<account_create_with_delegation_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class account_create_with_delegation_evaluator : public evaluator<
+                account_create_with_delegation_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::account_create_with_delegation_operation operation_type;
+            typedef protocol::account_create_with_delegation_operation<Major, Hardfork, Release> operation_type;
 
-            account_create_with_delegation_evaluator(database &db)
-                    : evaluator<account_create_with_delegation_evaluator>(db) {
+            account_create_with_delegation_evaluator(database &db) : evaluator<
+                    account_create_with_delegation_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::account_create_with_delegation_operation &o);
+            void do_apply(const protocol::account_create_with_delegation_operation<Major, Hardfork, Release> &o);
         };
 
-        class account_update_evaluator
-                : public evaluator<account_update_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class account_update_evaluator : public evaluator<account_update_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::account_update_operation operation_type;
+            typedef protocol::account_update_operation<Major, Hardfork, Release> operation_type;
 
-            account_update_evaluator(database &db)
-                    : evaluator<account_update_evaluator>(db) {
+            account_update_evaluator(database &db) : evaluator<account_update_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::account_update_operation &o);
+            void do_apply(const protocol::account_update_operation<Major, Hardfork, Release> &o);
         };
 
-        class account_whitelist_evaluator
-                : public evaluator<account_whitelist_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class account_whitelist_evaluator : public evaluator<account_whitelist_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::account_whitelist_operation operation_type;
+            typedef protocol::account_whitelist_operation<Major, Hardfork, Release> operation_type;
 
-            account_whitelist_evaluator(database &db)
-                    : evaluator<account_whitelist_evaluator>(db) {
+            account_whitelist_evaluator(database &db) : evaluator<account_whitelist_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::account_whitelist_operation &o);
+            void do_apply(const protocol::account_whitelist_operation<Major, Hardfork, Release> &o);
         };
     }
 }

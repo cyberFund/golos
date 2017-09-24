@@ -8,36 +8,25 @@
 
 namespace steemit {
     namespace chain {
-        void transfer_evaluator::do_apply(const protocol::transfer_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_evaluator<Major, Hardfork, Release>::do_apply(const protocol::transfer_operation<Major, Hardfork, Release> &o) {
 
             const auto &from_account = db.get_account(o.from);
             const auto &to_account = db.get_account(o.to);
 
             const asset_object &asset_type = db.get_asset(o.amount.symbol);
 
-            STEEMIT_ASSERT(
-                    db.is_authorized_asset(from_account, asset_type),
-                    transfer_from_account_not_whitelisted,
-                    "'from' account ${from} is not whitelisted for asset ${asset}",
-                    ("from", o.from)
-                            ("asset", o.amount.symbol)
-            );
-            STEEMIT_ASSERT(
-                    db.is_authorized_asset(to_account, asset_type),
-                    transfer_to_account_not_whitelisted,
-                    "'to' account ${to} is not whitelisted for asset ${asset}",
-                    ("to", o.to)
-                            ("asset", o.amount.symbol)
-            );
+            STEEMIT_ASSERT(db.is_authorized_asset(from_account, asset_type), transfer_from_account_not_whitelisted,
+                           "'from' account ${from} is not whitelisted for asset ${asset}",
+                           ("from", o.from)("asset", o.amount.symbol));
+            STEEMIT_ASSERT(db.is_authorized_asset(to_account, asset_type), transfer_to_account_not_whitelisted,
+                           "'to' account ${to} is not whitelisted for asset ${asset}",
+                           ("to", o.to)("asset", o.amount.symbol));
 
             if (asset_type.is_transfer_restricted()) {
-                STEEMIT_ASSERT(
-                        from_account.name == asset_type.issuer ||
-                        to_account.name == asset_type.issuer,
-                        transfer_restricted_transfer_asset,
-                        "Asset {asset} has transfer_restricted flag enabled",
-                        ("asset", o.amount.symbol)
-                );
+                STEEMIT_ASSERT(from_account.name == asset_type.issuer || to_account.name == asset_type.issuer,
+                               transfer_restricted_transfer_asset, "Asset {asset} has transfer_restricted flag enabled",
+                               ("asset", o.amount.symbol));
             }
 
             if (from_account.active_challenged) {
@@ -47,43 +36,46 @@ namespace steemit {
                 });
             }
 
-            FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol) >=
-                      o.amount, "Account does not have sufficient funds for transfer.");
+            FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol) >= o.amount,
+                      "Account does not have sufficient funds for transfer.");
 
             this->db.adjust_balance(from_account, -o.amount);
             this->db.adjust_balance(to_account, o.amount);
         }
 
-        void transfer_to_vesting_evaluator::do_apply(const protocol::transfer_to_vesting_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_to_vesting_evaluator<Major, Hardfork, Release>::do_apply(const protocol::transfer_to_vesting_operation<Major, Hardfork, Release> &o) {
             const auto &from_account = this->db.get_account(o.from);
-            const auto &to_account = o.to.size() ? this->db.get_account(o.to)
-                                                 : from_account;
+            const auto &to_account = o.to.size() ? this->db.get_account(o.to) : from_account;
 
-            FC_ASSERT(this->db.get_balance(from_account, STEEM_SYMBOL_NAME) >=
-                      o.amount, "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
+            FC_ASSERT(this->db.get_balance(from_account, STEEM_SYMBOL_NAME) >= o.amount,
+                      "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
             this->db.adjust_balance(from_account, -o.amount);
             this->db.create_vesting(to_account, o.amount);
         }
 
-        void transfer_to_savings_evaluator::do_apply(const transfer_to_savings_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_to_savings_evaluator<Major, Hardfork, Release>::do_apply(
+                const transfer_to_savings_operation<Major, Hardfork, Release> &op) {
             const auto &from = this->db.get_account(op.from);
             const auto &to = this->db.get_account(op.to);
-            FC_ASSERT(this->db.get_balance(from, op.amount.symbol) >=
-                      op.amount, "Account does not have sufficient funds to transfer to savings.");
+            FC_ASSERT(this->db.get_balance(from, op.amount.symbol) >= op.amount,
+                      "Account does not have sufficient funds to transfer to savings.");
 
             this->db.adjust_balance(from, -op.amount);
             this->db.adjust_savings_balance(to, op.amount);
         }
 
-        void transfer_from_savings_evaluator::do_apply(const protocol::transfer_from_savings_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void transfer_from_savings_evaluator<Major, Hardfork, Release>::do_apply(
+                const protocol::transfer_from_savings_operation<Major, Hardfork, Release> &op) {
             const auto &from = this->db.get_account(op.from);
             this->db.get_account(op.to); // Verify to account exists
 
-            FC_ASSERT(from.savings_withdraw_requests <
-                      STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests.");
+            FC_ASSERT(from.savings_withdraw_requests < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT,
+                      "Account has reached limit for pending withdraw requests.");
 
-            FC_ASSERT(this->db.get_savings_balance(from, op.amount.symbol) >=
-                      op.amount);
+            FC_ASSERT(this->db.get_savings_balance(from, op.amount.symbol) >= op.amount);
             this->db.adjust_savings_balance(from, -op.amount);
             this->db.create<savings_withdraw_object>([&](savings_withdraw_object &s) {
                 s.from = op.from;
@@ -93,8 +85,7 @@ namespace steemit {
                 from_string(s.memo, op.memo);
 #endif
                 s.request_id = op.request_id;
-                s.complete = this->db.head_block_time() +
-                        STEEMIT_SAVINGS_WITHDRAW_TIME;
+                s.complete = this->db.head_block_time() + STEEMIT_SAVINGS_WITHDRAW_TIME;
             });
 
             this->db.modify(from, [&](account_object &a) {
@@ -102,7 +93,9 @@ namespace steemit {
             });
         }
 
-        void cancel_transfer_from_savings_evaluator::do_apply(const protocol::cancel_transfer_from_savings_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void cancel_transfer_from_savings_evaluator<Major, Hardfork, Release>::do_apply(
+                const protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> &op) {
             const auto &swo = this->db.get_savings_withdraw(op.from, op.request_id);
             this->db.adjust_savings_balance(this->db.get_account(swo.from), swo.amount);
             this->db.remove(swo);
@@ -113,15 +106,13 @@ namespace steemit {
             });
         }
 
-        void override_transfer_evaluator::do_apply(const protocol::override_transfer_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void override_transfer_evaluator<Major, Hardfork, Release>::do_apply(
+                const protocol::override_transfer_operation<Major, Hardfork, Release> &o) {
             try {
                 const asset_object &asset_type = db.get_asset(o.amount.symbol);
-                STEEMIT_ASSERT(
-                        asset_type.can_override(),
-                        override_transfer_not_permitted,
-                        "override_transfer not permitted for asset ${asset}",
-                        ("asset", o.amount.symbol)
-                );
+                STEEMIT_ASSERT(asset_type.can_override(), override_transfer_not_permitted,
+                               "override_transfer not permitted for asset ${asset}", ("asset", o.amount.symbol));
                 FC_ASSERT(asset_type.issuer == o.issuer);
 
                 const account_object &from_account = db.get_account(o.from);
@@ -130,8 +121,8 @@ namespace steemit {
                 FC_ASSERT(db.is_authorized_asset(to_account, asset_type));
                 FC_ASSERT(db.is_authorized_asset(from_account, asset_type));
 
-                FC_ASSERT(db.get_balance(from_account, asset_type).amount >= o.amount.amount,
-                        "", ("total_transfer", o.amount)("balance", db.get_balance(from_account, asset_type).amount));
+                FC_ASSERT(db.get_balance(from_account, asset_type).amount >= o.amount.amount, "",
+                          ("total_transfer", o.amount)("balance", db.get_balance(from_account, asset_type).amount));
 
                 db.adjust_balance(db.get_account(o.from), -o.amount);
                 db.adjust_balance(db.get_account(o.to), o.amount);

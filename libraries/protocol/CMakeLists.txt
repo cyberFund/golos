@@ -17,7 +17,6 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/get_config.hpp
      include/steemit/protocol/operations/market_operations.hpp
      include/steemit/protocol/operations/market_virtual_operations.hpp
-     include/steemit/protocol/operations/operation_utilities.hpp
      include/steemit/protocol/operations/operation_utilities_impl.hpp
      include/steemit/protocol/operations/operations.hpp
      include/steemit/protocol/protocol.hpp

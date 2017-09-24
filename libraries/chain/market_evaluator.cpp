@@ -27,7 +27,8 @@ namespace steemit {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        void convert_evaluator::do_apply(const convert_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void convert_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &owner = db.get_account(o.owner);
             FC_ASSERT(db.get_balance(owner, o.amount.symbol) >= o.amount,
@@ -46,14 +47,15 @@ namespace steemit {
 
             db.create<convert_request_object>([&](convert_request_object &obj) {
                 obj.owner = o.owner;
-                obj.requestid = o.request_id;
+                obj.request_id = o.request_id;
                 obj.amount = o.amount;
                 obj.conversion_date = db.head_block_time() + steem_conversion_delay;
             });
 
         }
 
-        void limit_order_create_evaluator::do_apply(const limit_order_create_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void limit_order_create_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
                     const database &d = get_database();
@@ -136,7 +138,8 @@ namespace steemit {
             }
         }
 
-        void limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void limit_order_create2_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
                     const database &d = get_database();
@@ -220,7 +223,8 @@ namespace steemit {
             }
         }
 
-        void limit_order_cancel_evaluator::do_apply(const limit_order_cancel_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void limit_order_cancel_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
                     database &d = get_database();
@@ -247,7 +251,8 @@ namespace steemit {
             }
         }
 
-        void call_order_update_evaluator::do_apply(const call_order_update_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void call_order_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             try {
                 _paying_account = db.find_account(op.funding_account);
                 _debt_asset = db.find_asset(op.delta_debt.symbol);
@@ -381,7 +386,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
-        void bid_collateral_evaluator::do_apply(const bid_collateral_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void bid_collateral_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             const account_object &paying_account = db.get_account(o.bidder);
 
             try {

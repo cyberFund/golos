@@ -16,25 +16,31 @@ namespace steemit {
 
         class call_order_object;
 
-        class convert_evaluator : public steemit::chain::evaluator<convert_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class convert_evaluator : public steemit::chain::evaluator<convert_evaluator<Major, Hardfork, Release>, Major,
+                Hardfork, Release> {
         public:
-            typedef protocol::convert_operation operation_type;
+            typedef protocol::convert_operation<Major, Hardfork, Release> operation_type;
 
-            convert_evaluator(database &db) : steemit::chain::evaluator<convert_evaluator>(db) {
+            convert_evaluator(database &db) : steemit::chain::evaluator<convert_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::convert_operation &o);
+            void do_apply(const operation_type &o);
         };
 
-        class limit_order_create_evaluator : public evaluator<limit_order_create_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_create_evaluator : public evaluator<limit_order_create_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::limit_order_create_operation operation_type;
+            typedef protocol::limit_order_create_operation<Major, Hardfork, Release> operation_type;
 
-            limit_order_create_evaluator(database &db) : evaluator<limit_order_create_evaluator>(db) {
+            limit_order_create_evaluator(database &db) : evaluator<
+                    limit_order_create_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
 
             }
 
-            void do_apply(const protocol::limit_order_create_operation &o);
+            void do_apply(const operation_type &o);
 
         protected:
             share_type deferred_fee = 0;
@@ -43,14 +49,17 @@ namespace steemit {
             const asset_object *receive_asset = nullptr;
         };
 
-        class limit_order_create2_evaluator : public steemit::chain::evaluator<limit_order_create2_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_create2_evaluator : public steemit::chain::evaluator<
+                limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
             typedef protocol::limit_order_create2_operation operation_type;
 
-            limit_order_create2_evaluator(database &db) : steemit::chain::evaluator<limit_order_create2_evaluator>(db) {
+            limit_order_create2_evaluator(database &db) : steemit::chain::evaluator<
+                    limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::limit_order_create2_operation &op);
+            void do_apply(const operation_type &op);
 
         protected:
             share_type deferred_fee = 0;
@@ -59,29 +68,33 @@ namespace steemit {
             const asset_object *receive_asset = nullptr;
         };
 
-        class limit_order_cancel_evaluator : public evaluator<limit_order_cancel_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_cancel_evaluator : public evaluator<limit_order_cancel_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::limit_order_cancel_operation operation_type;
+            typedef protocol::limit_order_cancel_operation<Major, Hardfork, Release> operation_type;
 
-            limit_order_cancel_evaluator(database &db) : evaluator<limit_order_cancel_evaluator>(db) {
+            limit_order_cancel_evaluator(database &db) : evaluator<
+                    limit_order_cancel_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
 
             }
 
-            void do_apply(const protocol::limit_order_cancel_operation &op);
+            void do_apply(const operation_type &op);
 
         protected:
             const limit_order_object *_order;
         };
 
-        class call_order_update_evaluator : public evaluator<call_order_update_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class call_order_update_evaluator : public evaluator<call_order_update_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::call_order_update_operation operation_type;
+            typedef protocol::call_order_update_operation<Major, Hardfork, Release> operation_type;
 
-            call_order_update_evaluator(database &db) : evaluator<call_order_update_evaluator>(db) {
+            call_order_update_evaluator(database &db) : evaluator<call_order_update_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
 
             }
 
-            void do_apply(const protocol::call_order_update_operation &op);
+            void do_apply(const operation_type &op);
 
         protected:
             const asset_object *_debt_asset = nullptr;
@@ -90,15 +103,16 @@ namespace steemit {
             const asset_bitasset_data_object *_bitasset_data = nullptr;
         };
 
-        class bid_collateral_evaluator : public evaluator<bid_collateral_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class bid_collateral_evaluator : public evaluator<bid_collateral_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::bid_collateral_operation operation_type;
+            typedef protocol::bid_collateral_operation<Major, Hardfork, Release> operation_type;
 
-            bid_collateral_evaluator(database &db) : evaluator<bid_collateral_evaluator>(db) {
+            bid_collateral_evaluator(database &db) : evaluator<bid_collateral_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
 
             }
 
-            void do_apply(const protocol::bid_collateral_operation &o);
+            void do_apply(const operation_type &o);
 
             const collateral_bid_object *_bid = nullptr;
         };

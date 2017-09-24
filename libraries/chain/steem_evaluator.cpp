@@ -31,50 +31,9 @@ namespace steemit {
             FC_ASSERT(permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH && permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH,
                       "Permlink is not a valid size.");
 
-            for (auto c : permlink) {
-                switch (c) {
-                    case 'a':
-                    case 'b':
-                    case 'c':
-                    case 'd':
-                    case 'e':
-                    case 'f':
-                    case 'g':
-                    case 'h':
-                    case 'i':
-                    case 'j':
-                    case 'k':
-                    case 'l':
-                    case 'm':
-                    case 'n':
-                    case 'o':
-                    case 'p':
-                    case 'q':
-                    case 'r':
-                    case 's':
-                    case 't':
-                    case 'u':
-                    case 'v':
-                    case 'w':
-                    case 'x':
-                    case 'y':
-                    case 'z':
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                    case '-':
-                        break;
-                    default:
-                        FC_ASSERT(false, "Invalid permlink character: ${s}", ("s", std::string() + c));
-                }
-            }
+            FC_ASSERT(std::find_if_not(permlink.begin(), permlink.end(), [&](std::string::value_type c) -> bool {
+                return std::isdigit(c) || std::islower(c) || c == '-';
+            }) == permlink.end(), "Invalid permlink character: ${s}", ("s", std::string() + c));
         }
 
         struct strcmp_equal {
@@ -83,7 +42,8 @@ namespace steemit {
             }
         };
 
-        void witness_update_evaluator::do_apply(const witness_update_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void witness_update_evaluator<Major, Hardfork, Release>::do_apply(const witness_update_operation &o) {
 
             db.get_account(o.owner); // verify owner exists
 
@@ -123,7 +83,8 @@ namespace steemit {
         /**
          *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
          */
-        void delete_comment_evaluator::do_apply(const delete_comment_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void delete_comment_evaluator<Major, Hardfork, Release>::do_apply(const delete_comment_operation &o) {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                 const auto &auth = db.get_account(o.author);
@@ -207,7 +168,8 @@ namespace steemit {
             }
         };
 
-        void comment_options_evaluator::do_apply(const comment_options_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void comment_options_evaluator<Major, Hardfork, Release>::do_apply(const comment_options_operation &o) {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
                 const auto &auth = db.get_account(o.author);
@@ -246,7 +208,9 @@ namespace steemit {
             }
         }
 
-        void comment_payout_extension_evaluator::do_apply(const comment_payout_extension_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void comment_payout_extension_evaluator<Major, Hardfork, Release>::do_apply(
+                const comment_payout_extension_operation &o) {
             const account_object &from_account = db.get_account(o.payer);
 
             if (from_account.active_challenged) {
@@ -277,7 +241,8 @@ namespace steemit {
             }
         }
 
-        void comment_evaluator::do_apply(const comment_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void comment_evaluator<Major, Hardfork, Release>::do_apply(const comment_operation &o) {
             try {
                 if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__55)) {
                     FC_ASSERT(o.title.size() + o.body.size() + o.json_metadata.size(),
@@ -561,182 +526,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void escrow_transfer_evaluator::do_apply(const escrow_transfer_operation &o) {
-            try {
-                const auto &from_account = db.get_account(o.from);
-                db.get_account(o.to);
-                db.get_account(o.agent);
-
-                FC_ASSERT(o.ratification_deadline > db.head_block_time(),
-                          "The escrow ratification deadline must be after head block time.");
-                FC_ASSERT(o.escrow_expiration > db.head_block_time(),
-                          "The escrow expiration must be after head block time.");
-
-                asset steem_spent = o.steem_amount;
-                asset sbd_spent = o.sbd_amount;
-                if (o.fee.symbol == STEEM_SYMBOL_NAME) {
-                    steem_spent += o.fee;
-                } else {
-                    sbd_spent += o.fee;
-                }
-
-                FC_ASSERT(db.get_balance(from_account.name, STEEM_SYMBOL_NAME) >= steem_spent,
-                          "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}",
-                          ("r", steem_spent)("a", db.get_balance(from_account.name, STEEM_SYMBOL_NAME)));
-
-                FC_ASSERT(db.get_balance(from_account.name, SBD_SYMBOL_NAME) >= sbd_spent,
-                          "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}",
-                          ("r", sbd_spent)("a", db.get_balance(from_account.name, SBD_SYMBOL_NAME)));
-
-                db.adjust_balance(from_account, -steem_spent);
-                db.adjust_balance(from_account, -sbd_spent);
-
-                db.create<escrow_object>([&](escrow_object &esc) {
-                    esc.escrow_id = o.escrow_id;
-                    esc.from = o.from;
-                    esc.to = o.to;
-                    esc.agent = o.agent;
-                    esc.ratification_deadline = o.ratification_deadline;
-                    esc.escrow_expiration = o.escrow_expiration;
-                    esc.sbd_balance = o.sbd_amount;
-                    esc.steem_balance = o.steem_amount;
-                    esc.pending_fee = o.fee;
-                });
-            } FC_CAPTURE_AND_RETHROW((o))
-        }
-
-        void escrow_approve_evaluator::do_apply(const escrow_approve_operation &o) {
-            try {
-
-                const auto &escrow = db.get_escrow(o.from, o.escrow_id);
-
-                FC_ASSERT(escrow.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).",
-                          ("o", o.to)("e", escrow.to));
-                FC_ASSERT(escrow.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
-                          ("o", o.agent)("e", escrow.agent));
-                FC_ASSERT(escrow.ratification_deadline >= db.head_block_time(),
-                          "The escrow ratification deadline has passed. Escrow can no longer be ratified.");
-
-                bool reject_escrow = !o.approve;
-
-                if (o.who == o.to) {
-                    FC_ASSERT(!escrow.to_approved, "Account 'to' (${t}) has already approved the escrow.", ("t", o.to));
-
-                    if (!reject_escrow) {
-                        db.modify(escrow, [&](escrow_object &esc) {
-                            esc.to_approved = true;
-                        });
-                    }
-                }
-                if (o.who == o.agent) {
-                    FC_ASSERT(!escrow.agent_approved, "Account 'agent' (${a}) has already approved the escrow.",
-                              ("a", o.agent));
-
-                    if (!reject_escrow) {
-                        db.modify(escrow, [&](escrow_object &esc) {
-                            esc.agent_approved = true;
-                        });
-                    }
-                }
-
-                if (reject_escrow) {
-                    const auto &from_account = db.get_account(o.from);
-                    db.adjust_balance(from_account, escrow.steem_balance);
-                    db.adjust_balance(from_account, escrow.sbd_balance);
-                    db.adjust_balance(from_account, escrow.pending_fee);
-
-                    db.remove(escrow);
-                } else if (escrow.to_approved && escrow.agent_approved) {
-                    const auto &agent_account = db.get_account(o.agent);
-                    db.adjust_balance(agent_account, escrow.pending_fee);
-
-                    db.modify(escrow, [&](escrow_object &esc) {
-                        esc.pending_fee.amount = 0;
-                    });
-                }
-            } FC_CAPTURE_AND_RETHROW((o))
-        }
-
-        void escrow_dispute_evaluator::do_apply(const escrow_dispute_operation &o) {
-            try {
-
-                db.get_account(o.from); // Verify from account exists
-
-                const auto &e = db.get_escrow(o.from, o.escrow_id);
-                FC_ASSERT(db.head_block_time() < e.escrow_expiration,
-                          "Disputing the escrow must happen before expiration.");
-                FC_ASSERT(e.to_approved && e.agent_approved,
-                          "The escrow must be approved by all parties before a dispute can be raised.");
-                FC_ASSERT(!e.disputed, "The escrow is already under dispute.");
-                FC_ASSERT(e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).",
-                          ("o", o.to)("e", e.to));
-                FC_ASSERT(e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
-                          ("o", o.agent)("e", e.agent));
-
-                db.modify(e, [&](escrow_object &esc) {
-                    esc.disputed = true;
-                });
-            } FC_CAPTURE_AND_RETHROW((o))
-        }
-
-        void escrow_release_evaluator::do_apply(const escrow_release_operation &o) {
-            try {
-
-                db.get_account(o.from); // Verify from account exists
-                const auto &receiver_account = db.get_account(o.receiver);
-
-                const auto &e = db.get_escrow(o.from, o.escrow_id);
-                FC_ASSERT(e.steem_balance >= o.steem_amount,
-                          "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}",
-                          ("a", o.steem_amount)("b", e.steem_balance));
-                FC_ASSERT(e.sbd_balance >= o.sbd_amount,
-                          "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}",
-                          ("a", o.sbd_amount)("b", e.sbd_balance));
-                FC_ASSERT(e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).",
-                          ("o", o.to)("e", e.to));
-                FC_ASSERT(e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
-                          ("o", o.agent)("e", e.agent));
-                FC_ASSERT(o.receiver == e.from || o.receiver == e.to,
-                          "Funds must be released to 'from' (${f}) or 'to' (${t})", ("f", e.from)("t", e.to));
-                FC_ASSERT(e.to_approved && e.agent_approved, "Funds cannot be released prior to escrow approval.");
-
-                // If there is a dispute regardless of expiration, the agent can release funds to either party
-                if (e.disputed) {
-                    FC_ASSERT(o.who == e.agent, "Only 'agent' (${a}) can release funds in a disputed escrow.",
-                              ("a", e.agent));
-                } else {
-                    FC_ASSERT(o.who == e.from || o.who == e.to,
-                              "Only 'from' (${f}) and 'to' (${t}) can release funds from a non-disputed escrow",
-                              ("f", e.from)("t", e.to));
-
-                    if (e.escrow_expiration > db.head_block_time()) {
-                        // If there is no dispute and escrow has not expired, either party can release funds to the other.
-                        if (o.who == e.from) {
-                            FC_ASSERT(o.receiver == e.to, "Only 'from' (${f}) can release funds to 'to' (${t}).",
-                                      ("f", e.from)("t", e.to));
-                        } else if (o.who == e.to) {
-                            FC_ASSERT(o.receiver == e.from, "Only 'to' (${t}) can release funds to 'from' (${t}).",
-                                      ("f", e.from)("t", e.to));
-                        }
-                    }
-                }
-                // If escrow expires and there is no dispute, either party can release funds to either party.
-
-                db.adjust_balance(receiver_account, o.steem_amount);
-                db.adjust_balance(receiver_account, o.sbd_amount);
-
-                db.modify(e, [&](escrow_object &esc) {
-                    esc.steem_balance -= o.steem_amount;
-                    esc.sbd_balance -= o.sbd_amount;
-                });
-
-                if (e.steem_balance.amount == 0 && e.sbd_balance.amount == 0) {
-                    db.remove(e);
-                }
-            } FC_CAPTURE_AND_RETHROW((o))
-        }
-
-        void withdraw_vesting_evaluator::do_apply(const withdraw_vesting_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void withdraw_vesting_evaluator<Major, Hardfork, Release>::do_apply(const withdraw_vesting_operation &o) {
 
 
             const auto &account = db.get_account(o.account);
@@ -803,7 +594,9 @@ namespace steemit {
             }
         }
 
-        void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_route_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void set_withdraw_vesting_route_evaluator<Major, Hardfork, Release>::do_apply(
+                const set_withdraw_vesting_route_operation &o) {
             try {
 
                 const auto &from_account = db.get_account(o.from_account);
@@ -854,7 +647,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_witness_proxy_evaluator<Major, Hardfork, Release>::do_apply(
+                const account_witness_proxy_operation &o) {
 
             const auto &account = db.get_account(o.account);
             FC_ASSERT(account.proxy != o.proxy, "Proxy must change.");
@@ -903,7 +698,9 @@ namespace steemit {
         }
 
 
-        void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_witness_vote_evaluator<Major, Hardfork, Release>::do_apply(
+                const account_witness_vote_operation &o) {
 
             const auto &voter = db.get_account(o.account);
             FC_ASSERT(voter.proxy.size() == 0,
@@ -972,7 +769,8 @@ namespace steemit {
             }
         }
 
-        void vote_evaluator::do_apply(const vote_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void vote_evaluator<Major, Hardfork, Release>::do_apply(const vote_operation &o) {
             try {
                 const auto &comment = db.get_comment(o.author, o.permlink);
                 const auto &voter = db.get_account(o.voter);
@@ -1049,10 +847,12 @@ namespace steemit {
 
                 if (db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0,
-                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}", ("r", abs_rshares));
+                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}",
+                              ("r", abs_rshares));
                 } else if (db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
                     FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1,
-                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}", ("r", abs_rshares));
+                              "Voting weight is too small, please accumulate more voting power or steem power. Rshares: ${r}",
+                              ("r", abs_rshares));
                 }
 
                 // Lazily delete vote
@@ -1382,10 +1182,12 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void custom_evaluator::do_apply(const custom_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void custom_evaluator<Major, Hardfork, Release>::do_apply(const custom_operation &o) {
         }
 
-        void custom_json_evaluator::do_apply(const custom_json_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void custom_json_evaluator<Major, Hardfork, Release>::do_apply(const custom_json_operation &o) {
             database &d = get_database();
             std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
             if (!eval) {
@@ -1404,7 +1206,8 @@ namespace steemit {
         }
 
 
-        void custom_binary_evaluator::do_apply(const custom_binary_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void custom_binary_evaluator<Major, Hardfork, Release>::do_apply(const custom_binary_operation &o) {
             database &d = get_database();
             FC_ASSERT(d.has_hardfork(STEEMIT_HARDFORK_0_14__317));
 
@@ -1425,7 +1228,9 @@ namespace steemit {
         }
 
 
-        template<typename Operation> void pow_apply(database &db, Operation o) {
+        template<typename Operation>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow_apply(database &db, Operation o) {
             const auto &dgp = db.get_dynamic_global_properties();
 
             if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
@@ -1533,13 +1338,15 @@ namespace steemit {
             }
         }
 
-        void pow_evaluator::do_apply(const pow_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow_evaluator<Major, Hardfork, Release>::do_apply(const pow_operation &o) {
             FC_ASSERT(!get_database().has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
             pow_apply(get_database(), o);
         }
 
 
-        void pow2_evaluator::do_apply(const pow2_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow2_evaluator<Major, Hardfork, Release>::do_apply(const pow2_operation &o) {
             database &db = this->get_database();
             const auto &dgp = db.get_dynamic_global_properties();
             uint32_t target_pow = db.get_pow_summary_target();
@@ -1633,7 +1440,8 @@ namespace steemit {
             }
         }
 
-        void feed_publish_evaluator::do_apply(const feed_publish_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void feed_publish_evaluator<Major, Hardfork, Release>::do_apply(const feed_publish_operation &o) {
 
             const auto &witness = db.get_witness(o.publisher);
             db.modify(witness, [&](witness_object &w) {
@@ -1642,12 +1450,15 @@ namespace steemit {
             });
         }
 
-        void report_over_production_evaluator::do_apply(const report_over_production_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void report_over_production_evaluator<Major, Hardfork, Release>::do_apply(
+                const report_over_production_operation &o) {
 
             FC_ASSERT(!db.has_hardfork(STEEMIT_HARDFORK_0_4), "report_over_production_operation is disabled.");
         }
 
-        void challenge_authority_evaluator::do_apply(const challenge_authority_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void challenge_authority_evaluator<Major, Hardfork, Release>::do_apply(const challenge_authority_operation &o) {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_14__307)) {
                 FC_ASSERT(false, "Challenge authority operation is currently disabled.");
@@ -1685,7 +1496,8 @@ namespace steemit {
             }
         }
 
-        void prove_authority_evaluator::do_apply(const prove_authority_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void prove_authority_evaluator<Major, Hardfork, Release>::do_apply(const prove_authority_operation &o) {
 
             const auto &challenged = db.get_account(o.challenged);
             FC_ASSERT(challenged.owner_challenged || challenged.active_challenged,
@@ -1701,7 +1513,9 @@ namespace steemit {
             });
         }
 
-        void request_account_recovery_evaluator::do_apply(const request_account_recovery_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void request_account_recovery_evaluator<Major, Hardfork, Release>::do_apply(
+                const request_account_recovery_operation &o) {
 
             const auto &account_to_recover = db.get_account(o.account_to_recover);
 
@@ -1755,7 +1569,8 @@ namespace steemit {
             }
         }
 
-        void recover_account_evaluator::do_apply(const recover_account_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void recover_account_evaluator<Major, Hardfork, Release>::do_apply(const recover_account_operation &o) {
 
             const auto &account = db.get_account(o.account_to_recover);
 
@@ -1793,7 +1608,9 @@ namespace steemit {
             });
         }
 
-        void change_recovery_account_evaluator::do_apply(const change_recovery_account_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void change_recovery_account_evaluator<Major, Hardfork, Release>::do_apply(
+                const change_recovery_account_operation &o) {
 
             db.get_account(o.new_recovery_account); // Simply validate account exists
             const auto &account_to_recover = db.get_account(o.account_to_recover);
@@ -1821,7 +1638,9 @@ namespace steemit {
             }
         }
 
-        void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void decline_voting_rights_evaluator<Major, Hardfork, Release>::do_apply(
+                const decline_voting_rights_operation &o) {
 
             FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_14__324));
 
@@ -1842,7 +1661,9 @@ namespace steemit {
             }
         }
 
-        void reset_account_evaluator::do_apply(const reset_account_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void reset_account_evaluator<Major, Hardfork, Release>::do_apply(
+                const reset_account_operation<Major, Hardfork, Release> &op) {
 
             FC_ASSERT(false, "Reset Account Operation is currently disabled.");
 
@@ -1858,7 +1679,9 @@ namespace steemit {
             db.update_owner_authority(acnt, op.new_owner_authority);
         }
 
-        void set_reset_account_evaluator::do_apply(const set_reset_account_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void set_reset_account_evaluator<Major, Hardfork, Release>::do_apply(
+                const set_reset_account_operation<Major, Hardfork, Release> &op) {
 
             FC_ASSERT(false, "Set Reset Account Operation is currently disabled.");
 
@@ -1874,7 +1697,9 @@ namespace steemit {
             });
         }
 
-        void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation &op) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void delegate_vesting_shares_evaluator<Major, Hardfork, Release>::do_apply(
+                const delegate_vesting_shares_operation<Major, Hardfork, Release> &op) {
 
             FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101),
                       "delegate_vesting_shares_operation is not enabled until HF 17"); //TODO: Delete after hardfork

@@ -25,6 +25,18 @@ namespace steemit {
             v_num = v_num | r;
         }
 
+        uint8_t version::major() const {
+            return static_cast<uint8_t>((v_num >> 24) & 0x000000FF);
+        }
+
+        uint8_t version::hardfork() const {
+            return static_cast<uint8_t>((v_num >> 16) & 0x000000FF);
+        }
+
+        uint16_t version::release() const {
+            return static_cast<uint16_t>((v_num & 0x0000FFFF));
+        }
+
         version::operator fc::string() const {
             std::stringstream s;
             s << ((v_num >> 24) & 0x000000FF) << '.' << ((v_num >> 16) & 0x000000FF) << '.' << ((v_num & 0x0000FFFF));

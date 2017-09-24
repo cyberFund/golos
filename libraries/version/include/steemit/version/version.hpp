@@ -27,6 +27,12 @@ namespace steemit {
 
             version(uint8_t m, uint8_t h, uint16_t r);
 
+            uint8_t major() const;
+
+            uint8_t hardfork() const;
+
+            uint16_t release() const;
+
             virtual ~version() {
             }
 

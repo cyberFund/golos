@@ -6,5 +6,4 @@ namespace fc {
         auto end = type_name.find_last_of('_');
         return type_name.substr(start, end - start);
     }
-
 } // fc

@@ -9,7 +9,9 @@
 
 namespace steemit {
     namespace chain {
-        void account_create_evaluator::do_apply(const account_create_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_create_evaluator<Major, Hardfork, Release>::do_apply(
+                const account_create_operation<Major, Hardfork, Release> &o) {
             const auto &creator = db.get_account(o.creator);
 
             const auto &props = db.get_dynamic_global_properties();
@@ -20,9 +22,11 @@ namespace steemit {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >= asset<0, 17, 0>(wso.median_props.account_creation_fee.amount *
-                                         STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME),
-                          "Insufficient Fee: ${f} required, ${p} provided.", ("f", asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME))("p", o.fee));
+                FC_ASSERT(o.fee >= asset<0, 17, 0>(
+                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                        STEEM_SYMBOL_NAME), "Insufficient Fee: ${f} required, ${p} provided.", ("f", asset<0, 17, 0>(
+                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                        STEEM_SYMBOL_NAME))("p", o.fee));
             } else if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
@@ -94,7 +98,9 @@ namespace steemit {
             });
         }
 
-        void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_create_with_delegation_evaluator<Major, Hardfork, Release>::do_apply(
+                const account_create_with_delegation_operation<Major, Hardfork, Release> &o) {
 
             FC_ASSERT(db.has_hardfork(STEEMIT_HARDFORK_0_17__101),
                       "Account creation with delegation is not enabled until hardfork 17");
@@ -114,12 +120,13 @@ namespace steemit {
                                                                          creator.delegated_vesting_shares)("required",
                                                                                                            o.delegation));
 
-            auto target_delegation =
-                    asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
-                          STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) * props.get_vesting_share_price();
+            auto target_delegation = asset<0, 17, 0>(
+                    wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                    STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) * props.get_vesting_share_price();
 
-            auto current_delegation = asset<0, 17, 0>(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) *
-                                      props.get_vesting_share_price() + o.delegation;
+            auto current_delegation =
+                    asset<0, 17, 0>(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) *
+                    props.get_vesting_share_price() + o.delegation;
 
             FC_ASSERT(current_delegation >= target_delegation, "Insufficient Delegation ${f} required, ${p} provided.",
                       ("f", target_delegation)("p", current_delegation)("account_creation_fee",
@@ -202,7 +209,9 @@ namespace steemit {
             });
         }
 
-        void account_update_evaluator::do_apply(const account_update_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_update_evaluator<Major, Hardfork, Release>::do_apply(
+                const account_update_operation<Major, Hardfork, Release> &o) {
 
             if (db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
@@ -280,7 +289,8 @@ namespace steemit {
             }
         }
 
-        void account_whitelist_evaluator::do_apply(const protocol::account_whitelist_operation &o) {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void account_whitelist_evaluator<Major, Hardfork, Release>::do_apply(const protocol::account_whitelist_operation<Major, Hardfork, Release> &o) {
             try {
                 const account_object &listed_account = db.get_account(o.account_to_list);
 

@@ -7,75 +7,82 @@
 
 namespace steemit {
     namespace chain {
-        class transfer_evaluator
-                : public steemit::chain::evaluator<transfer_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class transfer_evaluator : public evaluator<transfer_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                Release> {
         public:
-            typedef protocol::transfer_operation operation_type;
+            typedef protocol::transfer_operation<Major, Hardfork, Release> operation_type;
 
-            transfer_evaluator(database &db)
-                    : steemit::chain::evaluator<transfer_evaluator>(db) {
+            transfer_evaluator(database &db) : evaluator<transfer_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+                    Release>(db) {
             }
 
-            void do_apply(const protocol::transfer_operation &o);
+            void do_apply(const protocol::transfer_operation<Major, Hardfork, Release> &op);
         };
 
-        class transfer_to_vesting_evaluator
-                : public steemit::chain::evaluator<transfer_to_vesting_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class transfer_to_vesting_evaluator : public evaluator<transfer_to_vesting_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::transfer_to_vesting_operation operation_type;
+            typedef protocol::transfer_to_vesting_operation<Major, Hardfork, Release> operation_type;
 
-            transfer_to_vesting_evaluator(database &db)
-                    : steemit::chain::evaluator<transfer_to_vesting_evaluator>(db) {
+            transfer_to_vesting_evaluator(database &db) : evaluator<
+                    transfer_to_vesting_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::transfer_to_vesting_operation &o);
+            void do_apply(const protocol::transfer_to_vesting_operation<Major, Hardfork, Release> &op);
         };
 
-        class transfer_to_savings_evaluator
-                : public steemit::chain::evaluator<transfer_to_savings_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class transfer_to_savings_evaluator : public evaluator<transfer_to_savings_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::transfer_to_savings_operation operation_type;
+            typedef protocol::transfer_to_savings_operation<Major, Hardfork, Release> operation_type;
 
-            transfer_to_savings_evaluator(database &db)
-                    : steemit::chain::evaluator<transfer_to_savings_evaluator>(db) {
+            transfer_to_savings_evaluator(database &db) : evaluator<
+                    transfer_to_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::transfer_to_savings_operation &o);
+            void do_apply(const protocol::transfer_to_savings_operation<Major, Hardfork, Release> &op);
         };
 
-        class transfer_from_savings_evaluator
-                : public steemit::chain::evaluator<transfer_from_savings_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class transfer_from_savings_evaluator : public evaluator<
+                transfer_from_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::transfer_from_savings_operation operation_type;
+            typedef protocol::transfer_from_savings_operation<Major, Hardfork, Release> operation_type;
 
-            transfer_from_savings_evaluator(database &db)
-                    : steemit::chain::evaluator<transfer_from_savings_evaluator>(db) {
+            transfer_from_savings_evaluator(database &db) : evaluator<
+                    transfer_from_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::transfer_from_savings_operation &o);
+            void do_apply(const protocol::transfer_from_savings_operation<Major, Hardfork, Release> &op);
         };
 
-        class cancel_transfer_from_savings_evaluator
-                : public steemit::chain::evaluator<cancel_transfer_from_savings_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class cancel_transfer_from_savings_evaluator : public evaluator<
+                cancel_transfer_from_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::cancel_transfer_from_savings_operation operation_type;
+            typedef protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> operation_type;
 
-            cancel_transfer_from_savings_evaluator(database &db)
-                    : steemit::chain::evaluator<cancel_transfer_from_savings_evaluator>(db) {
+            cancel_transfer_from_savings_evaluator(database &db) : evaluator<
+                    cancel_transfer_from_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::cancel_transfer_from_savings_operation &o);
+            void do_apply(const protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> &op);
         };
 
-        class override_transfer_evaluator : public evaluator<override_transfer_evaluator> {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class override_transfer_evaluator : public evaluator<override_transfer_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
         public:
-            typedef protocol::override_transfer_operation operation_type;
+            typedef protocol::override_transfer_operation<Major, Hardfork, Release> operation_type;
 
-            override_transfer_evaluator(database &db)
-                    : steemit::chain::evaluator<override_transfer_evaluator>(db) {
+            override_transfer_evaluator(database &db) : evaluator<override_transfer_evaluator<Major, Hardfork, Release>,
+                    Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::override_transfer_operation &o);
+            void do_apply(const protocol::override_transfer_operation<Major, Hardfork, Release> &op);
         };
     }
 }

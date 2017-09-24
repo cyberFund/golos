@@ -13,6 +13,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/chain/database.hpp
      include/steemit/chain/database_exceptions.hpp
      include/steemit/chain/db_with.hpp
+     include/steemit/chain/escrow_evaluator.hpp
      include/steemit/chain/evaluator.hpp
      include/steemit/chain/evaluator_registry.hpp
      include/steemit/chain/fork_database.hpp
@@ -51,6 +52,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      asset_object.cpp
      block_log.cpp
      database.cpp
+     escrow_evaluator.cpp
      fork_database.cpp
      market_evaluator.cpp
      shared_authority.cpp
