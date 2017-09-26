@@ -4,7 +4,7 @@
 #include <steemit/chain/asset_object.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
+#include <steemit/chain/exceptions/database_exceptions.hpp>
 
 namespace steemit {
     namespace chain {

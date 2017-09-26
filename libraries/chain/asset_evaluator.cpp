@@ -3,7 +3,7 @@
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/market_object.hpp>
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
+#include <steemit/chain/exceptions/database_exceptions.hpp>
 
 #include <steemit/version/hardfork.hpp>
 

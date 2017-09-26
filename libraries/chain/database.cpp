@@ -4,7 +4,7 @@
 #include <steemit/chain/compound.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
+#include <steemit/chain/exceptions/database_exceptions.hpp>
 #include <steemit/chain/db_with.hpp>
 #include <steemit/chain/evaluator_registry.hpp>
 #include <steemit/chain/history_object.hpp>
