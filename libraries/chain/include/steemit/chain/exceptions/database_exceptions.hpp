@@ -45,20 +45,20 @@ namespace steemit {
                 template<uint32_t Code = 4050000, typename What = boost::mpl::string<'operation evaluation exception'>>
                 using operation_evaluate = basic<Code, What>;
 
-                template<uint32_t Code = 4060000, typename What = boost::mpl::string<'utility method exception'>>
-                using utility = basic<Code, What>;
-
                 namespace utility {
+                    template<uint32_t Code = 4060000, typename What = boost::mpl::string<'utility method exception'>>
+                    using basic = chain::basic<Code, What>;
+
                     template<uint32_t Code = 3060001, typename What = boost::mpl::string<'invalid pts address'>>
-                    using invalid_pts_address = chain::utility<Code, What>;
+                    using invalid_pts_address = basic<Code, What>;
                 }
 
-                template<uint32_t Code = 4070000, typename What = boost::mpl::string<'undo database exception'>>
-                using undo_database = basic<Code, What>;
-
                 namespace undo_database {
+                    template<uint32_t Code = 4070000, typename What = boost::mpl::string<'undo database exception'>>
+                    using basic = chain::basic<Code, What>;
+
                     template<uint32_t Code = 4070001, typename What = boost::mpl::string<'there are no blocks to pop'>>
-                    using pop_empty_chain = chain::undo_database<Code, What>;
+                    using pop_empty_chain = basic<Code, What>;
                 }
 
                 template<uint32_t Code = 4080000, typename What = boost::mpl::string<'unlinkable block exception'>>

@@ -7,13 +7,13 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void escrow_transfer_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
-                const auto &from_account = this->db.get_account(o.from);
-                this->db.get_account(o.to);
-                this->db.get_account(o.agent);
+                const auto &from_account = this->db.template get_account(o.from);
+                this->db.template get_account(o.to);
+                this->db.template get_account(o.agent);
 
-                FC_ASSERT(o.ratification_deadline > this->db.head_block_time(),
+                FC_ASSERT(o.ratification_deadline > this->db.template head_block_time(),
                           "The escrow ratification deadline must be after head block time.");
-                FC_ASSERT(o.escrow_expiration > this->db.head_block_time(),
+                FC_ASSERT(o.escrow_expiration > this->db.template head_block_time(),
                           "The escrow expiration must be after head block time.");
 
                 protocol::asset<0, 17, 0> steem_spent = o.steem_amount;
@@ -24,18 +24,18 @@ namespace steemit {
                     sbd_spent += o.fee;
                 }
 
-                FC_ASSERT(this->db.get_balance(from_account.name, STEEM_SYMBOL_NAME) >= steem_spent,
+                FC_ASSERT(this->db.template get_balance(from_account.name, STEEM_SYMBOL_NAME) >= steem_spent,
                           "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}",
-                          ("r", steem_spent)("a", this->db.get_balance(from_account.name, STEEM_SYMBOL_NAME)));
+                          ("r", steem_spent)("a", this->db.template get_balance(from_account.name, STEEM_SYMBOL_NAME)));
 
-                FC_ASSERT(this->db.get_balance(from_account.name, SBD_SYMBOL_NAME) >= sbd_spent,
+                FC_ASSERT(this->db.template get_balance(from_account.name, SBD_SYMBOL_NAME) >= sbd_spent,
                           "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}",
-                          ("r", sbd_spent)("a", this->db.get_balance(from_account.name, SBD_SYMBOL_NAME)));
+                          ("r", sbd_spent)("a", this->db.template get_balance(from_account.name, SBD_SYMBOL_NAME)));
 
-                this->db.adjust_balance(from_account, -steem_spent);
-                this->db.adjust_balance(from_account, -sbd_spent);
+                this->db.template adjust_balance(from_account, -steem_spent);
+                this->db.template adjust_balance(from_account, -sbd_spent);
 
-                this->db.create<escrow_object>([&](escrow_object &esc) {
+                this->db.template create<escrow_object>([&](escrow_object &esc) {
                     esc.escrow_id = o.escrow_id;
                     esc.from = o.from;
                     esc.to = o.to;
@@ -53,13 +53,13 @@ namespace steemit {
         void escrow_approve_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
 
-                const auto &escrow = this->db.get_escrow(o.from, o.escrow_id);
+                const auto &escrow = this->db.template get_escrow(o.from, o.escrow_id);
 
                 FC_ASSERT(escrow.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).",
                           ("o", o.to)("e", escrow.to));
                 FC_ASSERT(escrow.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
                           ("o", o.agent)("e", escrow.agent));
-                FC_ASSERT(escrow.ratification_deadline >= this->db.head_block_time(),
+                FC_ASSERT(escrow.ratification_deadline >= this->db.template head_block_time(),
                           "The escrow ratification deadline has passed. Escrow can no longer be ratified.");
 
                 bool reject_escrow = !o.approve;
@@ -68,7 +68,7 @@ namespace steemit {
                     FC_ASSERT(!escrow.to_approved, "Account 'to' (${t}) has already approved the escrow.", ("t", o.to));
 
                     if (!reject_escrow) {
-                        this->db.modify(escrow, [&](escrow_object &esc) {
+                        this->db.template modify(escrow, [&](escrow_object &esc) {
                             esc.to_approved = true;
                         });
                     }
@@ -78,24 +78,24 @@ namespace steemit {
                               ("a", o.agent));
 
                     if (!reject_escrow) {
-                        this->db.modify(escrow, [&](escrow_object &esc) {
+                        this->db.template modify(escrow, [&](escrow_object &esc) {
                             esc.agent_approved = true;
                         });
                     }
                 }
 
                 if (reject_escrow) {
-                    const auto &from_account = this->db.get_account(o.from);
-                    this->db.adjust_balance(from_account, escrow.steem_balance);
-                    this->db.adjust_balance(from_account, escrow.sbd_balance);
-                    this->db.adjust_balance(from_account, escrow.pending_fee);
+                    const auto &from_account = this->db.template get_account(o.from);
+                    this->db.template adjust_balance(from_account, escrow.steem_balance);
+                    this->db.template adjust_balance(from_account, escrow.sbd_balance);
+                    this->db.template adjust_balance(from_account, escrow.pending_fee);
 
-                    this->db.remove(escrow);
+                    this->db.template remove(escrow);
                 } else if (escrow.to_approved && escrow.agent_approved) {
-                    const auto &agent_account = this->db.get_account(o.agent);
-                    this->db.adjust_balance(agent_account, escrow.pending_fee);
+                    const auto &agent_account = this->db.template get_account(o.agent);
+                    this->db.template adjust_balance(agent_account, escrow.pending_fee);
 
-                    this->db.modify(escrow, [&](escrow_object &esc) {
+                    this->db.template modify(escrow, [&](escrow_object &esc) {
                         esc.pending_fee.amount = 0;
                     });
                 }
@@ -106,10 +106,10 @@ namespace steemit {
         void escrow_dispute_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
 
-                this->db.get_account(o.from); // Verify from account exists
+                this->db.template get_account(o.from); // Verify from account exists
 
-                const auto &e = this->db.get_escrow(o.from, o.escrow_id);
-                FC_ASSERT(this->db.head_block_time() < e.escrow_expiration,
+                const auto &e = this->db.template get_escrow(o.from, o.escrow_id);
+                FC_ASSERT(this->db.template head_block_time() < e.escrow_expiration,
                           "Disputing the escrow must happen before expiration.");
                 FC_ASSERT(e.to_approved && e.agent_approved,
                           "The escrow must be approved by all parties before a dispute can be raised.");
@@ -119,7 +119,7 @@ namespace steemit {
                 FC_ASSERT(e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
                           ("o", o.agent)("e", e.agent));
 
-                this->db.modify(e, [&](escrow_object &esc) {
+                this->db.template modify(e, [&](escrow_object &esc) {
                     esc.disputed = true;
                 });
             } FC_CAPTURE_AND_RETHROW((o))
@@ -129,10 +129,10 @@ namespace steemit {
         void escrow_release_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
 
-                this->db.get_account(o.from); // Verify from account exists
-                const auto &receiver_account = this->db.get_account(o.receiver);
+                this->db.template get_account(o.from); // Verify from account exists
+                const auto &receiver_account = this->db.template get_account(o.receiver);
 
-                const auto &e = this->db.get_escrow(o.from, o.escrow_id);
+                const auto &e = this->db.template get_escrow(o.from, o.escrow_id);
                 FC_ASSERT(e.steem_balance >= o.steem_amount,
                           "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}",
                           ("a", o.steem_amount)("b", e.steem_balance));
@@ -156,7 +156,7 @@ namespace steemit {
                               "Only 'from' (${f}) and 'to' (${t}) can release funds from a non-disputed escrow",
                               ("f", e.from)("t", e.to));
 
-                    if (e.escrow_expiration > this->db.head_block_time()) {
+                    if (e.escrow_expiration > this->db.template head_block_time()) {
                         // If there is no dispute and escrow has not expired, either party can release funds to the other.
                         if (o.who == e.from) {
                             FC_ASSERT(o.receiver == e.to, "Only 'from' (${f}) can release funds to 'to' (${t}).",
@@ -169,16 +169,16 @@ namespace steemit {
                 }
                 // If escrow expires and there is no dispute, either party can release funds to either party.
 
-                this->db.adjust_balance(receiver_account, o.steem_amount);
-                this->db.adjust_balance(receiver_account, o.sbd_amount);
+                this->db.template adjust_balance(receiver_account, o.steem_amount);
+                this->db.template adjust_balance(receiver_account, o.sbd_amount);
 
-                this->db.modify(e, [&](escrow_object &esc) {
+                this->db.template modify(e, [&](escrow_object &esc) {
                     esc.steem_balance -= o.steem_amount;
                     esc.sbd_balance -= o.sbd_amount;
                 });
 
                 if (e.steem_balance.amount == 0 && e.sbd_balance.amount == 0) {
-                    this->db.remove(e);
+                    this->db.template remove(e);
                 }
             } FC_CAPTURE_AND_RETHROW((o))
         }

@@ -11,13 +11,13 @@ namespace steemit {
         void proposal_create_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 FC_ASSERT(o.expiration_time >
-                          this->db.head_block_time(), "Proposal has already expired on creation.");
-                FC_ASSERT(o.expiration_time <= this->db.head_block_time() +
+                          this->db.template head_block_time(), "Proposal has already expired on creation.");
+                FC_ASSERT(o.expiration_time <= this->db.template head_block_time() +
                                                STEEMIT_MAX_PROPOSAL_LIFETIME_SEC,
                         "Proposal expiration time is too far in the future.");
                 FC_ASSERT(!o.review_period_seconds ||
                           fc::seconds(*o.review_period_seconds) <
-                          (o.expiration_time - this->db.head_block_time()),
+                          (o.expiration_time - this->db.template head_block_time()),
                         "Proposal review period must be less than its overall lifetime.");
 
                 {
@@ -53,7 +53,7 @@ namespace steemit {
                 }
                 _proposed_trx.validate();
 
-                this->db.create<proposal_object>([&](proposal_object &proposal) {
+                this->db.template create<proposal_object>([&](proposal_object &proposal) {
                     _proposed_trx.expiration = o.expiration_time;
                     proposal.proposed_transaction = _proposed_trx;
                     proposal.expiration_time = o.expiration_time;
@@ -84,10 +84,10 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void proposal_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
-                _proposal = this->db.find_proposal(o.owner, o.proposal_id);
+                _proposal = this->db.template find_proposal(o.owner, o.proposal_id);
 
                 if (_proposal->review_period_time &&
-                    this->db.head_block_time() >= *_proposal->review_period_time)
+                    this->db.template head_block_time() >= *_proposal->review_period_time)
                     FC_ASSERT(o.active_approvals_to_add.empty() &&
                               o.owner_approvals_to_add.empty(),
                             "This proposal is in its review period. No new approvals may be added.");
@@ -106,7 +106,7 @@ namespace steemit {
                 // Potential optimization: if executed_proposal is true, we can skip the modify step and make push_proposal skip
                 // signature checks. This isn't done now because I just wrote all the proposals code, and I'm not yet 100% sure the
                 // required approvals are sufficient to authorize the transaction.
-                this->db.modify(*_proposal, [&](proposal_object &p) {
+                this->db.template modify(*_proposal, [&](proposal_object &p) {
                     p.available_active_approvals.insert(o.active_approvals_to_add.begin(), o.active_approvals_to_add.end());
                     p.available_owner_approvals.insert(o.owner_approvals_to_add.begin(), o.owner_approvals_to_add.end());
                     for (account_name_type id : o.active_approvals_to_remove) {
@@ -133,7 +133,7 @@ namespace steemit {
                     // All required approvals are satisfied. Execute!
                     executed_proposal = true;
                     try {
-                        this->db.push_proposal(*_proposal);
+                        this->db.template push_proposal(*_proposal);
                     } catch (fc::exception &e) {
                         wlog("Proposed transaction ${id} failed to apply once approved with exception:\n----\n${reason}\n----\nWill try again when it expires.",
                                 ("id", o.proposal_id)("reason", e.to_detail_string()));
@@ -146,7 +146,7 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void proposal_delete_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
-                _proposal = this->db.find_proposal(o.owner, o.proposal_id);
+                _proposal = this->db.template find_proposal(o.owner, o.proposal_id);
 
                 auto required_approvals = o.using_owner_authority
                                           ? _proposal->required_owner_approvals
@@ -156,7 +156,7 @@ namespace steemit {
                         "Provided authority is not authoritative for this proposal.",
                         ("provided", o.owner)("required", required_approvals));
 
-                        this->db.remove(*_proposal);
+                        this->db.template remove(*_proposal);
 
             } FC_CAPTURE_AND_RETHROW((o))
         }
