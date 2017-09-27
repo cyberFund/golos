@@ -136,45 +136,6 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        class custom_evaluator : public evaluator<custom_evaluator<Major, Hardfork, Release>, Major, Hardfork,
-                Release> {
-        public:
-            typedef protocol::custom_operation<Major, Hardfork, Release> operation_type;
-
-            custom_evaluator(database &db) : evaluator<custom_evaluator<Major, Hardfork, Release>, Major, Hardfork,
-                    Release>(db) {
-            }
-
-            void do_apply(const protocol::custom_operation<Major, Hardfork, Release> &o);
-        };
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        class custom_json_evaluator : public evaluator<custom_json_evaluator<Major, Hardfork, Release>, Major, Hardfork,
-                Release> {
-        public:
-            typedef protocol::custom_json_operation<Major, Hardfork, Release> operation_type;
-
-            custom_json_evaluator(database &db) : evaluator<custom_json_evaluator<Major, Hardfork, Release>, Major,
-                    Hardfork, Release>(db) {
-            }
-
-            void do_apply(const protocol::custom_json_operation<Major, Hardfork, Release> &o);
-        };
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        class custom_binary_evaluator : public evaluator<custom_binary_evaluator<Major, Hardfork, Release>, Major,
-                Hardfork, Release> {
-        public:
-            typedef protocol::custom_binary_operation<Major, Hardfork, Release> operation_type;
-
-            custom_binary_evaluator(database &db) : evaluator<custom_binary_evaluator<Major, Hardfork, Release>, Major,
-                    Hardfork, Release>(db) {
-            }
-
-            void do_apply(const protocol::custom_binary_operation<Major, Hardfork, Release> &o);
-        };
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class pow_evaluator : public evaluator<pow_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
             typedef protocol::pow_operation<Major, Hardfork, Release> operation_type;

@@ -231,8 +231,6 @@ namespace steemit {
              */
             bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
-            void max_bandwidth_per_share() const;
-
             void process_bids(const asset_bitasset_data_object &bad);
 
             /**
@@ -535,21 +533,10 @@ namespace steemit {
 
             void initialize_evaluators();
 
-            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
             void set_custom_operation_interpreter(const std::string &id,
-                                                  std::shared_ptr<custom_operation_interpreter<Major, Hardfork, Release>> registry) {
-                // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
-                FC_ASSERT(_custom_operation_interpreters.emplace(id, registry).second);
-            }
+                                                  std::shared_ptr<custom_operation_interpreter> registry);
 
-            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-            std::shared_ptr<custom_operation_interpreter<Major, Hardfork, Release>> get_custom_json_evaluator(const std::string &id) {
-                auto it = _custom_operation_interpreters.find(id);
-                if (it != _custom_operation_interpreters.end()) {
-                    return it->second;
-                }
-                return std::shared_ptr<custom_operation_interpreter<Major, Hardfork, Release>>();
-            }
+            std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
 
             /// Reset the object graph in-memory
             void initialize_indexes();

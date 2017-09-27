@@ -10,6 +10,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/chain/comment_object.hpp
      include/steemit/chain/compound.hpp
      include/steemit/chain/custom_operation_interpreter.hpp
+     include/steemit/chain/custom_evaluator.hpp
      include/steemit/chain/database.hpp
      include/steemit/chain/exceptions/database_exceptions.hpp
      include/steemit/chain/db_with.hpp
@@ -51,6 +52,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      asset_evaluator.cpp
      asset_object.cpp
      block_log.cpp
+     custom_evaluator.cpp
      database.cpp
      escrow_evaluator.cpp
      fork_database.cpp
