@@ -540,12 +540,6 @@ FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_prox
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 16, 0>)), (voter)(author)(permlink)(weight))
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 17, 0>)), (voter)(author)(permlink)(weight))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation)), (required_auths)(id)(data))
-
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation)), (required_auths)(required_posting_auths)(id)(json))
-
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
-
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 16, 0>)), (challenger)(challenged)(require_owner));
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 17, 0>)), (challenger)(challenged)(require_owner));
 

@@ -76,30 +76,6 @@ namespace steemit {
             FC_ASSERT(proxy != account, "Cannot proxy to self");
         }
 
-        void custom_operation::validate() const {
-            /// required auth accounts are the ones whose bandwidth is consumed
-            FC_ASSERT(required_auths.size() > 0, "at least on account must be specified");
-        }
-
-        void custom_json_operation::validate() const {
-            /// required auth accounts are the ones whose bandwidth is consumed
-            FC_ASSERT((required_auths.size() + required_posting_auths.size()) > 0,
-                      "at least on account must be specified");
-            FC_ASSERT(id.size() <= 32, "id is too long");
-            FC_ASSERT(fc::is_utf8(json), "JSON Metadata not formatted in UTF8");
-            FC_ASSERT(fc::json::is_valid(json), "JSON Metadata not valid JSON");
-        }
-
-        void custom_binary_operation::validate() const {
-            /// required auth accounts are the ones whose bandwidth is consumed
-            FC_ASSERT((required_owner_auths.size() + required_active_auths.size() + required_posting_auths.size()) > 0,
-                      "at least on account must be specified");
-            FC_ASSERT(id.size() <= 32, "id is too long");
-            for (const auto &a : required_auths) {
-                a.validate();
-            }
-        }
-
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         fc::sha256 pow_operation<Major, Hardfork, Release>::work_input() const {
             auto hash = fc::sha256::hash(block_id);

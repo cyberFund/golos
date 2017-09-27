@@ -1,8 +1,11 @@
 #include <steemit/protocol/operations/custom_operations.hpp>
 
+#include <fc/utf8.hpp>
+#include <fc/io/json.hpp>
+
 namespace steemit {
-namespace protocol {
-void custom_operation::validate() const {
+    namespace protocol {
+        void custom_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT(required_auths.size() > 0, "at least on account must be specified");
         }
@@ -25,5 +28,5 @@ void custom_operation::validate() const {
                 a.validate();
             }
         }
-}
+    }
 }

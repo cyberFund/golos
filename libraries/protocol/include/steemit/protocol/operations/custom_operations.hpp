@@ -1,6 +1,10 @@
 #ifndef GOLOS_CUSTOM_OPERATIONS_HPP
 #define GOLOS_CUSTOM_OPERATIONS_HPP
 
+#include <steemit/protocol/asset.hpp>
+#include <steemit/protocol/base.hpp>
+#include <steemit/protocol/block_header.hpp>
+
 namespace steemit {
     namespace protocol {
         /**
