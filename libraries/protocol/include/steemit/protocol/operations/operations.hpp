@@ -2,6 +2,7 @@
 
 #include <steemit/protocol/operations/asset_operations.hpp>
 #include <steemit/protocol/operations/comment_operations.hpp>
+#include <steemit/protocol/operations/custom_operations.hpp>
 #include <steemit/protocol/operations/escrow_operations.hpp>
 #include <steemit/protocol/operations/market_operations.hpp>
 #include <steemit/protocol/operations/market_virtual_operations.hpp>
