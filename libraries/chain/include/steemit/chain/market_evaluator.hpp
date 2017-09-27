@@ -53,7 +53,7 @@ namespace steemit {
         class limit_order_create2_evaluator : public steemit::chain::evaluator<
                 limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
-            typedef protocol::limit_order_create2_operation operation_type;
+            typedef protocol::limit_order_create2_operation<Major, Hardfork, Release> operation_type;
 
             limit_order_create2_evaluator(database &db) : steemit::chain::evaluator<
                     limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
