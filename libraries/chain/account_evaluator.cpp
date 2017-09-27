@@ -12,52 +12,51 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void account_create_evaluator<Major, Hardfork, Release>::do_apply(
                 const account_create_operation<Major, Hardfork, Release> &o) {
-            const auto &creator = this->db.get_account(o.creator);
+            const auto &creator = this->db.template get_account(o.creator);
 
-            const auto &props = this->db.get_dynamic_global_properties();
+            const auto &props = this->db.template get_dynamic_global_properties();
 
-            FC_ASSERT(this->db.get_balance(creator.name, STEEM_SYMBOL_NAME) >= o.fee,
+            FC_ASSERT(this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME) >= o.fee,
                       "Insufficient balance to create account.",
-                      ("creator.balance", this->db.get_balance(creator.name, STEEM_SYMBOL_NAME))("required", o.fee));
+                      ("creator.balance", this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME))("required", o.fee));
 
-            if (this->db.has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
-                const witness_schedule_object &wso = this->db.get_witness_schedule_object();
-                FC_ASSERT(o.fee >= asset<0, 17, 0>(
+            if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
+                const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
+                FC_ASSERT(o.fee >= {wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                        STEEM_SYMBOL_NAME}, "Insufficient Fee: ${f} required, ${p} provided.", ("f", {
                         wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME), "Insufficient Fee: ${f} required, ${p} provided.", ("f", asset<0, 17, 0>(
-                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME))("p", o.fee));
-            } else if (this->db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                const witness_schedule_object &wso = this->db.get_witness_schedule_object();
+                        STEEM_SYMBOL_NAME})("p", o.fee));
+            } else if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
                           "Insufficient Fee: ${f} required, ${p} provided.",
                           ("f", wso.median_props.account_creation_fee)("p", o.fee));
             }
 
-            if (this->db.is_producing() || this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
+            if (this->db.template is_producing() || this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
                 for (auto &a : o.owner.account_auths) {
-                    this->db.get_account(a.first);
+                    this->db.template get_account(a.first);
                 }
 
                 for (auto &a : o.active.account_auths) {
-                    this->db.get_account(a.first);
+                    this->db.template get_account(a.first);
                 }
 
                 for (auto &a : o.posting.account_auths) {
-                    this->db.get_account(a.first);
+                    this->db.template get_account(a.first);
                 }
             }
 
-            this->db.adjust_balance(creator, -o.fee);
+            this->db.template adjust_balance(creator, -o.fee);
 
-            const auto &new_account = this->db.create<account_object>([&](account_object &acc) {
+            const auto &new_account = this->db.template create<account_object>([&](account_object &acc) {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = props.time;
                 acc.last_vote_time = props.time;
                 acc.mined = false;
 
-                if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
+                if (!this->db.template has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
                     acc.recovery_account = STEEMIT_INIT_MINER_NAME;
                 } else {
                     acc.recovery_account = o.creator;
@@ -69,19 +68,19 @@ namespace steemit {
 #endif
             });
 
-            this->db.create<account_balance_object>([new_account](account_balance_object &b) {
+            this->db.template create<account_balance_object>([new_account](account_balance_object &b) {
                 b.owner = new_account.name;
                 b.asset_name = STEEM_SYMBOL_NAME;
                 b.balance = 0;
             });
 
-            this->db.create<account_balance_object>([new_account](account_balance_object &b) {
+            this->db.template create<account_balance_object>([new_account](account_balance_object &b) {
                 b.owner = new_account.name;
                 b.asset_name = SBD_SYMBOL_NAME;
                 b.balance = 0;
             });
 
-            this->db.create<account_authority_object>([&](account_authority_object &auth) {
+            this->db.template create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
                 auth.active = o.active;
@@ -90,10 +89,10 @@ namespace steemit {
             });
 
             if (o.fee.amount > 0) {
-                this->db.create_vesting(new_account, o.fee);
+                this->db.template create_vesting(new_account, o.fee);
             }
 
-            this->db.create<account_statistics_object>([&](account_statistics_object &s) {
+            this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
                 s.owner = new_account.name;
             });
         }
@@ -102,13 +101,13 @@ namespace steemit {
         void account_create_with_delegation_evaluator<Major, Hardfork, Release>::do_apply(
                 const account_create_with_delegation_operation<Major, Hardfork, Release> &o) {
 
-            FC_ASSERT(this->db.has_hardfork(STEEMIT_HARDFORK_0_17__101),
+            FC_ASSERT(this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101),
                       "Account creation with delegation is not enabled until hardfork 17");
 
-            const auto &creator = this->db.get_account(o.creator);
-            asset creator_balance = this->db.get_balance(o.creator, STEEM_SYMBOL_NAME);
-            const auto &props = this->db.get_dynamic_global_properties();
-            const witness_schedule_object &wso = this->db.get_witness_schedule_object();
+            const auto &creator = this->db.template get_account(o.creator);
+            asset creator_balance = this->db.template get_balance(o.creator, STEEM_SYMBOL_NAME);
+            const auto &props = this->db.template get_dynamic_global_properties();
+            const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
 
             FC_ASSERT(creator_balance >= o.fee, "Insufficient balance to create account.",
                       ("creator.balance", creator_balance)("required", o.fee));
@@ -138,24 +137,24 @@ namespace steemit {
                       ("f", wso.median_props.account_creation_fee)("p", o.fee));
 
             for (auto &a : o.owner.account_auths) {
-                this->db.get_account(a.first);
+                this->db.template get_account(a.first);
             }
 
             for (auto &a : o.active.account_auths) {
-                this->db.get_account(a.first);
+                this->db.template get_account(a.first);
             }
 
             for (auto &a : o.posting.account_auths) {
-                this->db.get_account(a.first);
+                this->db.template get_account(a.first);
             }
 
-            this->db.adjust_balance(creator, -o.fee);
+            this->db.template adjust_balance(creator, -o.fee);
 
-            this->db.modify(creator, [&](account_object &c) {
+            this->db.template modify(creator, [&](account_object &c) {
                 c.delegated_vesting_shares += o.delegation;
             });
 
-            const auto &new_account = this->db.create<account_object>([&](account_object &acc) {
+            const auto &new_account = this->db.template create<account_object>([&](account_object &acc) {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = props.time;
@@ -171,19 +170,19 @@ namespace steemit {
 #endif
             });
 
-            this->db.create<account_balance_object>([new_account](account_balance_object &b) {
+            this->db.template create<account_balance_object>([new_account](account_balance_object &b) {
                 b.owner = new_account.name;
                 b.asset_name = STEEM_SYMBOL_NAME;
                 b.balance = 0;
             });
 
-            this->db.create<account_balance_object>([new_account](account_balance_object &b) {
+            this->db.template create<account_balance_object>([new_account](account_balance_object &b) {
                 b.owner = new_account.name;
                 b.asset_name = SBD_SYMBOL_NAME;
                 b.balance = 0;
             });
 
-            this->db.create<account_authority_object>([&](account_authority_object &auth) {
+            this->db.template create<account_authority_object>([&](account_authority_object &auth) {
                 auth.account = o.new_account_name;
                 auth.owner = o.owner;
                 auth.active = o.active;
@@ -192,19 +191,19 @@ namespace steemit {
             });
 
             if (o.delegation.amount > 0) {
-                this->db.create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
+                this->db.template create<vesting_delegation_object>([&](vesting_delegation_object &vdo) {
                     vdo.delegator = o.creator;
                     vdo.delegatee = o.new_account_name;
                     vdo.vesting_shares = o.delegation;
-                    vdo.min_delegation_time = this->db.head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
+                    vdo.min_delegation_time = this->db.template head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
                 });
             }
 
             if (o.fee.amount > 0) {
-                this->db.create_vesting(new_account, o.fee);
+                this->db.template create_vesting(new_account, o.fee);
             }
 
-            this->db.create<account_statistics_object>([&](account_statistics_object &s) {
+            this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
                 s.owner = new_account.name;
             });
         }
@@ -213,62 +212,62 @@ namespace steemit {
         void account_update_evaluator<Major, Hardfork, Release>::do_apply(
                 const account_update_operation<Major, Hardfork, Release> &o) {
 
-            if (this->db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+            if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
             }
 
-            if ((this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing()) && o.posting) { // TODO: Add HF 15
+            if ((this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing()) && o.posting) { // TODO: Add HF 15
                 o.posting->validate();
             }
 
-            const auto &account = this->db.get_account(o.account);
-            const auto &account_auth = this->db.get<account_authority_object, by_account>(o.account);
+            const auto &account = this->db.template get_account(o.account);
+            const auto &account_auth = this->db.template get<account_authority_object, by_account>(o.account);
 
             if (o.owner) {
 #ifndef STEEMIT_BUILD_TESTNET
-                if (this->db.has_hardfork(STEEMIT_HARDFORK_0_11)) {
-                    FC_ASSERT(this->db.head_block_time() - account_auth.last_owner_update > STEEMIT_OWNER_UPDATE_LIMIT,
+                if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_11)) {
+                    FC_ASSERT(this->db.template head_block_time() - account_auth.last_owner_update > STEEMIT_OWNER_UPDATE_LIMIT,
                               "Owner authority can only be updated once an hour.");
                 }
 
 #endif
 
-                if ((this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing())) // TODO: Add HF 15
+                if ((this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing())) // TODO: Add HF 15
                 {
                     for (auto a: o.owner->account_auths) {
-                        this->db.get_account(a.first);
+                        this->db.template get_account(a.first);
                     }
                 }
 
 
-                this->db.update_owner_authority(account, *o.owner);
+                this->db.template update_owner_authority(account, *o.owner);
             }
 
-            if (o.active && (this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing())) // TODO: Add HF 15
+            if (o.active && (this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.active->account_auths) {
-                    this->db.get_account(a.first);
+                    this->db.template get_account(a.first);
                 }
             }
 
-            if (o.posting && (this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing())) // TODO: Add HF 15
+            if (o.posting && (this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.posting->account_auths) {
-                    this->db.get_account(a.first);
+                    this->db.template get_account(a.first);
                 }
             }
 
-            this->db.modify(account, [&](account_object &acc) {
+            this->db.template modify(account, [&](account_object &acc) {
                 if (o.memo_key != public_key_type()) {
                     acc.memo_key = o.memo_key;
                 }
 
                 if ((o.active || o.owner) && acc.active_challenged) {
                     acc.active_challenged = false;
-                    acc.last_active_proved = this->db.head_block_time();
+                    acc.last_active_proved = this->db.template head_block_time();
                 }
 
-                acc.last_account_update = this->db.head_block_time();
+                acc.last_account_update = this->db.template head_block_time();
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                 if (o.json_metadata.size() > 0) {
@@ -278,7 +277,7 @@ namespace steemit {
             });
 
             if (o.active || o.posting) {
-                this->db.modify(account_auth, [&](account_authority_object &auth) {
+                this->db.template modify(account_auth, [&](account_authority_object &auth) {
                     if (o.active) {
                         auth.active = *o.active;
                     }
@@ -292,9 +291,9 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void account_whitelist_evaluator<Major, Hardfork, Release>::do_apply(const protocol::account_whitelist_operation<Major, Hardfork, Release> &o) {
             try {
-                const account_object &listed_account = this->db.get_account(o.account_to_list);
+                const account_object &listed_account = this->db.template get_account(o.account_to_list);
 
-                this->db.modify(listed_account, [&o](account_object &a) {
+                this->db.template modify(listed_account, [&o](account_object &a) {
                     if (o.new_listing & o.white_listed) {
                         a.whitelisting_accounts.insert(o.authorizing_account);
                     } else {
@@ -309,7 +308,7 @@ namespace steemit {
                 });
 
                 /** for tracking purposes only, this state is not needed to evaluate */
-                this->db.modify(this->db.get_account(o.authorizing_account), [&](account_object &a) {
+                this->db.template modify(this->db.template get_account(o.authorizing_account), [&](account_object &a) {
                     if (o.new_listing & o.white_listed) {
                         a.whitelisted_accounts.insert(o.account_to_list);
                     } else {
