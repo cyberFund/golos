@@ -18,14 +18,16 @@ namespace steemit {
 
             FC_ASSERT(this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME) >= o.fee,
                       "Insufficient balance to create account.",
-                      ("creator.balance", this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME))("required", o.fee));
+                      ("creator.balance", this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME))("required",
+                                                                                                          o.fee));
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
-                FC_ASSERT(o.fee >= {wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME}, "Insufficient Fee: ${f} required, ${p} provided.", ("f", {
-                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME})("p", o.fee));
+                FC_ASSERT(o.fee >=
+                          {wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                           STEEM_SYMBOL_NAME}, "Insufficient Fee: ${f} required, ${p} provided.",
+                          ("f", {wso.median_props.account_creation_fee.amount *
+                                 STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME})("p", o.fee));
             } else if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
@@ -113,7 +115,7 @@ namespace steemit {
                       ("creator.balance", creator_balance)("required", o.fee));
 
             FC_ASSERT(creator.vesting_shares - creator.delegated_vesting_shares -
-                      asset(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL) >= o.delegation,
+                      asset<0, 17, 0>(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL) >= o.delegation,
                       "Insufficient vesting shares to delegate to new account.",
                       ("creator.vesting_shares", creator.vesting_shares)("creator.delegated_vesting_shares",
                                                                          creator.delegated_vesting_shares)("required",
@@ -195,7 +197,8 @@ namespace steemit {
                     vdo.delegator = o.creator;
                     vdo.delegatee = o.new_account_name;
                     vdo.vesting_shares = o.delegation;
-                    vdo.min_delegation_time = this->db.template head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
+                    vdo.min_delegation_time =
+                            this->db.template head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
                 });
             }
 
@@ -216,7 +219,8 @@ namespace steemit {
                 FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
             }
 
-            if ((this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing()) && o.posting) { // TODO: Add HF 15
+            if ((this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing()) &&
+                o.posting) { // TODO: Add HF 15
                 o.posting->validate();
             }
 
@@ -226,13 +230,14 @@ namespace steemit {
             if (o.owner) {
 #ifndef STEEMIT_BUILD_TESTNET
                 if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_11)) {
-                    FC_ASSERT(this->db.template head_block_time() - account_auth.last_owner_update > STEEMIT_OWNER_UPDATE_LIMIT,
-                              "Owner authority can only be updated once an hour.");
+                    FC_ASSERT(this->db.template head_block_time() - account_auth.last_owner_update >
+                              STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
                 }
 
 #endif
 
-                if ((this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing())) // TODO: Add HF 15
+                if ((this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                     this->db.template is_producing())) // TODO: Add HF 15
                 {
                     for (auto a: o.owner->account_auths) {
                         this->db.template get_account(a.first);
@@ -243,14 +248,16 @@ namespace steemit {
                 this->db.template update_owner_authority(account, *o.owner);
             }
 
-            if (o.active && (this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing())) // TODO: Add HF 15
+            if (o.active && (this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                             this->db.template is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.active->account_auths) {
                     this->db.template get_account(a.first);
                 }
             }
 
-            if (o.posting && (this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.template is_producing())) // TODO: Add HF 15
+            if (o.posting && (this->db.template has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
+                              this->db.template is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.posting->account_auths) {
                     this->db.template get_account(a.first);
@@ -289,7 +296,8 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void account_whitelist_evaluator<Major, Hardfork, Release>::do_apply(const protocol::account_whitelist_operation<Major, Hardfork, Release> &o) {
+        void account_whitelist_evaluator<Major, Hardfork, Release>::do_apply(
+                const protocol::account_whitelist_operation<Major, Hardfork, Release> &o) {
             try {
                 const account_object &listed_account = this->db.template get_account(o.account_to_list);
 

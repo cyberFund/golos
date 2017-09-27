@@ -3125,7 +3125,7 @@ namespace steemit {
 
                 if (!(get_node_properties().skip_flags & skip_undo_history_check)) {
                     STEEMIT_ASSERT(_dgp.head_block_number - _dgp.last_irreversible_block_num < STEEMIT_MAX_UNDO_HISTORY,
-                                   undo_database_exception,
+                                   exceptions::chain::undo_database::basic<>,
                                    "The database does not have enough undo history to support a blockchain with so many missed blocks. "
                                            "Please add a checkpoint if you would like to continue applying blocks beyond this point.",
                                    ("last_irreversible_block_num", _dgp.last_irreversible_block_num)("head",

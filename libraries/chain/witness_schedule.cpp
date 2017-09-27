@@ -299,7 +299,6 @@ namespace steemit {
 
 
 /**
- *
  *  See @ref witness_object::virtual_last_update
  */
         void update_witness_schedule(database &db) {
@@ -325,10 +324,7 @@ namespace steemit {
                     db.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK) {
                     const auto &widx = db.get_index<witness_index>().indices().get<by_vote_name>();
 
-                    for (auto itr = widx.begin(); itr != widx.end() &&
-                                                  (active_witnesses.size() <
-                                                   (STEEMIT_MAX_WITNESSES -
-                                                    2)); ++itr) {
+                    for (auto itr = widx.begin(); itr != widx.end() && (active_witnesses.size() < (STEEMIT_MAX_WITNESSES - 2)); ++itr) {
                         if (itr->pow_worker) {
                             continue;
                         }
