@@ -34,11 +34,11 @@ namespace steemit {
 
                 pow_operation<0, 16, 0>,
 
-                custom_operation<0, 16, 0>,
+                custom_operation,
 
                 report_over_production_operation<0, 16, 0>,
 
-                delete_comment_operation<0, 16, 0>, custom_json_operation<0, 16, 0>,
+                delete_comment_operation<0, 16, 0>, custom_json_operation,
                 comment_options_operation<0, 16, 0>, set_withdraw_vesting_route_operation<0, 16, 0>,
                 limit_order_create2_operation<0, 16, 0>, challenge_authority_operation<0, 16, 0>,
                 prove_authority_operation<0, 16, 0>, request_account_recovery_operation<0, 16, 0>,
@@ -52,7 +52,7 @@ namespace steemit {
                 transfer_to_savings_operation<0, 16, 0>, transfer_from_savings_operation<0, 16, 0>,
                 cancel_transfer_from_savings_operation<0, 16, 0>,
 
-                custom_binary_operation<0, 16, 0>, decline_voting_rights_operation<0, 16, 0>,
+                custom_binary_operation, decline_voting_rights_operation<0, 16, 0>,
                 reset_account_operation<0, 16, 0>, set_reset_account_operation<0, 16, 0>,
                 comment_benefactor_reward_operation<0, 16, 0>,
 
@@ -72,11 +72,9 @@ namespace steemit {
 
                 pow_operation<0, 17, 0>,
 
-                custom_operation<0, 17, 0>,
-
                 report_over_production_operation<0, 17, 0>,
 
-                delete_comment_operation<0, 17, 0>, custom_json_operation<0, 17, 0>,
+                delete_comment_operation<0, 17, 0>,
                 comment_options_operation<0, 17, 0>, set_withdraw_vesting_route_operation<0, 17, 0>,
                 limit_order_create2_operation<0, 17, 0>, challenge_authority_operation<0, 17, 0>,
                 prove_authority_operation<0, 17, 0>, request_account_recovery_operation<0, 17, 0>,
@@ -90,7 +88,7 @@ namespace steemit {
                 transfer_to_savings_operation<0, 17, 0>, transfer_from_savings_operation<0, 17, 0>,
                 cancel_transfer_from_savings_operation<0, 17, 0>,
 
-                custom_binary_operation<0, 17, 0>, decline_voting_rights_operation<0, 17, 0>,
+                decline_voting_rights_operation<0, 17, 0>,
                 reset_account_operation<0, 17, 0>, set_reset_account_operation<0, 17, 0>,
                 comment_benefactor_reward_operation<0, 17, 0>, delegate_vesting_shares_operation<0, 17, 0>,
                 account_create_with_delegation_operation<0, 17, 0>, comment_payout_extension_operation<0, 17, 0>,
