@@ -1,6 +1,6 @@
 #include <steemit/witness/witness.hpp>
 
-#include <steemit/chain/exceptions/database_exceptions.hpp>
+#include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/account_object.hpp>
 #include <steemit/chain/steem_objects.hpp>
 

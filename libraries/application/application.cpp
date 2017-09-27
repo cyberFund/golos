@@ -1,6 +1,6 @@
 #include <steemit/application/api.hpp>
 
-#include <steemit/chain/exceptions/database_exceptions.hpp>
+#include <steemit/chain/database_exceptions.hpp>
 
 #include <fc/time.hpp>
 

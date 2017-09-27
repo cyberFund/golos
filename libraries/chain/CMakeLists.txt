@@ -12,7 +12,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/chain/custom_operation_interpreter.hpp
      include/steemit/chain/custom_evaluator.hpp
      include/steemit/chain/database.hpp
-     include/steemit/chain/exceptions/database_exceptions.hpp
+     include/steemit/chain/database_exceptions.hpp
      include/steemit/chain/db_with.hpp
      include/steemit/chain/escrow_evaluator.hpp
      include/steemit/chain/evaluator.hpp

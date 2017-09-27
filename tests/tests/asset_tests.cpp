@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/exceptions/database_exceptions.hpp>
+#include <steemit/chain/database_exceptions.hpp>
 #include <steemit/version/hardfork.hpp>
 
 #include <steemit/chain/account_object.hpp>
