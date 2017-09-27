@@ -25,6 +25,8 @@ namespace steemit {
     namespace chain {
         namespace exceptions {
             namespace chain {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
                 template<uint32_t Code = 4000000, typename What = boost::mpl::string<'blockchain exception'>>
                 using basic = fc::basic_exception<Code, What>;
 
@@ -201,6 +203,7 @@ namespace steemit {
                     using not_permitted = operations::override_transfer_evaluate_exception<Major, Hardfork,
                             Release, IncrementalCode, What>;
                 }
+#pragma GCC diagnostic pop
             }
         }
     }

@@ -164,92 +164,6 @@ namespace steemit {
             }
         };
 
-
-        /**
-         * @brief provides a generic way to add higher level protocols on top of witness consensus
-         * @ingroup operations
-         *
-         * There is no validation for this operation other than that required auths are valid
-         */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct custom_operation : public base_operation<Major, Hardfork, Release> {
-            flat_set <account_name_type> required_auths;
-            uint16_t id = 0;
-            vector<char> data;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                for (const auto &i : required_auths) {
-                    a.insert(i);
-                }
-            }
-        };
-
-
-        /** serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
-         * this operation is designed to be human readable/developer friendly.
-         **/
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct custom_json_operation : public base_operation<Major, Hardfork, Release> {
-            flat_set <account_name_type> required_auths;
-            flat_set <account_name_type> required_posting_auths;
-            string id; ///< must be less than 32 characters long
-            string json; ///< must be proper utf8 / JSON string.
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                for (const auto &i : required_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
-                for (const auto &i : required_posting_auths) {
-                    a.insert(i);
-                }
-            }
-        };
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct custom_binary_operation : public base_operation<Major, Hardfork, Release> {
-            flat_set <account_name_type> required_owner_auths;
-            flat_set <account_name_type> required_active_auths;
-            flat_set <account_name_type> required_posting_auths;
-            vector <authority> required_auths;
-
-            string id; ///< must be less than 32 characters long
-            vector<char> data;
-
-            void validate() const;
-
-            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
-                for (const auto &i : required_owner_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                for (const auto &i : required_active_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
-                for (const auto &i : required_posting_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_authorities(vector <authority> &a) const {
-                for (const auto &i : required_auths) {
-                    a.push_back(i);
-                }
-            }
-        };
-
-
         /**
          *  Feeds can only be published by the top N witnesses which are included in every round and are
          *  used to define the exchange rate between steem and the dollar.
@@ -626,14 +540,11 @@ FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_prox
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 16, 0>)), (voter)(author)(permlink)(weight))
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 17, 0>)), (voter)(author)(permlink)(weight))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation<0, 16, 0>)), (required_auths)(id)(data))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation<0, 17, 0>)), (required_auths)(id)(data))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation)), (required_auths)(id)(data))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation<0, 16, 0>)), (required_auths)(required_posting_auths)(id)(json))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation<0, 17, 0>)), (required_auths)(required_posting_auths)(id)(json))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation)), (required_auths)(required_posting_auths)(id)(json))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation<0, 16, 0>)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation<0, 17, 0>)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
 
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 16, 0>)), (challenger)(challenged)(require_owner));
 FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 17, 0>)), (challenger)(challenged)(require_owner));

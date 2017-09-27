@@ -11,6 +11,7 @@ namespace graphene {
 
 namespace steemit {
     namespace protocol {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct custom_json_operation;
     }
 }

@@ -14,26 +14,29 @@ namespace steemit {
     namespace protocol {
         namespace exceptions {
             namespace transaction {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
                 template<uint32_t Code = 3000000, typename What = boost::mpl::string<'transaction exception'>>
-                using base = fc::basic_exception<Code, What>;
+                using basic = fc::basic_exception<Code, What>;
 
                 template<uint32_t Code = 3010000, typename What = boost::mpl::string<'missing required active authority'>>
-                using tx_missing_active_auth = base<Code, What>;
+                using tx_missing_active_auth = basic<Code, What>;
 
                 template<uint32_t Code = 3020000, typename What = boost::mpl::string<'missing required owner authority'>>
-                using tx_missing_owner_auth = base<Code, What>;
+                using tx_missing_owner_auth = basic<Code, What>;
 
                 template<uint32_t Code = 3030000, typename What = boost::mpl::string<'missing required posting authority'>>
-                using tx_missing_posting_auth = base<Code, What>;
+                using tx_missing_posting_auth = basic<Code, What>;
 
                 template<uint32_t Code = 3040000, typename What = boost::mpl::string<'missing required other authority'>>
-                using tx_missing_other_auth = base<Code, What>;
+                using tx_missing_other_auth = basic<Code, What>;
 
                 template<uint32_t Code = 3050000, typename What = boost::mpl::string<'irrelevant signature included'>>
-                using tx_irrelevant_sig = base<Code, What>;
+                using tx_irrelevant_sig = basic<Code, What>;
 
                 template<uint32_t Code = 3060000, typename What = boost::mpl::string<'duplicate signature includedty'>>
-                using tx_duplicate_sig = base<Code, What>;
+                using tx_duplicate_sig = basic<Code, What>;
+#pragma GCC diagnostic pop
             }
         }
 

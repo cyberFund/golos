@@ -535,10 +535,21 @@ namespace steemit {
 
             void initialize_evaluators();
 
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
             void set_custom_operation_interpreter(const std::string &id,
-                                                  std::shared_ptr<custom_operation_interpreter> registry);
+                                                  std::shared_ptr<custom_operation_interpreter<Major, Hardfork, Release>> registry) {
+                // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
+                FC_ASSERT(_custom_operation_interpreters.emplace(id, registry).second);
+            }
 
-            std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
+            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+            std::shared_ptr<custom_operation_interpreter<Major, Hardfork, Release>> get_custom_json_evaluator(const std::string &id) {
+                auto it = _custom_operation_interpreters.find(id);
+                if (it != _custom_operation_interpreters.end()) {
+                    return it->second;
+                }
+                return std::shared_ptr<custom_operation_interpreter<Major, Hardfork, Release>>();
+            }
 
             /// Reset the object graph in-memory
             void initialize_indexes();
@@ -576,8 +587,7 @@ namespace steemit {
 
             void cancel_bid(const collateral_bid_object &bid, bool create_virtual_op = true);
 
-            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund,
-                             const price_feed<0, 17, 0> &current_feed);
+            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund, const price_feed<0, 17, 0> &current_feed);
 
             /**
              * @brief Process a new limit order through the markets
@@ -603,8 +613,7 @@ namespace steemit {
             int match(const limit_order_object &bid, const limit_order_object &ask, const price<0, 17, 0> &trade_price);
 
             /// @return the amount of asset settled
-            asset<0, 17, 0> match(const call_order_object &call, const force_settlement_object &settle, const price<0, 17, 0> &match_price,
-                                  const asset<0, 17, 0> &max_settlement);
+            asset<0, 17, 0> match(const call_order_object &call, const force_settlement_object &settle, const price<0, 17, 0> &match_price, const asset<0, 17, 0> &max_settlement);
             ///@}
 
             /**

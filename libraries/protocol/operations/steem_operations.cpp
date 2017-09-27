@@ -76,14 +76,12 @@ namespace steemit {
             FC_ASSERT(proxy != account, "Cannot proxy to self");
         }
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void custom_operation<Major, Hardfork, Release>::validate() const {
+        void custom_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT(required_auths.size() > 0, "at least on account must be specified");
         }
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void custom_json_operation<Major, Hardfork, Release>::validate() const {
+        void custom_json_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT((required_auths.size() + required_posting_auths.size()) > 0,
                       "at least on account must be specified");
@@ -92,8 +90,7 @@ namespace steemit {
             FC_ASSERT(fc::json::is_valid(json), "JSON Metadata not valid JSON");
         }
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void custom_binary_operation<Major, Hardfork, Release>::validate() const {
+        void custom_binary_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT((required_owner_auths.size() + required_active_auths.size() + required_posting_auths.size()) > 0,
                       "at least on account must be specified");

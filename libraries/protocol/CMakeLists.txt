@@ -9,6 +9,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/base.hpp
      include/steemit/protocol/block.hpp
      include/steemit/protocol/block_header.hpp
+     include/steemit/protocol/operations/custom_operations.hpp
      include/steemit/protocol/operations/comment_operations.hpp
      include/steemit/protocol/config.hpp
      include/steemit/protocol/chain_properties.hpp
@@ -37,6 +38,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      base.cpp
      block.cpp
      operations/comment_operations.cpp
+     operations/custom_operations.cpp
      operations/escrow_operations.cpp
      get_config.cpp
      operations/market_operations.cpp

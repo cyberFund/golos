@@ -68,7 +68,7 @@ namespace steemit {
 
         struct reward_fund_context {
             uint128_t recent_claims = 0;
-            asset reward_balance = asset(0, STEEM_SYMBOL_NAME);
+            asset reward_balance = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             share_type steem_awarded = 0;
         };
 
@@ -1119,11 +1119,11 @@ namespace steemit {
                     auto to_sbd = (gpo.sbd_print_rate * steem.amount) / STEEMIT_100_PERCENT;
                     auto to_steem = steem.amount - to_sbd;
 
-                    auto sbd = asset(to_sbd, STEEM_SYMBOL_NAME) * median_price;
+                    auto sbd = asset<0, 17, 0>(to_sbd, STEEM_SYMBOL_NAME) * median_price;
 
                     adjust_balance(to_account, sbd);
-                    adjust_balance(to_account, asset(to_steem, STEEM_SYMBOL_NAME));
-                    adjust_supply(asset(-to_sbd, STEEM_SYMBOL_NAME));
+                    adjust_balance(to_account, asset<0, 17, 0>(to_steem, STEEM_SYMBOL_NAME));
+                    adjust_supply(asset<0, 17, 0>(-to_sbd, STEEM_SYMBOL_NAME));
                     adjust_supply(sbd);
                     assets.first = sbd;
                     assets.second = to_steem;
@@ -1410,7 +1410,7 @@ namespace steemit {
 
                 share_type vests_deposited_as_steem = 0;
                 share_type vests_deposited_as_vests = 0;
-                asset total_steem_converted = asset(0, STEEM_SYMBOL_NAME);
+                asset total_steem_converted = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
 
                 // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
                 for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_object::id_type()));
@@ -1430,8 +1430,8 @@ namespace steemit {
                             adjust_proxied_witness_votes(to_account, to_deposit);
 
                             push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                                   asset(to_deposit, VESTS_SYMBOL),
-                                                                                   asset(to_deposit, VESTS_SYMBOL)));
+                                                                                   asset<0, 17, 0>(to_deposit, VESTS_SYMBOL),
+                                                                                   asset<0, 17, 0>(to_deposit, VESTS_SYMBOL)));
                         }
                     }
                 }
@@ -1444,7 +1444,7 @@ namespace steemit {
                         share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) /
                                                  STEEMIT_100_PERCENT).to_uint64();
                         vests_deposited_as_steem += to_deposit;
-                        auto converted_steem = asset(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                        auto converted_steem = asset<0, 17, 0>(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
                         total_steem_converted += converted_steem;
 
                         if (to_deposit > 0) {
@@ -1456,7 +1456,7 @@ namespace steemit {
                             });
 
                             push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                                   asset(to_deposit, VESTS_SYMBOL),
+                                                                                   asset<0, 17, 0>(to_deposit, VESTS_SYMBOL),
                                                                                    converted_steem));
                         }
                     }
@@ -1465,7 +1465,7 @@ namespace steemit {
                 share_type to_convert = to_withdraw - vests_deposited_as_steem - vests_deposited_as_vests;
                 FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
 
-                auto converted_steem = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                auto converted_steem = asset<0, 17, 0>(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
 
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;
@@ -1491,7 +1491,7 @@ namespace steemit {
                 }
 
                 push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name,
-                                                                       asset(to_withdraw, VESTS_SYMBOL),
+                                                                       asset<0, 17, 0>(to_withdraw, VESTS_SYMBOL),
                                                                        converted_steem));
             }
         }
@@ -1527,7 +1527,7 @@ namespace steemit {
                         {
                             unclaimed_rewards -= claim;
                             const auto &voter = get(itr->voter);
-                            auto reward = create_vesting(voter, asset(claim, STEEM_SYMBOL_NAME));
+                            auto reward = create_vesting(voter, asset<0, 17, 0>(claim, STEEM_SYMBOL_NAME));
 
                             push_virtual_operation(
                                     curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
@@ -1581,7 +1581,7 @@ namespace steemit {
                         for (auto &b : comment.beneficiaries) {
                             auto benefactor_tokens = (author_tokens * b.weight) / STEEMIT_100_PERCENT;
                             auto vest_created = create_vesting(get_account(b.account),
-                                                               asset(benefactor_tokens, STEEM_SYMBOL_NAME));
+                                                               asset<0, 17, 0>(benefactor_tokens, STEEM_SYMBOL_NAME));
                             push_virtual_operation(comment_benefactor_reward_operation(b.account, comment.author,
                                                                                        to_string(comment.permlink),
                                                                                        vest_created));
@@ -1598,16 +1598,15 @@ namespace steemit {
                         auto sbd_payout = create_sbd(author, sbd_steem);
 
                         adjust_total_payout(comment, sbd_payout.first + to_sbd(sbd_payout.second +
-                                                                               asset(vesting_steem, STEEM_SYMBOL_NAME)),
-                                            to_sbd(asset(curation_tokens, STEEM_SYMBOL_NAME)),
-                                            to_sbd(asset(total_beneficiary, STEEM_SYMBOL_NAME)));
+                                                                               asset<0, 17, 0>(vesting_steem, STEEM_SYMBOL_NAME)),
+                                            to_sbd(asset<0, 17, 0>(curation_tokens, STEEM_SYMBOL_NAME)),
+                                            to_sbd(asset<0, 17, 0>(total_beneficiary, STEEM_SYMBOL_NAME)));
 
                         push_virtual_operation(
                                 author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first,
                                                         sbd_payout.second, vest_created));
                         push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink),
-                                                                        to_sbd(asset(claimed_reward,
-                                                                                     STEEM_SYMBOL_NAME))));
+                                                                        to_sbd(asset<0, 17, 0>(claimed_reward, STEEM_SYMBOL_NAME))));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                         modify(comment, [&](comment_object &c) {
@@ -1620,7 +1619,7 @@ namespace steemit {
 #endif
 
                         modify(cat, [&](category_object &c) {
-                            c.total_payouts += to_sbd(asset(claimed_reward, STEEM_SYMBOL_NAME));
+                            c.total_payouts += to_sbd(asset<0, 17, 0>(claimed_reward, STEEM_SYMBOL_NAME));
                         });
                     }
 
@@ -1833,12 +1832,12 @@ namespace steemit {
                 new_steem = content_reward + vesting_reward + witness_reward;
 
                 modify(props, [&](dynamic_global_property_object &p) {
-                    p.total_vesting_fund_steem += asset(vesting_reward, STEEM_SYMBOL_NAME);
+                    p.total_vesting_fund_steem += asset<0, 17, 0>(vesting_reward, STEEM_SYMBOL_NAME);
                     if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                        p.total_reward_fund_steem += asset(content_reward, STEEM_SYMBOL_NAME);
+                        p.total_reward_fund_steem += asset<0, 17, 0>(content_reward, STEEM_SYMBOL_NAME);
                     }
-                    p.current_supply += asset(new_steem, STEEM_SYMBOL_NAME);
-                    p.virtual_supply += asset(new_steem, STEEM_SYMBOL_NAME);
+                    p.current_supply += asset<0, 17, 0>(new_steem, STEEM_SYMBOL_NAME);
+                    p.virtual_supply += asset<0, 17, 0>(new_steem, STEEM_SYMBOL_NAME);
 
                 });
 
@@ -1846,7 +1845,7 @@ namespace steemit {
                     a.current_supply += new_steem;
                 });
 
-                create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL_NAME));
+                create_vesting(get_account(cwit.owner), asset<0, 17, 0>(witness_reward, STEEM_SYMBOL_NAME));
             } else {
                 auto content_reward = get_content_reward();
                 auto curate_reward = get_curation_reward();
@@ -1898,7 +1897,7 @@ namespace steemit {
 
         asset<0, 17, 0> database::get_liquidity_reward() const {
             if (has_hardfork(STEEMIT_HARDFORK_0_12__178)) {
-                return asset(0, STEEM_SYMBOL_NAME);
+                return asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             }
 
             const auto &props = get_dynamic_global_properties();
@@ -1911,7 +1910,7 @@ namespace steemit {
 
         asset<0, 17, 0> database::get_content_reward() const {
             const auto &props = get_dynamic_global_properties();
-            auto reward = asset(255, STEEM_SYMBOL_NAME);
+            auto reward = asset<0, 17, 0>(255, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
                 asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
@@ -1924,7 +1923,7 @@ namespace steemit {
 
         asset<0, 17, 0> database::get_curation_reward() const {
             const auto &props = get_dynamic_global_properties();
-            auto reward = asset(85, STEEM_SYMBOL_NAME);
+            auto reward = asset<0, 17, 0>(85, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
                 asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
@@ -2062,7 +2061,7 @@ namespace steemit {
                 auto r = (reward * itr.percent_content_rewards) / STEEMIT_100_PERCENT;
 
                 modify(itr, [&](reward_fund_object &rfo) {
-                    rfo.reward_balance += asset(r, STEEM_SYMBOL_NAME);
+                    rfo.reward_balance += asset<0, 17, 0>(r, STEEM_SYMBOL_NAME);
                 });
 
                 used_rewards += r;
@@ -2293,12 +2292,6 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<comment_payout_extension_evaluator>();
         }
 
-        void database::set_custom_operation_interpreter(const std::string &id,
-                                                        std::shared_ptr<custom_operation_interpreter> registry) {
-            // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
-            FC_ASSERT(_custom_operation_interpreters.emplace(id, registry).second);
-        }
-
         std::shared_ptr<custom_operation_interpreter> database::get_custom_json_evaluator(const std::string &id) {
             auto it = _custom_operation_interpreters.find(id);
             if (it != _custom_operation_interpreters.end()) {
@@ -2512,7 +2505,7 @@ namespace steemit {
                         a.memo_key = init_public_key;
                     });
 
-                    adjust_balance(account, asset(i ? 0 : init_supply, STEEM_SYMBOL_NAME));
+                    adjust_balance(account, asset<0, 17, 0>(i ? 0 : init_supply, STEEM_SYMBOL_NAME));
 
                     create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = STEEMIT_INIT_MINER_NAME + (i ? fc::to_string(i) : std::string());
@@ -2538,7 +2531,7 @@ namespace steemit {
                     p.time = STEEMIT_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128::max_value();
                     p.participation_count = 128;
-                    p.current_supply = asset(init_supply, STEEM_SYMBOL_NAME);
+                    p.current_supply = asset<0, 17, 0>(init_supply, STEEM_SYMBOL_NAME);
                     p.virtual_supply = p.current_supply;
                     p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
                 });
@@ -2869,7 +2862,7 @@ namespace steemit {
 #endif
                             if (has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
                                 const auto &gpo = get_dynamic_global_properties();
-                                price min_price(asset(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL_NAME),
+                                price min_price(asset<0, 17, 0>(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL_NAME),
                                                 gpo.current_supply); // This price limits SBD to 10% market cap
 
                                 if (min_price > fho.current_median_history) {
@@ -3138,7 +3131,7 @@ namespace steemit {
             try {
                 modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
                     dgp.virtual_supply = dgp.current_supply +
-                                         (get_feed_history().current_median_history.is_null() ? asset(0,
+                                         (get_feed_history().current_median_history.is_null() ? asset<0, 17, 0>(0,
                                                                                                       STEEM_SYMBOL_NAME)
                                                                                               : dgp.current_sbd_supply *
                                                                                                 get_feed_history().current_median_history);
@@ -3309,7 +3302,7 @@ namespace steemit {
         }
 
         asset<0, 17, 0> database::match(const call_order_object &call, const force_settlement_object &settle,
-                              const price<0, 17, 0> &match_price, asset<0, 17, 0> max_settlement) {
+                              const price<0, 17, 0> &match_price, const asset<0, 17, 0> &max_settlement) {
             try {
                 FC_ASSERT(call.get_debt().symbol == settle.balance.symbol);
                 FC_ASSERT(call.debt > 0 && call.collateral > 0 && settle.balance.amount > 0);
@@ -3526,7 +3519,7 @@ namespace steemit {
 
                 assert(pays.symbol != receives.symbol);
                 push_virtual_operation(fill_call_order_operation{order.order_id, order.borrower, pays, receives,
-                                                                 asset(0, pays.symbol)});
+                                                                 asset<0, 17, 0>(0, pays.symbol)});
 
                 if (collateral_freed) {
                     remove(order);
@@ -4127,7 +4120,7 @@ namespace steemit {
                 if (itr == index.end()) {
                     FC_ASSERT(delta.amount > 0,
                               "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                              ("a", get_account(a.name).name)("b", to_pretty_string(asset(0, delta.symbol)))("r",
+                              ("a", get_account(a.name).name)("b", to_pretty_string(asset<0, 17, 0>(0, delta.symbol)))("r",
                                                                                                              to_pretty_string(
                                                                                                                      -delta)));
 
@@ -4581,7 +4574,7 @@ namespace steemit {
                     modify(get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME),
                            [&](reward_fund_object &rfo) {
                                rfo.percent_content_rewards = STEEMIT_POST_REWARD_FUND_PERCENT;
-                               rfo.reward_balance = asset(
+                               rfo.reward_balance = asset<0, 17, 0>(
                                        (reward_steem.amount.value * rfo.percent_content_rewards) / STEEMIT_100_PERCENT,
                                        STEEM_SYMBOL_NAME);
                                reward_steem -= rfo.reward_balance;
@@ -4595,7 +4588,7 @@ namespace steemit {
                            });
 
                     modify(gpo, [&](dynamic_global_property_object &g) {
-                        g.total_reward_fund_steem = asset(0, STEEM_SYMBOL_NAME);
+                        g.total_reward_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
                         g.total_reward_shares2 = 0;
 
                     });
@@ -4697,9 +4690,9 @@ namespace steemit {
         void database::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
-                asset total_supply = asset(0, STEEM_SYMBOL_NAME);
-                asset total_sbd = asset(0, SBD_SYMBOL_NAME);
-                asset total_vesting = asset(0, VESTS_SYMBOL);
+                asset total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+                asset total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
+                asset total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
                 auto gpo = get_dynamic_global_properties();
@@ -4737,9 +4730,9 @@ namespace steemit {
 
                 for (const auto &itr : limit_order_idx) {
                     if (itr.sell_price.base.symbol == STEEM_SYMBOL_NAME) {
-                        total_supply += asset(itr.for_sale, STEEM_SYMBOL_NAME);
+                        total_supply += asset<0, 17, 0>(itr.for_sale, STEEM_SYMBOL_NAME);
                     } else if (itr.sell_price.base.symbol == SBD_SYMBOL_NAME) {
-                        total_sbd += asset(itr.for_sale, SBD_SYMBOL_NAME);
+                        total_sbd += asset<0, 17, 0>(itr.for_sale, SBD_SYMBOL_NAME);
                     }
                 }
 
@@ -4825,7 +4818,7 @@ namespace steemit {
                         a.vesting_shares.amount *= magnitude;
                         a.withdrawn *= magnitude;
                         a.to_withdraw *= magnitude;
-                        a.vesting_withdraw_rate = asset(a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16,
+                        a.vesting_withdraw_rate = asset<0, 17, 0>(a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16,
                                                         VESTS_SYMBOL);
                         if (a.vesting_withdraw_rate.amount == 0) {
                             a.vesting_withdraw_rate.amount = 1;
@@ -4995,8 +4988,8 @@ namespace steemit {
                     const collateral_bid_object &pseudo_bid = create<collateral_bid_object>(
                             [&](collateral_bid_object &bid) {
                                 bid.bidder = bitasset.issuer;
-                                bid.inv_swan_price = asset(0, bad.options.short_backing_asset) /
-                                                     asset(bdd.current_supply, bitasset.asset_name);
+                                bid.inv_swan_price = asset<0, 17, 0>(0, bad.options.short_backing_asset) /
+                                                     asset<0, 17, 0>(bdd.current_supply, bitasset.asset_name);
                             });
                     execute_bid(pseudo_bid, bdd.current_supply, bad.settlement_fund, bad.current_feed);
                 } else {
@@ -5041,7 +5034,7 @@ namespace steemit {
                 bid_collateral_operation vop;
                 vop.bidder = bid.bidder;
                 vop.additional_collateral = bid.inv_swan_price.base;
-                vop.debt_covered = asset(0, bid.inv_swan_price.quote.symbol);
+                vop.debt_covered = asset<0, 17, 0>(0, bid.inv_swan_price.quote.symbol);
                 push_virtual_operation(vop);
             }
             remove(bid);
@@ -5052,7 +5045,7 @@ namespace steemit {
                 return;
             }
 
-            asset_name_type to_revive_id = (asset(0, bad.options.short_backing_asset) * bad.settlement_price).symbol;
+            asset_name_type to_revive_id = (asset<0, 17, 0>(0, bad.options.short_backing_asset) * bad.settlement_price).symbol;
             const asset_object &to_revive = get_asset(to_revive_id);
             const asset_dynamic_data_object &bdd = get_asset_dynamic_data(to_revive.asset_name);
 
@@ -5110,8 +5103,8 @@ namespace steemit {
                 call.borrower = bid.bidder;
                 call.collateral = bid.inv_swan_price.base.amount + collateral_from_fund;
                 call.debt = debt_covered;
-                call.call_price = price::call_price(asset(debt_covered, bid.inv_swan_price.quote.symbol),
-                                                    asset(call.collateral, bid.inv_swan_price.base.symbol),
+                call.call_price = price::call_price(asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol),
+                                                    asset<0, 17, 0>(call.collateral, bid.inv_swan_price.base.symbol),
                                                     current_feed.maintenance_collateral_ratio);
             });
 
@@ -5122,8 +5115,8 @@ namespace steemit {
             }
 
             push_virtual_operation(
-                    execute_bid_operation(bid.bidder, asset(call_obj.collateral, bid.inv_swan_price.base.symbol),
-                                          asset(debt_covered, bid.inv_swan_price.quote.symbol)));
+                    execute_bid_operation(bid.bidder, asset<0, 17, 0>(call_obj.collateral, bid.inv_swan_price.base.symbol),
+                                          asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol)));
 
             remove(bid);
         }
