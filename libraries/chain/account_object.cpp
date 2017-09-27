@@ -18,7 +18,7 @@ namespace steemit {
             return r.to_uint64();
         }
 
-        void account_balance_object::adjust_balance(const protocol::asset &delta) {
+        void account_balance_object::adjust_balance(const protocol::asset<0, 17, 0> &delta) {
             assert(delta.symbol == asset_name);
             balance += delta.amount;
         }

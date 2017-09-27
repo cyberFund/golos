@@ -161,7 +161,7 @@ namespace steemit {
                 _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
                 auto start = fc::time_point::now();
-                STEEMIT_ASSERT(_block_log.head(), block_log_exception,
+                STEEMIT_ASSERT(_block_log.head(), exceptions::chain::block_log<>,
                                "No blocks in block log. Cannot reindex an empty chain.");
 
                 ilog("Replaying blocks...");
@@ -1106,7 +1106,7 @@ namespace steemit {
 
         std::pair<asset<0, 17, 0>, asset<0, 17, 0>> database::create_sbd(const account_object &to_account,
                                                                          asset<0, 17, 0> steem) {
-            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets({0, SBD_SYMBOL_NAME)}, {0, STEEM_SYMBOL_NAME});
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets({0, SBD_SYMBOL_NAME}, {0, STEEM_SYMBOL_NAME});
 
             try {
                 if (steem.amount == 0) {

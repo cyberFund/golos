@@ -27,7 +27,7 @@ namespace steemit {
                     this->db.template get_account(id);
                 }
 
-                auto &asset_indx = this->db.template get_index<asset_index>().indices().get<by_asset_name>();
+                auto &asset_indx = this->db.template get_index<asset_index>().indices().template get<by_asset_name>();
                 auto asset_symbol_itr = asset_indx.find(op.asset_name);
                 FC_ASSERT(asset_symbol_itr == asset_indx.end());
 
@@ -132,7 +132,7 @@ namespace steemit {
         void asset_reserve_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = this->db.template get_asset(o.amount_to_reserve.symbol);
-                STEEMIT_ASSERT(!a.is_market_issued(), asset_reserve_invalid_on_mia,
+                STEEMIT_ASSERT(!a.is_market_issued(), exceptions::operations::asset_reserve::invalid_on_mia<>,
                                "Cannot reserve ${sym} because it is a market-issued asset", ("sym", a.asset_name));
 
                 from_account = this->db.template find_account(o.payer);
@@ -218,7 +218,7 @@ namespace steemit {
             try {
                 // If we are now disabling force settlements, cancel all open force settlement orders
                 if (o.new_options.flags & disable_force_settle && asset_to_update->can_force_settle()) {
-                    const auto &idx = this->db.template get_index<force_settlement_index>().indices().get<by_expiration>();
+                    const auto &idx = this->db.template get_index<force_settlement_index>().indices().template get<by_expiration>();
                     // Funky iteration code because we're removing objects as we go. We have to re-initialize itr every loop instead
                     // of simply incrementing it.
                     for (auto itr = idx.lower_bound(o.asset_to_update);
@@ -341,7 +341,7 @@ namespace steemit {
                 FC_ASSERT(asset_to_settle->can_global_settle());
                 FC_ASSERT(asset_to_settle->issuer == op.issuer);
                 FC_ASSERT(this->db.template get_asset_dynamic_data(asset_to_settle->asset_name).current_supply > 0);
-                const auto &idx = this->db.template get_index<call_order_index>().indices().get<by_collateral>();
+                const auto &idx = this->db.template get_index<call_order_index>().indices().template get<by_collateral>();
                 assert(!idx.empty());
                 auto itr = idx.lower_bound(boost::make_tuple(
                         price::min(this->db.template get_asset_bitasset_data(asset_to_settle->asset_name).options.short_backing_asset,
@@ -371,7 +371,7 @@ namespace steemit {
                     FC_ASSERT(bitasset.has_settlement(),
                               "global settlement must occur before force settling a prediction market");
                 else if (bitasset.current_feed.settlement_price.is_null() || !bitasset.has_settlement())
-                    FC_THROW_EXCEPTION(insufficient_feeds, "Cannot force settle with no price feed.");
+                    FC_THROW_EXCEPTION(exceptions::chain::insufficient_feeds<>, "Cannot force settle with no price feed.");
                 FC_ASSERT(this->db.template get_balance(this->db.template get_account(op.account), *asset_to_settle) >= op.amount);
             } FC_CAPTURE_AND_RETHROW((op))
 
@@ -417,7 +417,7 @@ namespace steemit {
                     FC_ASSERT(bitasset.has_settlement(),
                               "global settlement must occur before force settling a prediction market");
                 else if (bitasset.current_feed.settlement_price.is_null())
-                    FC_THROW_EXCEPTION(insufficient_feeds, "Cannot force settle with no price feed.");
+                    FC_THROW_EXCEPTION(exceptions::chain::insufficient_feeds<>, "Cannot force settle with no price feed.");
                 FC_ASSERT(this->db.template get_balance(this->db.template get_account(op.account), *asset_to_settle) >= op.amount);
             } FC_CAPTURE_AND_RETHROW((op))
 

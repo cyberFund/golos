@@ -1,11 +1,14 @@
 #include <steemit/chain/custom_evaluator.hpp>
+#include <steemit/chain/custom_operation_interpreter.hpp>
+
+#include <steemit/chain/database.hpp>
 
 namespace steemit {
     namespace chain {
-        void custom_evaluator::do_apply(const custom_operation &o) {
+        void custom_evaluator::do_apply(const operation_type &o) {
         }
 
-        void custom_json_evaluator::do_apply(const custom_json_operation &o) {
+        void custom_json_evaluator::do_apply(const operation_type &o) {
             database &d = get_database();
             std::shared_ptr <custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
             if (!eval) {
@@ -24,7 +27,7 @@ namespace steemit {
         }
 
 
-        void custom_binary_evaluator::do_apply(const custom_binary_operation &o) {
+        void custom_binary_evaluator::do_apply(const operation_type &o) {
             database &d = get_database();
             FC_ASSERT(d.has_hardfork(STEEMIT_HARDFORK_0_14__317));
 

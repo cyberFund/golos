@@ -317,7 +317,7 @@ namespace steemit {
                 }
 
 
-                auto &call_idx = d.get_index<call_order_index>().indices().get<by_account>();
+                auto &call_idx = d.get_index<call_order_index>().indices().template get<by_account>();
                 auto itr = call_idx.find(boost::make_tuple(op.funding_account, op.delta_debt.symbol));
                 const call_order_object *call_obj = nullptr;
 
@@ -412,7 +412,7 @@ namespace steemit {
                                       o.additional_collateral.symbol)).amount));
                 }
 
-                const auto &index = this->db.template get_index<collateral_bid_index>().indices().get<by_account>();
+                const auto &index = this->db.template get_index<collateral_bid_index>().indices().template get<by_account>();
                 const auto &bid = index.find(boost::make_tuple(o.debt_covered.symbol, o.bidder));
                 if (bid != index.end()) {
                     _bid = &(*bid);

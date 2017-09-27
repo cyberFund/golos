@@ -90,7 +90,7 @@ namespace steemit {
 
                 share_type satoshis = 0;
 
-                share_type scaled_precision = asset::scaled_precision(precision);
+                share_type scaled_precision = asset<0, 17, 0>::scaled_precision(precision);
 
                 const auto decimal_pos = amount_string.find('.');
                 const string lhs = amount_string.substr(negative_found, decimal_pos);

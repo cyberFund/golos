@@ -24,10 +24,10 @@ namespace steemit {
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
                 FC_ASSERT(o.fee >=
-                          {wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                           STEEM_SYMBOL_NAME}, "Insufficient Fee: ${f} required, ${p} provided.",
-                          ("f", {wso.median_props.account_creation_fee.amount *
-                                 STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME})("p", o.fee));
+                          typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                           STEEM_SYMBOL_NAME), "Insufficient Fee: ${f} required, ${p} provided.",
+                          ("f", typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(wso.median_props.account_creation_fee.amount *
+                                 STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME))("p", o.fee));
             } else if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
@@ -107,7 +107,7 @@ namespace steemit {
                       "Account creation with delegation is not enabled until hardfork 17");
 
             const auto &creator = this->db.template get_account(o.creator);
-            asset creator_balance = this->db.template get_balance(o.creator, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> creator_balance = this->db.template get_balance(o.creator, STEEM_SYMBOL_NAME);
             const auto &props = this->db.template get_dynamic_global_properties();
             const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
 
@@ -115,7 +115,7 @@ namespace steemit {
                       ("creator.balance", creator_balance)("required", o.fee));
 
             FC_ASSERT(creator.vesting_shares - creator.delegated_vesting_shares -
-                      asset<0, 17, 0>(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL) >= o.delegation,
+                              typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL) >= o.delegation,
                       "Insufficient vesting shares to delegate to new account.",
                       ("creator.vesting_shares", creator.vesting_shares)("creator.delegated_vesting_shares",
                                                                          creator.delegated_vesting_shares)("required",
