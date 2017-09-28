@@ -334,7 +334,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void asset_global_settle_evaluator<Major, Hardfork, Release>::do_apply(operation_type &op) {
+        void asset_global_settle_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             try {
                 asset_to_settle = this->db.template find_asset(op.asset_to_settle);
                 FC_ASSERT(asset_to_settle->is_market_issued());
@@ -344,7 +344,7 @@ namespace steemit {
                 const auto &idx = this->db.template get_index<call_order_index>().indices().template get<by_collateral>();
                 assert(!idx.empty());
                 auto itr = idx.lower_bound(boost::make_tuple(
-                        price::min(this->db.template get_asset_bitasset_data(asset_to_settle->asset_name).options.short_backing_asset,
+                        price<Major, Hardfork, Release>::min(this->db.template get_asset_bitasset_data(asset_to_settle->asset_name).options.short_backing_asset,
                                    op.asset_to_settle)));
                 assert(itr != idx.end() && itr->debt_type() == op.asset_to_settle);
                 const call_order_object &least_collateralized_short = *itr;
