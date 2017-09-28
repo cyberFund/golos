@@ -214,7 +214,7 @@ namespace steemit {
 
             reward_fund_object::id_type id;
             reward_fund_name_type name;
-            protocol::asset<0, 17, 0>  reward_balance = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            protocol::asset<0, 17, 0>  reward_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             uint128_t recent_claims = 0;
             time_point_sec last_update;
             uint128_t content_constant = 0;
@@ -308,9 +308,9 @@ namespace steemit {
                 &escrow_object::id>>,
         composite_key_compare <std::less<bool>, std::less<time_point_sec>, std::less<escrow_object::id_type>>
         >,
-        ordered_unique <tag<by_sbd_balance>, composite_key<escrow_object, member < escrow_object, asset<0, 17, 0>,
+        ordered_unique <tag<by_sbd_balance>, composite_key<escrow_object, member < escrow_object, protocol::asset<0, 17, 0>,
                 &escrow_object::sbd_balance>, member<escrow_object, escrow_object::id_type, &escrow_object::id>>,
-        composite_key_compare <std::greater<asset<0, 17, 0>>, std::less<escrow_object::id_type>>
+        composite_key_compare <std::greater<protocol::asset<0, 17, 0>>, std::less<escrow_object::id_type>>
         >
         >,
         allocator <escrow_object>

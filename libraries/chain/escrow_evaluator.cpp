@@ -1,4 +1,5 @@
 #include <steemit/chain/escrow_evaluator.hpp>
+#include <steemit/chain/steem_objects.hpp>
 
 #include <steemit/protocol/asset.hpp>
 

@@ -68,7 +68,7 @@ namespace steemit {
 
         struct reward_fund_context {
             uint128_t recent_claims = 0;
-            asset reward_balance = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> reward_balance = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             share_type steem_awarded = 0;
         };
 
@@ -1009,7 +1009,7 @@ namespace steemit {
 
                 /// save the head block so we can recover its transactions
                 optional<signed_block> head_block = fetch_block_by_id(head_id);
-                STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
+                STEEMIT_ASSERT(head_block.valid(), typename BOOST_IDENTITY_TYPE((exceptions::chain::undo_database::pop_empty_chain<>)), "there are no blocks to pop");
 
                 _fork_db.pop_block();
                 undo();

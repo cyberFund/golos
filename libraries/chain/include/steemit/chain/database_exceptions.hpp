@@ -7,7 +7,7 @@
 {                                                                          \
     signal( __VA_ARGS__ );                                                  \
 }                                                                          \
-            catch( const steemit::chain::plugin_exception& e )                         \
+            catch( const steemit::chain::exceptions::plugin<> &e )                         \
 {                                                                          \
     elog( "Caught plugin exception: ${e}", ("e", e.to_detail_string() ) );  \
     throw;                                                                  \

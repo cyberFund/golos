@@ -20,8 +20,7 @@ namespace steemit {
                 _op_evaluators[OperationType::template tag<typename EvaluatorType::operation_type>::value].reset(new EvaluatorType(_db, args...));
             }
 
-            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-            generic_evaluator<Major, Hardfork, Release, OperationType> &get_evaluator(const OperationType &op) {
+            generic_evaluator<OperationType> &get_evaluator(const OperationType &op) {
                 int i_which = op.which();
                 uint64_t u_which = uint64_t(i_which);
                 if (i_which < 0)

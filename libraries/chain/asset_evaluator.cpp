@@ -132,7 +132,7 @@ namespace steemit {
         void asset_reserve_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = this->db.template get_asset(o.amount_to_reserve.symbol);
-                STEEMIT_ASSERT(!a.is_market_issued(), exceptions::operations::asset_reserve::invalid_on_mia<>,
+                STEEMIT_ASSERT(!a.is_market_issued(), typename BOOST_IDENTITY_TYPE((exceptions::operations::asset_reserve::invalid_on_mia<Major, Hardfork, Release>)),
                                "Cannot reserve ${sym} because it is a market-issued asset", ("sym", a.asset_name));
 
                 from_account = this->db.template find_account(o.payer);
@@ -158,7 +158,7 @@ namespace steemit {
                 FC_ASSERT(this->db.template find_asset(o.asset_name));
                 FC_ASSERT(this->db.template find_asset_dynamic_data(o.asset_name));
 
-                this->db.template adjust_balance(this->db.template get_account(o.from_account), -protocol::asset(o.amount, o.asset_name));
+                this->db.template adjust_balance(this->db.template get_account(o.from_account), -protocol::asset<0, 17, 0>(o.amount, o.asset_name));
 
                 this->db.template modify(this->db.template get_asset_dynamic_data(o.asset_name), [&](asset_dynamic_data_object &data) {
                     data.fee_pool += o.amount;

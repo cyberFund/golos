@@ -2357,7 +2357,7 @@ namespace steemit {
                     reply_message.item_hashes_available = _delegate->get_block_ids(fetch_blockchain_item_ids_message_received.blockchain_synopsis,
                             reply_message.total_remaining_item_count);
                 }
-                catch (const peer_is_on_an_unreachable_fork &) {
+                catch (const exceptions::peer_is_on_an_unreachable_fork<> &) {
                     dlog("Peer is on a fork and there's no set of blocks we can provide to switch them to our fork");
                     // we reply with an empty list as if we had an empty blockchain;
                     // we don't want to disconnect because they may be able to provide
@@ -2529,7 +2529,7 @@ namespace steemit {
                     peer->item_ids_requested_from_peer = boost::make_tuple(blockchain_synopsis, fc::time_point::now());
                     peer->send_message(fetch_blockchain_item_ids_message(_sync_item_type, blockchain_synopsis));
                 }
-                catch (const block_older_than_undo_history &e) {
+                catch (const exceptions::block_older_than_undo_history<> &e) {
                     synopsis_exception = e;
                 }
                 if (synopsis_exception) {
@@ -3119,7 +3119,7 @@ namespace steemit {
 
                     client_accepted_block = true;
                 }
-                catch (const block_older_than_undo_history &e) {
+                catch (const exceptions::block_older_than_undo_history<> &e) {
                     fc_wlog(fc::logger::get("sync"),
                             "p2p failed to push sync block #${block_num} ${block_hash}: block is on a fork older than our undo history would "
                                     "allow us to switch to: ${e}",
@@ -3523,7 +3523,7 @@ namespace steemit {
                 catch (const fc::canceled_exception &) {
                     throw;
                 }
-                catch (const unlinkable_block_exception &e) {
+                catch (const exceptions::unlinkable_block_exception<> &e) {
                     restart_sync_exception = e;
                 }
                 catch (const fc::exception &e) {
