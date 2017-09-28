@@ -152,8 +152,7 @@ namespace steemit {
             static const version version_instance;
         };
 
-        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion> const version static_version<MinorVersion, HardforkVersion, ReleaseVersion>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);
-    }
+        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion> const version static_version<MinorVersion, HardforkVersion, ReleaseVersion>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);      }
 } // steemit::protocol
 
 namespace fc {

@@ -62,9 +62,20 @@ namespace steemit {
     using fc::ecc::range_proof_type;
     using fc::ecc::range_proof_info;
     using fc::ecc::commitment_type;
-    struct void_t {
 
-    };
+    namespace type_traits {
+        template<typename Result>
+        class convertible_to {
+        public:
+            typedef Result converted_type;
+
+            virtual operator Result() = 0;
+        };
+
+        struct void_t {
+
+        };
+    }
 
     namespace protocol {
         enum asset_issuer_permission_flags {
@@ -250,4 +261,4 @@ FC_REFLECT(steemit::protocol::extended_private_key_type::binary_key, (check)(dat
 
 FC_REFLECT_TYPENAME(steemit::protocol::share_type)
 
-FC_REFLECT(steemit::void_t,)
+FC_REFLECT(steemit::type_traits::void_t,)
