@@ -1459,30 +1459,38 @@ namespace steemit {
                         share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) /
                                                  STEEMIT_100_PERCENT).to_uint64();
                         vests_deposited_as_steem += to_deposit;
-                        auto converted_steem =
-                                asset<0, 17, 0>(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
-                        total_steem_converted += converted_steem;
+                        if (has_hardfork(STEEMIT_HARDFORK_0_17)) {
+                            auto converted_steem =
+                                    asset<0, 17, 0>(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                            total_steem_converted += converted_steem;
 
-                        if (to_deposit > 0) {
-                            adjust_balance(to_account, converted_steem);
+                            if (to_deposit > 0) {
+                                adjust_balance(to_account, converted_steem);
 
-                            modify(cprops, [&](dynamic_global_property_object &o) {
-                                o.total_vesting_fund_steem -= converted_steem;
-                                o.total_vesting_shares.amount -= to_deposit;
-                            });
+                                modify(cprops, [&](dynamic_global_property_object &o) {
+                                    o.total_vesting_fund_steem -= converted_steem;
+                                    o.total_vesting_shares.amount -= to_deposit;
+                                });
 
-                            if (has_hardfork(STEEMIT_HARDFORK_0_17)) {
                                 push_virtual_operation(
                                         fill_vesting_withdraw_operation<0, 17, 0>(from_account.name, to_account.name,
-                                                                                  asset<0, 17, 0>(to_deposit,
-                                                                                                  VESTS_SYMBOL),
+                                                                                  {to_deposit, VESTS_SYMBOL},
                                                                                   converted_steem));
-                            } else {
-                                push_virtual_operation(
-                                        fill_vesting_withdraw_operation<0, 16, 0>(from_account.name, to_account.name,
-                                                                                  asset<0, 17, 0>(to_deposit,
-                                                                                                  VESTS_SYMBOL),
-                                                                                  converted_steem));
+                            }
+                        } else {
+                            auto converted_steem =
+                                    asset<0, 16, 0>(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                            total_steem_converted += converted_steem;
+
+                            if (to_deposit > 0) {
+                                adjust_balance(to_account, converted_steem);
+
+                                modify(cprops, [&](dynamic_global_property_object &o) {
+                                    o.total_vesting_fund_steem -= converted_steem;
+                                    o.total_vesting_shares.amount -= to_deposit;
+                                });
+
+                                push_virtual_operation(fill_vesting_withdraw_operation<0, 16, 0>(from_account.name, to_account.name, {to_deposit, VESTS_SYMBOL}, converted_steem));
                             }
                         }
                     }
@@ -1491,34 +1499,61 @@ namespace steemit {
                 share_type to_convert = to_withdraw - vests_deposited_as_steem - vests_deposited_as_vests;
                 FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
 
-                auto converted_steem = asset<0, 17, 0>(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                if (has_hardfork(STEEMIT_HARDFORK_0_17)) {
+                    auto converted_steem = asset<0, 17, 0>(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                    modify(from_account, [&](account_object &a) {
+                        a.vesting_shares.amount -= to_withdraw;
+                        a.withdrawn += to_withdraw;
 
-                modify(from_account, [&](account_object &a) {
-                    a.vesting_shares.amount -= to_withdraw;
-                    a.withdrawn += to_withdraw;
+                        if (a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0) {
+                            a.vesting_withdraw_rate.amount = 0;
+                            a.next_vesting_withdrawal = fc::time_point_sec::maximum();
+                        } else {
+                            a.next_vesting_withdrawal += fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                        }
+                    });
 
-                    if (a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0) {
-                        a.vesting_withdraw_rate.amount = 0;
-                        a.next_vesting_withdrawal = fc::time_point_sec::maximum();
-                    } else {
-                        a.next_vesting_withdrawal += fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
-                    }
-                });
+                    adjust_balance(from_account, converted_steem);
 
-                adjust_balance(from_account, converted_steem);
+                    modify(cprops, [&](dynamic_global_property_object &o) {
+                        o.total_vesting_fund_steem -= converted_steem;
+                        o.total_vesting_shares.amount -= to_convert;
+                    });
+                } else {
+                    auto converted_steem = asset<0, 17, 0>(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                    modify(from_account, [&](account_object &a) {
+                        a.vesting_shares.amount -= to_withdraw;
+                        a.withdrawn += to_withdraw;
 
-                modify(cprops, [&](dynamic_global_property_object &o) {
-                    o.total_vesting_fund_steem -= converted_steem;
-                    o.total_vesting_shares.amount -= to_convert;
-                });
+                        if (a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0) {
+                            a.vesting_withdraw_rate.amount = 0;
+                            a.next_vesting_withdrawal = fc::time_point_sec::maximum();
+                        } else {
+                            a.next_vesting_withdrawal += fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                        }
+                    });
+
+                    adjust_balance(from_account, converted_steem);
+
+                    modify(cprops, [&](dynamic_global_property_object &o) {
+                        o.total_vesting_fund_steem -= converted_steem;
+                        o.total_vesting_shares.amount -= to_convert;
+                    });
+                }
 
                 if (to_withdraw > 0) {
                     adjust_proxied_witness_votes(from_account, -to_withdraw);
                 }
 
-                push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name,
-                                                                       asset<0, 17, 0>(to_withdraw, VESTS_SYMBOL),
-                                                                       converted_steem));
+                if (has_hardfork(STEEMIT_HARDFORK_0_17)) {
+                    push_virtual_operation(
+                            fill_vesting_withdraw_operation<0, 17, 0>(from_account.name, from_account.name,
+                                                                      {to_withdraw, VESTS_SYMBOL}, converted_steem));
+                } else {
+                    push_virtual_operation(
+                            fill_vesting_withdraw_operation<0, 16, 0>(from_account.name, from_account.name,
+                                                                      {to_withdraw, VESTS_SYMBOL}, converted_steem));
+                }
             }
         }
 
@@ -5266,9 +5301,15 @@ namespace steemit {
             }
 
             if (has_hardfork(STEEMIT_HARDFORK_0_17)) {
-                push_virtual_operation(execute_bid_operation<0, 17, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral, bid.inv_swan_price.base.symbol), asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol)));
+                push_virtual_operation(execute_bid_operation<0, 17, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral,
+                                                                                                   bid.inv_swan_price.base.symbol),
+                                                                       asset<0, 17, 0>(debt_covered,
+                                                                                       bid.inv_swan_price.quote.symbol)));
             } else {
-                push_virtual_operation(execute_bid_operation<0, 16, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral, bid.inv_swan_price.base.symbol), asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol)));
+                push_virtual_operation(execute_bid_operation<0, 16, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral,
+                                                                                                   bid.inv_swan_price.base.symbol),
+                                                                       asset<0, 17, 0>(debt_covered,
+                                                                                       bid.inv_swan_price.quote.symbol)));
             }
 
             remove(bid);
