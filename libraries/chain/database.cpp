@@ -1286,11 +1286,11 @@ namespace steemit {
             }
 
             const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
-            asset total_steem(0, STEEM_SYMBOL_NAME);
-            asset total_sbd(0, SBD_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> total_steem(0, STEEM_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> total_sbd(0, SBD_SYMBOL_NAME);
 
-            asset null_account_balance = get_balance(STEEMIT_NULL_ACCOUNT, STEEM_SYMBOL_NAME);
-            asset null_account_sbd_balance = get_balance(STEEMIT_NULL_ACCOUNT, SBD_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> null_account_balance = get_balance(STEEMIT_NULL_ACCOUNT, STEEM_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> null_account_sbd_balance = get_balance(STEEMIT_NULL_ACCOUNT, SBD_SYMBOL_NAME);
 
             if (null_account_balance.amount > 0) {
                 total_steem += null_account_balance;
@@ -1411,7 +1411,7 @@ namespace steemit {
 
                 share_type vests_deposited_as_steem = 0;
                 share_type vests_deposited_as_vests = 0;
-                asset total_steem_converted = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+                protocol::asset<0, 17, 0> total_steem_converted = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
 
                 // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
                 for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_object::id_type()));
@@ -1910,7 +1910,7 @@ namespace steemit {
 
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC == 60 * 60, "this code assumes a 1 hour time interval");
-            asset percent(
+            protocol::asset<0, 17, 0> percent(
                     protocol::calc_percent_reward_per_hour<STEEMIT_LIQUIDITY_APR_PERCENT>(props.virtual_supply.amount),
                     STEEM_SYMBOL_NAME);
             return std::max(percent, STEEMIT_MIN_LIQUIDITY_REWARD);
@@ -1921,7 +1921,7 @@ namespace steemit {
             auto reward = asset<0, 17, 0>(255, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
+                protocol::asset<0, 17, 0> percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
                         props.virtual_supply.amount), STEEM_SYMBOL_NAME);
                 reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
             }
@@ -1934,7 +1934,7 @@ namespace steemit {
             auto reward = asset<0, 17, 0>(85, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
+                protocol::asset<0, 17, 0> percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
                         props.virtual_supply.amount), STEEM_SYMBOL_NAME);
                 reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
             }
@@ -1945,13 +1945,13 @@ namespace steemit {
         asset<0, 17, 0> database::get_producer_reward() {
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
-            asset percent(
+            protocol::asset<0, 17, 0> percent(
                     protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount),
                     STEEM_SYMBOL_NAME);
 
             const auto &witness_account = get_account(props.current_witness);
 
-            asset pay;
+            protocol::asset<0, 17, 0> pay;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
@@ -1986,7 +1986,7 @@ namespace steemit {
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             //            static_assert(STEEMIT_MAX_WITNESSES ==
             //                          21, "this code assumes 21 per round");
-            asset percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.virtual_supply.amount),
+            protocol::asset<0, 17, 0> percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.virtual_supply.amount),
                           STEEM_SYMBOL_NAME);
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
@@ -2091,8 +2091,8 @@ namespace steemit {
                 return;
             }
 
-            asset net_sbd(0, SBD_SYMBOL_NAME);
-            asset net_steem(0, STEEM_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> net_sbd(0, SBD_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> net_steem(0, STEEM_SYMBOL_NAME);
 
             while (itr != request_by_date.end() && itr->conversion_date <= now) {
                 const auto &user = get_account(itr->owner);
@@ -2469,7 +2469,7 @@ namespace steemit {
                     auth.active.weight_threshold = 0;
                 });
 
-                const asset_object &steem_asset = create<asset_object>([&](asset_object &a) {
+                const asset_object &steem_protocol::asset<0, 17, 0> = create<asset_object>([&](asset_object &a) {
                     a.asset_name = STEEM_SYMBOL_NAME;
                     a.options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
                     a.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
@@ -2488,7 +2488,7 @@ namespace steemit {
                     a.current_supply = init_supply;
                 });
 
-                const asset_object &sbd_asset = create<asset_object>([&](asset_object &a) {
+                const asset_object &sbd_protocol::asset<0, 17, 0> = create<asset_object>([&](asset_object &a) {
                     a.asset_name = SBD_SYMBOL_NAME;
                     a.options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
                     a.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
@@ -3257,8 +3257,8 @@ namespace steemit {
             auto order_id = new_order_object.id;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
-                const asset_object &sell_asset = get_asset(new_order_object.amount_for_sale().symbol);
-                const asset_object &receive_asset = get_asset(new_order_object.amount_to_receive().symbol);
+                const asset_object &sell_protocol::asset<0, 17, 0> = get_asset(new_order_object.amount_for_sale().symbol);
+                const asset_object &receive_protocol::asset<0, 17, 0> = get_asset(new_order_object.amount_to_receive().symbol);
 
                 // Possible optimization: We only need to check calls if both are true:
                 //  - The new order is at the front of the book
@@ -3371,7 +3371,7 @@ namespace steemit {
                 //This line once read: assert( old_order_for_sale < new_order_for_sale * match_price );
                 //This assert is not always true -- see trade_amount_equals_zero in operation_tests.cpp
                 //Although new_order_for_sale is greater than old_order_for_sale * match_price, old_order_for_sale == new_order_for_sale * match_price
-                //Removing the assert seems to be safe -- apparently no asset is created or destroyed.
+                //Removing the assert seems to be safe -- apparently no protocol::asset<0, 17, 0> is created or destroyed.
                 new_order_receives = old_order_for_sale;
                 old_order_receives = old_order_for_sale * match_price;
             }
@@ -3453,7 +3453,7 @@ namespace steemit {
                 FC_ASSERT(pays.symbol != receives.symbol);
 
                 const account_object &seller = get_account(order.seller);
-                const asset_object &recv_asset = get_asset(receives.symbol);
+                const asset_object &recv_protocol::asset<0, 17, 0> = get_asset(receives.symbol);
 
                 auto issuer_fees = pay_market_fees(recv_asset, receives);
                 pay_order(seller, receives - issuer_fees, pays);
@@ -3582,7 +3582,7 @@ namespace steemit {
                     return false;
                 }
 
-                const asset_bitasset_data_object &bitasset = get_asset_bitasset_data(mia.asset_name);
+                const asset_bitasset_data_object &bitprotocol::asset<0, 17, 0> = get_asset_bitasset_data(mia.asset_name);
                 if (bitasset.is_prediction_market) {
                     return false;
                 }
@@ -3618,7 +3618,7 @@ namespace steemit {
                 while (!check_for_blackswan(mia, enable_black_swan) && call_itr != call_end) {
                     bool filled_call = false;
                     price match_price;
-                    asset usd_for_sale;
+                    protocol::asset<0, 17, 0> usd_for_sale;
                     if (limit_itr != limit_end) {
                         assert(limit_itr != limit_price_index.end());
                         match_price = limit_itr->sell_price;
@@ -3652,7 +3652,7 @@ namespace steemit {
                         return true;
                     }
 
-                    asset call_pays, call_receives, order_pays, order_receives;
+                    protocol::asset<0, 17, 0> call_pays, call_receives, order_pays, order_receives;
                     if (usd_to_buy >= usd_for_sale) {  // fill order
                         call_receives = usd_for_sale;
                         order_receives = usd_for_sale * match_price;
@@ -3700,11 +3700,11 @@ namespace steemit {
                 edump( (mia.symbol)(settlement_price) );
                 */
 
-                const asset_bitasset_data_object &bitasset = get_asset_bitasset_data(mia.asset_name);
+                const asset_bitasset_data_object &bitprotocol::asset<0, 17, 0> = get_asset_bitasset_data(mia.asset_name);
                 FC_ASSERT(!bitasset.has_settlement(), "black swan already occurred, it should not happen again");
 
-                const asset_object &backing_asset = get_asset(bitasset.options.short_backing_asset);
-                asset collateral_gathered = backing_asset.amount(0);
+                const asset_object &backing_protocol::asset<0, 17, 0> = get_asset(bitasset.options.short_backing_asset);
+                protocol::asset<0, 17, 0> collateral_gathered = backing_asset.amount(0);
 
                 const asset_dynamic_data_object &mia_dyn = get_asset_dynamic_data(mia.asset_name);
                 auto original_mia_supply = mia_dyn.current_supply;
@@ -3770,7 +3770,7 @@ namespace steemit {
             fc::uint128 a(trade_amount.amount.value);
             a *= trade_asset.options.market_fee_percent;
             a /= STEEMIT_100_PERCENT;
-            asset percent_fee = trade_asset.amount(a.to_uint64());
+            protocol::asset<0, 17, 0> percent_fee = trade_asset.amount(a.to_uint64());
 
             if (percent_fee.amount > trade_asset.options.max_market_fee) {
                 percent_fee.amount = trade_asset.options.max_market_fee;
@@ -3874,7 +3874,7 @@ namespace steemit {
                 return false;
             }
 
-            const asset_bitasset_data_object &bitasset = get_asset_bitasset_data(mia.asset_name);
+            const asset_bitasset_data_object &bitprotocol::asset<0, 17, 0> = get_asset_bitasset_data(mia.asset_name);
             if (bitasset.has_settlement()) {
                 return true;
             } // already force settled
@@ -3986,11 +3986,11 @@ namespace steemit {
                 //Process expired force settlement orders
                 auto &settlement_index = get_index<force_settlement_index>().indices().get<by_expiration>();
                 if (!settlement_index.empty()) {
-                    asset_name_type current_asset = settlement_index.begin()->balance.symbol;
-                    asset max_settlement_volume;
+                    asset_name_type current_protocol::asset<0, 17, 0> = settlement_index.begin()->balance.symbol;
+                    protocol::asset<0, 17, 0> max_settlement_volume;
                     bool extra_dump = false;
 
-                    auto next_asset = [&current_asset, &settlement_index, &extra_dump] {
+                    auto next_protocol::asset<0, 17, 0> = [&current_asset, &settlement_index, &extra_dump] {
                         auto bound = settlement_index.upper_bound(current_asset);
                         if (bound == settlement_index.end()) {
                             if (extra_dump) {
@@ -3999,9 +3999,9 @@ namespace steemit {
                             return false;
                         }
                         if (extra_dump) {
-                            ilog("next_asset returning true, bound is ${b}", ("b", *bound));
+                            ilog("next_protocol::asset<0, 17, 0> returning true, bound is ${b}", ("b", *bound));
                         }
-                        current_asset = bound->balance.symbol;
+                        current_protocol::asset<0, 17, 0> = bound->balance.symbol;
                         return true;
                     };
 
@@ -4013,7 +4013,7 @@ namespace steemit {
                         ++count;
                         const force_settlement_object &order = *itr;
                         auto order_id = order.settlement_id;
-                        current_asset = order.balance.symbol;
+                        current_protocol::asset<0, 17, 0> = order.balance.symbol;
                         const asset_object &mia_object = get_asset(current_asset);
                         const asset_bitasset_data_object &mia = get_asset_bitasset_data(mia_object.asset_name);
 
@@ -4021,7 +4021,7 @@ namespace steemit {
 
                         if (extra_dump) {
                             wlog("clear_expired_orders() dumping extra data for iteration ${c}", ("c", count));
-                            ilog("head_block_num is ${hb} current_asset is ${a}",
+                            ilog("head_block_num is ${hb} current_protocol::asset<0, 17, 0> is ${a}",
                                  ("hb", head_block_num())("a", current_asset));
                         }
 
@@ -4077,16 +4077,16 @@ namespace steemit {
                         price settlement_price = pays / receives;
 
                         auto &call_index = get_index<call_order_index>().indices().get<by_collateral>();
-                        asset settled = mia_object.amount(mia.force_settled_volume);
+                        protocol::asset<0, 17, 0> settled = mia_object.amount(mia.force_settled_volume);
                         // Match against the least collateralized short until the settlement is finished or we reach max settlements
                         while (settled < max_settlement_volume &&
                                find<force_settlement_object, by_account>(boost::make_tuple(order.owner, order_id))) {
                             auto itr = call_index.lower_bound(boost::make_tuple(price::min(
                                     get_asset_bitasset_data(mia_object.asset_name).options.short_backing_asset,
                                     mia_object.asset_name)));
-                            // There should always be a call order, since asset exists!
+                            // There should always be a call order, since protocol::asset<0, 17, 0> exists!
                             assert(itr != call_index.end() && itr->debt_type() == mia_object.asset_name);
-                            asset max_settlement = max_settlement_volume - settled;
+                            protocol::asset<0, 17, 0> max_settlement = max_settlement_volume - settled;
 
                             if (order.balance.amount == 0) {
                                 wlog("0 settlement detected");
@@ -4193,7 +4193,7 @@ namespace steemit {
                         auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
                         interest *= get_dynamic_global_properties().sbd_interest_rate;
                         interest /= STEEMIT_100_PERCENT;
-                        asset interest_paid(interest.to_uint64(), SBD_SYMBOL_NAME);
+                        protocol::asset<0, 17, 0> interest_paid(interest.to_uint64(), SBD_SYMBOL_NAME);
                         b.balance += interest_paid.amount;
 
                         //TODO Backward compatibility only
@@ -4235,7 +4235,7 @@ namespace steemit {
                             auto interest = acnt.savings_sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
                             interest *= get_dynamic_global_properties().sbd_interest_rate;
                             interest /= STEEMIT_100_PERCENT;
-                            asset interest_paid(interest.to_uint64(), SBD_SYMBOL_NAME);
+                            protocol::asset<0, 17, 0> interest_paid(interest.to_uint64(), SBD_SYMBOL_NAME);
                             acnt.savings_sbd_balance += interest_paid;
                             acnt.savings_sbd_seconds = 0;
                             acnt.savings_sbd_last_interest_payment = head_block_time();
@@ -4266,7 +4266,7 @@ namespace steemit {
 
             modify(props, [&](dynamic_global_property_object &props) {
                 if (delta.symbol == STEEM_SYMBOL_NAME) {
-                    asset new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, STEEM_SYMBOL_NAME);
+                    protocol::asset<0, 17, 0> new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, STEEM_SYMBOL_NAME);
                     props.current_supply += delta + new_vesting;
                     props.virtual_supply += delta + new_vesting;
                     props.total_vesting_fund_steem += new_vesting;
@@ -4705,9 +4705,9 @@ namespace steemit {
         void database::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
-                asset total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
-                asset total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
-                asset total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
+                protocol::asset<0, 17, 0> total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+                protocol::asset<0, 17, 0> total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
+                protocol::asset<0, 17, 0> total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
                 auto gpo = get_dynamic_global_properties();
@@ -5074,7 +5074,7 @@ namespace steemit {
             auto itr = start;
             while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol == to_revive_id) {
                 const collateral_bid_object &bid = *itr;
-                asset total_collateral = bid.inv_swan_price.quote * bad.settlement_price;
+                protocol::asset<0, 17, 0> total_collateral = bid.inv_swan_price.quote * bad.settlement_price;
                 total_collateral += bid.inv_swan_price.base;
                 price call_price = price::call_price(bid.inv_swan_price.quote, total_collateral,
                                                      bad.current_feed.maintenance_collateral_ratio);
