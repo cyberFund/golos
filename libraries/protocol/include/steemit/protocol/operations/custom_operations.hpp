@@ -90,10 +90,10 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_operation)), (required_auths)(id)(data))
+FC_REFLECT((steemit::protocol::custom_operation)), (required_auths)(id)(data))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_json_operation)), (required_auths)(required_posting_auths)(id)(json))
+FC_REFLECT((steemit::protocol::custom_json_operation)), (required_auths)(required_posting_auths)(id)(json))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::custom_binary_operation)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+FC_REFLECT((steemit::protocol::custom_binary_operation)), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
 
 #endif //GOLOS_CUSTOM_OPERATIONS_HPP

@@ -451,10 +451,10 @@ namespace steemit {
     }
 } // steemit::protocol
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_claim_fees_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_claim_fees_operation<0, 17, 0>)),
            (issuer)(amount_to_claim)(extensions))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_options<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_options<0, 17, 0>)),
            (max_supply)(market_fee_percent)(max_market_fee)(issuer_permissions)(flags)(core_exchange_rate)(
                    whitelist_authorities)(blacklist_authorities)(whitelist_markets)(blacklist_markets)(description)(
                    extensions))
@@ -463,26 +463,26 @@ FC_REFLECT(steemit::protocol::bitasset_options,
            (feed_lifetime_sec)(minimum_feeds)(force_settlement_delay_sec)(force_settlement_offset_percent)(
                    maximum_force_settlement_volume)(short_backing_asset)(extensions))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_create_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_create_operation<0, 17, 0>)),
            (issuer)(asset_name)(precision)(common_options)(bitasset_opts)(is_prediction_market)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_update_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_update_operation<0, 17, 0>)),
            (issuer)(asset_to_update)(new_issuer)(new_options)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_update_bitasset_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_update_bitasset_operation<0, 17, 0>)),
            (issuer)(asset_to_update)(new_options)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_update_feed_producers_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_update_feed_producers_operation<0, 17, 0>)),
            (issuer)(asset_to_update)(new_feed_producers)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_publish_feed_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_publish_feed_operation<0, 17, 0>)),
            (publisher)(asset_name)(feed)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_settle_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_settle_operation<0, 17, 0>)),
            (account)(amount)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_force_settle_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_force_settle_operation<0, 17, 0>)),
            (account)(amount)(settlement_id)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_global_settle_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_global_settle_operation<0, 17, 0>)),
            (issuer)(asset_to_settle)(settle_price)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_issue_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_issue_operation<0, 17, 0>)),
            (issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_reserve_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_reserve_operation<0, 17, 0>)),
            (payer)(amount_to_reserve)(extensions))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_fund_fee_pool_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::asset_fund_fee_pool_operation<0, 17, 0>)),
            (from_account)(asset_name)(amount)(extensions));

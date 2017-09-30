@@ -118,26 +118,26 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::comment_operation<0, 16, 0>),
            (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::comment_operation<0, 17, 0>),
            (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::delete_comment_operation<0, 16, 0>)), (author)(permlink));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::delete_comment_operation<0, 17, 0>)), (author)(permlink));
+FC_REFLECT((steemit::protocol::delete_comment_operation<0, 16, 0>), (author)(permlink));
+FC_REFLECT((steemit::protocol::delete_comment_operation<0, 17, 0>), (author)(permlink));
 
-FC_REFLECT(steemit::protocol::beneficiary_route_type, (account)(weight))
-FC_REFLECT(steemit::protocol::comment_payout_beneficiaries, (beneficiaries))
+FC_REFLECT((steemit::protocol::beneficiary_route_type), (account)(weight))
+FC_REFLECT((steemit::protocol::comment_payout_beneficiaries), (beneficiaries))
 
-FC_REFLECT_TYPENAME(steemit::protocol::comment_options_extension)
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_options_operation<0, 16, 0>)),
+FC_REFLECT_TYPENAME((steemit::protocol::comment_options_extension))
+FC_REFLECT((steemit::protocol::comment_options_operation<0, 16, 0>),
            (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(
                    extensions))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_options_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::comment_options_operation<0, 17, 0>),
            (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(
                    extensions))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::comment_payout_extension_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::comment_payout_extension_operation<0, 17, 0>),
            (payer)(author)(permlink)(extension_time)(amount));
 
 #endif //GOLOS_COMMENT_OPERATIONS_HPP

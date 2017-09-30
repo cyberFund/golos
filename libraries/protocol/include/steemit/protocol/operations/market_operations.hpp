@@ -168,22 +168,22 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::convert_operation<0, 16, 0>)), (owner)(request_id)(amount));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::convert_operation<0, 17, 0>)), (owner)(request_id)(amount));
+FC_REFLECT((steemit::protocol::convert_operation<0, 16, 0>)), (owner)(request_id)(amount));
+FC_REFLECT((steemit::protocol::convert_operation<0, 17, 0>)), (owner)(request_id)(amount));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::limit_order_create_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::limit_order_create_operation<0, 16, 0>)),
                    (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::limit_order_create_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::limit_order_create_operation<0, 17, 0>)),
            (owner)(order_id)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::limit_order_create2_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::limit_order_create2_operation<0, 16, 0>)),
            (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::limit_order_create2_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::limit_order_create2_operation<0, 17, 0>)),
            (owner)(order_id)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::limit_order_cancel_operation<0, 16, 0>)), (owner)(order_id))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::limit_order_cancel_operation<0, 17, 0>)), (owner)(order_id))
+FC_REFLECT((steemit::protocol::limit_order_cancel_operation<0, 16, 0>)), (owner)(order_id))
+FC_REFLECT((steemit::protocol::limit_order_cancel_operation<0, 17, 0>)), (owner)(order_id))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::call_order_update_operation<0, 17, 0>)), (funding_account)(delta_collateral)(delta_debt))
+FC_REFLECT((steemit::protocol::call_order_update_operation<0, 17, 0>)), (funding_account)(delta_collateral)(delta_debt))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::bid_collateral_operation<0, 17, 0>)), (bidder)(additional_collateral)(debt_covered)(extensions))
+FC_REFLECT((steemit::protocol::bid_collateral_operation<0, 17, 0>)), (bidder)(additional_collateral)(debt_covered)(extensions))

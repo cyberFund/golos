@@ -106,5 +106,5 @@ namespace steemit {
     }
 } //steemit::chain
 
-FC_REFLECT_TYPENAME(steemit::chain::shared_authority::account_authority_map)
-FC_REFLECT(steemit::chain::shared_authority, (weight_threshold)(account_auths)(key_auths))
+FC_REFLECT_TYPENAME((steemit::chain::shared_authority::account_authority_map))
+FC_REFLECT((steemit::chain::shared_authority), (weight_threshold)(account_auths)(key_auths))

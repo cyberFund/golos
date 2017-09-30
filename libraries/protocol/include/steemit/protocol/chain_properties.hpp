@@ -39,7 +39,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::chain_properties<0, 16, 0>)), (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::chain_properties<0, 17, 0>)), (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
+FC_REFLECT((steemit::protocol::chain_properties<0, 16, 0>), (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
+FC_REFLECT((steemit::protocol::chain_properties<0, 17, 0>), (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
 
 #endif //GOLOS_CHAIN_PROPERTIES_HPP

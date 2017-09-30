@@ -437,26 +437,23 @@ namespace fc {
     }
 }
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
-                steemit::protocol::share_type>)), (amount)(symbol))
+FC_REFLECT((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
+                steemit::protocol::share_type>), (amount)(symbol))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
-                steemit::protocol::share_type>)), (amount)(symbol))
+FC_REFLECT((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
+                steemit::protocol::share_type>), (amount)(symbol))
 
-//FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::type_traits::convertible_to<steemit::protocol::asset<0, 16, 0>>)), )
-//FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::type_traits::convertible_to<steemit::protocol::asset<0, 17, 0>>)), )
-
-FC_REFLECT_DERIVED(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 16, 0>)), (typename BOOST_IDENTITY_TYPE(
+FC_REFLECT_DERIVED((steemit::protocol::asset<0, 16, 0>), (
         (steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
-                steemit::protocol::share_type>))),)
-FC_REFLECT_DERIVED(typename BOOST_IDENTITY_TYPE((steemit::protocol::asset<0, 17, 0>)), (typename BOOST_IDENTITY_TYPE(
+                steemit::protocol::share_type>))((steemit::type_traits::convertible_to<steemit::protocol::asset<0, 17, 0>>)),)
+FC_REFLECT_DERIVED((steemit::protocol::asset<0, 17, 0>), (
         (steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
-                steemit::protocol::share_type>))), (decimals))
+                steemit::protocol::share_type>)((steemit::type_traits::convertible_to<steemit::protocol::asset<0, 16, 0>>)), (decimals))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price<0, 16, 0>)), (base)(quote))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price<0, 17, 0>)), (base)(quote))
+FC_REFLECT((steemit::protocol::price<0, 16, 0>), (base)(quote))
+FC_REFLECT((steemit::protocol::price<0, 17, 0>), (base)(quote))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price_feed<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::price_feed<0, 16, 0>),
            (settlement_price)(maintenance_collateral_ratio)(maximum_short_squeeze_ratio)(core_exchange_rate))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::price_feed<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::price_feed<0, 17, 0>),
            (settlement_price)(maintenance_collateral_ratio)(maximum_short_squeeze_ratio)(core_exchange_rate))

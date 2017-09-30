@@ -498,17 +498,17 @@ namespace steemit {
 } // steemit::protocol
 
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::reset_account_operation<0, 16, 0>)), (reset_account)(account_to_reset)(new_owner_authority))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::reset_account_operation<0, 17, 0>)), (reset_account)(account_to_reset)(new_owner_authority))
+FC_REFLECT((steemit::protocol::reset_account_operation<0, 16, 0>)), (reset_account)(account_to_reset)(new_owner_authority))
+FC_REFLECT((steemit::protocol::reset_account_operation<0, 17, 0>)), (reset_account)(account_to_reset)(new_owner_authority))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_reset_account_operation<0, 16, 0>)), (account)(current_reset_account)(reset_account))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_reset_account_operation<0, 17, 0>)), (account)(current_reset_account)(reset_account))
+FC_REFLECT((steemit::protocol::set_reset_account_operation<0, 16, 0>)), (account)(current_reset_account)(reset_account))
+FC_REFLECT((steemit::protocol::set_reset_account_operation<0, 17, 0>)), (account)(current_reset_account)(reset_account))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::report_over_production_operation<0, 16, 0>)), (reporter)(first_block)(second_block))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::report_over_production_operation<0, 17, 0>)), (reporter)(first_block)(second_block))
+FC_REFLECT((steemit::protocol::report_over_production_operation<0, 16, 0>)), (reporter)(first_block)(second_block))
+FC_REFLECT((steemit::protocol::report_over_production_operation<0, 17, 0>)), (reporter)(first_block)(second_block))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::feed_publish_operation<0, 16, 0>)), (publisher)(exchange_rate))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::feed_publish_operation<0, 17, 0>)), (publisher)(exchange_rate))
+FC_REFLECT((steemit::protocol::feed_publish_operation<0, 16, 0>)), (publisher)(exchange_rate))
+FC_REFLECT((steemit::protocol::feed_publish_operation<0, 17, 0>)), (publisher)(exchange_rate))
 
 FC_REFLECT(steemit::protocol::pow, (worker)(input)(signature)(work))
 FC_REFLECT(steemit::protocol::pow2, (input)(pow_summary))
@@ -516,46 +516,46 @@ FC_REFLECT(steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce))
 FC_REFLECT(steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary))
 
 FC_REFLECT_TYPENAME(steemit::protocol::pow2_work)
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow_operation<0, 16, 0>)), (worker_account)(block_id)(nonce)(work)(props))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow_operation<0, 17, 0>)), (worker_account)(block_id)(nonce)(work)(props))
+FC_REFLECT((steemit::protocol::pow_operation<0, 16, 0>)), (worker_account)(block_id)(nonce)(work)(props))
+FC_REFLECT((steemit::protocol::pow_operation<0, 17, 0>)), (worker_account)(block_id)(nonce)(work)(props))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow2_operation<0, 16, 0>)), (work)(new_owner_key)(props))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::pow2_operation<0, 17, 0>)), (work)(new_owner_key)(props))
+FC_REFLECT((steemit::protocol::pow2_operation<0, 16, 0>)), (work)(new_owner_key)(props))
+FC_REFLECT((steemit::protocol::pow2_operation<0, 17, 0>)), (work)(new_owner_key)(props))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::withdraw_vesting_operation<0, 16, 0>)), (account)(vesting_shares))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::withdraw_vesting_operation<0, 17, 0>)), (account)(vesting_shares))
+FC_REFLECT((steemit::protocol::withdraw_vesting_operation<0, 16, 0>)), (account)(vesting_shares))
+FC_REFLECT((steemit::protocol::withdraw_vesting_operation<0, 17, 0>)), (account)(vesting_shares))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_withdraw_vesting_route_operation<0, 16, 0>)), (from_account)(to_account)(percent)(auto_vest))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::set_withdraw_vesting_route_operation<0, 17, 0>)), (from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT((steemit::protocol::set_withdraw_vesting_route_operation<0, 16, 0>)), (from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT((steemit::protocol::set_withdraw_vesting_route_operation<0, 17, 0>)), (from_account)(to_account)(percent)(auto_vest))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::witness_update_operation<0, 16, 0>)), (owner)(url)(block_signing_key)(props)(fee))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::witness_update_operation<0, 17, 0>)), (owner)(url)(block_signing_key)(props)(fee))
+FC_REFLECT((steemit::protocol::witness_update_operation<0, 16, 0>)), (owner)(url)(block_signing_key)(props)(fee))
+FC_REFLECT((steemit::protocol::witness_update_operation<0, 17, 0>)), (owner)(url)(block_signing_key)(props)(fee))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_vote_operation<0, 16, 0>)), (account)(witness)(approve))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_vote_operation<0, 17, 0>)), (account)(witness)(approve))
+FC_REFLECT((steemit::protocol::account_witness_vote_operation<0, 16, 0>)), (account)(witness)(approve))
+FC_REFLECT((steemit::protocol::account_witness_vote_operation<0, 17, 0>)), (account)(witness)(approve))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_proxy_operation<0, 16, 0>)), (account)(proxy))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::account_witness_proxy_operation<0, 17, 0>)), (account)(proxy))
+FC_REFLECT((steemit::protocol::account_witness_proxy_operation<0, 16, 0>)), (account)(proxy))
+FC_REFLECT((steemit::protocol::account_witness_proxy_operation<0, 17, 0>)), (account)(proxy))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 16, 0>)), (voter)(author)(permlink)(weight))
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::vote_operation<0, 17, 0>)), (voter)(author)(permlink)(weight))
+FC_REFLECT((steemit::protocol::vote_operation<0, 16, 0>)), (voter)(author)(permlink)(weight))
+FC_REFLECT((steemit::protocol::vote_operation<0, 17, 0>)), (voter)(author)(permlink)(weight))
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 16, 0>)), (challenger)(challenged)(require_owner));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::challenge_authority_operation<0, 17, 0>)), (challenger)(challenged)(require_owner));
+FC_REFLECT((steemit::protocol::challenge_authority_operation<0, 16, 0>)), (challenger)(challenged)(require_owner));
+FC_REFLECT((steemit::protocol::challenge_authority_operation<0, 17, 0>)), (challenger)(challenged)(require_owner));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::prove_authority_operation<0, 16, 0>)), (challenged)(require_owner));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::prove_authority_operation<0, 17, 0>)), (challenged)(require_owner));
+FC_REFLECT((steemit::protocol::prove_authority_operation<0, 16, 0>)), (challenged)(require_owner));
+FC_REFLECT((steemit::protocol::prove_authority_operation<0, 17, 0>)), (challenged)(require_owner));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::request_account_recovery_operation<0, 16, 0>)), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::request_account_recovery_operation<0, 17, 0>)), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+FC_REFLECT((steemit::protocol::request_account_recovery_operation<0, 16, 0>)), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+FC_REFLECT((steemit::protocol::request_account_recovery_operation<0, 17, 0>)), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::recover_account_operation<0, 16, 0>)), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::recover_account_operation<0, 17, 0>)), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT((steemit::protocol::recover_account_operation<0, 16, 0>)), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT((steemit::protocol::recover_account_operation<0, 17, 0>)), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::change_recovery_account_operation<0, 16, 0>)), (account_to_recover)(new_recovery_account)(extensions));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::change_recovery_account_operation<0, 17, 0>)), (account_to_recover)(new_recovery_account)(extensions));
+FC_REFLECT((steemit::protocol::change_recovery_account_operation<0, 16, 0>)), (account_to_recover)(new_recovery_account)(extensions));
+FC_REFLECT((steemit::protocol::change_recovery_account_operation<0, 17, 0>)), (account_to_recover)(new_recovery_account)(extensions));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::decline_voting_rights_operation<0, 16, 0>)), (account)(decline));
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::decline_voting_rights_operation<0, 17, 0>)), (account)(decline));
+FC_REFLECT((steemit::protocol::decline_voting_rights_operation<0, 16, 0>)), (account)(decline));
+FC_REFLECT((steemit::protocol::decline_voting_rights_operation<0, 17, 0>)), (account)(decline));
 
-FC_REFLECT(typename BOOST_IDENTITY_TYPE((steemit::protocol::delegate_vesting_shares_operation<0, 17, 0>)), (delegator)(delegatee)(vesting_shares));
+FC_REFLECT((steemit::protocol::delegate_vesting_shares_operation<0, 17, 0>)), (delegator)(delegatee)(vesting_shares));
