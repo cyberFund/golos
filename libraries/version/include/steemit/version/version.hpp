@@ -170,6 +170,6 @@ namespace fc {
 #include <fc/reflect/reflect.hpp>
 
 FC_REFLECT((steemit::protocol::version), (v_num))
-FC_REFLECT_DERIVED((steemit::protocol::hardfork_version), (steemit::protocol::version),)
+FC_REFLECT_DERIVED((steemit::protocol::hardfork_version), ((steemit::protocol::version)),)
 
 FC_REFLECT((steemit::protocol::hardfork_version_vote), (hf_version)(hf_time))
