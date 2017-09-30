@@ -497,8 +497,8 @@ namespace steemit {
                             "Track blockchain statistics by grouping orders into buckets of equal size measured in seconds specified as a JSON array of numbers")
                     ("chain-stats-history-per-bucket", boost::program_options::value<uint32_t>()->default_value(100),
                             "How far back in time to track history for each bucket size, measured in the number of buckets (default: 100)")
-                    ("chain-stats-recipient-ip", boost::program_options::value<std::vector<std::string>>()->multitoken()->
-                            zero_tokens()->composing(), "IP adresses of recipients");
+                    ("statsd-endpoints", boost::program_options::value<std::vector<std::string>>()->multitoken()->
+                            zero_tokens()->composing(), "IP:PORT of statsd agregators. Default port is 8125");
             cfg.add(cli);
         }
 
@@ -508,8 +508,8 @@ namespace steemit {
 
                 uint32_t data_recipient_default_port;
 
-                if (options.count("data_recipient_default_port")) {
-                    data_recipient_default_port = options["data_recipient_default_port"].as<uint32_t>();
+                if (options.count("statsd_port")) {
+                    data_recipient_default_port = options["statsd_port"].as<uint32_t>();
                 }            
 
                 _my->stat_sender = std::shared_ptr<stat_client>(new stat_client(data_recipient_default_port));
@@ -531,8 +531,8 @@ namespace steemit {
                 if (options.count("chain-stats-history-per-bucket")) {
                     _my->_maximum_history_per_bucket_size = options["chain-stats-history-per-bucket"].as<uint32_t>();
                 }
-                if (options.count("chain-stats-recipient-ip")) {
-                    for (auto it: options["chain-stats-recipient-ip"].as<std::vector<std::string>>()) {
+                if (options.count("statsd-endpoints")) {
+                    for (auto it: options["statsd-endpoints"].as<std::vector<std::string>>()) {
                         _my->stat_sender->add_address(it);
                     }
                 }
