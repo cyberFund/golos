@@ -50,7 +50,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        uint8_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::decimals() const {
+        uint8_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::get_decimals() const {
             auto a = (const char *) &this->symbol;
             uint8_t result = uint8_t(a[0]);
             FC_ASSERT(result < 15);
@@ -77,7 +77,7 @@ namespace steemit {
             static int64_t table[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000ll, 1000000000ll,
                                       10000000000ll, 100000000000ll, 1000000000000ll, 10000000000000ll,
                                       100000000000000ll};
-            uint8_t d = decimals();
+            uint8_t d = get_decimals();
             return table[d];
         }
 

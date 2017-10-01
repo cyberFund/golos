@@ -47,7 +47,7 @@ namespace steemit {
                 return double(this->amount.value) / precision();
             }
 
-            uint8_t decimals() const;
+            uint8_t get_decimals() const;
 
             asset_name_type symbol_name() const;
 
@@ -72,7 +72,7 @@ namespace steemit {
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return {-this->amount, this->symbol};
+                return asset<Major, Hardfork, Release>(-this->amount, this->symbol);
             }
 
             friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
@@ -103,13 +103,13 @@ namespace steemit {
             friend asset<Major, Hardfork, Release> operator-(const asset<Major, Hardfork, Release> &a,
                                                              const asset<Major, Hardfork, Release> &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return {a.amount - b.amount, a.symbol};
+                return asset<Major, Hardfork, Release>(a.amount - b.amount, a.symbol);
             }
 
             friend asset<Major, Hardfork, Release> operator+(const asset<Major, Hardfork, Release> &a,
                                                              const asset<Major, Hardfork, Release> &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return {a.amount + b.amount, a.symbol};
+                return asset<Major, Hardfork, Release>(a.amount + b.amount, a.symbol);
             }
 
             static share_type scaled_precision(uint8_t precision) {
@@ -154,7 +154,7 @@ namespace steemit {
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return {-this->amount, this->symbol};
+                return asset<Major, Hardfork, Release>(-this->amount, this->symbol);
             }
 
             friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
@@ -185,13 +185,13 @@ namespace steemit {
             friend asset<Major, Hardfork, Release> operator-(const asset<Major, Hardfork, Release> &a,
                                                              const asset<Major, Hardfork, Release> &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return {a.amount - b.amount, a.symbol};
+                return asset<Major, Hardfork, Release>(a.amount - b.amount, a.symbol);
             }
 
             friend asset<Major, Hardfork, Release> operator+(const asset<Major, Hardfork, Release> &a,
                                                              const asset<Major, Hardfork, Release> &b) {
                 FC_ASSERT(a.symbol == b.symbol);
-                return {a.amount + b.amount, a.symbol};
+                return asset<Major, Hardfork, Release>(a.amount + b.amount, a.symbol);
             }
 
             static share_type scaled_precision(uint8_t precision) {
@@ -202,8 +202,8 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct price : public static_version<Major, Hardfork, Release> {
-            price(const asset<Major, Hardfork, Release> &base = {0, STEEM_SYMBOL_NAME},
-                  const asset<Major, Hardfork, Release> &quote = {0, STEEM_SYMBOL_NAME}) : base(base), quote(quote) {
+            price(const asset<Major, Hardfork, Release> &base = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME),
+                  const asset<Major, Hardfork, Release> &quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME)) : base(base), quote(quote) {
             }
 
             asset<Major, Hardfork, Release> base;
@@ -268,12 +268,12 @@ namespace steemit {
                 FC_ASSERT(b.base.amount.value > 0);
                 uint128_t result = (uint128_t(a.amount.value) * b.quote.amount.value) / b.base.amount.value;
                 FC_ASSERT(result.hi == 0);
-                return {result.to_uint64(), b.quote.symbol};
+                return asset<Major, Hardfork, Release>(result.to_uint64(), b.quote.symbol);
             } else if (a.symbol == b.quote.symbol) {
                 FC_ASSERT(b.quote.amount.value > 0);
                 uint128_t result = (uint128_t(a.amount.value) * b.base.amount.value) / b.quote.amount.value;
                 FC_ASSERT(result.hi == 0);
-                return {result.to_uint64(), b.base.symbol};
+                return asset<Major, Hardfork, Release>(result.to_uint64(), b.base.symbol);
             }
             FC_THROW_EXCEPTION(fc::assert_exception, "invalid asset * price", ("asset", a)("price", b));
         }
@@ -283,7 +283,7 @@ namespace steemit {
                                                   const asset<Major, Hardfork, Release> &quote) {
             try {
                 FC_ASSERT(base.symbol != quote.symbol);
-                return {base, quote};
+                return price<Major, Hardfork, Release>(base, quote);
             } FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
