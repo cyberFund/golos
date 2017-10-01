@@ -435,8 +435,6 @@ FC_REFLECT((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asse
 FC_REFLECT((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
         steemit::protocol::share_type>), (amount)(symbol))
 
-FC_REFLECT_TEMPLATE((typename T), (steemit::type_traits::convertible_to<T>),);
-
 FC_REFLECT_DERIVED((steemit::protocol::asset<0, 16, 0>),
                    ((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
                            steemit::protocol::share_type>)),)
