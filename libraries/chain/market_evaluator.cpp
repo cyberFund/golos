@@ -169,13 +169,13 @@ namespace steemit {
 
                 try {
                     const auto &seller_stats = this->db.template get_account_statistics(seller->name);
-                    this->db.template .modify(seller_stats, [&](account_statistics_object &bal) {
+                    this->db.template modify(seller_stats, [&](account_statistics_object &bal) {
                         if (op.amount_to_sell.symbol == STEEM_SYMBOL_NAME) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
 
-                    this->db.template .adjust_balance(this->db.template .get_account(op.owner), -op.amount_to_sell);
+                    this->db.template adjust_balance(this->db.template get_account(op.owner), -op.amount_to_sell);
 
                     bool filled = this->db.template apply_order(this->db.template create<limit_order_object>([&](limit_order_object &obj) {
                         obj.created = this->db.template head_block_time();
@@ -227,15 +227,11 @@ namespace steemit {
         void limit_order_cancel_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    database &d = this->db.template ;
-
                     _order = this->db.template find_limit_order(op.owner, op.order_id);
                     FC_ASSERT(_order->seller == op.owner);
                 } FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    database &d = this->db.template ;
-
                     auto base_asset = _order->sell_price.base.symbol;
                     auto quote_asset = _order->sell_price.quote.symbol;
 
@@ -285,13 +281,12 @@ namespace steemit {
                     FC_ASSERT(
                             this->db.template get_balance(*_paying_account, this->db.template get_asset(_bitasset_data->options.short_backing_asset)) >=
                             op.delta_collateral, "Cannot increase collateral by ${c} when payer only has ${b}",
-                            ("c", op.delta_collateral.amount)("b", this->db.template get_balance(*_paying_account, this->db.template get_asset(
-                                    op.delta_collateral.symbol)).amount));
+                            ("c", op.delta_collateral.amount)("b", this->db.template get_balance(*_paying_account, this->db.template get_asset(op.delta_collateral.symbol)).amount));
                 }
             } FC_CAPTURE_AND_RETHROW((op))
 
             try {
-                database &d = this->db.template ;
+                
 
                 if (op.delta_debt.amount != 0) {
                     this->db.template adjust_balance(this->db.template get_account(op.funding_account), op.delta_debt);
