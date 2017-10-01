@@ -7,11 +7,6 @@ namespace steemit {
     namespace type_traits {
         template<bool>
         struct static_range;
-
-        template<bool...>
-        struct bool_pack;
-
-        template<bool... v> using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
     }
 
     namespace protocol {
@@ -140,7 +135,7 @@ namespace steemit {
             hardfork_version_vote() {
             }
 
-            hardfork_version_vote(hardfork_version v, fc::time_point_sec t) : hf_version(v), hf_time(t) {
+            hardfork_version_vote(const hardfork_version &v, fc::time_point_sec t) : hf_version(v), hf_time(t) {
             }
 
             hardfork_version hf_version;
@@ -152,7 +147,11 @@ namespace steemit {
             static const version version_instance;
         };
 
-        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion> const version static_version<MinorVersion, HardforkVersion, ReleaseVersion>::version_instance = version(MinorVersion, HardforkVersion, ReleaseVersion);      }
+        template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion> const version static_version<
+                MinorVersion, HardforkVersion, ReleaseVersion>::version_instance = version(MinorVersion,
+                                                                                           HardforkVersion,
+                                                                                           ReleaseVersion);
+    }
 } // steemit::protocol
 
 namespace fc {

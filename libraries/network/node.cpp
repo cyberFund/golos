@@ -2478,7 +2478,7 @@ namespace steemit {
       // in the second case, we should mark this peer as one we're unable to sync with and
       // disconnect them.
       if (reference_point != item_hash_t() && synopsis.empty())
-        FC_THROW_EXCEPTION(block_older_than_undo_history, "You are on a fork I'm unable to switch to");
+        FC_THROW_EXCEPTION(exceptions::block_older_than_undo_history<>, "You are on a fork I'm unable to switch to");
 #endif
 
                 if (number_of_blocks_after_reference_point) {
@@ -4627,7 +4627,7 @@ namespace steemit {
             void node_impl::connect_to_endpoint(const fc::ip::endpoint &remote_endpoint) {
                 VERIFY_CORRECT_THREAD();
                 if (is_connection_to_endpoint_in_progress(remote_endpoint))
-                    FC_THROW_EXCEPTION(already_connected_to_requested_peer, "already connected to requested endpoint ${endpoint}",
+                    FC_THROW_EXCEPTION(exceptions::already_connected_to_requested_peer<>, "already connected to requested endpoint ${endpoint}",
                             ("endpoint", remote_endpoint));
 
                 dlog("node_impl::connect_to_endpoint(${endpoint})", ("endpoint", remote_endpoint));

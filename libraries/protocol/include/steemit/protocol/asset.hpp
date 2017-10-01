@@ -47,7 +47,7 @@ namespace steemit {
                 return double(this->amount.value) / precision();
             }
 
-            uint8_t get_decimals() const;
+            uint8_t decimals() const;
 
             asset_name_type symbol_name() const;
 
@@ -133,6 +133,10 @@ namespace steemit {
                 return double(this->amount.value) / precision();
             }
 
+            explicit operator asset<0, 16, 0>() {
+                return asset<0, 16, 0>(this->amount, this->symbol_name());
+            };
+
             asset_symbol_type symbol_name() const;
 
             int64_t precision() const;
@@ -203,7 +207,8 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct price : public static_version<Major, Hardfork, Release> {
             price(const asset<Major, Hardfork, Release> &base = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME),
-                  const asset<Major, Hardfork, Release> &quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME)) : base(base), quote(quote) {
+                  const asset<Major, Hardfork, Release> &quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME))
+                    : base(base), quote(quote) {
             }
 
             asset<Major, Hardfork, Release> base;

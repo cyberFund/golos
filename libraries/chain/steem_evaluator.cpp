@@ -33,7 +33,7 @@ namespace steemit {
 
             FC_ASSERT(std::find_if_not(permlink.begin(), permlink.end(), [&](std::string::value_type c) -> bool {
                 return std::isdigit(c) || std::islower(c) || c == '-';
-            }) == permlink.end(), "Invalid permlink character: ${s}", ("s", std::string() + c));
+            }) == permlink.end(), "Invalid permlink character");
         }
 
         struct strcmp_equal {
@@ -43,7 +43,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void witness_update_evaluator<Major, Hardfork, Release>::do_apply(const witness_update_operation &o) {
+        void witness_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             this->db.template get_account(o.owner); // verify owner exists
 
@@ -61,7 +61,7 @@ namespace steemit {
                 wlog("Wrong fee symbol in block ${b}", ("b", this->db.template head_block_num() + 1));
             }
 
-            const auto &by_witness_name_idx = this->db.template get_index<witness_index>().indices().get<by_name>();
+            const auto &by_witness_name_idx = this->db.template get_index<witness_index>().indices().template get<by_name>();
             auto wit_itr = by_witness_name_idx.find(o.owner);
             if (wit_itr != by_witness_name_idx.end()) {
                 this->db.template modify(*wit_itr, [&](witness_object &w) {
@@ -84,7 +84,7 @@ namespace steemit {
          *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void delete_comment_evaluator<Major, Hardfork, Release>::do_apply(const delete_comment_operation &o) {
+        void delete_comment_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_10)) {
                 const auto &auth = this->db.template get_account(o.author);
@@ -102,7 +102,7 @@ namespace steemit {
                 return;
             }
 
-            const auto &vote_idx = this->db.template get_index<comment_vote_index>().indices().get<by_comment_voter>();
+            const auto &vote_idx = this->db.template get_index<comment_vote_index>().indices().template get<by_comment_voter>();
 
             auto vote_itr = vote_idx.lower_bound(comment_object::id_type(comment.id));
             while (vote_itr != vote_idx.end() && vote_itr->comment == comment.id) {
@@ -142,7 +142,7 @@ namespace steemit {
         }
 
         struct comment_options_extension_visitor {
-            comment_options_extension_visitor(const comment_object &c, database &db) : _c(c), db(db) {
+            comment_options_extension_visitor(const comment_object &c, database &input_db) : _c(c), db(input_db) {
             }
 
             typedef void result_type;
@@ -151,7 +151,7 @@ namespace steemit {
             database &db;
 
             void operator()(const comment_payout_beneficiaries &cpb) const {
-                if (this->db.template is_producing()) {
+                if (this->db.is_producing()) {
                     FC_ASSERT(cpb.beneficiaries.size() <= 8, "Cannot specify more than 8 beneficiaries.");
                 }
 
@@ -160,7 +160,7 @@ namespace steemit {
 
                 this->db.template modify(_c, [&](comment_object &c) {
                     for (auto &b : cpb.beneficiaries) {
-                        auto acc = this->db.template find<account_object, by_name>(b.account);
+                        auto acc = this->db.find<account_object, by_name>(b.account);
                         FC_ASSERT(acc != nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account));
                         c.beneficiaries.push_back(b);
                     }
@@ -169,7 +169,7 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void comment_options_evaluator<Major, Hardfork, Release>::do_apply(const comment_options_operation &o) {
+        void comment_options_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_10)) {
                 const auto &auth = this->db.template get_account(o.author);
@@ -204,13 +204,13 @@ namespace steemit {
             });
 
             for (auto &e : o.extensions) {
-                e.visit(comment_options_extension_visitor(comment, db));
+                e.visit(comment_options_extension_visitor(comment, this->db));
             }
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void comment_payout_extension_evaluator<Major, Hardfork, Release>::do_apply(
-                const comment_payout_extension_operation &o) {
+                const operation_type &o) {
             const account_object &from_account = this->db.template get_account(o.payer);
 
             if (from_account.active_challenged) {
@@ -232,7 +232,11 @@ namespace steemit {
                     c.cashout_time = this->db.template get_payout_extension_time(comment, *o.amount);
                 });
             } else if (o.extension_time) {
-                asset amount = this->db.template get_payout_extension_cost(comment, *o.extension_time);
+                asset<0, 17, 0> amount = this->db.template get_payout_extension_cost(comment, *o.extension_time);
+
+                FC_ASSERT(this->db.template get_balance(from_account, o.amount->symbol) >= amount,
+                          "Account does not have sufficient funds for transfer.");
+
                 this->db.template pay_fee(from_account, amount);
 
                 this->db.template modify(comment, [&](comment_object &c) {
@@ -242,14 +246,14 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void comment_evaluator<Major, Hardfork, Release>::do_apply(const comment_operation &o) {
+        void comment_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 if (this->db.template is_producing() || this->db.template has_hardfork(STEEMIT_HARDFORK_0_5__55)) {
                     FC_ASSERT(o.title.size() + o.body.size() + o.json_metadata.size(),
                               "Cannot update comment because nothing appears to be changing.");
                 }
 
-                const auto &by_permlink_idx = this->db.template get_index<comment_index>().indices().get<by_permlink>();
+                const auto &by_permlink_idx = this->db.template get_index<comment_index>().indices().template get<by_permlink>();
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
 
                 const auto &auth = this->db.template get_account(o.author); /// prove it exists
@@ -364,7 +368,7 @@ namespace steemit {
                         });
                     }
 
-                    get_database().modify(auth, [&](account_object &a) {
+                    this->db.modify(auth, [&](account_object &a) {
                         a.last_post = now;
                         a.post_count++;
                     });
@@ -527,12 +531,11 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void withdraw_vesting_evaluator<Major, Hardfork, Release>::do_apply(const withdraw_vesting_operation &o) {
-
-
+        void withdraw_vesting_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             const auto &account = this->db.template get_account(o.account);
+            asset<0, 17, 0> default_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
 
-            FC_ASSERT(account.vesting_shares >= asset(0, VESTS_SYMBOL),
+            FC_ASSERT(account.vesting_shares >= default_vesting,
                       "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
                       "Account does not have sufficient Steem Power for withdraw.");
@@ -541,7 +544,7 @@ namespace steemit {
                 const auto &props = this->db.template get_dynamic_global_properties();
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
 
-                asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
+                asset<0, 17, 0> min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
                 min_vests.amount.value *= 10;
 
                 FC_ASSERT(account.vesting_shares > min_vests ||
@@ -556,7 +559,7 @@ namespace steemit {
                 }
 
                 this->db.template modify(account, [&](account_object &a) {
-                    a.vesting_withdraw_rate = asset(0, VESTS_SYMBOL);
+                    a.vesting_withdraw_rate = asset<0, 17, 0>(0, VESTS_SYMBOL);
                     a.next_vesting_withdrawal = time_point_sec::maximum();
                     a.to_withdraw = 0;
                     a.withdrawn = 0;
@@ -573,7 +576,7 @@ namespace steemit {
                 }
 
                 this->db.template modify(account, [&](account_object &a) {
-                    auto new_vesting_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals,
+                    auto new_vesting_withdraw_rate = asset<0, 17, 0>(o.vesting_shares.amount / vesting_withdraw_intervals,
                                                            VESTS_SYMBOL);
 
                     if (new_vesting_withdraw_rate.amount == 0) {
@@ -595,13 +598,12 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void set_withdraw_vesting_route_evaluator<Major, Hardfork, Release>::do_apply(
-                const set_withdraw_vesting_route_operation &o) {
+        void set_withdraw_vesting_route_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
 
                 const auto &from_account = this->db.template get_account(o.from_account);
                 const auto &to_account = this->db.template get_account(o.to_account);
-                const auto &wd_idx = this->db.template get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+                const auto &wd_idx = this->db.template get_index<withdraw_vesting_route_index>().indices().template get<by_withdraw_route>();
                 auto itr = wd_idx.find(boost::make_tuple(from_account.id, to_account.id));
 
                 if (itr == wd_idx.end()) {
@@ -648,8 +650,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void account_witness_proxy_evaluator<Major, Hardfork, Release>::do_apply(
-                const account_witness_proxy_operation &o) {
+        void account_witness_proxy_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &account = this->db.template get_account(o.account);
             FC_ASSERT(account.proxy != o.proxy, "Proxy must change.");
@@ -699,8 +700,7 @@ namespace steemit {
 
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void account_witness_vote_evaluator<Major, Hardfork, Release>::do_apply(
-                const account_witness_vote_operation &o) {
+        void account_witness_vote_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &voter = this->db.template get_account(o.account);
             FC_ASSERT(voter.proxy.size() == 0,
@@ -712,7 +712,7 @@ namespace steemit {
 
             const auto &witness = this->db.template get_witness(o.witness);
 
-            const auto &by_account_witness_idx = this->db.template get_index<witness_vote_index>().indices().get<by_account_witness>();
+            const auto &by_account_witness_idx = this->db.template get_index<witness_vote_index>().indices().template get<by_account_witness>();
             auto itr = by_account_witness_idx.find(boost::make_tuple(voter.id, witness.id));
 
             if (itr == by_account_witness_idx.end()) {
@@ -770,7 +770,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void vote_evaluator<Major, Hardfork, Release>::do_apply(const vote_operation &o) {
+        void vote_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const auto &comment = this->db.template get_comment(o.author, o.permlink);
                 const auto &voter = this->db.template get_account(o.voter);
@@ -787,7 +787,7 @@ namespace steemit {
                 if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                     this->db.template calculate_discussion_payout_time(comment) == fc::time_point_sec::maximum()) {
 #ifndef CLEAR_VOTES
-                    const auto &comment_vote_idx = this->db.template get_index<comment_vote_index>().indices().get<by_comment_voter>();
+                    const auto &comment_vote_idx = this->db.template get_index<comment_vote_index>().indices().template get<by_comment_voter>();
                     auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
 
                     if (itr == comment_vote_idx.end()) {
@@ -807,7 +807,7 @@ namespace steemit {
                     return;
                 }
 
-                const auto &comment_vote_idx = this->db.template get_index<comment_vote_index>().indices().get<by_comment_voter>();
+                const auto &comment_vote_idx = this->db.template get_index<comment_vote_index>().indices().template get<by_comment_voter>();
                 auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
 
                 int64_t elapsed_seconds = (this->db.template head_block_time() - voter.last_vote_time).to_seconds();
@@ -1182,93 +1182,92 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        template<typename Operation>
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename Operation>
         void pow_apply(database &db, Operation o) {
-            const auto &dgp = this->db.template get_dynamic_global_properties();
+            const auto &dgp = db.get_dynamic_global_properties();
 
-            if (this->db.template is_producing() || this->db.template has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
-                const auto &witness_by_work = this->db.template get_index<witness_index>().indices().get<by_work>();
+            if (this->db.template is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
+                const auto &witness_by_work = db.get_index<witness_index>().indices().get<by_work>();
                 auto work_itr = witness_by_work.find(o.work.work);
                 if (work_itr != witness_by_work.end()) {
                     FC_ASSERT(!"DUPLICATE WORK DISCOVERED", "${w}  ${witness}", ("w", o)("wit", *work_itr));
                 }
             }
 
-            const auto &accounts_by_name = this->db.template get_index<account_index>().indices().get<by_name>();
+            const auto &accounts_by_name = db.get_index<account_index>().indices().get<by_name>();
 
             auto itr = accounts_by_name.find(o.get_worker_account());
             if (itr == accounts_by_name.end()) {
-                this->db.template create<account_object>([&](account_object &acc) {
+                db.create<account_object>([&](account_object &acc) {
                     acc.name = o.get_worker_account();
                     acc.memo_key = o.work.worker;
                     acc.created = dgp.time;
                     acc.last_vote_time = dgp.time;
 
-                    if (!this->db.template has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
+                    if (!db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
                         acc.recovery_account = STEEMIT_INIT_MINER_NAME;
                     } else {
                         acc.recovery_account = "";
                     } /// highest voted witness at time of recovery
                 });
 
-                this->db.template create<account_authority_object>([&](account_authority_object &auth) {
+                db.create<account_authority_object>([&](account_authority_object &auth) {
                     auth.account = o.get_worker_account();
                     auth.owner = authority(1, o.work.worker, 1);
                     auth.active = auth.owner;
                     auth.posting = auth.owner;
                 });
 
-                this->db.template create<account_balance_object>([&](account_balance_object &b) {
+                db.create<account_balance_object>([&](account_balance_object &b) {
                     b.owner = o.get_worker_account();
                     b.asset_name = STEEM_SYMBOL_NAME;
                     b.balance = 0;
                 });
 
-                this->db.template create<account_balance_object>([&](account_balance_object &b) {
+                db.create<account_balance_object>([&](account_balance_object &b) {
                     b.owner = o.get_worker_account();
                     b.asset_name = SBD_SYMBOL_NAME;
                     b.balance = 0;
                 });
 
-                this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
+                db.create<account_statistics_object>([&](account_statistics_object &s) {
                     s.owner = o.get_worker_account();
                 });
             }
 
-            const auto &worker_account = this->db.template get_account(o.get_worker_account()); // verify it exists
-            const auto &worker_auth = this->db.template get<account_authority_object, by_account>(o.get_worker_account());
+            const auto &worker_account = db.get_account(o.get_worker_account()); // verify it exists
+            const auto &worker_auth = db.get<account_authority_object, by_account>(o.get_worker_account());
             FC_ASSERT(worker_auth.active.num_auths() == 1, "Miners can only have one key authority. ${a}",
                       ("a", worker_auth.active));
             FC_ASSERT(worker_auth.active.key_auths.size() == 1, "Miners may only have one key authority.");
             FC_ASSERT(worker_auth.active.key_auths.begin()->first == o.work.worker,
                       "Work must be performed by key that signed the work.");
-            FC_ASSERT(o.block_id == this->db.template head_block_id(), "pow not for last block");
-            if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_13__256)) {
-                FC_ASSERT(worker_account.last_account_update < this->db.template head_block_time(),
+            FC_ASSERT(o.block_id == db.head_block_id(), "pow not for last block");
+            if (db.has_hardfork(STEEMIT_HARDFORK_0_13__256)) {
+                FC_ASSERT(worker_account.last_account_update < db.head_block_time(),
                           "Worker account must not have updated their account this block.");
             }
 
-            fc::sha256 target = this->db.template get_pow_target();
+            fc::sha256 target = db.get_pow_target();
 
             FC_ASSERT(o.work.work < target, "Work lacks sufficient difficulty.");
 
-            this->db.template modify(dgp, [&](dynamic_global_property_object &p) {
+            db.modify(dgp, [&](dynamic_global_property_object &p) {
                 p.total_pow++; // make sure this doesn't break anything...
                 p.num_pow_witnesses++;
             });
 
 
-            const witness_object *cur_witness = this->db.template find_witness(worker_account.name);
+            const witness_object *cur_witness = db.find_witness(worker_account.name);
             if (cur_witness) {
                 FC_ASSERT(cur_witness->pow_worker == 0, "This account is already scheduled for pow block production.");
-                this->db.template modify(*cur_witness, [&](witness_object &w) {
+                db.modify(*cur_witness, [&](witness_object &w) {
                     w.props = o.props;
                     w.pow_worker = dgp.total_pow;
                     w.last_work = o.work.work;
                 });
             } else {
-                this->db.template create<witness_object>([&](witness_object &w) {
+                db.create<witness_object>([&](witness_object &w) {
                     w.owner = o.get_worker_account();
                     w.props = o.props;
                     w.signing_key = o.work.worker;
@@ -1277,37 +1276,35 @@ namespace steemit {
                 });
             }
             /// POW reward depends upon whether we are before or after MINER_VOTING kicks in
-            asset pow_reward = this->db.template get_pow_reward();
-            if (this->db.template head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
+            asset<0, 17, 0> pow_reward = db.get_pow_reward();
+            if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
                 pow_reward.amount *= STEEMIT_MAX_WITNESSES;
             }
-            this->db.template adjust_supply(pow_reward, true);
+            db.adjust_supply(pow_reward, true);
 
             /// pay the witness that includes this POW
-            const auto &inc_witness = this->db.template get_account(dgp.current_witness);
-            if (this->db.template head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
-                this->db.template adjust_balance(inc_witness, pow_reward);
+            const auto &inc_witness = db.get_account(dgp.current_witness);
+            if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
+                db.adjust_balance(inc_witness, pow_reward);
             } else {
-                this->db.template create_vesting(inc_witness, pow_reward);
+                db.create_vesting(inc_witness, pow_reward);
             }
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void pow_evaluator<Major, Hardfork, Release>::do_apply(const pow_operation &o) {
+        void pow_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             FC_ASSERT(!get_database().has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
-            pow_apply(get_database(), o);
+            pow_apply<Major, Hardfork, Release, operation_type>(get_database(), o);
         }
 
-
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void pow2_evaluator<Major, Hardfork, Release>::do_apply(const pow2_operation &o) {
-            database &db = this->get_database();
+        void pow2_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             const auto &dgp = this->db.template get_dynamic_global_properties();
             uint32_t target_pow = this->db.template get_pow_summary_target();
             account_name_type worker_account;
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                const auto &work = o.work.get<equihash_pow>();
+                const auto &work = o.work.template get<equihash_pow>();
                 FC_ASSERT(work.prev_block == this->db.template head_block_id(), "Equihash pow op not for last block");
                 auto recent_block_num = protocol::block_header::num_from_id(work.input.prev_block);
                 FC_ASSERT(recent_block_num > dgp.last_irreversible_block_num,
@@ -1317,7 +1314,7 @@ namespace steemit {
                           ("w", work.pow_summary)("t", target_pow));
                 worker_account = work.input.worker_account;
             } else {
-                const auto &work = o.work.get<pow2>();
+                const auto &work = o.work.template get<pow2>();
                 FC_ASSERT(work.input.prev_block == this->db.template head_block_id(), "Work not for last block");
                 FC_ASSERT(work.pow_summary < target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}",
                           ("w", work.pow_summary)("t", target_pow));
@@ -1332,7 +1329,7 @@ namespace steemit {
                 p.num_pow_witnesses++;
             });
 
-            const auto &accounts_by_name = this->db.template get_index<account_index>().indices().get<by_name>();
+            const auto &accounts_by_name = this->db.template get_index<account_index>().indices().template get<by_name>();
             auto itr = accounts_by_name.find(worker_account);
             if (itr == accounts_by_name.end()) {
                 FC_ASSERT(o.new_owner_key.valid(), "New owner key is not valid.");
@@ -1395,7 +1392,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void feed_publish_evaluator<Major, Hardfork, Release>::do_apply(const feed_publish_operation &o) {
+        void feed_publish_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &witness = this->db.template get_witness(o.publisher);
             this->db.template modify(witness, [&](witness_object &w) {
@@ -1412,7 +1409,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void challenge_authority_evaluator<Major, Hardfork, Release>::do_apply(const challenge_authority_operation &o) {
+        void challenge_authority_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_14__307)) {
                 FC_ASSERT(false, "Challenge authority operation is currently disabled.");
@@ -1451,7 +1448,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void prove_authority_evaluator<Major, Hardfork, Release>::do_apply(const prove_authority_operation &o) {
+        void prove_authority_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &challenged = this->db.template get_account(o.challenged);
             FC_ASSERT(challenged.owner_challenged || challenged.active_challenged,
@@ -1468,8 +1465,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void request_account_recovery_evaluator<Major, Hardfork, Release>::do_apply(
-                const request_account_recovery_operation &o) {
+        void request_account_recovery_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &account_to_recover = this->db.template get_account(o.account_to_recover);
 
@@ -1477,11 +1473,11 @@ namespace steemit {
                 FC_ASSERT(account_to_recover.recovery_account == o.recovery_account,
                           "Cannot recover an account that does not have you as there recovery partner.");
             } else {                                                  // Empty string recovery account defaults to top witness
-                FC_ASSERT(this->db.template get_index<witness_index>().indices().get<by_vote_name>().begin()->owner ==
+                FC_ASSERT(this->db.template get_index<witness_index>().indices().template get<by_vote_name>().begin()->owner ==
                           o.recovery_account, "Top witness must recover an account with no recovery partner.");
             }
 
-            const auto &recovery_request_idx = this->db.template get_index<account_recovery_request_index>().indices().get<
+            const auto &recovery_request_idx = this->db.template get_index<account_recovery_request_index>().indices().template get<
                     by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
 
@@ -1524,8 +1520,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void recover_account_evaluator<Major, Hardfork, Release>::do_apply(const recover_account_operation &o) {
-
+        void recover_account_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             const auto &account = this->db.template get_account(o.account_to_recover);
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_12)) {
@@ -1533,7 +1528,7 @@ namespace steemit {
                           "Owner authority can only be updated once an hour.");
             }
 
-            const auto &recovery_request_idx = this->db.template get_index<account_recovery_request_index>().indices().get<
+            const auto &recovery_request_idx = this->db.template get_index<account_recovery_request_index>().indices().template get<
                     by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
 
@@ -1541,7 +1536,7 @@ namespace steemit {
             FC_ASSERT(request->new_owner_authority == o.new_owner_authority,
                       "New owner authority does not match recovery request.");
 
-            const auto &recent_auth_idx = this->db.template get_index<owner_authority_history_index>().indices().get<by_account>();
+            const auto &recent_auth_idx = this->db.template get_index<owner_authority_history_index>().indices().template get<by_account>();
             auto hist = recent_auth_idx.lower_bound(o.account_to_recover);
             bool found = false;
 
@@ -1563,13 +1558,11 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void change_recovery_account_evaluator<Major, Hardfork, Release>::do_apply(
-                const change_recovery_account_operation &o) {
-
+        void change_recovery_account_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             this->db.template get_account(o.new_recovery_account); // Simply validate account exists
             const auto &account_to_recover = this->db.template get_account(o.account_to_recover);
 
-            const auto &change_recovery_idx = this->db.template get_index<change_recovery_account_request_index>().indices().get<
+            const auto &change_recovery_idx = this->db.template get_index<change_recovery_account_request_index>().indices().template get<
                     by_account>();
             auto request = change_recovery_idx.find(o.account_to_recover);
 
@@ -1593,13 +1586,11 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void decline_voting_rights_evaluator<Major, Hardfork, Release>::do_apply(
-                const decline_voting_rights_operation &o) {
-
+        void decline_voting_rights_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             FC_ASSERT(this->db.template has_hardfork(STEEMIT_HARDFORK_0_14__324));
 
             const auto &account = this->db.template get_account(o.account);
-            const auto &request_idx = this->db.template get_index<decline_voting_rights_request_index>().indices().get<by_account>();
+            const auto &request_idx = this->db.template get_index<decline_voting_rights_request_index>().indices().template get<by_account>();
             auto itr = request_idx.find(account.id);
 
             if (o.decline) {
@@ -1616,9 +1607,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void reset_account_evaluator<Major, Hardfork, Release>::do_apply(
-                const reset_account_operation<Major, Hardfork, Release> &op) {
-
+        void reset_account_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             FC_ASSERT(false, "Reset Account Operation is currently disabled.");
 
             const auto &acnt = this->db.template get_account(op.account_to_reset);
@@ -1634,8 +1623,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void set_reset_account_evaluator<Major, Hardfork, Release>::do_apply(
-                const set_reset_account_operation<Major, Hardfork, Release> &op) {
+        void set_reset_account_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
 
             FC_ASSERT(false, "Set Reset Account Operation is currently disabled.");
 
@@ -1652,9 +1640,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void delegate_vesting_shares_evaluator<Major, Hardfork, Release>::do_apply(
-                const delegate_vesting_shares_operation<Major, Hardfork, Release> &op) {
-
+        void delegate_vesting_shares_evaluator<Major, Hardfork, Release>::do_apply(const delegate_vesting_shares_operation<Major, Hardfork, Release> &op) {
             FC_ASSERT(this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101),
                       "delegate_vesting_shares_operation is not enabled until HF 17"); //TODO: Delete after hardfork
 

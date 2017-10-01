@@ -492,7 +492,7 @@ namespace steemit {
 
                 auto old_feed = bad.current_feed;
                 // Store medians for this asset
-                database &d = db;
+                database &d = this->db;
                 this->db.template modify(bad, [&o, &d](asset_bitasset_data_object &a) {
                     a.feeds[o.publisher] = make_pair(d.head_block_time(), o.feed);
                     a.update_median_feeds(d.head_block_time());
