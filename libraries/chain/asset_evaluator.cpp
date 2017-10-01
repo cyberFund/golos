@@ -502,8 +502,8 @@ namespace steemit {
                     if (bad.has_settlement()) {
                         const auto &mia_dyn = this->db.template get_asset_dynamic_data(base.asset_name);
                         if (!bad.current_feed.settlement_price.is_null() &&
-                            ~price::call_price(asset(mia_dyn.current_supply, o.asset_name),
-                                               asset(bad.settlement_fund, bad.options.short_backing_asset),
+                            ~price<Major, Hardfork, Release>::call_price(asset<Major, Hardfork, Release>(mia_dyn.current_supply, o.asset_name),
+                                               asset<Major, Hardfork, Release>(bad.settlement_fund, bad.options.short_backing_asset),
                                                bad.current_feed.maintenance_collateral_ratio) <
                             bad.current_feed.settlement_price) {
                             this->db.template revive_bitasset(base);
