@@ -17,7 +17,7 @@ namespace steemit {
     namespace chain {
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before
         ///  Issue #56 contains the justificiation for allowing any UTF-8 string to serve as a permlink, content will be grouped by tags
-        ///  going forward.
+        ///  going forwarthis->db.template 
         inline void validate_permlink(const string &permlink) {
             FC_ASSERT(permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
@@ -38,7 +38,7 @@ namespace steemit {
             this->db.template adjust_balance(owner, -o.amount);
 
             const auto &fhistory = this->db.template get_feed_history();
-            FC_ASSERT(!fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed.");
+            FC_ASSERT(!fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feethis->db.template ");
 
             auto steem_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF16;
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
@@ -58,13 +58,13 @@ namespace steemit {
         void limit_order_create_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    const database &d = get_database();
+                    
 
-                    FC_ASSERT(op.expiration >= d.head_block_time());
+                    FC_ASSERT(op.expiration >= this->db.template head_block_time());
 
-                    seller = d.find_account(op.owner);
-                    sell_asset = d.find_asset(op.amount_to_sell.symbol);
-                    receive_asset = d.find_asset(op.min_to_receive.symbol);
+                    seller = this->db.template find_account(op.owner);
+                    sell_asset = this->db.template find_asset(op.amount_to_sell.symbol);
+                    receive_asset = this->db.template find_asset(op.min_to_receive.symbol);
 
                     if (!sell_asset->options.whitelist_markets.empty()) {
                         FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
@@ -75,11 +75,11 @@ namespace steemit {
                                   sell_asset->options.blacklist_markets.end());
                     }
 
-                    FC_ASSERT(d.is_authorized_asset(*seller, *sell_asset));
-                    FC_ASSERT(d.is_authorized_asset(*seller, *receive_asset));
+                    FC_ASSERT(this->db.template is_authorized_asset(*seller, *sell_asset));
+                    FC_ASSERT(this->db.template is_authorized_asset(*seller, *receive_asset));
 
-                    FC_ASSERT(d.get_balance(*seller, *sell_asset) >= op.amount_to_sell, "insufficient balance",
-                              ("balance", d.get_balance(*seller, *sell_asset))("amount_to_sell", op.amount_to_sell));
+                    FC_ASSERT(this->db.template get_balance(*seller, *sell_asset) >= op.amount_to_sell, "insufficient balance",
+                              ("balance", this->db.template get_balance(*seller, *sell_asset))("amount_to_sell", op.amount_to_sell));
 
                 } FC_CAPTURE_AND_RETHROW((op))
 
@@ -133,7 +133,7 @@ namespace steemit {
                 bool filled = this->db.template apply_order(order);
 
                 if (op.fill_or_kill) {
-                    FC_ASSERT(filled, "Cancelling order because it was not filled.");
+                    FC_ASSERT(filled, "Cancelling order because it was not fillethis->db.template ");
                 }
             }
         }
@@ -142,13 +142,13 @@ namespace steemit {
         void limit_order_create2_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    const database &d = get_database();
+                    
 
-                    FC_ASSERT(op.expiration >= d.head_block_time());
+                    FC_ASSERT(op.expiration >= this->db.template head_block_time());
 
-                    seller = d.find_account(op.owner);
-                    sell_asset = d.find_asset(op.amount_to_sell.symbol);
-                    receive_asset = d.find_asset(op.exchange_rate.quote.symbol);
+                    seller = this->db.template find_account(op.owner);
+                    sell_asset = this->db.template find_asset(op.amount_to_sell.symbol);
+                    receive_asset = this->db.template find_asset(op.exchange_rate.quote.symbol);
 
                     if (!sell_asset->options.whitelist_markets.empty()) {
                         FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
@@ -159,23 +159,23 @@ namespace steemit {
                                   sell_asset->options.blacklist_markets.end());
                     }
 
-                    FC_ASSERT(d.is_authorized_asset(*seller, *sell_asset));
-                    FC_ASSERT(d.is_authorized_asset(*seller, *receive_asset));
+                    FC_ASSERT(this->db.template is_authorized_asset(*seller, *sell_asset));
+                    FC_ASSERT(this->db.template is_authorized_asset(*seller, *receive_asset));
 
-                    FC_ASSERT(d.get_balance(*seller, *sell_asset) >= op.amount_to_sell, "insufficient balance",
-                              ("balance", d.get_balance(*seller, *sell_asset))("amount_to_sell", op.amount_to_sell));
+                    FC_ASSERT(this->db.template get_balance(*seller, *sell_asset) >= op.amount_to_sell, "insufficient balance",
+                              ("balance", this->db.template get_balance(*seller, *sell_asset))("amount_to_sell", op.amount_to_sell));
 
                 } FC_CAPTURE_AND_RETHROW((op))
 
                 try {
                     const auto &seller_stats = this->db.template get_account_statistics(seller->name);
-                    get_database().modify(seller_stats, [&](account_statistics_object &bal) {
+                    this->db.template .modify(seller_stats, [&](account_statistics_object &bal) {
                         if (op.amount_to_sell.symbol == STEEM_SYMBOL_NAME) {
                             bal.total_core_in_orders += op.amount_to_sell.amount;
                         }
                     });
 
-                    get_database().adjust_balance(get_database().get_account(op.owner), -op.amount_to_sell);
+                    this->db.template .adjust_balance(this->db.template .get_account(op.owner), -op.amount_to_sell);
 
                     bool filled = this->db.template apply_order(this->db.template create<limit_order_object>([&](limit_order_object &obj) {
                         obj.created = this->db.template head_block_time();
@@ -218,7 +218,7 @@ namespace steemit {
                 bool filled = this->db.template apply_order(order);
 
                 if (op.fill_or_kill) {
-                    FC_ASSERT(filled, "Cancelling order because it was not filled.");
+                    FC_ASSERT(filled, "Cancelling order because it was not fillethis->db.template ");
                 }
             }
         }
@@ -227,24 +227,24 @@ namespace steemit {
         void limit_order_cancel_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
                 try {
-                    database &d = get_database();
+                    database &d = this->db.template ;
 
-                    _order = d.find_limit_order(op.owner, op.order_id);
+                    _order = this->db.template find_limit_order(op.owner, op.order_id);
                     FC_ASSERT(_order->seller == op.owner);
                 } FC_CAPTURE_AND_RETHROW((op))
 
                 try {
-                    database &d = get_database();
+                    database &d = this->db.template ;
 
                     auto base_asset = _order->sell_price.base.symbol;
                     auto quote_asset = _order->sell_price.quote.symbol;
 
-                    d.cancel_order(*_order, false /* don't create a virtual op*/);
+                    this->db.template cancel_order(*_order, false /* don't create a virtual op*/);
 
                     // Possible optimization: order can be called by canceling a limit order iff the canceled order was at the top of the book.
                     // Do I need to check calls in both assets?
-                    d.check_call_orders(d.get_asset(base_asset));
-                    d.check_call_orders(d.get_asset(quote_asset));
+                    this->db.template check_call_orders(this->db.template get_asset(base_asset));
+                    this->db.template check_call_orders(this->db.template get_asset(quote_asset));
                 } FC_CAPTURE_AND_RETHROW((op))
             } else {
                 this->db.template cancel_order(this->db.template get_limit_order(op.owner, op.order_id), false);
@@ -271,8 +271,8 @@ namespace steemit {
 
                 if (_bitasset_data->is_prediction_market) {
                     FC_ASSERT(op.delta_collateral.amount == op.delta_debt.amount);
-                } else if (_bitasset_data->current_feed.settlement_price.is_null()) {
-                    FC_THROW_EXCEPTION(insufficient_feeds, "Cannot borrow asset with no price feed.");
+                } else if (_bitasset_data->current_feethis->db.template settlement_price.is_null()) {
+                    FC_THROW_EXCEPTION(insufficient_feeds, "Cannot borrow asset with no price feethis->db.template ");
                 }
 
                 if (op.delta_debt.amount < 0) {
@@ -291,13 +291,13 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((op))
 
             try {
-                database &d = get_database();
+                database &d = this->db.template ;
 
                 if (op.delta_debt.amount != 0) {
-                    d.adjust_balance(d.get_account(op.funding_account), op.delta_debt);
+                    this->db.template adjust_balance(this->db.template get_account(op.funding_account), op.delta_debt);
 
                     // Deduct the debt paid from the total supply of the debt asset.
-                    d.modify(d.get_asset_dynamic_data(_debt_asset->asset_name),
+                    this->db.template modify(this->db.template get_asset_dynamic_data(_debt_asset->asset_name),
                              [&](asset_dynamic_data_object &dynamic_asset) {
                                  dynamic_asset.current_supply += op.delta_debt.amount;
                                  assert(dynamic_asset.current_supply >= 0);
@@ -305,11 +305,11 @@ namespace steemit {
                 }
 
                 if (op.delta_collateral.amount != 0) {
-                    d.adjust_balance(d.get_account(op.funding_account), -op.delta_collateral);
+                    this->db.template adjust_balance(this->db.template get_account(op.funding_account), -op.delta_collateral);
 
                     // Adjust the total core in orders accodingly
                     if (op.delta_collateral.symbol == STEEM_SYMBOL_NAME) {
-                        d.modify(d.get_account_statistics(_paying_account->name),
+                        this->db.template modify(this->db.template get_account_statistics(_paying_account->name),
                                  [&](account_statistics_object &stats) {
                                      stats.total_core_in_orders += op.delta_collateral.amount;
                                  });
@@ -317,7 +317,7 @@ namespace steemit {
                 }
 
 
-                auto &call_idx = d.get_index<call_order_index>().indices().template get<by_account>();
+                auto &call_idx = this->db.template get_index<call_order_index>().indices().template get<by_account>();
                 auto itr = call_idx.find(boost::make_tuple(op.funding_account, op.delta_debt.symbol));
                 const call_order_object *call_obj = nullptr;
 
@@ -325,24 +325,24 @@ namespace steemit {
                     FC_ASSERT(op.delta_collateral.amount > 0);
                     FC_ASSERT(op.delta_debt.amount > 0);
 
-                    call_obj = &d.create<call_order_object>([&](call_order_object &call) {
+                    call_obj = &this->db.template create<call_order_object>([&](call_order_object &call) {
                         call.order_id = op.order_id;
                         call.borrower = op.funding_account;
                         call.collateral = op.delta_collateral.amount;
                         call.debt = op.delta_debt.amount;
                         call.call_price = price::call_price(op.delta_debt, op.delta_collateral,
-                                                            _bitasset_data->current_feed.maintenance_collateral_ratio);
+                                                            _bitasset_data->current_feethis->db.template maintenance_collateral_ratio);
 
                     });
                 } else {
                     call_obj = &*itr;
 
-                    d.modify(*call_obj, [&](call_order_object &call) {
+                    this->db.template modify(*call_obj, [&](call_order_object &call) {
                         call.collateral += op.delta_collateral.amount;
                         call.debt += op.delta_debt.amount;
                         if (call.debt > 0) {
                             call.call_price = price::call_price(call.get_debt(), call.get_collateral(),
-                                                                _bitasset_data->current_feed.maintenance_collateral_ratio);
+                                                                _bitasset_data->current_feethis->db.template maintenance_collateral_ratio);
                         }
                     });
                 }
@@ -350,7 +350,7 @@ namespace steemit {
                 auto debt = call_obj->get_debt();
                 if (debt.amount == 0) {
                     FC_ASSERT(call_obj->collateral == 0);
-                    d.remove(*call_obj);
+                    this->db.template remove(*call_obj);
                     return void();
                 }
 
@@ -362,25 +362,25 @@ namespace steemit {
 
                     // check to see if the order needs to be margin called now, but don't allow black swans and require there to be
                     // limit orders available that could be used to fill the order.
-                    if (d.check_call_orders(*_debt_asset, false)) {
-                        const auto order_obj = d.find<call_order_object, by_id>(call_order_id);
-                        // if we filled at least one call order, we are OK if we totally filled.
+                    if (this->db.template check_call_orders(*_debt_asset, false)) {
+                        const auto order_obj = this->db.template find<call_order_object, by_id>(call_order_id);
+                        // if we filled at least one call order, we are OK if we totally fillethis->db.template 
                         STEEMIT_ASSERT(!order_obj, call_order_update_unfilled_margin_call,
                                        "Updating call order would trigger a margin call that cannot be fully filled",
                                        ("a", ~order_obj->call_price)("b",
-                                                                     _bitasset_data->current_feed.settlement_price));
+                                                                     _bitasset_data->current_feethis->db.template settlement_price));
                     } else {
-                        const auto order_obj = d.find<call_order_object, by_id>(call_order_id);
+                        const auto order_obj = this->db.template find<call_order_object, by_id>(call_order_id);
                         FC_ASSERT(order_obj, "no margin call was executed and yet the call object was deleted");
-                        //edump( (~order_obj->call_price) ("<")( _bitasset_data->current_feed.settlement_price) );
+                        //edump( (~order_obj->call_price) ("<")( _bitasset_data->current_feethis->db.template settlement_price) );
                         // We didn't fill any call orders.  This may be because we
                         // aren't in margin call territory, or it may be because there
                         // were no matching orders.  In the latter case, we throw.
-                        STEEMIT_ASSERT(~order_obj->call_price < _bitasset_data->current_feed.settlement_price,
+                        STEEMIT_ASSERT(~order_obj->call_price < _bitasset_data->current_feethis->db.template settlement_price,
                                        call_order_update_unfilled_margin_call,
                                        "Updating call order would trigger a margin call that cannot be fully filled",
                                        ("a", ~order_obj->call_price)("b",
-                                                                     _bitasset_data->current_feed.settlement_price));
+                                                                     _bitasset_data->current_feethis->db.template settlement_price));
                     }
                 }
             } FC_CAPTURE_AND_RETHROW((op))
@@ -391,7 +391,7 @@ namespace steemit {
             const account_object &paying_account = this->db.template get_account(o.bidder);
 
             try {
-                const asset_object &debt_asset = this->db.template get_asset(o.debt_covered.symbol);
+                const asset_object &debt_asset = this->db.template get_asset(o.debt_coverethis->db.template symbol);
                 FC_ASSERT(debt_asset.is_market_issued(),
                           "Unable to cover ${sym} as it is not a collateralized asset.",
                           ("sym", debt_asset.asset_name));
@@ -413,11 +413,11 @@ namespace steemit {
                 }
 
                 const auto &index = this->db.template get_index<collateral_bid_index>().indices().template get<by_account>();
-                const auto &bid = index.find(boost::make_tuple(o.debt_covered.symbol, o.bidder));
+                const auto &bid = index.find(boost::make_tuple(o.debt_coverethis->db.template symbol, o.bidder));
                 if (bid != index.end()) {
                     _bid = &(*bid);
                 } else
-                    FC_ASSERT(o.debt_covered.amount > 0, "Can't find bid to cancel?!");
+                    FC_ASSERT(o.debt_coverethis->db.template amount > 0, "Can't find bid to cancel?!");
             } FC_CAPTURE_AND_RETHROW((o))
 
 
@@ -426,14 +426,14 @@ namespace steemit {
                     this->db.template cancel_bid(*_bid, false);
                 }
 
-                if (o.debt_covered.amount == 0) {
+                if (o.debt_coverethis->db.template amount == 0) {
                     return;
                 }
 
                 this->db.template adjust_balance(paying_account, -o.additional_collateral);
                 _bid = &this->db.template create<collateral_bid_object>([&](collateral_bid_object &bid) {
-                    bid.bidder = o.bidder;
-                    bid.inv_swan_price = o.additional_collateral / o.debt_covered;
+                    bithis->db.template bidder = o.bidder;
+                    bithis->db.template inv_swan_price = o.additional_collateral / o.debt_covered;
                 });
             } FC_CAPTURE_AND_RETHROW((o))
         }
