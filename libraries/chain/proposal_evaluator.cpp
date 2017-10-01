@@ -129,7 +129,7 @@ namespace steemit {
                     return;
                 }
 
-                if (_proposal->is_authorized_to_execute(db)) {
+                if (_proposal->is_authorized_to_execute(this->db)) {
                     // All required approvals are satisfied. Execute!
                     executed_proposal = true;
                     try {
