@@ -64,14 +64,6 @@ namespace steemit {
     using fc::ecc::commitment_type;
 
     namespace type_traits {
-        template<typename Result>
-        class convertible_to {
-        public:
-            typedef Result converted_type;
-
-            virtual operator Result() = 0;
-        };
-
         struct void_t {
 
         };

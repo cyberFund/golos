@@ -36,16 +36,12 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public asset_interface<
-                Major, Hardfork, Release, asset_symbol_type, share_type>, public type_traits::convertible_to<asset<0, 17, 0>> {
+                Major, Hardfork, Release, asset_symbol_type, share_type> {
             asset();
 
             asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
 
             asset(share_type a, asset_name_type name);
-
-            virtual operator converted_type() override {
-                return converted_type(this->amount, this->symbol_name());
-            }
 
             double to_real() const {
                 return double(this->amount.value) / precision();
@@ -124,16 +120,12 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public asset_interface<
-                Major, Hardfork, Release, asset_name_type, share_type>, public type_traits::convertible_to<asset<0, 16, 0>> {
+                Major, Hardfork, Release, asset_name_type, share_type> {
             asset();
 
             asset(share_type a, asset_symbol_type name);
 
             asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
-
-            virtual operator converted_type() override {
-                return converted_type(this->amount, this->symbol_name());
-            }
 
             uint8_t decimals;
 
@@ -447,12 +439,10 @@ FC_REFLECT_TEMPLATE((typename T), (steemit::type_traits::convertible_to<T>),);
 
 FC_REFLECT_DERIVED((steemit::protocol::asset<0, 16, 0>),
                    ((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
-                           steemit::protocol::share_type>))(
-                           (steemit::type_traits::convertible_to<steemit::protocol::asset<0, 17, 0>>)),)
+                           steemit::protocol::share_type>)),)
 FC_REFLECT_DERIVED((steemit::protocol::asset<0, 17, 0>),
                    ((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
-                           steemit::protocol::share_type>))(
-                           (steemit::type_traits::convertible_to<steemit::protocol::asset<0, 16, 0>>)), (decimals))
+                           steemit::protocol::share_type>)), (decimals))
 
 FC_REFLECT((steemit::protocol::price<0, 16, 0>), (base)(quote))
 FC_REFLECT((steemit::protocol::price<0, 17, 0>), (base)(quote))
