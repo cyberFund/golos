@@ -219,7 +219,7 @@ namespace steemit {
         }
     }
 } // end namespace network::detail
-FC_REFLECT(steemit::network::detail::node_configuration, (listen_endpoint)
+FC_REFLECT((steemit::network::detail::node_configuration), (listen_endpoint)
         (accept_incoming_connections)
         (wait_if_endpoint_is_busy)
         (private_key));
