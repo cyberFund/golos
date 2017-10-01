@@ -34,7 +34,7 @@ namespace steemit {
     }
 } // namespace steemit::chain
 
-FC_REFLECT(steemit::chain::hardfork_property_object,
+FC_REFLECT((steemit::chain::hardfork_property_object),
            (id)(processed_hardforks)(last_hardfork)(current_hardfork_version)(next_hardfork)(next_hardfork_time))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::hardfork_property_object, steemit::chain::hardfork_property_index)
 

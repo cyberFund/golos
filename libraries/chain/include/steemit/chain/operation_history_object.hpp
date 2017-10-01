@@ -118,7 +118,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::operation_history_object, (id)(op)(block_num)(trx_in_block)(op_in_trx)(virtual_op));
+FC_REFLECT((steemit::chain::operation_history_object), (id)(op)(block_num)(trx_in_block)(op_in_trx)(virtual_op));
 
-FC_REFLECT(steemit::chain::account_transaction_history_object, (id)(account)(operation_id)(sequence)(next));
+FC_REFLECT((steemit::chain::account_transaction_history_object), (id)(account)(operation_id)(sequence)(next));
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_transaction_history_object, steemit::chain::account_transaction_history_index);

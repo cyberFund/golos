@@ -253,15 +253,15 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::limit_order_object,
+FC_REFLECT((steemit::chain::limit_order_object),
            (id)(created)(expiration)(seller)(order_id)(for_sale)(sell_price)(deferred_fee))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::limit_order_object, steemit::chain::limit_order_index)
 
-FC_REFLECT(steemit::chain::call_order_object, (id)(borrower)(collateral)(debt)(call_price))
+FC_REFLECT((steemit::chain::call_order_object), (id)(borrower)(collateral)(debt)(call_price))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::call_order_object, steemit::chain::call_order_index)
 
-FC_REFLECT(steemit::chain::force_settlement_object, (id)(owner)(balance)(settlement_date)(settlement_id))
+FC_REFLECT((steemit::chain::force_settlement_object), (id)(owner)(balance)(settlement_date)(settlement_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::force_settlement_object, steemit::chain::force_settlement_index)
 
-FC_REFLECT(steemit::chain::collateral_bid_object, (id)(bidder)(inv_swan_price))
+FC_REFLECT((steemit::chain::collateral_bid_object), (id)(bidder)(inv_swan_price))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::collateral_bid_object, steemit::chain::collateral_bid_index)

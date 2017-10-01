@@ -44,5 +44,5 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::block_summary_object, (id)(block_id))
+FC_REFLECT((steemit::chain::block_summary_object), (id)(block_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::block_summary_object, steemit::chain::block_summary_index)

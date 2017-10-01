@@ -376,4 +376,4 @@ FC_REFLECT_ENUM(steemit::network::peer_connection::connection_negotiation_status
         (closing)
         (closed))
 
-FC_REFLECT(steemit::network::peer_connection::timestamped_item_id, (item)(timestamp));
+FC_REFLECT((steemit::network::peer_connection::timestamped_item_id), (item)(timestamp));

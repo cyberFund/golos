@@ -133,17 +133,17 @@ namespace steemit {
     }
 }
 
-FC_REFLECT((steemit::protocol::account_create_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::account_create_operation<0, 16, 0>),
            (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
-FC_REFLECT((steemit::protocol::account_create_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::account_create_operation<0, 17, 0>),
            (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
 
-FC_REFLECT((steemit::protocol::account_create_with_delegation_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::account_create_with_delegation_operation<0, 17, 0>),
            (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions))
 
-FC_REFLECT((steemit::protocol::account_update_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::account_update_operation<0, 16, 0>),
            (account)(owner)(active)(posting)(memo_key)(json_metadata))
-FC_REFLECT((steemit::protocol::account_update_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::account_update_operation<0, 17, 0>),
            (account)(owner)(active)(posting)(memo_key)(json_metadata))
 
 FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>))
@@ -151,9 +151,9 @@ FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operat
 FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 17, 0>))
                         ::account_listing, (no_listing)(white_listed)(black_listed)(white_and_black_listed));
 
-FC_REFLECT((steemit::protocol::account_whitelist_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::account_whitelist_operation<0, 16, 0>),
            (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
-FC_REFLECT((steemit::protocol::account_whitelist_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::account_whitelist_operation<0, 17, 0>),
            (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
 
 #endif //GOLOS_ACCOUNT_OPERATIONS_HPP

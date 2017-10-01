@@ -360,7 +360,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void asset_settle_evaluator<Major, Hardfork, Release>::do_apply(operation_type &op) {
+        void asset_settle_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &op) {
             try {
                 asset_to_settle = this->db.template find_asset(op.amount.symbol);
                 FC_ASSERT(asset_to_settle->is_market_issued());

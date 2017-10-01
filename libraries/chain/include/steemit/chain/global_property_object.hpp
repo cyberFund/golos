@@ -147,7 +147,7 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::dynamic_global_property_object,
+FC_REFLECT((steemit::chain::dynamic_global_property_object),
            (id)(head_block_number)(head_block_id)(time)(current_witness)(total_pow)(num_pow_witnesses)(virtual_supply)(
                    current_supply)(confidential_supply)(current_sbd_supply)(confidential_sbd_supply)(
                    total_vesting_fund_steem)(total_vesting_shares)(total_reward_fund_steem)(total_reward_shares2)(

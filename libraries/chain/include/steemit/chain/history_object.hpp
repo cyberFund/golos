@@ -98,8 +98,8 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::operation_object, (id)(trx_id)(block)(trx_in_block)(op_in_trx)(virtual_op)(timestamp)(serialized_op))
+FC_REFLECT((steemit::chain::operation_object), (id)(trx_id)(block)(trx_in_block)(op_in_trx)(virtual_op)(timestamp)(serialized_op))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::operation_object, steemit::chain::operation_index)
 
-FC_REFLECT(steemit::chain::account_history_object, (id)(account)(sequence)(op))
+FC_REFLECT((steemit::chain::account_history_object), (id)(account)(sequence)(op))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::account_history_object, steemit::chain::account_history_index)

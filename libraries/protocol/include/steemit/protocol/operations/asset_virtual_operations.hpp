@@ -26,7 +26,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT((steemit::protocol::asset_settle_cancel_operation<0, 16, 0>)), (settlement)(account)(amount)(extensions))
-FC_REFLECT((steemit::protocol::asset_settle_cancel_operation<0, 17, 0>)), (settlement)(account)(amount)(extensions))
+FC_REFLECT((steemit::protocol::asset_settle_cancel_operation<0, 16, 0>), (settlement)(account)(amount)(extensions))
+FC_REFLECT((steemit::protocol::asset_settle_cancel_operation<0, 17, 0>), (settlement)(account)(amount)(extensions))
 
 #endif //GOLOS_ASSET_VIRTUAL_OPERATIONS_HPP

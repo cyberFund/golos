@@ -57,9 +57,9 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type))
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type))
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT((steemit::chain::object_schema_repr), (space_type)(type))
+FC_REFLECT((steemit::chain::operation_schema_repr), (id)(type))
+FC_REFLECT((steemit::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
 
 namespace steemit {
     namespace chain {

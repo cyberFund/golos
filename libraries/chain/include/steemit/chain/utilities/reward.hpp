@@ -46,5 +46,5 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::utilities::comment_reward_context,
+FC_REFLECT((steemit::chain::utilities::comment_reward_context),
            (rshares)(reward_weight)(max_sbd)(total_reward_shares2)(total_reward_fund_steem)(current_steem_price))

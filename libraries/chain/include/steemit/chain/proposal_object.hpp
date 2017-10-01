@@ -90,5 +90,5 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::proposal_object, (id)(proposal_id)(owner)(expiration_time)(review_period_time)(proposed_transaction)(required_active_approvals)(available_active_approvals)(required_owner_approvals)(available_owner_approvals)(available_key_approvals));
+FC_REFLECT((steemit::chain::proposal_object), (id)(proposal_id)(owner)(expiration_time)(review_period_time)(proposed_transaction)(required_active_approvals)(available_active_approvals)(required_owner_approvals)(available_owner_approvals)(available_key_approvals));
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::proposal_object, steemit::chain::proposal_index);

@@ -374,32 +374,32 @@ namespace steemit {
 #include <steemit/chain/account_object.hpp>
 
 
-FC_REFLECT(steemit::chain::feed_history_object, (id)(current_median_history)(price_history))
+FC_REFLECT((steemit::chain::feed_history_object), (id)(current_median_history)(price_history))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::feed_history_object, steemit::chain::feed_history_index)
 
-FC_REFLECT(steemit::chain::convert_request_object, (id)(owner)(request_id)(amount)(conversion_date))
+FC_REFLECT((steemit::chain::convert_request_object), (id)(owner)(request_id)(amount)(conversion_date))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::convert_request_object, steemit::chain::convert_request_index)
 
-FC_REFLECT(steemit::chain::liquidity_reward_balance_object, (id)(owner)(steem_volume)(sbd_volume)(weight)(last_update))
+FC_REFLECT((steemit::chain::liquidity_reward_balance_object), (id)(owner)(steem_volume)(sbd_volume)(weight)(last_update))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::liquidity_reward_balance_object,
                          steemit::chain::liquidity_reward_balance_index)
 
-FC_REFLECT(steemit::chain::withdraw_vesting_route_object, (id)(from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT((steemit::chain::withdraw_vesting_route_object), (id)(from_account)(to_account)(percent)(auto_vest))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::withdraw_vesting_route_object, steemit::chain::withdraw_vesting_route_index)
 
-FC_REFLECT(steemit::chain::savings_withdraw_object, (id)(from)(to)(memo)(request_id)(amount)(complete))
+FC_REFLECT((steemit::chain::savings_withdraw_object), (id)(from)(to)(memo)(request_id)(amount)(complete))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::savings_withdraw_object, steemit::chain::savings_withdraw_index)
 
-FC_REFLECT(steemit::chain::escrow_object,
+FC_REFLECT((steemit::chain::escrow_object),
            (id)(escrow_id)(from)(to)(agent)(ratification_deadline)(escrow_expiration)(sbd_balance)(steem_balance)(
                    pending_fee)(to_approved)(agent_approved)(disputed))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::escrow_object, steemit::chain::escrow_index)
 
-FC_REFLECT(steemit::chain::decline_voting_rights_request_object, (id)(account)(effective_date))
+FC_REFLECT((steemit::chain::decline_voting_rights_request_object), (id)(account)(effective_date))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::decline_voting_rights_request_object,
                          steemit::chain::decline_voting_rights_request_index)
 
-FC_REFLECT(steemit::chain::reward_fund_object,
+FC_REFLECT((steemit::chain::reward_fund_object),
            (id)(name)(reward_balance)(recent_claims)(last_update)(content_constant)(percent_curation_rewards)(
                    percent_content_rewards))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::reward_fund_object, steemit::chain::reward_fund_index)

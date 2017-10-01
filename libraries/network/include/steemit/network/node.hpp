@@ -328,5 +328,5 @@ namespace steemit {
     }
 } // graphene::network
 
-FC_REFLECT(steemit::network::message_propagation_data, (received_time)(validated_time)(originating_peer));
-FC_REFLECT(steemit::network::peer_status, (version)(host)(info));
+FC_REFLECT((steemit::network::message_propagation_data), (received_time)(validated_time)(originating_peer));
+FC_REFLECT((steemit::network::peer_status), (version)(host)(info));

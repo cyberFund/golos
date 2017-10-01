@@ -135,12 +135,12 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT((steemit::protocol::proposal_create_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::proposal_create_operation<0, 17, 0>),
            (owner)(proposal_id)(expiration_time)(proposed_operations)(review_period_seconds)(extensions))
 
-FC_REFLECT((steemit::protocol::proposal_update_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::proposal_update_operation<0, 17, 0>),
            (owner)(proposal_id)(active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)(
                    owner_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)(
                    key_approvals_to_add)(key_approvals_to_remove)(extensions))
 
-FC_REFLECT((steemit::protocol::proposal_delete_operation<0, 17, 0>)), (owner)(using_owner_authority)(proposal_id)(extensions))
+FC_REFLECT((steemit::protocol::proposal_delete_operation<0, 17, 0>), (owner)(using_owner_authority)(proposal_id)(extensions))

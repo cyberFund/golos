@@ -125,26 +125,26 @@ namespace steemit {
     }
 }
 
-FC_REFLECT((steemit::protocol::escrow_transfer_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::escrow_transfer_operation<0, 16, 0>),
            (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(
                    escrow_expiration));
-FC_REFLECT((steemit::protocol::escrow_transfer_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::escrow_transfer_operation<0, 17, 0>),
            (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(
                    escrow_expiration));
 
-FC_REFLECT((steemit::protocol::escrow_approve_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::escrow_approve_operation<0, 16, 0>),
            (from)(to)(agent)(who)(escrow_id)(approve));
-FC_REFLECT((steemit::protocol::escrow_approve_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::escrow_approve_operation<0, 17, 0>),
            (from)(to)(agent)(who)(escrow_id)(approve));
 
-FC_REFLECT((steemit::protocol::escrow_dispute_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::escrow_dispute_operation<0, 16, 0>),
            (from)(to)(agent)(who)(escrow_id));
-FC_REFLECT((steemit::protocol::escrow_dispute_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::escrow_dispute_operation<0, 17, 0>),
            (from)(to)(agent)(who)(escrow_id));
 
-FC_REFLECT((steemit::protocol::escrow_release_operation<0, 16, 0>)),
+FC_REFLECT((steemit::protocol::escrow_release_operation<0, 16, 0>),
            (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount));
-FC_REFLECT((steemit::protocol::escrow_release_operation<0, 17, 0>)),
+FC_REFLECT((steemit::protocol::escrow_release_operation<0, 17, 0>),
            (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount));
 
 #endif //GOLOS_ESCROW_OPERATIONS_HPP

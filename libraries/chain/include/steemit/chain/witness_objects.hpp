@@ -206,17 +206,17 @@ namespace steemit {
 
 FC_REFLECT_ENUM(steemit::chain::witness_object::witness_schedule_type, (top19)(timeshare)(miner)(none))
 
-FC_REFLECT(steemit::chain::witness_object,
+FC_REFLECT((steemit::chain::witness_object),
            (id)(owner)(created)(url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(
                    total_missed)(last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)(props)(
                    sbd_exchange_rate)(last_sbd_exchange_update)(last_work)(running_version)(hardfork_version_vote)(
                    hardfork_time_vote))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::witness_object, steemit::chain::witness_index)
 
-FC_REFLECT(steemit::chain::witness_vote_object, (id)(witness)(account))
+FC_REFLECT((steemit::chain::witness_vote_object), (id)(witness)(account))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::witness_vote_object, steemit::chain::witness_vote_index)
 
-FC_REFLECT(steemit::chain::witness_schedule_object,
+FC_REFLECT((steemit::chain::witness_schedule_object),
            (id)(current_virtual_time)(next_shuffle_block_num)(current_shuffled_witnesses)(num_scheduled_witnesses)(
                    top19_weight)(timeshare_weight)(miner_weight)(witness_pay_normalization_factor)(median_props)(
                    majority_version)(max_voted_witnesses)(max_miner_witnesses)(max_runner_witnesses)(

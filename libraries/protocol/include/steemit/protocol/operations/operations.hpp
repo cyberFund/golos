@@ -172,5 +172,5 @@ namespace steemit {
     }
 }
 
-FC_REFLECT_TYPENAME(steemit::protocol::operation);
-FC_REFLECT(steemit::protocol::operation_wrapper, (op));
+FC_REFLECT_TYPENAME((steemit::protocol::operation));
+FC_REFLECT((steemit::protocol::operation_wrapper), (op));

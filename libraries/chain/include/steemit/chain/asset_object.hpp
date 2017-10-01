@@ -293,11 +293,11 @@ namespace steemit {
     }
 } // steemit::chain
 
-FC_REFLECT(steemit::chain::asset_dynamic_data_object,
+FC_REFLECT((steemit::chain::asset_dynamic_data_object),
         (id)(asset_name)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_dynamic_data_object, steemit::chain::asset_dynamic_data_index)
 
-FC_REFLECT(steemit::chain::asset_bitasset_data_object,
+FC_REFLECT((steemit::chain::asset_bitasset_data_object),
         (id)
                 (asset_name)
                 (feeds)
@@ -312,7 +312,7 @@ FC_REFLECT(steemit::chain::asset_bitasset_data_object,
 
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::asset_bitasset_data_object, steemit::chain::asset_bitasset_data_index)
 
-FC_REFLECT(steemit::chain::asset_object,
+FC_REFLECT((steemit::chain::asset_object),
         (id)
                 (asset_name)
                 (precision)
