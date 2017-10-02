@@ -333,8 +333,7 @@ namespace steemit {
 
                 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
                 void operator()(const transfer_operation &op) const {
-                    if (op.to == STEEMIT_NULL_ACCOUNT && Hardfork == 16 ? op.amount.symbol == SBD_SYMBOL :
-                        op.amount.symbol == SBD_SYMBOL_NAME) {
+                    if (op.to == STEEMIT_NULL_ACCOUNT && op.amount.symbol_name() == SBD_SYMBOL_NAME) {
                         vector<string> part;
                         part.reserve(4);
                         auto path = op.memo;

@@ -18,23 +18,11 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void transfer_operation<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::validate() const {
+        void transfer_operation<Major, Hardfork, Release>::validate() const {
             try {
                 validate_account_name(from);
                 validate_account_name(to);
-                FC_ASSERT(amount.symbol != VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
-                FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
-                FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
-                FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-            } FC_CAPTURE_AND_RETHROW((*this))
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void transfer_operation<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::validate() const {
-            try {
-                validate_account_name(from);
-                validate_account_name(to);
-                FC_ASSERT(amount.symbol_name() != VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
+                FC_ASSERT(amount.symbol_type_value() != VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
                 FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
                 FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
                 FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
