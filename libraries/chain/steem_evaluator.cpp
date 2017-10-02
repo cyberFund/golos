@@ -576,8 +576,7 @@ namespace steemit {
                 }
 
                 this->db.template modify(account, [&](account_object &a) {
-                    auto new_vesting_withdraw_rate = asset<0, 17, 0>(o.vesting_shares.amount / vesting_withdraw_intervals,
-                                                           VESTS_SYMBOL);
+                    asset<0, 17, 0> new_vesting_withdraw_rate = asset<0, 17, 0>(o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL);
 
                     if (new_vesting_withdraw_rate.amount == 0) {
                         new_vesting_withdraw_rate.amount = 1;
@@ -1186,7 +1185,7 @@ namespace steemit {
         void pow_apply(database &db, Operation o) {
             const auto &dgp = db.get_dynamic_global_properties();
 
-            if (this->db.template is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
+            if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
                 const auto &witness_by_work = db.get_index<witness_index>().indices().get<by_work>();
                 auto work_itr = witness_by_work.find(o.work.work);
                 if (work_itr != witness_by_work.end()) {
@@ -1293,8 +1292,8 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void pow_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
-            FC_ASSERT(!get_database().has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
-            pow_apply<Major, Hardfork, Release, operation_type>(get_database(), o);
+            FC_ASSERT(!this->db.has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
+            pow_apply<Major, Hardfork, Release, operation_type>(this->db, o);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -1383,11 +1382,10 @@ namespace steemit {
 
             if (!this->db.template has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 /// pay the witness that includes this POW
-                asset inc_reward = this->db.template get_pow_reward();
-                this->db.template adjust_supply(inc_reward, true);
+                this->db.template adjust_supply(this->db.template get_pow_reward(), true);
 
                 const auto &inc_witness = this->db.template get_account(dgp.current_witness);
-                this->db.template create_vesting(inc_witness, inc_reward);
+                this->db.template create_vesting(inc_witness, this->db.template get_pow_reward());
             }
         }
 
@@ -1402,8 +1400,7 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void report_over_production_evaluator<Major, Hardfork, Release>::do_apply(
-                const report_over_production_operation &o) {
+        void report_over_production_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             FC_ASSERT(!this->db.template has_hardfork(STEEMIT_HARDFORK_0_4), "report_over_production_operation is disabled.");
         }

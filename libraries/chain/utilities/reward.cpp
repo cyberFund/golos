@@ -26,7 +26,7 @@ namespace steemit {
                         payout = 0;
                     }
 
-                    asset max_steem = to_steem(ctx.current_steem_price, ctx.max_sbd);
+                    protocol::asset<0, 17, 0> max_steem = to_steem(ctx.current_steem_price, ctx.max_sbd);
 
                     payout = std::min(payout, uint64_t(max_steem.amount.value));
 
@@ -57,7 +57,7 @@ namespace steemit {
                         payout = 0;
                     }
 
-                    asset max_steem = to_steem(ctx.current_steem_price, ctx.max_sbd);
+                    protocol::asset<0, 17, 0> max_steem = to_steem(ctx.current_steem_price, ctx.max_sbd);
 
                     payout = std::min(payout, uint64_t(max_steem.amount.value));
 
