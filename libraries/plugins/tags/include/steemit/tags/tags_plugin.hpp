@@ -74,7 +74,8 @@ namespace steemit {
          */
         class tag_object : public object<tag_object_type, tag_object> {
         public:
-            template<typename Constructor, typename Allocator> tag_object(Constructor &&c, allocator<Allocator> a) {
+            template<typename Constructor, typename Allocator>
+            tag_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             }
 
@@ -112,7 +113,8 @@ namespace steemit {
 
         typedef object_id<tag_object> tag_id_type;
 
-        template<typename T, typename C = std::less<T>> class comparable_index {
+        template<typename T, typename C = std::less<T>>
+        class comparable_index {
         public:
             typedef T value_type;
 
@@ -361,7 +363,8 @@ namespace steemit {
          */
         class tag_stats_object : public object<tag_stats_object_type, tag_stats_object> {
         public:
-            template<typename Constructor, typename Allocator> tag_stats_object(Constructor &&c, allocator<Allocator>) {
+            template<typename Constructor, typename Allocator>
+            tag_stats_object(Constructor &&c, allocator<Allocator>) {
                 c(*this);
             }
 
@@ -520,11 +523,14 @@ namespace steemit {
                         member<author_tag_stats_object, account_object::id_type, &author_tag_stats_object::author>,
                         member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
                         member<author_tag_stats_object, asset<0, 17, 0>, &author_tag_stats_object::total_rewards> >,
-                        composite_key_compare<less<account_object::id_type>, less<tag_name_type>, greater<asset<0, 17, 0>>>>,
-                ordered_unique<tag<by_tag_rewards_author>, composite_key<author_tag_stats_object,
-                        member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
-                        member<author_tag_stats_object, asset<0, 17, 0>, &author_tag_stats_object::total_rewards>,
-                        member<author_tag_stats_object, account_object::id_type, &author_tag_stats_object::author> >,
+                        composite_key_compare<less<account_object::id_type>, less<tag_name_type>,
+                                greater<asset<0, 17, 0>>>>, ordered_unique<tag<by_tag_rewards_author>,
+                        composite_key<author_tag_stats_object,
+                                member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
+                                member<author_tag_stats_object, asset<0, 17, 0>,
+                                        &author_tag_stats_object::total_rewards>,
+                                member<author_tag_stats_object, account_object::id_type,
+                                        &author_tag_stats_object::author> >,
                         composite_key_compare<less<tag_name_type>, greater<asset<0, 17, 0>>,
                                 less<account_object::id_type>>> > > author_tag_stats_index;
 

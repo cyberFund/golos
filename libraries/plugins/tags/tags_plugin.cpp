@@ -419,7 +419,7 @@ namespace steemit {
 
                     for (auto tag : meta.tags) {
                         _db.modify(get_stats(tag), [&](tag_stats_object &ts) {
-                            ts.total_payout += op.payout;
+                            ts.total_payout += asset<0, 17, 0>(op.payout);
                         });
                     }
                 }

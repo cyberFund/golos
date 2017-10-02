@@ -39,15 +39,9 @@ namespace steemit {
                 Major, Hardfork, Release, asset_symbol_type, share_type> {
         asset();
 
-        asset(share_type
-        a,
-        asset_symbol_type id = STEEM_SYMBOL
-        );
+        asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
 
-        asset(share_type
-        a,
-        asset_name_type name
-        );
+        asset(share_type a, asset_name_type name);
 
         double to_real() const {
             return double(this->amount.value) / precision();
@@ -127,20 +121,12 @@ namespace steemit {
     };
 
     template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-    struct asset<Major, Hardfork, Release, type_traits::static_range < Hardfork >=
-                                           17>> : public asset_interface <Major, Hardfork, Release, asset_name_type, share_type> {
+    struct asset<Major, Hardfork, Release, type_traits::static_range < Hardfork >= 17>> : public asset_interface <Major, Hardfork, Release, asset_name_type, share_type> {
     asset();
 
-    asset(share_type
-    a,
-    asset_symbol_type name
-    );
+    asset(share_type a, asset_symbol_type name);
 
-    asset(share_type
-    a,
-    asset_name_type name = STEEM_SYMBOL_NAME, uint8_t
-    d = 3
-    );
+    asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
     uint8_t decimals;
 
@@ -215,8 +201,7 @@ namespace steemit {
         return asset < Major, Hardfork, Release > (a.amount + b.amount, a.symbol);
     }
 
-    static share_type scaled_precision(uint8_t
-    precision) {
+    static share_type scaled_precision(uint8_t precision) {
 FC_ASSERT(precision < 19);
 return scaled_precision_lut[precision];
 }};
@@ -224,8 +209,7 @@ return scaled_precision_lut[precision];
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
 struct price : public static_version<Major, Hardfork, Release> {
     price(const asset <Major, Hardfork, Release> &base = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME),
-          const asset <Major, Hardfork, Release> &quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME)) : base(
-            base), quote(quote) {
+          const asset <Major, Hardfork, Release> &quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME)) : base(base), quote(quote) {
     }
 
     asset <Major, Hardfork, Release> base;
