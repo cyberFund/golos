@@ -39,8 +39,7 @@ namespace steemit {
                 return a->props.account_creation_fee.amount <
                        b->props.account_creation_fee.amount;
             });
-            asset median_account_creation_fee = active[active.size() /
-                                                       2]->props.account_creation_fee;
+            asset<0, 17, 0> median_account_creation_fee = active[active.size() / 2]->props.account_creation_fee;
 
             /// sort them by maximum_block_size
             std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {

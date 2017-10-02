@@ -1647,11 +1647,11 @@ namespace steemit {
                     boost::make_tuple(op.delegator, op.delegatee));
 
             auto available_shares = delegator.vesting_shares - delegator.delegated_vesting_shares -
-                                    asset(delegator.to_withdraw - delegator.withdrawn, VESTS_SYMBOL);
+                                    asset<0, 17, 0>(delegator.to_withdraw - delegator.withdrawn, VESTS_SYMBOL);
 
             const auto &wso = this->db.template get_witness_schedule_object();
             const auto &gpo = this->db.template get_dynamic_global_properties();
-            auto min_delegation = asset(wso.median_props.account_creation_fee.amount * 10, STEEM_SYMBOL_NAME) *
+            auto min_delegation = asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * 10, STEEM_SYMBOL_NAME) *
                                   gpo.get_vesting_share_price();
             auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
 
