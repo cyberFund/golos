@@ -169,7 +169,7 @@ namespace steemit {
     }
 } // steemit::account_statistics
 
-FC_REFLECT(steemit::account_statistics::account_stats_bucket_object,
+FC_REFLECT((steemit::account_statistics::account_stats_bucket_object),
         (id)
                 (open)
                 (seconds)
@@ -236,12 +236,9 @@ FC_REFLECT(steemit::account_statistics::account_stats_bucket_object,
 )
 //SET_INDEX_TYPE( steemit::account_statistics::account_stats_bucket_object,)
 
-FC_REFLECT(
-        steemit::account_statistics::account_activity_bucket_object,
-        (id)
+FC_REFLECT((steemit::account_statistics::account_activity_bucket_object), (id)
                 (open)
                 (seconds)
                 (active_market_accounts)
                 (active_forum_accounts)
-                (active_market_and_forum_accounts)
-)
+                (active_market_and_forum_accounts))

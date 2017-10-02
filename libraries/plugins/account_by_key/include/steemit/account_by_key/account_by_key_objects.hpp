@@ -71,5 +71,5 @@ namespace steemit {
 } // steemit::account_by_key
 
 
-FC_REFLECT(steemit::account_by_key::key_lookup_object, (id)(key)(account))
+FC_REFLECT((steemit::account_by_key::key_lookup_object), (id)(key)(account))
 CHAINBASE_SET_INDEX_TYPE(steemit::account_by_key::key_lookup_object, steemit::account_by_key::key_lookup_index)

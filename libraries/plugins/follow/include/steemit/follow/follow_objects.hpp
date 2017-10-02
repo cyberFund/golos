@@ -331,20 +331,20 @@ namespace steemit {
 
 FC_REFLECT_ENUM(steemit::follow::follow_type, (undefined)(blog)(ignore))
 
-FC_REFLECT(steemit::follow::follow_object, (id)(follower)(following)(what))
+FC_REFLECT((steemit::follow::follow_object), (id)(follower)(following)(what))
 CHAINBASE_SET_INDEX_TYPE(steemit::follow::follow_object, steemit::follow::follow_index)
 
-FC_REFLECT(steemit::follow::feed_object, (id)(account)(first_reblogged_by)(first_reblogged_on)(reblogged_by)(comment)(reblogs)(account_feed_id))
+FC_REFLECT((steemit::follow::feed_object), (id)(account)(first_reblogged_by)(first_reblogged_on)(reblogged_by)(comment)(reblogs)(account_feed_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::follow::feed_object, steemit::follow::feed_index)
 
-FC_REFLECT(steemit::follow::blog_object, (id)(account)(comment)(reblogged_on)(blog_feed_id))
+FC_REFLECT((steemit::follow::blog_object), (id)(account)(comment)(reblogged_on)(blog_feed_id))
 CHAINBASE_SET_INDEX_TYPE(steemit::follow::blog_object, steemit::follow::blog_index)
 
-FC_REFLECT(steemit::follow::reputation_object, (id)(account)(reputation))
+FC_REFLECT((steemit::follow::reputation_object), (id)(account)(reputation))
 CHAINBASE_SET_INDEX_TYPE(steemit::follow::reputation_object, steemit::follow::reputation_index)
 
-FC_REFLECT(steemit::follow::follow_count_object, (id)(account)(follower_count)(following_count))
+FC_REFLECT((steemit::follow::follow_count_object), (id)(account)(follower_count)(following_count))
 CHAINBASE_SET_INDEX_TYPE(steemit::follow::follow_count_object, steemit::follow::follow_count_index)
 
-FC_REFLECT(steemit::follow::blog_author_stats_object, (id)(blogger)(guest)(count))
+FC_REFLECT((steemit::follow::blog_author_stats_object), (id)(blogger)(guest)(count))
 CHAINBASE_SET_INDEX_TYPE(steemit::follow::blog_author_stats_object, steemit::follow::blog_author_stats_index);

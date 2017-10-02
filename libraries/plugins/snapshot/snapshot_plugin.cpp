@@ -59,7 +59,8 @@ namespace steemit {
                     void operator()(const T &) const {
                     }
 
-                    void operator()(const chain::hardfork_operation &op) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const chain::hardfork_operation<Major, Hardfork, Release> &op) const {
                         if (op.hardfork_id == STEEMIT_HARDFORK_0_17) {
                             auto &db = _plugin.database();
 

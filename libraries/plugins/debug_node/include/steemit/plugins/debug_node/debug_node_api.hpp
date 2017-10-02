@@ -141,22 +141,21 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::plugin::debug_node::get_dev_key_args,
+FC_REFLECT((steemit::plugin::debug_node::get_dev_key_args),
         (name)
 )
 
-FC_REFLECT(steemit::plugin::debug_node::get_dev_key_result,
+FC_REFLECT((steemit::plugin::debug_node::get_dev_key_result),
         (private_key)
                 (public_key)
 )
 
-FC_REFLECT(steemit::plugin::debug_node::debug_mine_args,
+FC_REFLECT((steemit::plugin::debug_node::debug_mine_args),
         (worker_account)
                 (props)
 )
 
-FC_REFLECT(steemit::plugin::debug_node::debug_mine_result,
-)
+FC_REFLECT((steemit::plugin::debug_node::debug_mine_result), )
 
 FC_API(steemit::plugin::debug_node::debug_node_api,
         (debug_push_blocks)

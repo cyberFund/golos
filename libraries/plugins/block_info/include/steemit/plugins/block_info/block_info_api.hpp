@@ -42,7 +42,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::plugin::block_info::get_block_info_args,
+FC_REFLECT((steemit::plugin::block_info::get_block_info_args),
         (start_block_num)
                 (count)
 )
