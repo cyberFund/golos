@@ -7,7 +7,7 @@ namespace steemit {
     namespace version {
         class state {
         public:
-            static const state &instance() {
+            static state &instance() {
                 static state static_instance;
                 return static_instance;
             }

@@ -1011,9 +1011,7 @@ namespace steemit {
 
                 /// save the head block so we can recover its transactions
                 optional<signed_block> head_block = fetch_block_by_id(head_id);
-                STEEMIT_ASSERT(head_block.valid(),
-                               typename BOOST_IDENTITY_TYPE((exceptions::chain::undo_database::pop_empty_chain<>)),
-                               "there are no blocks to pop");
+                STEEMIT_ASSERT(head_block.valid(), exceptions::chain::undo_database::pop_empty_chain<>, "there are no blocks to pop");
 
                 _fork_db.pop_block();
                 undo();
@@ -2285,28 +2283,6 @@ namespace steemit {
             _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator<0, 16, 0>>();
             _my->_evaluator_registry.register_evaluator<reset_account_evaluator<0, 16, 0>>();
             _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_create_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_issue_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_reserve_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_update_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_update_bitasset_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_update_feed_producers_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_fund_fee_pool_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_global_settle_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_settle_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_force_settle_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_publish_feeds_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<asset_claim_fees_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<call_order_update_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<account_whitelist_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<override_transfer_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<proposal_create_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<proposal_update_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<bid_collateral_evaluator<0, 16, 0>>();
-            _my->_evaluator_registry.register_evaluator<comment_payout_extension_evaluator<0, 16, 0>>();
             _my->_evaluator_registry.register_evaluator<vote_evaluator<0, 17, 0>>();
             _my->_evaluator_registry.register_evaluator<comment_evaluator<0, 17, 0>>();
             _my->_evaluator_registry.register_evaluator<comment_options_evaluator<0, 17, 0>>();
@@ -3398,7 +3374,7 @@ namespace steemit {
                  *  can trigger a black swan.  So now we must cancel the forced settlement
                  *  object.
                  */
-                STEEMIT_ASSERT(call_pays < call.get_collateral(), black_swan_exception, "");
+                STEEMIT_ASSERT(call_pays < call.get_collateral(), exceptions::chain::black_swan<>, "");
 
                 assert(settle_pays == settle_for_sale || call_receives == call.get_debt());
 

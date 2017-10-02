@@ -764,7 +764,6 @@ namespace steemit {
             uint32_t _current_block_num = 0;
             uint16_t _current_trx_in_block = 0;
             uint16_t _current_op_in_trx = 0;
-            uint16_t _current_virtual_op = 0;
 
             flat_map<uint32_t, block_id_type> _checkpoints;
 

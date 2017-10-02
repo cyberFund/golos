@@ -367,7 +367,7 @@ namespace steemit {
 
             language_name_type language;
             fc::uint128_t total_children_rshares2;
-            asset total_payout = asset(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> total_payout = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             int32_t net_votes = 0;
             uint32_t top_posts = 0;
             uint32_t comments = 0;
@@ -472,7 +472,7 @@ namespace steemit {
             id_type id;
             account_object::id_type author;
             language_name_type language;
-            asset total_rewards = asset(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> total_rewards = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             uint32_t total_posts = 0;
         };
 
@@ -511,16 +511,16 @@ namespace steemit {
                                         &author_language_stats_object::author>,
                                 member<author_language_stats_object, language_name_type,
                                         &author_language_stats_object::language>,
-                                member<author_language_stats_object, asset,
+                                member<author_language_stats_object, asset<0, 17, 0>,
                                         &author_language_stats_object::total_rewards> >,
-                        composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset>>>,
+                        composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset<0, 17, 0>>>>,
                 ordered_unique<tag<by_tag_rewards_author>, composite_key<author_language_stats_object,
                         member<author_language_stats_object, language_name_type,
                                 &author_language_stats_object::language>,
-                        member<author_language_stats_object, asset, &author_language_stats_object::total_rewards>,
+                        member<author_language_stats_object, asset<0, 17, 0>, &author_language_stats_object::total_rewards>,
                         member<author_language_stats_object, account_object::id_type,
                                 &author_language_stats_object::author> >,
-                        composite_key_compare<less<language_name_type>, greater<asset>,
+                        composite_key_compare<less<language_name_type>, greater<asset<0, 17, 0>>,
                                 less<account_object::id_type>>> > > author_language_stats_index;
 
 

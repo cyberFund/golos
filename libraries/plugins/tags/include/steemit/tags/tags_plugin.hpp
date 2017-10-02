@@ -491,7 +491,7 @@ namespace steemit {
             id_type id;
             account_object::id_type author;
             tag_name_type tag;
-            asset total_rewards = asset(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> total_rewards = asset(0, SBD_SYMBOL_NAME);
             uint32_t total_posts = 0;
         };
 
@@ -591,21 +591,21 @@ namespace steemit {
 
 FC_API(steemit::tags::tag_api, (get_tags));
 
-FC_REFLECT(steemit::tags::tag_object,
+FC_REFLECT((steemit::tags::tag_object),
            (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(
                    children_rshares2)(author)(parent)(comment))
 
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::tag_object, steemit::tags::tag_index)
 
-FC_REFLECT(steemit::tags::tag_stats_object,
+FC_REFLECT((steemit::tags::tag_stats_object),
            (id)(tag)(total_children_rshares2)(total_payout)(net_votes)(top_posts)(comments));
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::tag_stats_object, steemit::tags::tag_stats_index)
 
-FC_REFLECT(steemit::tags::peer_stats_object,
+FC_REFLECT((steemit::tags::peer_stats_object),
            (id)(voter)(peer)(direct_positive_votes)(direct_votes)(indirect_positive_votes)(indirect_votes)(rank));
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::peer_stats_object, steemit::tags::peer_stats_index)
 
-FC_REFLECT(steemit::tags::comment_metadata, (tags));
+FC_REFLECT((steemit::tags::comment_metadata), (tags));
 
-FC_REFLECT(steemit::tags::author_tag_stats_object, (id)(author)(tag)(total_posts)(total_rewards))
+FC_REFLECT((steemit::tags::author_tag_stats_object), (id)(author)(tag)(total_posts)(total_rewards))
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::author_tag_stats_object, steemit::tags::author_tag_stats_index)

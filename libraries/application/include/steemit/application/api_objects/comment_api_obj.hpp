@@ -92,8 +92,8 @@ namespace steemit {
 
             uint16_t reward_weight;
 
-            asset total_payout_value;
-            asset curator_payout_value;
+            asset<0, 17, 0> total_payout_value;
+            asset<0, 17, 0> curator_payout_value;
 
             share_type author_rewards;
 
@@ -113,7 +113,7 @@ namespace steemit {
      }
 }
 
-FC_REFLECT(steemit::application::comment_api_obj,
+FC_REFLECT((steemit::application::comment_api_obj),
         (id)(author)(permlink)
                 (category)(parent_author)(parent_permlink)
                 (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
