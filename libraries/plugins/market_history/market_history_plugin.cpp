@@ -28,7 +28,8 @@ namespace steemit {
 
                     }
 
-                    void operator()(const fill_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const fill_order_operation<Major, Hardfork, Release> &o) const {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
@@ -38,8 +39,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.current_pays.symbol;
-                        hkey.quote = o.open_pays.symbol;
+                        hkey.base = o.current_pays.symbol_name();
+                        hkey.quote = o.open_pays.symbol_name();
                         if (hkey.base > hkey.quote) {
                             std::swap(hkey.base, hkey.quote);
                         }
@@ -75,12 +76,12 @@ namespace steemit {
 
 
                         auto max_history = _plugin.get_max_history_per_bucket();
-                        for (auto bucket : buckets) {
+                        for (const auto bucket : buckets) {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.current_pays.symbol;
-                            key.quote = o.open_pays.symbol;
+                            key.base = o.current_pays.symbol_name();
+                            key.quote = o.open_pays.symbol_name();
 
 
                             /** for every matched order there are two fill order operations created, one for
@@ -92,7 +93,7 @@ namespace steemit {
                                 continue;
                             }
 
-                            price trade_price = o.current_pays / o.open_pays;
+                            price<0, 17, 0> trade_price = o.current_pays / o.open_pays;
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +
@@ -151,7 +152,8 @@ namespace steemit {
                         }
                     }
 
-                    void operator()(const fill_call_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const fill_call_order_operation<Major, Hardfork, Release> &o) const {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
@@ -161,8 +163,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.pays.symbol;
-                        hkey.quote = o.receives.symbol;
+                        hkey.base = o.pays.symbol_name();
+                        hkey.quote = o.receives.symbol_name();
                         if (hkey.base > hkey.quote)
                             std::swap(hkey.base, hkey.quote);
                         hkey.sequence = std::numeric_limits<int64_t>::min();
@@ -188,8 +190,8 @@ namespace steemit {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.pays.symbol;
-                            key.quote = o.receives.symbol;
+                            key.base = o.pays.symbol_name();
+                            key.quote = o.receives.symbol_name();
 
 
                             /** for every matched order there are two fill order operations created, one for
@@ -201,7 +203,7 @@ namespace steemit {
                                 continue;
                             }
 
-                            price trade_price = o.pays / o.receives;
+                            price<0, 17, 0> trade_price = o.pays / o.receives;
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +
@@ -260,7 +262,8 @@ namespace steemit {
                         }
                     }
 
-                    void operator()(const fill_settlement_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const fill_settlement_order_operation<Major, Hardfork, Release> &o) const {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
@@ -270,8 +273,8 @@ namespace steemit {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.pays.symbol;
-                        hkey.quote = o.receives.symbol;
+                        hkey.base = o.pays.symbol_name();
+                        hkey.quote = o.receives.symbol_name();
                         if (hkey.base > hkey.quote)
                             std::swap(hkey.base, hkey.quote);
                         hkey.sequence = std::numeric_limits<int64_t>::min();
@@ -297,8 +300,8 @@ namespace steemit {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.pays.symbol;
-                            key.quote = o.receives.symbol;
+                            key.base = o.pays.symbol_name();
+                            key.quote = o.receives.symbol_name();
 
 
                             /** for every matched order there are two fill order operations created, one for
@@ -310,7 +313,7 @@ namespace steemit {
                                 continue;
                             }
 
-                            price trade_price = o.pays / o.receives;
+                            price<0, 17, 0> trade_price = o.pays / o.receives;
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +

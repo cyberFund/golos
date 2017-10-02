@@ -325,8 +325,8 @@ namespace steemit {
             }
 
             feed_history_object::id_type id;
-            price current_median_history;
-            deque<price> price_history;
+            price<0, 17, 0> current_median_history;
+            deque<price<0, 17, 0>> price_history;
         };
 
         struct witness_api_obj {
@@ -365,8 +365,8 @@ namespace steemit {
             uint64_t last_confirmed_block_num;
             uint64_t pow_worker;
             public_key_type signing_key;
-            chain_properties props;
-            price sbd_exchange_rate;
+            chain_properties<0, 17, 0> props;
+            price<0, 17, 0> sbd_exchange_rate;
             time_point_sec last_sbd_exchange_update;
             share_type votes;
             fc::uint128 virtual_last_update;

@@ -584,23 +584,23 @@ namespace steemit {
     }
 } //steemit::language
 
-FC_REFLECT(steemit::languages::comment_metadata, (language));
+FC_REFLECT((steemit::languages::comment_metadata), (language));
 
 FC_API(steemit::languages::language_api, (get_languages));
 
-FC_REFLECT(steemit::languages::language_object,
+FC_REFLECT((steemit::languages::language_object),
            (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(
                    children_rshares2)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_object, steemit::languages::language_index)
 
-FC_REFLECT(steemit::languages::language_stats_object,
+FC_REFLECT((steemit::languages::language_stats_object),
            (id)(language)(total_children_rshares2)(total_payout)(net_votes)(top_posts)(comments));
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_stats_object, steemit::languages::language_stats_index)
 
-FC_REFLECT(steemit::languages::peer_stats_object,
+FC_REFLECT((steemit::languages::peer_stats_object),
            (id)(voter)(peer)(direct_positive_votes)(direct_votes)(indirect_positive_votes)(indirect_votes)(rank));
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::peer_stats_object, steemit::languages::peer_stats_index)
 
-FC_REFLECT(steemit::languages::author_language_stats_object, (id)(author)(language)(total_posts)(total_rewards))
+FC_REFLECT((steemit::languages::author_language_stats_object), (id)(author)(language)(total_posts)(total_rewards))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::author_language_stats_object,
                          steemit::languages::author_language_stats_index)

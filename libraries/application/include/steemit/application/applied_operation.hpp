@@ -25,12 +25,5 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::applied_operation,
-        (trx_id)
-                (block)
-                (trx_in_block)
-                (op_in_trx)
-                (virtual_op)
-                (timestamp)
-                (op)
-)
+FC_REFLECT((steemit::application::applied_operation),
+           (trx_id)(block)(trx_in_block)(op_in_trx)(virtual_op)(timestamp)(op))

@@ -30,7 +30,8 @@ namespace steemit {
                         return double(a.value) / std::pow(10, p);
                     };
 
-                    market_trade operator()(const fill_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    market_trade operator()(const fill_order_operation<Major, Hardfork, Release> &o) const {
                         market_trade trade;
 
                         if (assets[0]->asset_name == o.open_pays.symbol) {
@@ -44,7 +45,8 @@ namespace steemit {
                         return trade;
                     }
 
-                    market_trade operator()(const fill_call_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    market_trade operator()(const fill_call_order_operation<Major, Hardfork, Release> &o) const {
                         market_trade trade;
 
                         if (assets[0]->asset_name == o.receives.symbol) {
@@ -57,8 +59,8 @@ namespace steemit {
 
                         return trade;
                     }
-
-                    market_trade operator()(const fill_settlement_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    market_trade operator()(const fill_settlement_order_operation<Major, Hardfork, Release> &o) const {
                         market_trade trade;
 
                         if (assets[0]->asset_name == o.receives.symbol) {
@@ -302,11 +304,11 @@ namespace steemit {
                 auto orders = get_limit_orders(assets[0]->asset_name, assets[1]->asset_name, limit);
 
 
-                std::function<double(const asset &, int)> asset_to_real = [&](const asset &a, int p) -> double {
+                std::function<double(const asset<0, 17, 0> &, int)> asset_to_real = [&](const asset<0, 17, 0> &a, int p) -> double {
                     return double(a.amount.value) / std::pow(10, p);
                 };
 
-                std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
+                std::function<double(const price<0, 17, 0> &)> price_to_real = [&](const price<0, 17, 0> &p) -> double {
                     if (p.base.symbol == base_id) {
                         return asset_to_real(p.base, assets[0]->precision) /
                                asset_to_real(p.quote, assets[1]->precision);
@@ -356,8 +358,7 @@ namespace steemit {
                 if (base_id > quote_id) {
                     std::swap(base_id, quote_id);
                 }
-                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<
-                        by_key>();
+                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<by_key>();
                 history_key hkey;
                 hkey.base = base_id;
                 hkey.quote = quote_id;
@@ -468,20 +469,20 @@ namespace steemit {
 
                 vector<limit_order_object> result;
 
-                asset_name_type a_symbol = protocol::asset::from_string(a).symbol;
-                asset_name_type b_symbol = protocol::asset::from_string(b).symbol;
+                asset_name_type a_symbol = a;
+                asset_name_type b_symbol = b;
 
                 uint32_t count = 0;
-                auto limit_itr = limit_price_idx.lower_bound(price::max(a_symbol, b_symbol));
-                auto limit_end = limit_price_idx.upper_bound(price::min(a_symbol, b_symbol));
+                auto limit_itr = limit_price_idx.lower_bound(price<0, 17, 0>::max(a_symbol, b_symbol));
+                auto limit_end = limit_price_idx.upper_bound(price<0, 17, 0>::min(a_symbol, b_symbol));
                 while (limit_itr != limit_end && count < limit) {
                     result.push_back(*limit_itr);
                     ++limit_itr;
                     ++count;
                 }
                 count = 0;
-                limit_itr = limit_price_idx.lower_bound(price::max(b_symbol, a_symbol));
-                limit_end = limit_price_idx.upper_bound(price::min(b_symbol, a_symbol));
+                limit_itr = limit_price_idx.lower_bound(price<0, 17, 0>::max(b_symbol, a_symbol));
+                limit_end = limit_price_idx.upper_bound(price<0, 17, 0>::min(b_symbol, a_symbol));
                 while (limit_itr != limit_end && count < limit) {
                     result.push_back(*limit_itr);
                     ++limit_itr;
@@ -494,9 +495,7 @@ namespace steemit {
             vector<call_order_object> market_history_api_impl::get_call_orders(const string &a, uint32_t limit) const {
                 const auto &call_index = app.chain_database()->get_index<call_order_index>().indices().get<by_price>();
                 const asset_object &mia = app.chain_database()->get_asset(a);
-                price index_price = price::min(
-                        app.chain_database()->get_asset_bitasset_data(mia.asset_name).options.short_backing_asset,
-                        mia.asset_name);
+                price<0, 17, 0> index_price = price<0, 17, 0>::min(app.chain_database()->get_asset_bitasset_data(mia.asset_name).options.short_backing_asset, mia.asset_name);
 
                 return vector<call_order_object>(call_index.lower_bound(index_price.min()),
                                                  call_index.lower_bound(index_price.max()));
@@ -538,9 +537,9 @@ namespace steemit {
                     const asset_object &back = app.chain_database()->get_asset(bad.options.short_backing_asset);
                     const auto &idx = app.chain_database()->get_index<collateral_bid_index>();
                     const auto &aidx = idx.indices().get<by_price>();
-                    auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
+                    auto start = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::max(back.asset_name, asset),
                                                                     collateral_bid_object::id_type()));
-                    auto end = aidx.lower_bound(boost::make_tuple(asset, price::min(back.asset_name, asset),
+                    auto end = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::min(back.asset_name, asset),
                                                                   collateral_bid_object::id_type(
                                                                           STEEMIT_MAX_INSTANCE_ID)));
                     vector<collateral_bid_object> result;
