@@ -134,7 +134,7 @@ namespace steemit {
         return double(this->amount.value) / precision();
     }
 
-    explicit operator asset<0, 16, 0>() {
+    operator asset<0, 16, 0>() {
         return asset < 0, 16, 0 > (this->amount, this->symbol_type_value());
     };
 

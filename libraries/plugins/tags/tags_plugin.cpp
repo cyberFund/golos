@@ -45,7 +45,7 @@ namespace steemit {
             };
 
             tags_plugin_impl::~tags_plugin_impl() {
-                return;
+
             }
 
             struct operation_visitor {
@@ -360,7 +360,7 @@ namespace steemit {
                         part.reserve(4);
                         auto path = op.memo;
                         boost::split(part, path, boost::is_any_of("/"));
-                        if (part[0].size() && part[0][0] == '@') {
+                        if (!part[0].empty() && part[0][0] == '@') {
                             auto acnt = part[0].substr(1);
                             auto perm = part[1];
 
@@ -417,9 +417,9 @@ namespace steemit {
 
                     auto meta = filter_tags(c);
 
-                    for (auto tag : meta.tags) {
+                    for (const auto &tag : meta.tags) {
                         _db.modify(get_stats(tag), [&](tag_stats_object &ts) {
-                            ts.total_payout += asset<0, 17, 0>(op.payout);
+                            ts.total_payout += asset<0, 17, 0>(op.payout.amount, op.payout.symbol);
                         });
                     }
                 }
@@ -463,7 +463,7 @@ namespace steemit {
         bool tags_plugin::filter(const steemit::application::discussion_query &query,
                                  const steemit::application::comment_api_obj &c,
                                  const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
-            if (query.select_authors.size()) {
+            if (!query.select_authors.empty()) {
                 if (query.select_authors.find(c.author) == query.select_authors.end()) {
                     return true;
                 }
