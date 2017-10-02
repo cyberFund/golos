@@ -372,7 +372,7 @@ namespace steemit {
 
             tag_name_type tag;
             fc::uint128_t total_children_rshares2;
-            asset total_payout = asset(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> total_payout = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             int32_t net_votes = 0;
             uint32_t top_posts = 0;
             uint32_t comments = 0;
@@ -491,7 +491,7 @@ namespace steemit {
             id_type id;
             account_object::id_type author;
             tag_name_type tag;
-            asset<0, 17, 0> total_rewards = asset(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> total_rewards = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             uint32_t total_posts = 0;
         };
 
@@ -519,13 +519,13 @@ namespace steemit {
                 ordered_unique<tag<by_author_tag_rewards>, composite_key<author_tag_stats_object,
                         member<author_tag_stats_object, account_object::id_type, &author_tag_stats_object::author>,
                         member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
-                        member<author_tag_stats_object, asset, &author_tag_stats_object::total_rewards> >,
-                        composite_key_compare<less<account_object::id_type>, less<tag_name_type>, greater<asset>>>,
+                        member<author_tag_stats_object, asset<0, 17, 0>, &author_tag_stats_object::total_rewards> >,
+                        composite_key_compare<less<account_object::id_type>, less<tag_name_type>, greater<asset<0, 17, 0>>>>,
                 ordered_unique<tag<by_tag_rewards_author>, composite_key<author_tag_stats_object,
                         member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
-                        member<author_tag_stats_object, asset, &author_tag_stats_object::total_rewards>,
+                        member<author_tag_stats_object, asset<0, 17, 0>, &author_tag_stats_object::total_rewards>,
                         member<author_tag_stats_object, account_object::id_type, &author_tag_stats_object::author> >,
-                        composite_key_compare<less<tag_name_type>, greater<asset>,
+                        composite_key_compare<less<tag_name_type>, greater<asset<0, 17, 0>>,
                                 less<account_object::id_type>>> > > author_tag_stats_index;
 
         /**

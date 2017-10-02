@@ -101,7 +101,7 @@ namespace steemit {
 
             comment_object::id_type root_comment;
 
-            asset max_accepted_payout;
+            asset<0, 17, 0> max_accepted_payout;
             uint16_t percent_steem_dollars;
             bool allow_replies;
             bool allow_votes;

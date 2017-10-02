@@ -73,7 +73,7 @@ namespace steemit {
             uint64_t get_witness_count() const;
 
             // Balances
-            vector<asset> get_account_balances(account_name_type account_name, const flat_set<asset_name_type> &assets) const;
+            vector<asset<0, 17, 0>> get_account_balances(account_name_type account_name, const flat_set<asset_name_type> &assets) const;
 
             // Assets
             vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
@@ -676,12 +676,12 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        vector<asset> database_api::get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const {
+        vector<asset<0, 17, 0>> database_api::get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const {
             return my->get_account_balances(name, assets);
         }
 
-        vector<asset> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<asset_name_type> &assets) const {
-            vector<asset> result;
+        vector<asset<0, 17, 0>> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<asset_name_type> &assets) const {
+            vector<asset<0, 17, 0>> result;
             if (assets.empty()) {
                 // if the caller passes in an empty list of assets, return balances for all assets the account owns
                 auto range = _db.get_index<account_balance_index>().indices().get<by_account_asset>().equal_range(boost::make_tuple(acnt));
@@ -1017,12 +1017,12 @@ namespace steemit {
             const auto &cidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
             auto itr = cidx.lower_bound(d.id);
             if (itr != cidx.end() && itr->comment == d.id) {
-                d.promoted = asset(itr->promoted_balance, SBD_SYMBOL_NAME);
+                d.promoted = asset<0, 17, 0>(itr->promoted_balance, SBD_SYMBOL_NAME);
             }
 
             const auto &props = my->_db.get_dynamic_global_properties();
             const auto &hist = my->_db.get_feed_history();
-            asset pot;
+            asset<0, 17, 0> pot;
             if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
                 pot = my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).reward_balance;
             } else {
@@ -1062,8 +1062,8 @@ namespace steemit {
                 tpp *= pot.amount.value;
                 tpp /= total_r2;
 
-                d.pending_payout_value = asset(static_cast<uint64_t>(r2), pot.symbol);
-                d.total_pending_payout_value = asset(static_cast<uint64_t>(tpp), pot.symbol);
+                d.pending_payout_value = asset<0, 17, 0>(static_cast<uint64_t>(r2), pot.symbol);
+                d.total_pending_payout_value = asset<0, 17, 0>(static_cast<uint64_t>(tpp), pot.symbol);
 
                 if (my->_follow_api) {
                     d.author_reputation = my->_follow_api->get_account_reputations(d.author, 1)[0].reputation;
@@ -1176,11 +1176,11 @@ namespace steemit {
             });
         }
 
-        asset database_api::get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const {
+        asset<0, 17, 0> database_api::get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const {
             return my->_db.get_payout_extension_cost(my->_db.get_comment(author, permlink), time);
         }
 
-        fc::time_point_sec database_api::get_payout_extension_time(const string &author, const string &permlink, asset cost) const {
+        fc::time_point_sec database_api::get_payout_extension_time(const string &author, const string &permlink, asset<0, 17, 0> cost) const {
             return my->_db.get_payout_extension_time(my->_db.get_comment(author, permlink), cost);
         }
 
@@ -1312,7 +1312,7 @@ namespace steemit {
 
                 try {
                     discussion insert_discussion = get_discussion(tidx_itr->comment, query.truncate_body);
-                    insert_discussion.promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL_NAME);
+                    insert_discussion.promoted = asset<0, 17, 0>(tidx_itr->promoted_balance, SBD_SYMBOL_NAME);
 
                     if (filter(insert_discussion)) {
                         ++filter_count;

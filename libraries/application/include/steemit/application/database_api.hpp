@@ -191,7 +191,7 @@ namespace steemit {
              * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
              * @return Balances of the account
              */
-            vector<asset> get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const;
+            vector<asset<0, 17, 0>> get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const;
 
             /**
              * @brief Get the total number of accounts registered with the blockchain
@@ -454,7 +454,7 @@ namespace steemit {
              * @return SBD amount required to set payout window duration up to time passed
              */
 
-            asset get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const;
+            asset<0, 17, 0> get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const;
 
             /**
              * Used o retrieve comment payout window extension time by cost
