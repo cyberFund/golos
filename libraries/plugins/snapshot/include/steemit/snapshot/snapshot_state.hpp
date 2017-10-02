@@ -13,14 +13,14 @@ namespace steemit {
             };
 
             struct account_balances {
-                vector <chain::asset> assets;
+                vector <chain::asset<0, 17, 0>> assets;
             };
 
             struct snapshot_summary {
-                chain::asset balance;
-                chain::asset sbd_balance;
-                chain::asset total_vesting_shares;
-                chain::asset total_vesting_fund_steem;
+                chain::asset<0, 17, 0> balance;
+                chain::asset<0, 17, 0> sbd_balance;
+                chain::asset<0, 17, 0> total_vesting_shares;
+                chain::asset<0, 17, 0> total_vesting_fund_steem;
                 uint32_t accounts_count;
             };
 
