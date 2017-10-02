@@ -234,10 +234,10 @@ namespace steemit {
 
                 try {
                     const fc::time_point_sec now = fc::time_point::now();
-                    const fc::time_point_sec yesterday = app.chain_database()->fetch_block_by_number(0)->timestamp <
+                    const fc::time_point_sec yesterday = app.chain_database()->fetch_block_by_number(1)->timestamp <
                                                          fc::time_point_sec(now.sec_since_epoch() - 86400)
                                                          ? fc::time_point_sec(now.sec_since_epoch() - 86400)
-                                                         : app.chain_database()->fetch_block_by_number(0)->timestamp;
+                                                         : app.chain_database()->fetch_block_by_number(1)->timestamp;
                     const auto batch_size = 100;
 
                     vector<market_trade> trades = get_trade_history(base, quote, now, yesterday, batch_size);
