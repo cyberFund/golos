@@ -70,12 +70,12 @@ namespace steemit {
                 _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<steemit::key_value::key_value_plugin_operation>>(database());
 
                 // Add each operation evaluator to the registry
-                _custom_operation_interpreter->register_evaluator<create_first_key_value_evaluator>(&_self);
-                _custom_operation_interpreter->register_evaluator<update_first_key_value_evaluator>(&_self);
-                _custom_operation_interpreter->register_evaluator<delete_first_key_value_evaluator>(&_self);
+                _custom_operation_interpreter->register_evaluator<create_first_key_value_evaluator>(&self);
+                _custom_operation_interpreter->register_evaluator<update_first_key_value_evaluator>(&self);
+                _custom_operation_interpreter->register_evaluator<delete_first_key_value_evaluator>(&self);
 
                 // Add the registry to the database so the database can delegate custom ops to the plugin
-                database().set_custom_operation_interpreter(_self.plugin_name(), _custom_operation_interpreter);
+                database().set_custom_operation_interpreter(self.plugin_name(), _custom_operation_interpreter);
             }
 
             void key_value_plugin_impl::pre_operation(const operation_notification &note) {
