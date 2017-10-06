@@ -143,8 +143,18 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct static_version {
+        class static_version {
+        public:
             static const version version_instance;
+        };
+
+        template<template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                class Versionable, uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class versionable_to {
+        public:
+            typedef Versionable<Major, Hardfork, Release> versioned_type;
+
+            virtual versioned_type version_to() const = 0;
         };
 
         template<uint8_t MinorVersion, uint8_t HardforkVersion, uint16_t ReleaseVersion> const version static_version<

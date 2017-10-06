@@ -63,7 +63,7 @@ namespace steemit {
     using fc::ecc::range_proof_info;
     using fc::ecc::commitment_type;
 
-    namespace type_traits {    
+    namespace type_traits {
         struct void_t {
 
         };
