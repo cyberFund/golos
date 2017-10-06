@@ -1516,7 +1516,7 @@ FC_API(steemit::wallet::wallet_api,
                replace_operation_in_builder_transaction)(preview_builder_transaction)(sign_builder_transaction)(
                propose_builder_transaction)(propose_builder_transaction2)(remove_builder_transaction)
 
-               (create_first_key_value_object)
+               (create_first_key_value_object)(update_first_key_value_object)
 )
 
 FC_REFLECT(steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted))

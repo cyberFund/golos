@@ -633,6 +633,35 @@ namespace steemit {
                     } FC_CAPTURE_AND_RETHROW();
                 }
 
+                annotated_signed_transaction update_first_key_value_object(string system, fc::uint128_t block_number,
+                                                                           string block_hash, string ipfs_hash_link,
+                                                                           fc::time_point_sec block_timestamp,
+                                                                           fc::time_point_sec timestamp,
+                                                                           account_name_type owner, bool broadcast) {
+                    try {
+                        key_value::update_first_key_value_operation operation;
+                        operation.system = system;
+                        operation.block_number = block_number;
+                        operation.block_hash = block_hash;
+                        operation.ipfs_hash_link = ipfs_hash_link;
+                        operation.block_timestamp = block_timestamp;
+                        operation.timestamp = timestamp;
+                        operation.owner = owner;
+
+                        custom_json_operation jop;
+                        jop.id = "update_first_key_value";
+                        jop.json = fc::json::to_string(operation);
+                        jop.required_posting_auths.insert(owner);
+
+                        signed_transaction trx;
+                        trx.operations.push_back(jop);
+                        trx.validate();
+
+                        return sign_transaction(trx, broadcast);
+                    } FC_CAPTURE_AND_RETHROW();
+                }
+
+
                 signed_transaction set_voting_proxy(string account_to_modify, string proxy,
                                                     bool broadcast /* = false */) {
                     try {
