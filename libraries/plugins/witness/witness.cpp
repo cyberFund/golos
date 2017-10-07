@@ -9,7 +9,7 @@
 #include <fc/smart_ref_impl.hpp>
 #include <fc/time.hpp>
 
-void new_chain_banner(const chain::database &db) {
+void new_chain_banner(const steemit::chain::database &db) {
     std::cerr << "\n"
             "********************************\n"
             "*                              *\n"
@@ -411,6 +411,7 @@ namespace steemit {
             auto head_block_num = b.block_num();
             auto head_block_time = b.timestamp;
             auto block_id = b.id();
+
             fc::thread *mainthread = &fc::thread::current();
             _total_hashes = 0;
             _hash_start_time = fc::time_point::now();
