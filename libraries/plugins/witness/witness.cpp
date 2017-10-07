@@ -199,7 +199,7 @@ namespace steemit {
             } catch (const fc::canceled_exception &) {
                 //We're trying to exit. Go ahead and let this one out.
                 throw;
-            } catch (const chain::unknown_hardfork_exception &e) {
+            } catch (const chain::exceptions::chain::unknown_hardfork<> &e) {
                 // Hit a hardfork that the current node know nothing about, stop production and inform user
                 elog("${e}\nNode may be out of date...", ("e", e.to_detail_string()));
                 throw;
@@ -481,7 +481,9 @@ namespace steemit {
                         work.input.prev_block = block_id;
                         work.input.worker_account = miner;
                         work.input.nonce = start + thread_num;
-                        op.props = _miner_prop_vote;
+                        op.props = {protocol::asset<0, 16, 0>(_miner_prop_vote.account_creation_fee.amount,
+                                                              _miner_prop_vote.account_creation_fee.symbol_name()),
+                                    _miner_prop_vote.maximum_block_size, _miner_prop_vote.sbd_interest_rate};
 
                         while (true) {
                             if (fc::time_point::now() > stop) {
@@ -531,7 +533,10 @@ namespace steemit {
                         work.input.prev_block = block_id;
                         work.input.worker_account = miner;
                         work.input.nonce = start + thread_num;
-                        op.props = _miner_prop_vote;
+                        op.props = {protocol::asset<0, 16, 0>(_miner_prop_vote.account_creation_fee.amount,
+                                                              _miner_prop_vote.account_creation_fee.symbol_name()),
+                                    _miner_prop_vote.maximum_block_size, _miner_prop_vote.sbd_interest_rate};
+
                         while (true) {
                             //  if( ((op.nonce/num_threads) % 1000) == 0 ) idump((op.nonce));
                             if (fc::time_point::now() > stop) {
