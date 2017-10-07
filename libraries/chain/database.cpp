@@ -1119,8 +1119,8 @@ namespace steemit {
                 const auto &gpo = get_dynamic_global_properties();
 
                 if (!median_price.is_null()) {
-                    asset<0, 17, 0> to_sbd = (gpo.sbd_print_rate * steem.amount) / STEEMIT_100_PERCENT;
-                    asset<0, 17, 0> to_steem = steem.amount - to_sbd;
+                    auto to_sbd = (gpo.sbd_print_rate * steem.amount) / STEEMIT_100_PERCENT;
+                    auto to_steem = steem.amount - to_sbd;
 
                     auto sbd = asset<0, 17, 0>(to_sbd, STEEM_SYMBOL_NAME) * median_price;
 

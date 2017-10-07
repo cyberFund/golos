@@ -95,10 +95,12 @@ namespace fc {
         if (ar[0].is_uint64()) {
             vo.set_which(ar[0].as_uint64());
         } else {
-            std::string operation_name = (boost::format(ar[0].as_string().append("<%1%, %2%, %3%>")) %
-                                         steemit::version::state::instance().current_version.major() %
-                                         steemit::version::state::instance().current_version.hardfork() %
-                                         steemit::version::state::instance().current_version.release()).str();
+            std::string operation_name = steemit::version::state::instance().current_version.hardfork() <= 16 ? (
+                    boost::format(ar[0].as_string().append("<%1%, %2%, %3%>")) % 0 % 16 % 0).str() : (
+                                                 boost::format(ar[0].as_string().append("<%1%, %2%, %3%>")) %
+                                                 steemit::version::state::instance().current_version.major() %
+                                                 steemit::version::state::instance().current_version.hardfork() %
+                                                 steemit::version::state::instance().current_version.release()).str();
             auto itr = to_tag.find(operation_name);
             FC_ASSERT(itr != to_tag.end(), "Invalid operation name: ${n}", ("n", ar[0]));
             vo.set_which(to_tag[operation_name]);

@@ -18,7 +18,7 @@ namespace fc {
         template<typename T>
         void operator()(const T &v) const {
             std::string name = name_from_type(fc::get_typename<T>::name());
-            var = variant(std::make_pair(name, v));
+            var = variant(std::make_pair(name.substr(0, name.find("<")), v));
         }
     };
 
