@@ -148,7 +148,7 @@ memcpy(sy + 1, symbol_string.c_str(), symbol_size);
 
     }
 
-    asset(share_type a, asset_symbol_type name) : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(3) {
+    asset(share_type a, asset_symbol_type name) : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a), decimals(3) {
 auto ta = (const char *) &name;
 FC_ASSERT(ta[7] == 0);
 this->symbol = &ta[1];
