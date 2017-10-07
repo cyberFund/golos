@@ -32,8 +32,8 @@ namespace steemit {
             account_name_type agent;
             uint32_t escrow_id = 30;
 
-            asset<Major, Hardfork, Release> sbd_amount = asset<Major, Hardfork, Release>(0, SBD_SYMBOL_NAME);
-            asset<Major, Hardfork, Release> steem_amount = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME);
+            asset<Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME};
+            asset<Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME};
             asset<Major, Hardfork, Release> fee;
 
             time_point_sec ratification_deadline;
@@ -113,8 +113,8 @@ namespace steemit {
             account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
 
             uint32_t escrow_id = 30;
-            asset<Major, Hardfork, Release> sbd_amount = asset<Major, Hardfork, Release>(0, SBD_SYMBOL_NAME); ///< the amount of sbd to release
-            asset<Major, Hardfork, Release> steem_amount = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME); ///< the amount of steem to release
+            asset<Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME}; ///< the amount of sbd to release
+            asset<Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME}; ///< the amount of steem to release
 
             void validate() const;
 

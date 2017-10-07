@@ -65,8 +65,8 @@ namespace steemit {
             account_name_type author;
             string permlink;
 
-            asset<Major, Hardfork, Release> max_accepted_payout = asset <Major, Hardfork, Release>(1000000000, SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
-            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
+            asset<Major, Hardfork, Release> max_accepted_payout = {1000000000, SBD_SYMBOL_NAME};       /// SBD value of the maximum payout this post will receive
+            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Gold to key, unkept amounts will be received as Golos Power
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
             comment_options_extensions_type extensions;
