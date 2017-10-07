@@ -144,9 +144,9 @@ namespace steemit {
              */
             dynamic_global_property_object get_dynamic_global_properties() const;
 
-            chain_properties get_chain_properties() const;
+            chain_properties<0, 17, 0> get_chain_properties() const;
 
-            price get_current_median_history_price() const;
+            price<0, 17, 0> get_current_median_history_price() const;
 
             feed_history_api_obj get_feed_history() const;
 

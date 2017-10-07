@@ -327,7 +327,7 @@ namespace steemit {
             });
         }
 
-        chain_properties database_api::get_chain_properties() const {
+        chain_properties<0, 17, 0> database_api::get_chain_properties() const {
             return my->_db.with_read_lock([&]() {
                 return my->_db.get_witness_schedule_object().median_props;
             });
@@ -339,7 +339,7 @@ namespace steemit {
             });
         }
 
-        price database_api::get_current_median_history_price() const {
+        price<0, 17, 0> database_api::get_current_median_history_price() const {
             return my->_db.with_read_lock([&]() {
                 return my->_db.get_feed_history().current_median_history;
             });
