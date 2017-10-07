@@ -386,7 +386,7 @@ namespace steemit {
                     if (op.amount.amount == mia_dyn.current_supply) {
                         settled_amount.amount = bitasset.settlement_fund; // avoid rounding problems
                     } else {
-                        FC_ASSERT(settled_amount.amount < bitasset.settlement_fund);
+                        FC_ASSERT(settled_amount.amount <= bitasset.settlement_fund); // should be strictly < except for PM with zero outcome
                     }
 
                     FC_ASSERT(settled_amount.amount <= bitasset.settlement_fund);
