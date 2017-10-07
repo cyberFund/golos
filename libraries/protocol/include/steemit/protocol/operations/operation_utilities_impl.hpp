@@ -7,7 +7,38 @@
 namespace fc {
     std::string name_from_type(const std::string &type_name);
 
-    struct from_operation {
+    class from_operation_policy_interface {
+
+    };
+
+    class from_operation_policy : public from_operation_policy_interface {
+
+    };
+
+    class versioned_from_operation_policy : public from_operation_policy_interface {
+
+    };
+
+    template<typename Policy, typename = typename std::enable_if<std::is_base_of<from_operation_policy_interface, Policy>::value>::type>
+    class from_operation {
+    public:
+        variant &var;
+
+        from_operation(variant &dv) : var(dv) {
+        }
+
+        typedef void result_type;
+
+        template<typename T>
+        void operator()(const T &v) const {
+            std::string name = name_from_type(fc::get_typename<T>::name());
+            var = variant(std::make_pair(name, v));
+        }
+    };
+
+    template<>
+    class from_operation<versioned_from_operation_policy> {
+    public:
         variant &var;
 
         from_operation(variant &dv) : var(dv) {
@@ -22,7 +53,8 @@ namespace fc {
         }
     };
 
-    struct get_operation_name {
+    class get_operation_name {
+    public:
         string &name;
 
         get_operation_name(string &dv) : name(dv) {

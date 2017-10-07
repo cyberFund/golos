@@ -43,11 +43,13 @@ namespace steemit {
                 void operator()(const T &) const {
                 }
 
-                void operator()(const account_create_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const account_create_operation<Major, Hardfork, Release> &op) const {
                     _plugin.my->clear_cache();
                 }
 
-                void operator()(const account_update_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const account_update_operation<Major, Hardfork, Release> &op) const {
                     _plugin.my->clear_cache();
                     auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
                     if (acct_itr) {
@@ -55,7 +57,8 @@ namespace steemit {
                     }
                 }
 
-                void operator()(const recover_account_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const recover_account_operation<Major, Hardfork, Release> &op) const {
                     _plugin.my->clear_cache();
                     auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account_to_recover);
                     if (acct_itr) {
@@ -63,11 +66,13 @@ namespace steemit {
                     }
                 }
 
-                void operator()(const pow_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const pow_operation<Major, Hardfork, Release> &op) const {
                     _plugin.my->clear_cache();
                 }
 
-                void operator()(const pow2_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const pow2_operation<Major, Hardfork, Release> &op) const {
                     _plugin.my->clear_cache();
                 }
             };
@@ -94,35 +99,40 @@ namespace steemit {
                 void operator()(const T &) const {
                 }
 
-                void operator()(const account_create_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const account_create_operation<Major, Hardfork, Release> &op) const {
                     auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.new_account_name);
                     if (acct_itr) {
                         _plugin.update_key_lookup(*acct_itr);
                     }
                 }
 
-                void operator()(const account_update_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const account_update_operation<Major, Hardfork, Release> &op) const {
                     auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
                     if (acct_itr) {
                         _plugin.update_key_lookup(*acct_itr);
                     }
                 }
 
-                void operator()(const recover_account_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const recover_account_operation<Major, Hardfork, Release> &op) const {
                     auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account_to_recover);
                     if (acct_itr) {
                         _plugin.update_key_lookup(*acct_itr);
                     }
                 }
 
-                void operator()(const pow_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const pow_operation<Major, Hardfork, Release> &op) const {
                     auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.worker_account);
                     if (acct_itr) {
                         _plugin.update_key_lookup(*acct_itr);
                     }
                 }
 
-                void operator()(const pow2_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const pow2_operation<Major, Hardfork, Release> &op) const {
                     const account_name_type *worker_account = op.work.visit(pow2_work_get_account_visitor());
                     if (worker_account == nullptr) {
                         return;
@@ -133,7 +143,8 @@ namespace steemit {
                     }
                 }
 
-                void operator()(const hardfork_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const hardfork_operation<Major, Hardfork, Release> &op) const {
                     if (op.hardfork_id == STEEMIT_HARDFORK_0_16) {
                         auto &db = _plugin.database();
 
@@ -194,8 +205,12 @@ namespace steemit {
                 ilog("Initializing account_by_key plugin");
                 chain::database &db = database();
 
-                db.pre_apply_operation.connect([&](const operation_notification &o) { my->pre_operation(o); });
-                db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
+                db.pre_apply_operation.connect([&](const operation_notification &o) {
+                    my->pre_operation(o);
+                });
+                db.post_apply_operation.connect([&](const operation_notification &o) {
+                    my->post_operation(o);
+                });
 
                 db.add_plugin_index<key_lookup_index>();
             }

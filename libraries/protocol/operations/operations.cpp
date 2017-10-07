@@ -72,7 +72,7 @@ namespace steemit {
 namespace fc {
 
     void to_variant(const steemit::protocol::operation &var, fc::variant &vo) {
-        var.visit(from_operation(vo));
+        var.visit(from_operation<versioned_from_operation_policy>(vo));
     }
 
     void from_variant(const fc::variant &var, steemit::protocol::operation &vo) {
