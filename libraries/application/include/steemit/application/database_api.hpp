@@ -464,7 +464,7 @@ namespace steemit {
              * @return deadline time the payout window pretends to be extended for
              */
 
-            fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset cost) const;
+            fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset<0, 17, 0> cost) const;
 
             ///////////////////////////
             // Proposed transactions //
@@ -543,8 +543,8 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::scheduled_hardfork, (hf_version)(live_time));
-FC_REFLECT(steemit::application::withdraw_route, (from_account)(to_account)(percent)(auto_vest));
+FC_REFLECT((steemit::application::scheduled_hardfork), (hf_version)(live_time));
+FC_REFLECT((steemit::application::withdraw_route), (from_account)(to_account)(percent)(auto_vest));
 
 FC_REFLECT_ENUM(steemit::application::withdraw_route_type, (incoming)(outgoing)(all));
 
