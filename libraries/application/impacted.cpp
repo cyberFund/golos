@@ -18,7 +18,6 @@ namespace steemit {
             typedef void result_type;
 
             template<typename T>
-            template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
             void operator()(const T &op) {
                 op.get_required_posting_authorities(_impacted);
                 op.get_required_active_authorities(_impacted);
