@@ -332,7 +332,7 @@ namespace steemit {
                 }
 
                 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-                void operator()(const transfer_operation &op) const {
+                void operator()(const transfer_operation<Major, Hardfork, Release> &op) const {
                     if (op.to == STEEMIT_NULL_ACCOUNT && op.amount.symbol_name() == SBD_SYMBOL_NAME) {
                         vector<string> part;
                         part.reserve(4);
@@ -402,8 +402,8 @@ namespace steemit {
                     update_tags(c);
                 }
 
-                template<typename Op>
-                void operator()(Op &&) const {
+                template<typename T>
+                void operator()(const T &o) const {
                 } /// ignore all other ops
             };
 
