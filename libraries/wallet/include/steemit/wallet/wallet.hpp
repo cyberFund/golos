@@ -1002,8 +1002,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network.
              * @returns The signed transaction selling the funds.
              */
-            signed_transaction buy(string buyer_account, string base, string quote, double rate, double amount,
-                                   bool broadcast);
+            signed_transaction buy(string buyer_account, string base, string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast);
 
             /** Borrow an asset or update the debt/collateral ratio for the loan.
              *

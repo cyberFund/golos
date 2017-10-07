@@ -2509,8 +2509,7 @@ namespace steemit {
                               asset(rate * amount, asset::from_string(quote).symbol), 0, order_id, false, broadcast);
         }
 
-        signed_transaction wallet_api::buy(string buyer_account, string base, string quote, double rate, double amount,
-                                           bool broadcast) {
+        signed_transaction wallet_api::buy(string buyer_account, string base, string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast) {
             return sell_asset(buyer_account, asset(rate * amount, asset::from_string(quote).symbol),
                               asset(amount, asset::from_string(base).symbol), 0, order_id, false, broadcast);
         }
