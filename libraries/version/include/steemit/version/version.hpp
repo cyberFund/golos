@@ -148,7 +148,7 @@ namespace steemit {
             static const version version_instance;
         };
 
-        template<template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename ...>
                 class Versionable, uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class versionable_to {
         public:

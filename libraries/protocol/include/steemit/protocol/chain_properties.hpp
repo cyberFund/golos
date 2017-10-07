@@ -19,8 +19,7 @@ namespace steemit {
              *  fee requires all accounts to have some kind of commitment to the network that includes the
              *  ability to vote and make transactions.
              */
-            asset <Major, Hardfork, Release> account_creation_fee = {STEEMIT_MIN_ACCOUNT_CREATION_FEE,
-                                                                          STEEM_SYMBOL_NAME};
+            asset <Major, Hardfork, Release> account_creation_fee = asset<Major, Hardfork, Release>(STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL_NAME);
 
             /**
              *  This witnesses vote for the maximum_block_size which is used by the network

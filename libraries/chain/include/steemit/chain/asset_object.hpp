@@ -117,7 +117,7 @@ namespace steemit {
 
             /// Helper function to get an asset object with the given amount in this asset's type
             protocol::asset<0, 17, 0> amount(share_type a) const {
-                return {a, asset_name};
+                return protocol::asset<0, 17, 0>(a, asset_name);
             }
 
             /// Convert a string amount (i.e. "123.45") to an asset object with this asset's type

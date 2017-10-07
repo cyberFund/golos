@@ -233,7 +233,7 @@ namespace steemit {
             auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
             auto itr = index.find(boost::make_tuple(owner, asset_name));
             if (itr == index.end()) {
-                return {0, asset_name};
+                return protocol::asset<0, 17, 0>(0, asset_name);
             }
             return itr->get_balance();
         }
@@ -1108,7 +1108,7 @@ namespace steemit {
 
         std::pair<asset<0, 17, 0>, asset<0, 17, 0>> database::create_sbd(const account_object &to_account,
                                                                          asset<0, 17, 0> steem) {
-            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets({0, SBD_SYMBOL_NAME}, {0, STEEM_SYMBOL_NAME});
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets(protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME), protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME));
 
             try {
                 if (steem.amount == 0) {
@@ -1119,8 +1119,8 @@ namespace steemit {
                 const auto &gpo = get_dynamic_global_properties();
 
                 if (!median_price.is_null()) {
-                    auto to_sbd = (gpo.sbd_print_rate * steem.amount) / STEEMIT_100_PERCENT;
-                    auto to_steem = steem.amount - to_sbd;
+                    asset<0, 17, 0> to_sbd = (gpo.sbd_print_rate * steem.amount) / STEEMIT_100_PERCENT;
+                    asset<0, 17, 0> to_steem = steem.amount - to_sbd;
 
                     auto sbd = asset<0, 17, 0>(to_sbd, STEEM_SYMBOL_NAME) * median_price;
 

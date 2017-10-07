@@ -43,7 +43,7 @@ namespace steemit {
             }
 
             protocol::asset<0, 17, 0> amount_for_sale() const {
-                return {for_sale, sell_price.base.symbol};
+                return protocol::asset<0, 17, 0>(for_sale, sell_price.base.symbol);
             }
 
             protocol::asset<0, 17, 0> amount_to_receive() const {
@@ -72,11 +72,11 @@ namespace steemit {
             id_type id;
 
             protocol::asset<0, 17, 0> get_collateral() const {
-                return {collateral, call_price.base.symbol};
+                return protocol::asset<0, 17, 0>(collateral, call_price.base.symbol);
             }
 
             protocol::asset<0, 17, 0> get_debt() const {
-                return {debt, debt_type()};
+                return protocol::asset<0, 17, 0>(debt, debt_type());
             }
 
             protocol::asset<0, 17, 0> amount_to_receive() const {
