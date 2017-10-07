@@ -122,16 +122,17 @@ namespace steemit {
             asset <Major, Hardfork, Release> collateral;
         };
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        using market_virtual_operations = fc::static_variant<
-                protocol::fill_order_operation<Major, Hardfork, Release>,
-                protocol::fill_call_order_operation<Major, Hardfork, Release>,
-                protocol::fill_settlement_order_operation<Major, Hardfork, Release>>;
+        typedef fc::static_variant<
+                protocol::fill_order_operation<0, 16, 0>,
+                protocol::fill_call_order_operation<0, 16, 0>,
+                protocol::fill_settlement_order_operation<0, 16, 0>,
+                protocol::fill_order_operation<0, 17, 0>,
+                protocol::fill_call_order_operation<0, 17, 0>,
+                protocol::fill_settlement_order_operation<0, 17, 0>> market_virtual_operations;
     }
 }
 
-FC_REFLECT_TYPENAME((steemit::protocol::market_virtual_operations<0, 16, 0>))
-FC_REFLECT_TYPENAME((steemit::protocol::market_virtual_operations<0, 17, 0>))
+FC_REFLECT_TYPENAME((steemit::protocol::market_virtual_operations))
 
 FC_REFLECT((steemit::protocol::fill_order_operation<0, 16, 0>),
            (current_owner)(current_order_id)(current_pays)(open_owner)(open_order_id)(open_pays))

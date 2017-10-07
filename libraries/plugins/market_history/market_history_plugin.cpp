@@ -93,7 +93,9 @@ namespace steemit {
                                 continue;
                             }
 
-                            price<0, 17, 0> trade_price = o.current_pays / o.open_pays;
+                            price<Major, Hardfork, Release> v_trade_price = (o.current_pays / o.open_pays);
+
+                            price<0, 17, 0> trade_price(asset<0, 17, 0>(v_trade_price.base.template amount, v_trade_price.base.template symbol_name()), asset<0, 17, 0>(v_trade_price.quote.template amount, v_trade_price.quote.template symbol_name()));
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +

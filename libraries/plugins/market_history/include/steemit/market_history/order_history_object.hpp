@@ -45,7 +45,7 @@ namespace steemit {
 
             history_key key;
             fc::time_point_sec time;
-            protocol::market_virtual_operations<0, 17, 0> op;
+            protocol::market_virtual_operations op;
         };
 
         struct by_time;
