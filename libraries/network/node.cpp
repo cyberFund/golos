@@ -3523,7 +3523,7 @@ namespace steemit {
                 catch (const fc::canceled_exception &) {
                     throw;
                 }
-                catch (const exceptions::unlinkable_block_exception<> &e) {
+                catch (const exceptions::unlinkable_block<> &e) {
                     restart_sync_exception = e;
                 }
                 catch (const fc::exception &e) {

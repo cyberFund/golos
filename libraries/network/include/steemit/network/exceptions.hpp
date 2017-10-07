@@ -27,7 +27,7 @@ namespace steemit {
             using peer_is_on_an_unreachable_fork = basic<IncrementalCode, What>;
 
             template<uint32_t IncrementalCode = 6, typename What = boost::mpl::string<'unlinkable block'>>
-            using unlinkable_block_exception = basic<IncrementalCode, What>;
+            using unlinkable_block = basic<IncrementalCode, What>;
 #pragma GCC diagnostic pop
         }
     }

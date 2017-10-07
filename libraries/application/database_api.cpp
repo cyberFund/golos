@@ -923,9 +923,15 @@ namespace steemit {
 
             /// reuse trx.verify_authority by creating a dummy transfer
             signed_transaction trx;
-            transfer_operation op;
-            op.from = account->name;
-            trx.operations.emplace_back(op);
+            if (_db.has_hardfork(STEEMIT_HARDFORK_0_17)) {
+                transfer_operation<0, 17, 0> op;
+                op.from = account->name;
+                trx.operations.emplace_back(op);
+            } else {
+                transfer_operation<0, 16, 0> op;
+                op.from = account->name;
+                trx.operations.emplace_back(op);
+            }
 
             return verify_authority(trx);
         }
@@ -2287,6 +2293,9 @@ namespace steemit {
             return my->_db.with_read_lock([&]() {
                 const auto &idx = my->_db.get_index<operation_index>().indices().get<by_transaction_id>();
                 auto itr = idx.lower_bound(id);
+
+                FC_ASSERT(itr != idx.end() && itr->trx_id == id, "Unknown Transaction ${t}", ("t", id));
+
                 if (itr != idx.end() && itr->trx_id == id) {
                     auto blk = my->_db.fetch_block_by_number(itr->block);
                     FC_ASSERT(blk.valid());
@@ -2296,7 +2305,6 @@ namespace steemit {
                     result.transaction_num = itr->trx_in_block;
                     return result;
                 }
-                FC_ASSERT(false, "Unknown Transaction ${t}", ("t", id));
             });
         }
 
