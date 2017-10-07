@@ -37,7 +37,7 @@ namespace steemit {
 
             struct debug_mine_args {
                 std::string worker_account;
-                fc::optional<chain::chain_properties> props;
+                fc::optional<chain::chain_properties<0, 17, 0>> props;
             };
 
             struct debug_mine_result {
@@ -67,17 +67,17 @@ namespace steemit {
                 /*
                  * Pop a block from the blockchain, returning it
                  */
-                fc::optional<steemit::chain::signed_block> debug_pop_block();
+                fc::optional<chain::signed_block> debug_pop_block();
 
                 /*
                  * Push an already constructed block onto the blockchain. For use with pop_block to traverse state block by block.
                  */
                 // not implemented
-                //void debug_push_block( steemit::chain::signed_block& block );
+                //void debug_push_block( chain::signed_block& block );
 
-                steemit::chain::witness_schedule_object debug_get_witness_schedule();
+                chain::witness_schedule_object debug_get_witness_schedule();
 
-                steemit::chain::hardfork_property_object debug_get_hardfork_property_object();
+                chain::hardfork_property_object debug_get_hardfork_property_object();
 
                 /**
                  * Directly manipulate database objects (will undo and re-apply last block with new changes post-applied).

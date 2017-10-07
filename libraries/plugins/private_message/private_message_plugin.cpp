@@ -22,13 +22,14 @@ namespace steemit {
                 }
 
                 private_message_plugin &_self;
-                std::shared_ptr<generic_custom_operation_interpreter<steemit::private_message::private_message_plugin_operation>> _custom_operation_interpreter;
+                std::shared_ptr<generic_custom_operation_interpreter<
+                        steemit::private_message::private_message_plugin_operation>> _custom_operation_interpreter;
                 flat_map<string, string> _tracked_accounts;
             };
 
-            private_message_plugin_impl::private_message_plugin_impl(private_message_plugin &_plugin)
-                    : _self(_plugin) {
-                _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<steemit::private_message::private_message_plugin_operation>>(database());
+            private_message_plugin_impl::private_message_plugin_impl(private_message_plugin &_plugin) : _self(_plugin) {
+                _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<
+                        steemit::private_message::private_message_plugin_operation>>(database());
 
                 _custom_operation_interpreter->register_evaluator<private_message_evaluator>(&_self);
 
@@ -56,10 +57,8 @@ namespace steemit {
             FC_ASSERT(pm.encrypted_message.size() >= 32);
 
             if (!tracked_accounts.size() ||
-                (to_itr != tracked_accounts.end() && pm.to >= to_itr->first &&
-                 pm.to <= to_itr->second) ||
-                (from_itr != tracked_accounts.end() &&
-                 pm.from >= from_itr->first && pm.from <= from_itr->second)) {
+                (to_itr != tracked_accounts.end() && pm.to >= to_itr->first && pm.to <= to_itr->second) ||
+                (from_itr != tracked_accounts.end() && pm.from >= from_itr->first && pm.from <= from_itr->second)) {
                 d.create<message_object>([&](message_object &pmo) {
                     pmo.from = pm.from;
                     pmo.to = pm.to;
@@ -74,9 +73,8 @@ namespace steemit {
             }
         }
 
-        private_message_plugin::private_message_plugin(application::application *app)
-                : plugin(app),
-                  my(new detail::private_message_plugin_impl(*this)) {
+        private_message_plugin::private_message_plugin(application::application *app) : plugin(app),
+                my(new detail::private_message_plugin_impl(*this)) {
         }
 
         private_message_plugin::~private_message_plugin() {
@@ -86,12 +84,11 @@ namespace steemit {
             return "private_message";
         }
 
-        void private_message_plugin::plugin_set_program_options(
-                boost::program_options::options_description &cli,
-                boost::program_options::options_description &cfg
-        ) {
-            cli.add_options()
-                    ("pm-account-range", boost::program_options::value<std::vector<std::string>>()->composing()->multitoken(), "Defines a range of accounts to private messages to/from as a json pair [\"from\",\"to\"] [from,to)");
+        void private_message_plugin::plugin_set_program_options(boost::program_options::options_description &cli,
+                                                                boost::program_options::options_description &cfg) {
+            cli.add_options()("pm-account-range",
+                              boost::program_options::value<std::vector<std::string>>()->composing()->multitoken(),
+                              "Defines a range of accounts to private messages to/from as a json pair [\"from\",\"to\"] [from,to)");
             cfg.add(cli);
         }
 
@@ -145,5 +142,3 @@ namespace steemit {
 }
 
 STEEMIT_DEFINE_PLUGIN(private_message, steemit::private_message::private_message_plugin)
-
-STEEMIT_DEFINE_OPERATION_TYPE(steemit::private_message::private_message_plugin_operation)

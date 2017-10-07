@@ -142,7 +142,7 @@ namespace steemit {
     }
 } // steemit::blockchain_statistics
 
-FC_REFLECT(steemit::blockchain_statistics::bucket_object,
+FC_REFLECT((steemit::blockchain_statistics::bucket_object),
         (id)
                 (open)
                 (seconds)

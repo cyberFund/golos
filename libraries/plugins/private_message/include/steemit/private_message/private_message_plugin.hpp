@@ -226,4 +226,4 @@ CHAINBASE_SET_INDEX_TYPE(steemit::private_message::message_object, steemit::priv
 
 FC_REFLECT((steemit::private_message::message_api_obj), (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(receive_time)(checksum)(encrypted_message));
 
-FC_REFLECT_DERIVED((steemit::private_message::extended_message_object), (steemit::private_message::message_api_obj), (message));
+FC_REFLECT_DERIVED((steemit::private_message::extended_message_object), ((steemit::private_message::message_api_obj)), (message));

@@ -108,7 +108,7 @@ namespace steemit {
     }
 } // steemit::blockchain_statistics
 
-FC_REFLECT(steemit::blockchain_statistics::statistics,
+FC_REFLECT((steemit::blockchain_statistics::statistics),
         (blocks)
                 (bandwidth)
                 (operations)
