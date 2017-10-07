@@ -1,5 +1,6 @@
 
 #include <steemit/chain/compound.hpp>
+
 #include <steemit/protocol/asset.hpp>
 
 #include <fc/io/json.hpp>
@@ -16,7 +17,6 @@
 #define VPOW_OFF        9
 #define REWARD_TYPES   10
 
-using steemit::protocol::asset;
 using steemit::protocol::share_type;
 using steemit::protocol::calc_percent_reward_per_block;
 using steemit::protocol::calc_percent_reward_per_round;
