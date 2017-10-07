@@ -124,13 +124,20 @@ namespace steemit {
 
         typedef fc::static_variant<
                 protocol::fill_order_operation<0, 16, 0>,
-                protocol::fill_call_order_operation<0, 16, 0>,
-                protocol::fill_settlement_order_operation<0, 16, 0>,
                 protocol::fill_order_operation<0, 17, 0>,
                 protocol::fill_call_order_operation<0, 17, 0>,
-                protocol::fill_settlement_order_operation<0, 17, 0>> market_virtual_operations;
+                protocol::fill_settlement_order_operation<0, 17, 0>,
+                protocol::execute_bid_operation<0, 17, 0>> market_virtual_operations;
     }
 }
+
+namespace fc {
+
+    void to_variant(const steemit::protocol::market_virtual_operations &, fc::variant &);
+
+    void from_variant(const fc::variant &, steemit::protocol::market_virtual_operations &);
+
+} /* fc */
 
 FC_REFLECT_TYPENAME((steemit::protocol::market_virtual_operations))
 

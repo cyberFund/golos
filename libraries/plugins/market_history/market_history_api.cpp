@@ -34,7 +34,7 @@ namespace steemit {
                     market_trade operator()(const fill_order_operation<Major, Hardfork, Release> &o) const {
                         market_trade trade;
 
-                        if (assets[0]->asset_name == o.open_pays.symbol) {
+                        if (assets[0]->asset_name == o.open_pays.symbol_name()) {
                             trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
                             trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
                         } else {
@@ -49,7 +49,7 @@ namespace steemit {
                     market_trade operator()(const fill_call_order_operation<Major, Hardfork, Release> &o) const {
                         market_trade trade;
 
-                        if (assets[0]->asset_name == o.receives.symbol) {
+                        if (assets[0]->asset_name == o.receives.symbol_name()) {
                             trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
                             trade.value = price_to_real(o.receives.amount, assets[0]->precision);
                         } else {
@@ -63,7 +63,7 @@ namespace steemit {
                     market_trade operator()(const fill_settlement_order_operation<Major, Hardfork, Release> &o) const {
                         market_trade trade;
 
-                        if (assets[0]->asset_name == o.receives.symbol) {
+                        if (assets[0]->asset_name == o.receives.symbol_name()) {
                             trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
                             trade.value = price_to_real(o.receives.amount, assets[0]->precision);
                         } else {

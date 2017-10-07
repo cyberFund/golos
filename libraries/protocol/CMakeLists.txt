@@ -42,6 +42,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      operations/escrow_operations.cpp
      get_config.cpp
      operations/market_operations.cpp
+     operations/market_virtual_operations.cpp
      operations/operation_utilities_impl.cpp
      operations/operations.cpp
      operations/proposal_operations.cpp
