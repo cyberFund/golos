@@ -37,15 +37,36 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset<Major, Hardfork, Release, type_traits::static_range < Hardfork <= 16>> : public asset_interface<
                 Major, Hardfork, Release, asset_symbol_type, share_type> {
-        asset();
+        asset() : asset_interface<Major,
+                Hardfork, Release, asset_symbol_type, share_type>(0, STEEM_SYMBOL) {
 
-        asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
-
-        asset(share_type a, asset_name_type name);
-
-        double to_real() const {
-            return double(this->amount.value) / precision();
         }
+
+        asset(share_type a, asset_symbol_type id = STEEM_SYMBOL) : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, id) {
+
+    }
+
+        asset(share_type a, asset_name_type name) : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, STEEM_SYMBOL) {
+    string s = fc::trim(name);
+
+    this->symbol = uint64_t(3);
+    char *sy = (char *) &this->symbol;
+
+    size_t symbol_size = name.size();
+
+    if (symbol_size > 0) {
+FC_ASSERT(symbol_size <= 6);
+
+std::string symbol_string(name);
+
+FC_ASSERT(std::find_if(symbol_string.begin(), symbol_string.end(), [&](const char &c) -> bool {
+    return std::isdigit(c);
+}) == symbol_string.end());
+memcpy(sy + 1, symbol_string.c_str(), symbol_size);
+}
+}
+
+        double to_real() const;
 
         uint8_t decimals() const;
 
@@ -122,17 +143,28 @@ namespace steemit {
 
     template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
     struct asset<Major, Hardfork, Release, type_traits::static_range < Hardfork >= 17>> : public asset_interface <Major, Hardfork, Release, asset_name_type, share_type> {
-    asset();
+    asset() : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(0, STEEM_SYMBOL_NAME),
+            decimals(3) {
 
-    asset(share_type a, asset_symbol_type name);
+    }
 
-    asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
+    asset(share_type a, asset_symbol_type name) : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(3) {
+auto ta = (const char *) &name;
+FC_ASSERT(ta[7] == 0);
+this->symbol = &ta[1];
+
+uint8_t result = uint8_t(ta[0]);
+FC_ASSERT(result < 15);
+this->decimals = result;
+}
+
+    asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3) : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(d) {
+
+}
 
     uint8_t decimals;
 
-    double to_real() const {
-        return double(this->amount.value) / precision();
-    }
+    double to_real() const;
 
     asset_symbol_type symbol_type_value() const;
 

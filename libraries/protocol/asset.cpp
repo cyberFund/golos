@@ -15,38 +15,8 @@ namespace steemit {
         typedef boost::multiprecision::int128_t int128_t;
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset() : asset_interface<Major,
-                Hardfork, Release, asset_symbol_type, share_type>(0, STEEM_SYMBOL) {
-
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a,
-                                                                                          asset_symbol_type id)
-                : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, id) {
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a,
-                                                                                          asset_name_type name)
-                : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, STEEM_SYMBOL) {
-            string s = fc::trim(name);
-
-            this->symbol = uint64_t(3);
-            char *sy = (char *) &this->symbol;
-
-            size_t symbol_size = name.size();
-
-            if (symbol_size > 0) {
-                FC_ASSERT(symbol_size <= 6);
-
-                std::string symbol_string(name);
-
-                FC_ASSERT(std::find_if(symbol_string.begin(), symbol_string.end(), [&](const char &c) -> bool {
-                    return std::isdigit(c);
-                }) == symbol_string.end());
-                memcpy(sy + 1, symbol_string.c_str(), symbol_size);
-            }
+        double asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::to_real() const {
+            return double(this->amount.value) / precision();
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -65,14 +35,16 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset_name_type asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::symbol_name() const {
+        asset_name_type asset<Major, Hardfork, Release,
+                type_traits::static_range<Hardfork <= 16>>::symbol_name() const {
             auto a = (const char *) &this->symbol;
             FC_ASSERT(a[7] == 0);
             return &a[1];
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset_symbol_type asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::symbol_type_value() const {
+        asset_symbol_type asset<Major, Hardfork, Release,
+                type_traits::static_range<Hardfork <= 16>>::symbol_type_value() const {
             return this->symbol;
         }
 
@@ -146,35 +118,13 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset()
-                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(0, STEEM_SYMBOL_NAME),
-                decimals(3) {
-
+        double asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::to_real() const {
+            return double(this->amount.value) / precision();
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a,
-                                                                                          asset_symbol_type name)
-                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(3) {
-            auto ta = (const char *) &name;
-            FC_ASSERT(ta[7] == 0);
-            this->symbol = &ta[1];
-
-            uint8_t result = uint8_t(ta[0]);
-            FC_ASSERT(result < 15);
-            this->decimals = result;
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a,
-                                                                                          asset_name_type name,
-                                                                                          uint8_t d)
-                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, name), decimals(d) {
-
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset_symbol_type asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::symbol_type_value() const {
+        asset_symbol_type asset<Major, Hardfork, Release,
+                type_traits::static_range<Hardfork >= 17>>::symbol_type_value() const {
             asset_symbol_type result;
 
             FC_ASSERT(this->decimals < 15, "Precision should be less than 15");
@@ -191,7 +141,8 @@ namespace steemit {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset_name_type asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::symbol_name() const {
+        asset_name_type asset<Major, Hardfork, Release,
+                type_traits::static_range<Hardfork >= 17>>::symbol_name() const {
             return this->symbol;
         }
 
