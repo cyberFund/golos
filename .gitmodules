@@ -4,9 +4,6 @@
 [submodule "libraries/chainbase"]
 	path = libraries/chainbase
 	url = https://github.com/GolosChain/chainbase.git
-[submodule "libraries/libcds"]
-	path = libraries/libcds
-	url = https://github.com/khizmax/libcds.git
 [submodule "libraries/cld2"]
 	path = libraries/cld2
 	url = https://github.com/CLD2Owners/cld2.git
