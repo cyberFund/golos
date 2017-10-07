@@ -24,52 +24,94 @@ namespace steemit {
 
                 void on_block(const signed_block &b);
 
-                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
                 void pre_operation(const operation_notification &o) {
                     auto &db = _self.database();
 
-                    for (auto bucket_id : _current_buckets) {
-                        if (o.op.which() == operation::tag<delete_comment_operation<Major, Hardfork, Release>>::value) {
-                            delete_comment_operation<Major, Hardfork, Release> op = o.op.get<
-                                    delete_comment_operation<Major, Hardfork, Release>>();
-                            auto comment = db.get_comment(op.author, op.permlink);
-                            const auto &bucket = db.get(bucket_id);
+                    if (db.has_hardfork(STEEMIT_HARDFORK_0_17)) {
+                        for (auto bucket_id : _current_buckets) {
+                            if (o.op.which() == operation::tag<delete_comment_operation<0, 17, 0>>::value) {
+                                delete_comment_operation<0, 17, 0> op = o.op.get<delete_comment_operation<0, 17, 0>>();
+                                auto comment = db.get_comment(op.author, op.permlink);
+                                const auto &bucket = db.get(bucket_id);
 
-                            db.modify(bucket, [&](bucket_object &b) {
-                                if (comment.parent_author.length()) {
-                                    b.replies_deleted++;
-                                } else {
-                                    b.root_comments_deleted++;
-                                }
-                            });
-                        } else if (o.op.which() ==
-                                   operation::tag<withdraw_vesting_operation<Major, Hardfork, Release>>::value) {
-                            withdraw_vesting_operation<Major, Hardfork, Release> op = o.op.get<
-                                    withdraw_vesting_operation<Major, Hardfork, Release>>();
-                            auto &account = db.get_account(op.account);
-                            const auto &bucket = db.get(bucket_id);
+                                db.modify(bucket, [&](bucket_object &b) {
+                                    if (comment.parent_author.length()) {
+                                        b.replies_deleted++;
+                                    } else {
+                                        b.root_comments_deleted++;
+                                    }
+                                });
+                            } else if (o.op.which() == operation::tag<withdraw_vesting_operation<0, 17, 0>>::value) {
+                                withdraw_vesting_operation<0, 17, 0> op = o.op.get<
+                                        withdraw_vesting_operation<0, 17, 0>>();
+                                auto &account = db.get_account(op.account);
+                                const auto &bucket = db.get(bucket_id);
 
-                            auto new_vesting_withdrawal_rate =
-                                    op.vesting_shares.amount / STEEMIT_VESTING_WITHDRAW_INTERVALS;
-                            if (op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0) {
-                                new_vesting_withdrawal_rate = 1;
-                            }
-
-                            if (!db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                                new_vesting_withdrawal_rate *= 10000;
-                            }
-
-                            db.modify(bucket, [&](bucket_object &b) {
-                                if (account.vesting_withdraw_rate.amount > 0) {
-                                    b.modified_vesting_withdrawal_requests++;
-                                } else {
-                                    b.new_vesting_withdrawal_requests++;
+                                auto new_vesting_withdrawal_rate =
+                                        op.vesting_shares.amount / STEEMIT_VESTING_WITHDRAW_INTERVALS;
+                                if (op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0) {
+                                    new_vesting_withdrawal_rate = 1;
                                 }
 
-                                // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to figure that out...
-                                b.vesting_withdraw_rate_delta +=
-                                        new_vesting_withdrawal_rate - account.vesting_withdraw_rate.amount;
-                            });
+                                if (!db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                                    new_vesting_withdrawal_rate *= 10000;
+                                }
+
+                                db.modify(bucket, [&](bucket_object &b) {
+                                    if (account.vesting_withdraw_rate.amount > 0) {
+                                        b.modified_vesting_withdrawal_requests++;
+                                    } else {
+                                        b.new_vesting_withdrawal_requests++;
+                                    }
+
+                                    // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to figure that out...
+                                    b.vesting_withdraw_rate_delta +=
+                                            new_vesting_withdrawal_rate - account.vesting_withdraw_rate.amount;
+                                });
+                            }
+                        }
+                    } else {
+                        for (auto bucket_id : _current_buckets) {
+                            if (o.op.which() == operation::tag<delete_comment_operation<0, 16, 0>>::value) {
+                                delete_comment_operation<0, 16, 0> op = o.op.get<delete_comment_operation<0, 16, 0>>();
+                                auto comment = db.get_comment(op.author, op.permlink);
+                                const auto &bucket = db.get(bucket_id);
+
+                                db.modify(bucket, [&](bucket_object &b) {
+                                    if (comment.parent_author.length()) {
+                                        b.replies_deleted++;
+                                    } else {
+                                        b.root_comments_deleted++;
+                                    }
+                                });
+                            } else if (o.op.which() == operation::tag<withdraw_vesting_operation<0, 16, 0>>::value) {
+                                withdraw_vesting_operation<0, 16, 0> op = o.op.get<
+                                        withdraw_vesting_operation<0, 16, 0>>();
+                                auto &account = db.get_account(op.account);
+                                const auto &bucket = db.get(bucket_id);
+
+                                auto new_vesting_withdrawal_rate =
+                                        op.vesting_shares.amount / STEEMIT_VESTING_WITHDRAW_INTERVALS;
+                                if (op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0) {
+                                    new_vesting_withdrawal_rate = 1;
+                                }
+
+                                if (!db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
+                                    new_vesting_withdrawal_rate *= 10000;
+                                }
+
+                                db.modify(bucket, [&](bucket_object &b) {
+                                    if (account.vesting_withdraw_rate.amount > 0) {
+                                        b.modified_vesting_withdrawal_requests++;
+                                    } else {
+                                        b.new_vesting_withdrawal_requests++;
+                                    }
+
+                                    // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to figure that out...
+                                    b.vesting_withdraw_rate_delta +=
+                                            new_vesting_withdrawal_rate - account.vesting_withdraw_rate.amount;
+                                });
+                            }
                         }
                     }
                 }
@@ -233,7 +275,7 @@ namespace steemit {
                         b.vesting_withdrawals_processed++;
                         if (op.deposited.symbol_name() == STEEM_SYMBOL_NAME) {
                             b.vests_withdrawn += op.withdrawn.amount;
-                        } else if (op.deposited.symbol == SBD_SYMBOL_NAME) {
+                        } else if (op.deposited.symbol_name() == SBD_SYMBOL_NAME) {
                             b.vests_transferred += op.withdrawn.amount;
                         }
 

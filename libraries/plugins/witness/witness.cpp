@@ -421,11 +421,11 @@ namespace steemit {
             uint32_t num_threads = _mining_threads;
             uint32_t target = db.get_pow_summary_target();
 
-            const auto &acct_idx = db.get_index<chain::account_index>().indices().get<chain::by_name>();
-
             for (auto &t : _thread_pool) {
                 thread_num++;
-                t->async([=]() {
+                t->async([=, &db = database()]() {
+                    const auto &acct_idx = db.get_index<chain::account_index>().indices().get<chain::by_name>();
+
                     if (db.has_hardfork(STEEMIT_HARDFORK_0_17)) {
                         protocol::pow2_operation<0, 17, 0> op;
                         protocol::equihash_pow work;
