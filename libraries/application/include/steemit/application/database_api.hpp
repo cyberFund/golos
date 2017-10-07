@@ -86,12 +86,6 @@ namespace steemit {
 
             std::vector<tag_api_obj> get_trending_tags(std::string after_tag, uint32_t limit) const;
 
-            /**
-             *  This API is a short-cut for returning all of the state required for a particular URL
-             *  with a single query.
-             */
-            state get_state(std::string path) const;
-
             std::vector<category_api_obj> get_trending_categories(std::string after, uint32_t limit) const;
 
             std::vector<category_api_obj> get_best_categories(std::string after, uint32_t limit) const;
@@ -577,7 +571,6 @@ FC_API(steemit::application::database_api,
                 (get_block_header)
                 (get_block)
                 (get_ops_in_block)
-                (get_state)
                 (get_trending_categories)
                 (get_best_categories)
                 (get_active_categories)

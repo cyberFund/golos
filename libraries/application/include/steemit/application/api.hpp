@@ -225,9 +225,9 @@ namespace steemit {
     }
 }  // steemit::application
 
-FC_REFLECT(steemit::application::network_broadcast_api::transaction_confirmation,
+FC_REFLECT((steemit::application::network_broadcast_api::transaction_confirmation),
         (id)(block_num)(trx_num)(expired))
-FC_REFLECT(steemit::application::steem_version_info, (blockchain_version)(steem_revision)(fc_revision))
+FC_REFLECT((steemit::application::steem_version_info), (blockchain_version)(steem_revision)(fc_revision))
 //FC_REFLECT_TYPENAME( fc::ecc::compact_signature );
 //FC_REFLECT_TYPENAME( fc::ecc::commitment_type );
 
