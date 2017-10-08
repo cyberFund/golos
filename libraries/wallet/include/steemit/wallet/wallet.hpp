@@ -484,7 +484,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction create_account_with_keys_delegated(string creator, asset<0, 17, 0> steem_fee,
-                                                                            asset delegated_vests, string newname,
+                                                                            asset<0, 17, 0> delegated_vests, string newname,
                                                                             string json_meta, public_key_type owner,
                                                                             public_key_type active,
                                                                             public_key_type posting,
@@ -1470,18 +1470,18 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::wallet::wallet_data, (cipher_keys)(ws_server)(ws_user)(ws_password))
+FC_REFLECT((steemit::wallet::wallet_data), (cipher_keys)(ws_server)(ws_user)(ws_password))
 
-FC_REFLECT(steemit::wallet::brain_key_info, (brain_priv_key)(wif_priv_key)(pub_key))
+FC_REFLECT((steemit::wallet::brain_key_info), (brain_priv_key)(wif_priv_key)(pub_key))
 
-FC_REFLECT_DERIVED(steemit::wallet::signed_block_with_info, (steemit::chain::signed_block),
+FC_REFLECT_DERIVED((steemit::wallet::signed_block_with_info), ((steemit::chain::signed_block)),
                    (block_id)(signing_key)(transaction_ids))
 
-FC_REFLECT(steemit::wallet::plain_keys, (checksum)(keys))
+FC_REFLECT((steemit::wallet::plain_keys), (checksum)(keys))
 
 FC_REFLECT_ENUM(steemit::wallet::authority_type, (owner)(active)(posting))
 
-FC_REFLECT(steemit::wallet::approval_delta,
+FC_REFLECT((steemit::wallet::approval_delta),
            (active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)(owner_approvals_to_remove)(
                    posting_approvals_to_add)(posting_approvals_to_remove)(key_approvals_to_add)(
                    key_approvals_to_remove))
@@ -1533,4 +1533,4 @@ FC_API(steemit::wallet::wallet_api,
                replace_operation_in_builder_transaction)(preview_builder_transaction)(sign_builder_transaction)(
                propose_builder_transaction)(propose_builder_transaction2)(remove_builder_transaction))
 
-FC_REFLECT(steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted))
+FC_REFLECT((steemit::wallet::memo_data), (from)(to)(nonce)(check)(encrypted))

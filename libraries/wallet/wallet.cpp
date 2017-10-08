@@ -1617,8 +1617,8 @@ namespace steemit {
          */
         annotated_signed_transaction wallet_api::create_account_with_keys_delegated(string creator,
 
-                                                                                    asset steem_fee,
-                                                                                    asset delegated_vests,
+                                                                                    asset<0, 17, 0> steem_fee,
+                                                                                    asset<0, 17, 0> delegated_vests,
                                                                                     string new_account_name,
                                                                                     string json_meta,
                                                                                     public_key_type owner,
