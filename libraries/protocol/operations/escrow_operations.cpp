@@ -28,9 +28,9 @@ namespace steemit {
             FC_ASSERT(steem_amount.amount >= 0, "steem amount cannot be negative");
             FC_ASSERT(sbd_amount.amount > 0 || steem_amount.amount > 0, "escrow must transfer a non-zero amount");
             FC_ASSERT(from != agent && to != agent, "agent must be a third party");
-            FC_ASSERT((fee.symbol == STEEM_SYMBOL_NAME) || (fee.symbol == SBD_SYMBOL_NAME), "fee must be STEEM or SBD");
-            FC_ASSERT(sbd_amount.symbol == SBD_SYMBOL_NAME, "sbd amount must contain SBD");
-            FC_ASSERT(steem_amount.symbol == STEEM_SYMBOL_NAME, "steem amount must contain STEEM");
+            FC_ASSERT((fee.symbol_name() == STEEM_SYMBOL_NAME) || (fee.symbol_name() == SBD_SYMBOL_NAME), "fee must be STEEM or SBD");
+            FC_ASSERT(sbd_amount.symbol_name() == SBD_SYMBOL_NAME, "sbd amount must contain SBD");
+            FC_ASSERT(steem_amount.symbol_name() == STEEM_SYMBOL_NAME, "steem amount must contain STEEM");
             FC_ASSERT(ratification_deadline < escrow_expiration,
                       "ratification deadline must be before escrow expiration");
             if (json_meta.size() > 0) {
@@ -69,8 +69,8 @@ namespace steemit {
             FC_ASSERT(sbd_amount.amount >= 0, "sbd amount cannot be negative");
             FC_ASSERT(steem_amount.amount >= 0, "steem amount cannot be negative");
             FC_ASSERT(sbd_amount.amount > 0 || steem_amount.amount > 0, "escrow must release a non-zero amount");
-            FC_ASSERT(sbd_amount.symbol == SBD_SYMBOL_NAME, "sbd amount must contain SBD");
-            FC_ASSERT(steem_amount.symbol == STEEM_SYMBOL_NAME, "steem amount must contain STEEM");
+            FC_ASSERT(sbd_amount.symbol_name() == SBD_SYMBOL_NAME, "sbd amount must contain SBD");
+            FC_ASSERT(steem_amount.symbol_name() == STEEM_SYMBOL_NAME, "steem amount must contain STEEM");
         }
     }
 }

@@ -39,9 +39,15 @@ namespace steemit {
                 Major, Hardfork, Release, asset_symbol_type, share_type> {
         asset();
 
-        asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
+        asset(share_type
+        a,
+        asset_symbol_type id = STEEM_SYMBOL
+        );
 
-        asset(share_type a, asset_name_type name);
+        asset(share_type
+        a,
+        asset_name_type name
+        );
 
         double to_real() const;
 
@@ -119,12 +125,20 @@ namespace steemit {
     };
 
     template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-    struct asset<Major, Hardfork, Release, type_traits::static_range < Hardfork >= 17>> : public asset_interface <Major, Hardfork, Release, asset_name_type, share_type> {
+    struct asset<Major, Hardfork, Release, type_traits::static_range < Hardfork >=
+                                           17>> : public asset_interface <Major, Hardfork, Release, asset_name_type, share_type> {
     asset();
 
-    asset(share_type a, asset_symbol_type name);
+    asset(share_type
+    a,
+    asset_symbol_type name
+    );
 
-    asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
+    asset(share_type
+    a,
+    asset_name_type name = STEEM_SYMBOL_NAME, uint8_t
+    d = 3
+    );
 
     uint8_t decimals;
 
@@ -193,7 +207,8 @@ namespace steemit {
         return asset < Major, Hardfork, Release > (a.amount + b.amount, a.symbol);
     }
 
-    static share_type scaled_precision(uint8_t precision) {
+    static share_type scaled_precision(uint8_t
+    precision) {
 FC_ASSERT(precision < 19);
 return scaled_precision_lut[precision];
 }};
@@ -201,7 +216,8 @@ return scaled_precision_lut[precision];
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
 struct price : public static_version<Major, Hardfork, Release> {
     price(const asset <Major, Hardfork, Release> &input_base = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME),
-          const asset <Major, Hardfork, Release> &input_quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME)) : base(input_base), quote(input_quote) {
+          const asset <Major, Hardfork, Release> &input_quote = asset<Major, Hardfork, Release>(0, STEEM_SYMBOL_NAME))
+            : base(input_base), quote(input_quote) {
     }
 
     asset <Major, Hardfork, Release> base;
@@ -212,11 +228,11 @@ struct price : public static_version<Major, Hardfork, Release> {
     static price min(asset_name_type base, asset_name_type quote);
 
     price max() const {
-        return price::max(base.symbol, quote.symbol);
+        return price::max(base.symbol_name(), quote.symbol_name());
     }
 
     price min() const {
-        return price::min(base.symbol, quote.symbol);
+        return price::min(base.symbol_name(), quote.symbol_name());
     }
 
     double to_real() const {
@@ -433,10 +449,10 @@ FC_REFLECT((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asse
 FC_REFLECT((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
         steemit::protocol::share_type>), (amount)(symbol))
 
-FC_REFLECT_DERIVED((steemit::protocol::asset <0, 16, 0>),
+FC_REFLECT_DERIVED((steemit::protocol::asset < 0, 16, 0 >),
                    ((steemit::protocol::asset_interface<0, 16, 0, steemit::protocol::asset_symbol_type,
-                           steemit::protocol::share_type>)), )
-FC_REFLECT_DERIVED((steemit::protocol::asset <0, 17, 0>),
+                           steemit::protocol::share_type>)),)
+FC_REFLECT_DERIVED((steemit::protocol::asset < 0, 17, 0 >),
                    ((steemit::protocol::asset_interface<0, 17, 0, steemit::protocol::asset_name_type,
                            steemit::protocol::share_type>)), (decimals))
 

@@ -112,7 +112,7 @@ namespace steemit {
         void asset_issue_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(asset_to_issue.amount.value <= STEEMIT_MAX_SHARE_SUPPLY);
             FC_ASSERT(asset_to_issue.amount.value > 0);
-            FC_ASSERT(asset_to_issue.symbol != STEEM_SYMBOL_NAME);
+            FC_ASSERT(asset_to_issue.symbol_name() != STEEM_SYMBOL_NAME);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -141,7 +141,7 @@ namespace steemit {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void asset_global_settle_operation<Major, Hardfork, Release>::validate() const {
-            FC_ASSERT(asset_to_settle == settle_price.base.symbol);
+            FC_ASSERT(asset_to_settle == settle_price.base.symbol_name());
         }
 
         void bitasset_options::validate() const {
@@ -165,8 +165,8 @@ namespace steemit {
             FC_ASSERT((flags & (witness_fed_asset | committee_fed_asset)) !=
                       (witness_fed_asset | committee_fed_asset));
             core_exchange_rate.validate();
-            FC_ASSERT(core_exchange_rate.base.symbol == STEEM_SYMBOL_NAME ||
-                      core_exchange_rate.quote.symbol == STEEM_SYMBOL_NAME);
+            FC_ASSERT(core_exchange_rate.base.symbol_name() == STEEM_SYMBOL_NAME ||
+                      core_exchange_rate.quote.symbol_name() == STEEM_SYMBOL_NAME);
 
             if (!whitelist_authorities.empty() ||
                 !blacklist_authorities.empty()) {

@@ -80,7 +80,7 @@ namespace steemit {
                       "Payout window can be extended by required SBD amount or by required time amount");
 
             if (this->amount) {
-                FC_ASSERT(this->amount->symbol == SBD_SYMBOL_NAME,
+                FC_ASSERT(this->amount->symbol_name() == SBD_SYMBOL_NAME,
                           "Payout window extension is only available with SBD");
                 FC_ASSERT(this->amount->amount > 0, "Cannot extend payout window with 0 SBD");
             }
@@ -97,7 +97,7 @@ namespace steemit {
         void comment_options_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(this->author);
             FC_ASSERT(this->percent_steem_dollars <= STEEMIT_100_PERCENT, "Percent cannot exceed 100%");
-            FC_ASSERT(this->max_accepted_payout.symbol == SBD_SYMBOL_NAME, "Max accepted payout must be in SBD");
+            FC_ASSERT(this->max_accepted_payout.symbol_name() == SBD_SYMBOL_NAME, "Max accepted payout must be in SBD");
             FC_ASSERT(this->max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout");
             validate_permlink(this->permlink);
             for (auto &e : this->extensions) {

@@ -32,7 +32,7 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void transfer_to_vesting_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME, "Amount must be STEEM");
+            FC_ASSERT(amount.symbol_name() == STEEM_SYMBOL_NAME, "Amount must be STEEM");
             if (to != account_name_type()) {
                 validate_account_name(to);
             }
@@ -46,7 +46,7 @@ namespace steemit {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME || amount.symbol == SBD_SYMBOL_NAME);
+            FC_ASSERT(amount.symbol_name() == STEEM_SYMBOL_NAME || amount.symbol_name() == SBD_SYMBOL_NAME);
             FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }
@@ -56,7 +56,7 @@ namespace steemit {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL_NAME || amount.symbol == SBD_SYMBOL_NAME);
+            FC_ASSERT(amount.symbol_name() == STEEM_SYMBOL_NAME || amount.symbol_name() == SBD_SYMBOL_NAME);
             FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }

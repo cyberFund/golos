@@ -299,7 +299,7 @@ namespace steemit {
             try {
                 FC_ASSERT(base.amount > share_type(0));
                 FC_ASSERT(quote.amount > share_type(0));
-                FC_ASSERT(base.symbol != quote.symbol);
+                FC_ASSERT(base.symbol_name() != quote.symbol_name());
             } FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
@@ -317,8 +317,8 @@ namespace steemit {
                     cp = boost::rational<int128_t>((cp.numerator() >> 1) + 1, (cp.denominator() >> 1) + 1);
                 }
 
-                return ~(asset<Major, Hardfork, Release>(cp.numerator().convert_to<int64_t>(), debt.symbol) /
-                         asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(), collateral.symbol));
+                return ~(asset<Major, Hardfork, Release>(cp.numerator().convert_to<int64_t>(), debt.symbol_name()) /
+                         asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(), collateral.symbol_name()));
             } FC_CAPTURE_AND_RETHROW((debt)(collateral)(collateral_ratio))
         }
 
@@ -342,10 +342,10 @@ namespace steemit {
         bool price_feed<Major, Hardfork, Release>::is_for(asset_name_type asset_name) const {
             try {
                 if (!settlement_price.is_null()) {
-                    return (settlement_price.base.symbol == asset_name);
+                    return (settlement_price.base.symbol_name() == asset_name);
                 }
                 if (!core_exchange_rate.is_null()) {
-                    return (core_exchange_rate.base.symbol == asset_name);
+                    return (core_exchange_rate.base.symbol_name() == asset_name);
                 }
                 // (null, null) is valid for any feed
                 return true;
@@ -365,9 +365,9 @@ namespace steemit {
             }
 
             return (asset<Major, Hardfork, Release>(cp.numerator().convert_to<int64_t>(),
-                                                    settlement_price.base.symbol) /
+                                                    settlement_price.base.symbol_name()) /
                     asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(),
-                                                    settlement_price.quote.symbol));
+                                                    settlement_price.quote.symbol_name()));
         }
 
         // compile-time table of powers of 10 using template metaprogramming

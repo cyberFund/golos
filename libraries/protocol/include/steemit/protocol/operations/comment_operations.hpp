@@ -91,13 +91,13 @@ namespace steemit {
             void validate() const;
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (amount && amount->symbol == SBD_SYMBOL_NAME) {
+                if (amount && amount->symbol_name() == SBD_SYMBOL_NAME) {
                     a.insert(payer);
                 }
             }
 
             void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (amount && amount->symbol == SBD_SYMBOL_NAME) {
+                if (amount && amount->symbol_name() == SBD_SYMBOL_NAME) {
                     a.insert(payer);
                 }
             }

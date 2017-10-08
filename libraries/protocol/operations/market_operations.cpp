@@ -26,7 +26,7 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void limit_order_create2_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(owner);
-            FC_ASSERT(amount_to_sell.symbol == exchange_rate.base.symbol, "Sell asset must be the base of the price");
+            FC_ASSERT(amount_to_sell.symbol_name() == exchange_rate.base.symbol_name(), "Sell asset must be the base of the price");
             exchange_rate.validate();
 
             FC_ASSERT((amount_to_sell * exchange_rate).amount > 0, "Amount to sell cannot round to 0 when traded");
@@ -42,7 +42,7 @@ namespace steemit {
             validate_account_name(owner);
             /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
             /// market fluctuations through converting large quantities without moving the price.
-            FC_ASSERT(amount.symbol == SBD_SYMBOL_NAME, "Can only convert SBD to STEEM");
+            FC_ASSERT(amount.symbol_name() == SBD_SYMBOL_NAME, "Can only convert SBD to STEEM");
             FC_ASSERT(amount.amount > 0, "Must convert some SBD");
         }
 
