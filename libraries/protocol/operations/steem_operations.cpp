@@ -40,7 +40,7 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void withdraw_vesting_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(account);
-            FC_ASSERT(vesting_shares.symbol_name() == VESTS_SYMBOL, "Amount must be VESTS");
+            FC_ASSERT(vesting_shares.symbol_type_value() == VESTS_SYMBOL, "Amount must be VESTS");
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -197,8 +197,8 @@ namespace steemit {
         void feed_publish_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(publisher);
             FC_ASSERT(
-                    (exchange_rate.base.symbol == STEEM_SYMBOL_NAME && exchange_rate.quote.symbol == SBD_SYMBOL_NAME) ||
-                    (exchange_rate.base.symbol == SBD_SYMBOL_NAME && exchange_rate.quote.symbol == STEEM_SYMBOL_NAME),
+                    (exchange_rate.base.symbol_name() == STEEM_SYMBOL_NAME && exchange_rate.quote.symbol_name() == SBD_SYMBOL_NAME) ||
+                    (exchange_rate.base.symbol_name() == SBD_SYMBOL_NAME && exchange_rate.quote.symbol_name() == STEEM_SYMBOL_NAME),
                     "Price feed must be a STEEM/SBD price");
             exchange_rate.validate();
         }
@@ -270,7 +270,7 @@ namespace steemit {
             asset<Major, Hardfork, Release> default_vests(0, VESTS_SYMBOL);
 
             FC_ASSERT(delegator != delegatee, "You cannot delegate VESTS to yourself");
-            FC_ASSERT(vesting_shares.symbol_name() == VESTS_SYMBOL, "Delegation must be VESTS");
+            FC_ASSERT(vesting_shares.symbol_type_value() == VESTS_SYMBOL, "Delegation must be VESTS");
             FC_ASSERT(vesting_shares >= default_vests, "Delegation cannot be negative");
         }
     }
