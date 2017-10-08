@@ -334,4 +334,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/protocol/operations/account_operations.tpp>
+#include <steemit/chain/evaluators/account_evaluator.tpp>
