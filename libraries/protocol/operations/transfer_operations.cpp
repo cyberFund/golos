@@ -74,3 +74,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/protocol/operations/transfer_operations.tpp>

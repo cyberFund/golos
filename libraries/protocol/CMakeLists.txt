@@ -34,6 +34,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/operations/steem_operations.tpp
      include/steemit/protocol/operations/steem_virtual_operations.hpp
      include/steemit/protocol/operations/transfer_operations.hpp
+     include/steemit/protocol/operations/transfer_operations.tpp
      include/steemit/protocol/transaction.hpp
      include/steemit/protocol/types.hpp
      )
