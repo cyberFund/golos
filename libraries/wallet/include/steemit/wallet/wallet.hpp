@@ -460,7 +460,7 @@ namespace steemit {
              *  @param json_meta JSON Metadata associated with the new account
              *  @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction create_account_delegated(string creator, asset steem_fee,
+            annotated_signed_transaction create_account_delegated(string creator, asset<0, 17, 0> steem_fee,
                                                                   asset delegated_vests, string new_account_name,
                                                                   string json_meta, bool broadcast);
 
@@ -483,7 +483,7 @@ namespace steemit {
              * @param memo public memo key of the new account
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction create_account_with_keys_delegated(string creator, asset steem_fee,
+            annotated_signed_transaction create_account_with_keys_delegated(string creator, asset<0, 17, 0> steem_fee,
                                                                             asset delegated_vests, string newname,
                                                                             string json_meta, public_key_type owner,
                                                                             public_key_type active,
@@ -673,7 +673,7 @@ namespace steemit {
              * @param memo A memo for the transactionm, encrypted with the to account's public memo key
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction transfer(string from, string to, asset amount, string memo,
+            annotated_signed_transaction transfer(string from, string to, asset<0, 17, 0> amount, string memo,
                                                   bool broadcast = false);
 
             /**
@@ -692,7 +692,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction escrow_transfer(string from, string to, string agent, uint32_t escrow_id,
-                                                         asset sbd_amount, asset steem_amount, asset fee,
+                                                         asset sbd_amount, asset<0, 17, 0> steem_amount, asset<0, 17, 0> fee,
                                                          time_point_sec ratification_deadline,
                                                          time_point_sec escrow_expiration, string json_meta,
                                                          bool broadcast = false);
@@ -739,7 +739,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction escrow_release(string from, string to, string agent, string who,
-                                                        string receiver, uint32_t escrow_id, asset sbd_amount,
+                                                        string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount,
                                                         asset steem_amount, bool broadcast = false);
 
             /**
@@ -752,13 +752,13 @@ namespace steemit {
              * @param amount The amount of GOLOS to vest i.e. "100.00 GOLOS"
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction transfer_to_vesting(string from, string to, asset amount,
+            annotated_signed_transaction transfer_to_vesting(string from, string to, asset<0, 17, 0> amount,
                                                              bool broadcast = false);
 
             /**
              *  Transfers into savings happen immediately, transfers from savings take 72 hours
              */
-            annotated_signed_transaction transfer_to_savings(string from, string to, asset amount, string memo,
+            annotated_signed_transaction transfer_to_savings(string from, string to, asset<0, 17, 0> amount, string memo,
                                                              bool broadcast = false);
 
             /**
@@ -770,7 +770,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction transfer_from_savings(string from, uint32_t request_id, string to,
-                                                               asset amount, string memo, bool broadcast = false);
+                                                               asset<0, 17, 0> amount, string memo, bool broadcast = false);
 
             /**
              *  @param request_id the id used in transfer_from_savings
@@ -789,7 +789,7 @@ namespace steemit {
              *    withdrawn and deposited back as GOLOS. i.e. "10.000000 VESTS"
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction withdraw_vesting(string from, asset vesting_shares, bool broadcast = false);
+            annotated_signed_transaction withdraw_vesting(string from, asset<0, 17, 0> vesting_shares, bool broadcast = false);
 
             /**
              * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
@@ -814,7 +814,7 @@ namespace steemit {
              *  @param amount The amount of SBD to convert
              *  @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction convert_sbd(string from, asset amount, bool broadcast = false);
+            annotated_signed_transaction convert_sbd(string from, asset<0, 17, 0> amount, bool broadcast = false);
 
             /**
              * A witness can public a price feed for the GOLOS:SBD market. The median price feed is used
@@ -914,7 +914,7 @@ namespace steemit {
              *  @param expiration the time the order should expire if it has not been filled
              *  @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction create_order(string owner, uint32_t order_id, asset amount_to_sell,
+            annotated_signed_transaction create_order(string owner, uint32_t order_id, asset<0, 17, 0> amount_to_sell,
                                                       asset min_to_receive, bool fill_or_kill, uint32_t expiration,
                                                       bool broadcast);
 
@@ -965,8 +965,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction selling the funds
              */
-            signed_transaction sell_asset(string seller_account, asset amount_to_sell, asset amount_to_receive,
-                                          uint32_t timeout_sec, bool fill_or_kill, bool broadcast);
+            signed_transaction sell_asset(string seller_account, asset<0, 17, 0> amount_to_sell, asset<0, 17, 0> amount_to_receive, uint32_t timeout_sec, bool fill_or_kill, bool broadcast);
 
             /** Place a limit order attempting to sell one asset for another.
              *
@@ -1042,7 +1041,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction creating a new asset
              */
-            signed_transaction create_asset(string issuer, string symbol, uint8_t precision, asset_options common,
+            signed_transaction create_asset(string issuer, string symbol, uint8_t precision, asset_options<0, 17, 0> common,
                                             fc::optional<bitasset_options> bitasset_opts, bool broadcast = false);
 
             /** Issue new shares of an asset.
@@ -1071,7 +1070,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction updating the asset
              */
-            signed_transaction update_asset(string symbol, optional<string> new_issuer, asset_options new_options,
+            signed_transaction update_asset(string symbol, optional<string> new_issuer, asset_options<0, 17, 0> new_options,
                                             bool broadcast = false);
 
             /** Update the options specific to a BitAsset.
@@ -1122,7 +1121,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction updating the price feed for the given asset
              */
-            signed_transaction publish_asset_feed(string publishing_account, string symbol, price_feed feed,
+            signed_transaction publish_asset_feed(string publishing_account, string symbol, price_feed<0, 17, 0> feed,
                                                   bool broadcast = false);
 
             /** Pay into the fee pool for the given asset.

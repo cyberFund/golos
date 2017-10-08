@@ -1988,7 +1988,7 @@ namespace steemit {
          *  This method will genrate new owner, active, and memo keys for the new account which
          *  will be controllable by this wallet.
          */
-        annotated_signed_transaction wallet_api::create_account_delegated(string creator, asset steem_fee,
+        annotated_signed_transaction wallet_api::create_account_delegated(string creator, asset<0, 17, 0> steem_fee,
                                                                           asset delegated_vests,
                                                                           string new_account_name, string json_meta,
                                                                           bool broadcast) {
@@ -2083,7 +2083,7 @@ namespace steemit {
             }
         }
 
-        annotated_signed_transaction wallet_api::transfer(string from, string to, asset amount, string memo,
+        annotated_signed_transaction wallet_api::transfer(string from, string to, asset<0, 17, 0> amount, string memo,
                                                           bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
@@ -2106,8 +2106,8 @@ namespace steemit {
         }
 
         annotated_signed_transaction wallet_api::escrow_transfer(string from, string to, string agent,
-                                                                 uint32_t escrow_id, asset sbd_amount,
-                                                                 asset steem_amount, asset fee,
+                                                                 uint32_t escrow_id, asset<0, 17, 0> sbd_amount,
+                                                                 asset steem_amount, asset<0, 17, 0> fee,
                                                                  time_point_sec ratification_deadline,
                                                                  time_point_sec escrow_expiration, string json_meta,
                                                                  bool broadcast) {
@@ -2166,7 +2166,7 @@ namespace steemit {
         }
 
         annotated_signed_transaction wallet_api::escrow_release(string from, string to, string agent, string who,
-                                                                string receiver, uint32_t escrow_id, asset sbd_amount,
+                                                                string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount,
                                                                 asset steem_amount, bool broadcast) {
             FC_ASSERT(!is_locked());
             escrow_release_operation op;
@@ -2188,7 +2188,7 @@ namespace steemit {
         /**
          *  Transfers into savings happen immediately, transfers from savings take 72 hours
          */
-        annotated_signed_transaction wallet_api::transfer_to_savings(string from, string to, asset amount, string memo,
+        annotated_signed_transaction wallet_api::transfer_to_savings(string from, string to, asset<0, 17, 0> amount, string memo,
                                                                      bool broadcast) {
             FC_ASSERT(!is_locked());
             transfer_to_savings_operation op;
@@ -2208,7 +2208,7 @@ namespace steemit {
          * @param request_id - an unique ID assigned by from account, the id is used to cancel the operation and can be reused after the transfer completes
          */
         annotated_signed_transaction wallet_api::transfer_from_savings(string from, uint32_t request_id, string to,
-                                                                       asset amount, string memo, bool broadcast) {
+                                                                       asset<0, 17, 0> amount, string memo, bool broadcast) {
             FC_ASSERT(!is_locked());
             transfer_from_savings_operation op;
             op.from = from;
@@ -2241,7 +2241,7 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string to, asset amount,
+        annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string to, asset<0, 17, 0> amount,
                                                                      bool broadcast) {
             FC_ASSERT(!is_locked());
             transfer_to_vesting_operation op;
@@ -2256,7 +2256,7 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset vesting_shares, bool broadcast) {
+        annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset<0, 17, 0> vesting_shares, bool broadcast) {
             FC_ASSERT(!is_locked());
             withdraw_vesting_operation op;
             op.account = from;
@@ -2285,7 +2285,7 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::convert_sbd(string from, asset amount, bool broadcast) {
+        annotated_signed_transaction wallet_api::convert_sbd(string from, asset<0, 17, 0> amount, bool broadcast) {
             FC_ASSERT(!is_locked());
             convert_operation op;
             op.owner = from;
@@ -2299,7 +2299,7 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::publish_feed(string witness, price exchange_rate, bool broadcast) {
+        annotated_signed_transaction wallet_api::publish_feed(string witness, price<0, 17, 0> exchange_rate, bool broadcast) {
             FC_ASSERT(!is_locked());
             feed_publish_operation op;
             op.publisher = witness;
@@ -2442,7 +2442,7 @@ namespace steemit {
             return (*my->_remote_market_history_api)->get_settle_orders_by_owner(account_name);
         }
 
-        annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset amount_to_sell,
+        annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset<0, 17, 0> amount_to_sell,
                                                               asset min_to_receive, bool fill_or_kill,
                                                               uint32_t expiration_sec, bool broadcast) {
             FC_ASSERT(!is_locked());
@@ -2475,7 +2475,7 @@ namespace steemit {
             return my->sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::sell_asset(string seller_account, asset amount_to_sell, asset amount_to_receive,
+        signed_transaction wallet_api::sell_asset(string seller_account, asset<0, 17, 0> amount_to_sell, asset<0, 17, 0> amount_to_receive,
                                                   uint32_t expiration, bool fill_or_kill, bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -2644,7 +2644,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((symbol)(new_feed_producers)(broadcast))
         }
 
-        signed_transaction wallet_api::publish_asset_feed(string publishing_account, string symbol, price_feed feed,
+        signed_transaction wallet_api::publish_asset_feed(string publishing_account, string symbol, price<0, 17, 0>_feed feed,
                                                           bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_update = my->find_asset(symbol);
@@ -2706,7 +2706,7 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((from)(amount)(symbol)(broadcast))
         }
 
-        signed_transaction wallet_api::global_settle_asset(string symbol, price settle_price,
+        signed_transaction wallet_api::global_settle_asset(string symbol, price<0, 17, 0> settle_price,
                                                            bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_settle = my->find_asset(symbol);
