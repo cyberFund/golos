@@ -104,6 +104,12 @@ namespace steemit {
                 e.visit(comment_options_extension_validate_visitor());
             }
         }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void delete_comment_operation<Major, Hardfork, Release>::validate() const {
+      validate_permlink( permlink );
+      validate_account_name( author );
+   }
     }
 }
 
