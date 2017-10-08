@@ -80,3 +80,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/protocol/operations/account_operations.tpp>

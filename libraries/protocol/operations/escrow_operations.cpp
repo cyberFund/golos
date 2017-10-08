@@ -74,3 +74,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/protocol/operations/escrow_operations.tpp>

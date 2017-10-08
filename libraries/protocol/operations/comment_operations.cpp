@@ -106,3 +106,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/protocol/operations/comment_operations.tpp>

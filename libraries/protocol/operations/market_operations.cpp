@@ -62,3 +62,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/protocol/operations/market_operations.tpp>

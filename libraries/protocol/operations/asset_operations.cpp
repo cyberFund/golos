@@ -188,3 +188,5 @@ namespace steemit {
         }
     }
 } // namespace steemit::chain
+
+#include <steemit/protocol/operations/asset_operations.tpp>
