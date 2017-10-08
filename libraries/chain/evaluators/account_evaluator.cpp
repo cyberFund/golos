@@ -24,15 +24,17 @@ namespace steemit {
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
-                FC_ASSERT(o.fee >= typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(
-                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME), "Insufficient Fee: ${f} required, ${p} provided.",
-                          ("f", typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(
+                FC_ASSERT(typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.fee.amount,
+                                                                                    o.fee.symbol_name()) >= typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(
+                                  wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME),
+                          "Insufficient Fee: ${f} required, ${p} provided.",
+                          ("f", typename BOOST_IDENTITY_TYPE((asset < 0, 17, 0 >))(
                                   wso.median_props.account_creation_fee.amount *
                                   STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME))("p", o.fee));
             } else if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
-                FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
+                FC_ASSERT(typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.fee.amount,
+                                                                                    o.fee.symbol_name()) >= wso.median_props.account_creation_fee,
                           "Insufficient Fee: ${f} required, ${p} provided.",
                           ("f", wso.median_props.account_creation_fee)("p", o.fee));
             }
@@ -142,7 +144,7 @@ namespace steemit {
                               "o.delegation", o.delegation));
 
             FC_ASSERT(typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.fee.amount,
-                                                                                o.fee.symbol_name()) >= wso.median_props.account_creation_fee,
+                              o.fee.symbol_name()) >= wso.median_props.account_creation_fee,
                       "Insufficient Fee: ${f} required, ${p} provided.",
                       ("f", wso.median_props.account_creation_fee)("p", o.fee));
 
