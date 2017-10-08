@@ -44,7 +44,6 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      operations/account_operations.cpp
      operations/asset_operations.cpp
      authority.cpp
-     base.cpp
      block.cpp
      operations/comment_operations.cpp
      operations/custom_operations.cpp
