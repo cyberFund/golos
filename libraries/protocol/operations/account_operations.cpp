@@ -20,7 +20,7 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void account_create_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(new_account_name);
-            FC_ASSERT(fee.symbol == STEEM_SYMBOL_NAME, "Account creation fee must be STEEM");
+            FC_ASSERT(fee.symbol_name() == STEEM_SYMBOL_NAME, "Account creation fee must be STEEM");
             owner.validate();
             active.validate();
 
@@ -29,17 +29,15 @@ namespace steemit {
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }
 
-            asset<Major, Hardfork, Release> default_steem(0, STEEM_SYMBOL_NAME);
-
-            FC_ASSERT(fee >= default_steem, "Account creation fee cannot be negative");
+            FC_ASSERT(fee >= typename BOOST_IDENTITY_TYPE((asset<Major, Hardfork, Release>))(0, STEEM_SYMBOL_NAME), "Account creation fee cannot be negative");
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void account_create_with_delegation_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(new_account_name);
             validate_account_name(creator);
-            FC_ASSERT(fee.symbol == STEEM_SYMBOL_NAME, "Account creation fee must be STEEM");
-            FC_ASSERT(delegation.symbol_name() == VESTS_SYMBOL, "Delegation must be VESTS");
+            FC_ASSERT(fee.symbol_name() == STEEM_SYMBOL_NAME, "Account creation fee must be STEEM");
+            FC_ASSERT(delegation.symbol_type_value() == VESTS_SYMBOL, "Delegation must be VESTS");
 
             owner.validate();
             active.validate();
@@ -50,11 +48,8 @@ namespace steemit {
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }
 
-            asset<Major, Hardfork, Release> default_steem(0, STEEM_SYMBOL_NAME);
-            asset<Major, Hardfork, Release> default_vesting(0, VESTS_SYMBOL);
-
-            FC_ASSERT(fee >= default_steem, "Account creation fee cannot be negative");
-            FC_ASSERT(delegation >= default_vesting, "Delegation cannot be negative");
+            FC_ASSERT(fee >= typename BOOST_IDENTITY_TYPE((asset<Major, Hardfork, Release>))(0, STEEM_SYMBOL_NAME), "Account creation fee cannot be negative");
+            FC_ASSERT(delegation >= typename BOOST_IDENTITY_TYPE((asset<Major, Hardfork, Release>))(0, VESTS_SYMBOL), "Delegation cannot be negative");
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>

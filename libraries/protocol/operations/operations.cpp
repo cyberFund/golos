@@ -65,7 +65,6 @@ namespace steemit {
         bool is_virtual_operation(const operation &op) {
             return op.visit(is_vop_visitor());
         }
-
     }
 } // steemit::protocol
 
@@ -123,12 +122,3 @@ namespace steemit {
         }
     }
 }
-
-#include <steemit/protocol/operations/asset_operations.tpp>
-#include <steemit/protocol/operations/comment_operations.tpp>
-#include <steemit/protocol/operations/escrow_operations.tpp>
-#include <steemit/protocol/operations/market_operations.tpp>
-#include <steemit/protocol/operations/steem_operations.tpp>
-#include <steemit/protocol/operations/account_operations.tpp>
-#include <steemit/protocol/operations/transfer_operations.tpp>
-#include <steemit/protocol/operations/proposal_operations.tpp>
