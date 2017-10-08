@@ -16,18 +16,20 @@ namespace steemit {
 
             const auto &props = this->db.template get_dynamic_global_properties();
 
-            FC_ASSERT(this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME) >= o.fee,
+            FC_ASSERT(this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME) >=
+                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.fee.amount, o.fee.symbol_name()),
                       "Insufficient balance to create account.",
                       ("creator.balance", this->db.template get_balance(creator.name, STEEM_SYMBOL_NAME))("required",
                                                                                                           o.fee));
 
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
-                FC_ASSERT(o.fee >=
-                          typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                           STEEM_SYMBOL_NAME), "Insufficient Fee: ${f} required, ${p} provided.",
-                          ("f", typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(wso.median_props.account_creation_fee.amount *
-                                 STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME))("p", o.fee));
+                FC_ASSERT(o.fee >= typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(
+                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                        STEEM_SYMBOL_NAME), "Insufficient Fee: ${f} required, ${p} provided.",
+                          ("f", typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(
+                                  wso.median_props.account_creation_fee.amount *
+                                  STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME))("p", o.fee));
             } else if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
                 FC_ASSERT(o.fee >= wso.median_props.account_creation_fee,
@@ -49,7 +51,7 @@ namespace steemit {
                 }
             }
 
-            this->db.template adjust_balance(creator, -o.fee);
+            this->db.template adjust_balance(creator, -protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
 
             const auto &new_account = this->db.template create<account_object>([&](account_object &acc) {
                 acc.name = o.new_account_name;
@@ -91,7 +93,8 @@ namespace steemit {
             });
 
             if (o.fee.amount > 0) {
-                this->db.template create_vesting(new_account, o.fee);
+                this->db.template create_vesting(new_account,
+                                                 protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
             }
 
             this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
@@ -111,11 +114,14 @@ namespace steemit {
             const auto &props = this->db.template get_dynamic_global_properties();
             const witness_schedule_object &wso = this->db.template get_witness_schedule_object();
 
-            FC_ASSERT(creator_balance >= o.fee, "Insufficient balance to create account.",
+            FC_ASSERT(creator_balance >=
+                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.fee.amount, o.fee.symbol_name()),
+                      "Insufficient balance to create account.",
                       ("creator.balance", creator_balance)("required", o.fee));
 
             FC_ASSERT(creator.vesting_shares - creator.delegated_vesting_shares -
-                              typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL) >= o.delegation,
+                      typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(creator.to_withdraw - creator.withdrawn,
+                                                                      VESTS_SYMBOL) >= o.delegation,
                       "Insufficient vesting shares to delegate to new account.",
                       ("creator.vesting_shares", creator.vesting_shares)("creator.delegated_vesting_shares",
                                                                          creator.delegated_vesting_shares)("required",
@@ -135,7 +141,9 @@ namespace steemit {
                                                                                                                o.fee)(
                               "o.delegation", o.delegation));
 
-            FC_ASSERT(o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
+            FC_ASSERT(typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.fee.amount,
+                                                                                o.fee.symbol_name()) >= wso.median_props.account_creation_fee,
+                      "Insufficient Fee: ${f} required, ${p} provided.",
                       ("f", wso.median_props.account_creation_fee)("p", o.fee));
 
             for (auto &a : o.owner.account_auths) {
@@ -150,7 +158,7 @@ namespace steemit {
                 this->db.template get_account(a.first);
             }
 
-            this->db.template adjust_balance(creator, -o.fee);
+            this->db.template adjust_balance(creator, -protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
 
             this->db.template modify(creator, [&](account_object &c) {
                 c.delegated_vesting_shares += o.delegation;
@@ -203,7 +211,8 @@ namespace steemit {
             }
 
             if (o.fee.amount > 0) {
-                this->db.template create_vesting(new_account, o.fee);
+                this->db.template create_vesting(new_account,
+                                                 protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
             }
 
             this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
