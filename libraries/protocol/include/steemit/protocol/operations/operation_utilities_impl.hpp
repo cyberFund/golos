@@ -19,7 +19,8 @@ namespace fc {
 
     };
 
-    template<typename Policy, typename = typename std::enable_if<std::is_base_of<from_operation_policy_interface, Policy>::value>::type>
+    template<typename Policy,
+            typename = typename std::enable_if<std::is_base_of<from_operation_policy_interface, Policy>::value>::type>
     class from_operation {
     public:
         variant &var;
@@ -84,14 +85,14 @@ namespace steemit {
         struct operation_get_required_auth_visitor {
             typedef void result_type;
 
-            flat_set <protocol::account_name_type> &active;
-            flat_set <protocol::account_name_type> &owner;
-            flat_set <protocol::account_name_type> &posting;
+            flat_set<protocol::account_name_type> &active;
+            flat_set<protocol::account_name_type> &owner;
+            flat_set<protocol::account_name_type> &posting;
             std::vector<authority> &other;
 
-            operation_get_required_auth_visitor(flat_set <protocol::account_name_type> &a,
-                                                flat_set <protocol::account_name_type> &own,
-                                                flat_set <protocol::account_name_type> &post,
+            operation_get_required_auth_visitor(flat_set<protocol::account_name_type> &a,
+                                                flat_set<protocol::account_name_type> &own,
+                                                flat_set<protocol::account_name_type> &post,
                                                 std::vector<authority> &oth) : active(a), owner(own), posting(post),
                     other(oth) {
             }

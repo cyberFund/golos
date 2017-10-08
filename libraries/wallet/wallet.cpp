@@ -1257,7 +1257,7 @@ namespace steemit {
             return my->_remote_db->lookup_accounts(lowerbound, limit);
         }
 
-        vector<asset> wallet_api::list_account_balances(const account_name_type &account_name) {
+        vector<asset<0, 17, 0>> wallet_api::list_account_balances(const account_name_type &account_name) {
             return my->_remote_db->get_account_balances(get_account(account_name).name, flat_set<asset_name_type>());
         }
 
@@ -2509,8 +2509,8 @@ namespace steemit {
                               asset(amount, asset::from_string(base).symbol), 0, false, broadcast);
         }
 
-        signed_transaction wallet_api::borrow_asset(string seller_name, asset amount_to_borrow,
-                                                    asset amount_of_collateral, bool broadcast) {
+        signed_transaction wallet_api::borrow_asset(string seller_name, asset<0, 17, 0> amount_to_borrow,
+                                                    asset<0, 17, 0> amount_of_collateral, bool broadcast) {
             FC_ASSERT(!is_locked());
             auto seller = get_account(seller_name);
             asset_object mia = get_asset(amount_to_borrow.symbol);
@@ -2532,7 +2532,7 @@ namespace steemit {
             return sign_transaction(trx, broadcast);
         }
 
-        signed_transaction wallet_api::issue_asset(string to_account, asset amount, string memo, bool broadcast) {
+        signed_transaction wallet_api::issue_asset(string to_account, asset<0, 17, 0> amount, string memo, bool broadcast) {
             auto asset_obj = get_asset(amount.symbol);
 
             account_api_obj to = get_account(to_account);
@@ -2783,7 +2783,7 @@ namespace steemit {
         }
 
         annotated_signed_transaction wallet_api::extend_payout_by_cost(string payer, string author, string permlink,
-                                                                       asset extension_cost, bool broadcast) {
+                                                                       asset<0, 17, 0> extension_cost, bool broadcast) {
             FC_ASSERT(!is_locked());
 
             comment_payout_extension_operation op;

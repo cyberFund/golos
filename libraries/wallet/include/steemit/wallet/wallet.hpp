@@ -209,7 +209,7 @@ namespace steemit {
              * @param account_name the name or id of the account whose balances you want
              * @returns a list of the given account's balances
              */
-            vector<asset> list_account_balances(const account_name_type &account_name);
+            vector<asset<0, 17, 0>> list_account_balances(const account_name_type &account_name);
 
             /** Lists all assets registered on the blockchain.
              *
@@ -572,13 +572,13 @@ namespace steemit {
                                                                  bool broadcast);
 
             /**
- * This method delegates VESTS from one account to another.
- *
- * @param delegator The name of the account delegating VESTS
- * @param delegatee The name of the account receiving VESTS
- * @param vesting_shares The amount of VESTS to delegate
- * @param broadcast true if you wish to broadcast the transaction
- */
+             * This method delegates VESTS from one account to another.
+             *
+             * @param delegator The name of the account delegating VESTS
+             * @param delegatee The name of the account receiving VESTS
+             * @param vesting_shares The amount of VESTS to delegate
+             * @param broadcast true if you wish to broadcast the transaction
+             */
             annotated_signed_transaction delegate_vesting_shares(string delegator, string delegatee,
                                                                  asset vesting_shares, bool broadcast);
 
@@ -1017,7 +1017,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction borrowing the asset
              */
-            signed_transaction borrow_asset(string borrower_name, asset amount_to_borrow, asset amount_of_collateral,
+            signed_transaction borrow_asset(string borrower_name, asset<0, 17, 0> amount_to_borrow, asset<0, 17, 0> amount_of_collateral,
                                             bool broadcast);
 
             /** Creates a new user-issued or market-issued asset.
@@ -1053,7 +1053,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction issuing the new shares
              */
-            signed_transaction issue_asset(string to_account, asset amount, string memo, bool broadcast = false);
+            signed_transaction issue_asset(string to_account, asset<0, 17, 0> amount, string memo, bool broadcast = false);
 
             /** Update the core options on an asset.
              * There are a number of options which all assets in the network use. These options are
@@ -1240,7 +1240,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction extend_payout_by_cost(string payer, string author, string permlink,
-                                                               asset extension_cost, bool broadcast);
+                                                               asset<0, 17, 0> extension_cost, bool broadcast);
 
             /**
              * Extend the comment payout window by passing the required SBD to spend
