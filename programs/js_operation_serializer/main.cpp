@@ -1,5 +1,5 @@
 #include <steemit/protocol/protocol.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 
 using namespace steemit::chain;

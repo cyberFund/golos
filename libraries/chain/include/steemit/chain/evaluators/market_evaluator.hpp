@@ -59,7 +59,7 @@ namespace steemit {
                     limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const operation_type &op);
+            void do_apply(const operation_type &o);
 
         protected:
             share_type deferred_fee = 0;

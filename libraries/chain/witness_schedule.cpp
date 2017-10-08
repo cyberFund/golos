@@ -1,6 +1,6 @@
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/witness_objects.hpp>
+#include <steemit/chain/objects/witness_objects.hpp>
 #include <steemit/chain/witness_schedule.hpp>
 
 #include <steemit/protocol/config.hpp>

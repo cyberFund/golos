@@ -43,7 +43,7 @@ namespace steemit {
                     transfer_to_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::transfer_to_savings_operation<Major, Hardfork, Release> &op);
+            void do_apply(const protocol::transfer_to_savings_operation<Major, Hardfork, Release> &o);
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -56,7 +56,7 @@ namespace steemit {
                     transfer_from_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::transfer_from_savings_operation<Major, Hardfork, Release> &op);
+            void do_apply(const protocol::transfer_from_savings_operation<Major, Hardfork, Release> &o);
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -69,7 +69,7 @@ namespace steemit {
                     cancel_transfer_from_savings_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
             }
 
-            void do_apply(const protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> &op);
+            void do_apply(const protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> &o);
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>

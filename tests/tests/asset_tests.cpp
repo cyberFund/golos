@@ -4,8 +4,8 @@
 #include <steemit/chain/database_exceptions.hpp>
 #include <steemit/version/hardfork.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
 
 #include <fc/crypto/digest.hpp>
 

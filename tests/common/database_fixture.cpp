@@ -3,10 +3,10 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/asset_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 #include <steemit/account_history/account_history_plugin.hpp>
 
 #include <fc/crypto/digest.hpp>

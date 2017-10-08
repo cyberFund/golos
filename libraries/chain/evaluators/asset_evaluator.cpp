@@ -1,7 +1,7 @@
-#include <steemit/chain/asset_evaluator.hpp>
-#include <steemit/chain/asset_object.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/market_object.hpp>
+#include <steemit/chain/evaluators/asset_evaluator.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/market_object.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
 
@@ -537,3 +537,5 @@ namespace steemit {
         }
     }
 } // steemit::chain
+
+#include <steemit/chain/evaluators/asset_evaluator.tpp>

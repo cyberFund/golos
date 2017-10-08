@@ -1,6 +1,6 @@
 #include <steemit/account_by_key/account_by_key_plugin.hpp>
 
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 namespace steemit {

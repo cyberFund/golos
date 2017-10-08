@@ -1,8 +1,8 @@
 #include <steemit/witness/witness.hpp>
 
 #include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 

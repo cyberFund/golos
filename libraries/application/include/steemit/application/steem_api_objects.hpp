@@ -2,14 +2,14 @@
 
 #include <steemit/application/api_objects/comment_api_obj.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/block_summary_object.hpp>
-#include <steemit/chain/comment_object.hpp>
-#include <steemit/chain/global_property_object.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
-#include <steemit/chain/witness_objects.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/block_summary_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
+#include <steemit/chain/objects/global_property_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/transaction_object.hpp>
+#include <steemit/chain/objects/witness_objects.hpp>
 
 #include <steemit/tags/tags_plugin.hpp>
 #include <steemit/languages/languages_plugin.hpp>

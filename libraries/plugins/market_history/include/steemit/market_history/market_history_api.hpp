@@ -4,7 +4,7 @@
 
 #include <steemit/protocol/types.hpp>
 
-#include <steemit/chain/market_object.hpp>
+#include <steemit/chain/objects/market_object.hpp>
 
 #include <steemit/application/state.hpp>
 

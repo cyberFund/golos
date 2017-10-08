@@ -1,6 +1,6 @@
-#include <steemit/chain/proposal_evaluator.hpp>
-#include <steemit/chain/proposal_object.hpp>
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/evaluators/proposal_evaluator.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
 
 #include <fc/exception/exception.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -162,3 +162,5 @@ namespace steemit {
         }
     }
 } // graphene::chain
+
+#include <steemit/chain/evaluators/proposal_evaluator.tpp>

@@ -6,7 +6,7 @@
 #include <steemit/protocol/authority.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 
-#include <steemit/chain/operation_history_object.hpp>
+#include <steemit/chain/objects/operation_history_object.hpp>
 #include <steemit/chain/steem_object_types.hpp>
 #include <steemit/chain/shared_authority.hpp>
 

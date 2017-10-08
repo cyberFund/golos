@@ -2,7 +2,7 @@
 
 #include <steemit/chain/evaluator.hpp>
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/proposal_object.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
 #include <steemit/chain/transaction_evaluation_state.hpp>
 
 #include <steemit/protocol/operations/operations.hpp>

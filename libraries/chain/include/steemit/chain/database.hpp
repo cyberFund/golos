@@ -2,16 +2,16 @@
 
 #include <steemit/version/hardfork.hpp>
 
-#include <steemit/chain/global_property_object.hpp>
-#include <steemit/chain/proposal_object.hpp>
-#include <steemit/chain/hardfork_object.hpp>
-#include <steemit/chain/node_property_object.hpp>
+#include <steemit/chain/objects/global_property_object.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
+#include <steemit/chain/objects/hardfork_object.hpp>
+#include <steemit/chain/objects/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
-#include <steemit/chain/asset_object.hpp>
-#include <steemit/chain/comment_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/market_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/market_object.hpp>
 
 #include <steemit/protocol/protocol.hpp>
 

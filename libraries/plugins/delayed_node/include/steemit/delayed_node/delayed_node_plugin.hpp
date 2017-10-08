@@ -24,7 +24,7 @@
 #pragma once
 
 #include <steemit/application/plugin.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 namespace steemit {
     namespace delayed_node {

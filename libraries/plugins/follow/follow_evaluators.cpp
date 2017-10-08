@@ -2,8 +2,8 @@
 #include <steemit/follow/follow_objects.hpp>
 #include <steemit/follow/follow_evaluators.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 namespace steemit {
     namespace follow {

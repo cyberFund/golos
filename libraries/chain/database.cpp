@@ -1,20 +1,20 @@
 #include <steemit/protocol/operations/steem_operations.hpp>
 
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/objects/block_summary_object.hpp>
 #include <steemit/chain/compound.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/db_with.hpp>
 #include <steemit/chain/evaluator_registry.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/market_object.hpp>
-#include <steemit/chain/account_evaluator.hpp>
-#include <steemit/chain/market_evaluator.hpp>
-#include <steemit/chain/proposal_object.hpp>
-#include <steemit/chain/steem_evaluator.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
+#include <steemit/chain/objects/market_object.hpp>
+#include <steemit/chain/evaluators/account_evaluator.hpp>
+#include <steemit/chain/evaluators/market_evaluator.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
+#include <steemit/chain/evaluators/steem_evaluator.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/transaction_object.hpp>
 #include <steemit/chain/shared_db_merkle.hpp>
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/witness_schedule.hpp>
@@ -30,11 +30,11 @@
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
 
-#include <steemit/chain/asset_evaluator.hpp>
-#include <steemit/chain/custom_evaluator.hpp>
-#include <steemit/chain/transfer_evaluator.hpp>
-#include <steemit/chain/proposal_evaluator.hpp>
-#include <steemit/chain/escrow_evaluator.hpp>
+#include <steemit/chain/evaluators/asset_evaluator.hpp>
+#include <steemit/chain/evaluators/custom_evaluator.hpp>
+#include <steemit/chain/evaluators/transfer_evaluator.hpp>
+#include <steemit/chain/evaluators/proposal_evaluator.hpp>
+#include <steemit/chain/evaluators/escrow_evaluator.hpp>
 #include <steemit/version/version_state.hpp>
 
 namespace steemit {

@@ -3,7 +3,7 @@
 #include <steemit/application/plugin.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 

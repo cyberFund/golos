@@ -3,9 +3,9 @@
 #include <steemit/application/applied_operation.hpp>
 #include <steemit/application/steem_api_objects.hpp>
 
-#include <steemit/chain/global_property_object.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/global_property_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 namespace steemit {
     namespace application {

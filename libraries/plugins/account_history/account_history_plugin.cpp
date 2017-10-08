@@ -3,7 +3,7 @@
 #include <steemit/application/impacted.hpp>
 
 #include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 

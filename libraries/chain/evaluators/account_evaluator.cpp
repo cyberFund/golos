@@ -1,10 +1,10 @@
-#include <steemit/chain/account_evaluator.hpp>
+#include <steemit/chain/evaluators/account_evaluator.hpp>
 
-#include <steemit/chain/steem_evaluator.hpp>
+#include <steemit/chain/evaluators/steem_evaluator.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/block_summary_object.hpp>
 #include <steemit/chain/utilities/reward.hpp>
 
 namespace steemit {
@@ -333,3 +333,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/protocol/operations/account_operations.tpp>

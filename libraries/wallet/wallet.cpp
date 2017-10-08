@@ -327,7 +327,7 @@ namespace steemit {
                                                                                         " old");
                     result["participation"] = (100 * dynamic_props.recent_slots_filled.popcount()) / 128.0;
                     result["median_sbd_price"] = _remote_db->get_current_median_history_price();
-                    result["account_creation_fee"] = _remote_db->get_chain_properties().account_creation_fee;
+                    result["account_creation_fee"] = _remote_db->get_chain_properties<0, 17, 0>().account_creation_fee;
                     result["post_reward_fund"] = fc::variant(
                             _remote_db->get_reward_fund(STEEMIT_POST_REWARD_FUND_NAME)).get_object();
                     result["comment_reward_fund"] = fc::variant(
@@ -583,7 +583,7 @@ namespace steemit {
 
                         account_create_op.creator = creator_account_name;
                         account_create_op.new_account_name = account_name;
-                        account_create_op.fee = _remote_db->get_chain_properties().account_creation_fee;
+                        account_create_op.fee = _remote_db->get_chain_properties<0, 17, 0>().account_creation_fee;
                         account_create_op.owner = authority(1, owner_pubkey, 1);
                         account_create_op.active = authority(1, active_pubkey, 1);
                         account_create_op.memo_key = memo_pubkey;
@@ -1599,7 +1599,7 @@ namespace steemit {
                 op.posting = authority(1, posting, 1);
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
-                op.fee = asset(my->_remote_db->get_chain_properties().account_creation_fee.amount *
+                op.fee = asset(my->_remote_db->get_chain_properties<0, 17, 0>().account_creation_fee.amount *
                                STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME);
 
                 signed_transaction tx;
@@ -2011,7 +2011,7 @@ namespace steemit {
 
         annotated_signed_transaction wallet_api::update_witness(string witness_account_name, string url,
                                                                 public_key_type block_signing_key,
-                                                                const chain_properties &props, bool broadcast) {
+                                                                const chain_properties<0, 17, 0> &props, bool broadcast) {
             FC_ASSERT(!is_locked());
 
             witness_update_operation op;
@@ -2166,8 +2166,7 @@ namespace steemit {
         }
 
         annotated_signed_transaction wallet_api::escrow_release(string from, string to, string agent, string who,
-                                                                string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount,
-                                                                asset steem_amount, bool broadcast) {
+                                                                string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount, asset<0, 17, 0> steem_amount, bool broadcast) {
             FC_ASSERT(!is_locked());
             escrow_release_operation op;
             op.from = from;

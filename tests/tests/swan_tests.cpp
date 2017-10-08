@@ -4,9 +4,9 @@
 #include <steemit/chain/database_exceptions.hpp>
 #include <steemit/version/hardfork.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/asset_object.hpp>
-#include <steemit/chain/market_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
+#include <steemit/chain/objects/market_object.hpp>
 
 #include <steemit/application/database_api.hpp>
 

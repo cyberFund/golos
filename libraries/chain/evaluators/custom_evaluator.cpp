@@ -1,4 +1,4 @@
-#include <steemit/chain/custom_evaluator.hpp>
+#include <steemit/chain/evaluators/custom_evaluator.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 
 #include <steemit/chain/database.hpp>

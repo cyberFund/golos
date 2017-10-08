@@ -1,4 +1,4 @@
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 namespace steemit {
     namespace chain {

@@ -1,5 +1,7 @@
-#include <steemit/chain/escrow_evaluator.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/database.hpp>
+
+#include <steemit/chain/evaluators/escrow_evaluator.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 #include <steemit/protocol/asset.hpp>
 
@@ -17,12 +19,12 @@ namespace steemit {
                 FC_ASSERT(o.escrow_expiration > this->db.template head_block_time(),
                           "The escrow expiration must be after head block time.");
 
-                protocol::asset<0, 17, 0> steem_spent = o.steem_amount;
-                protocol::asset<0, 17, 0> sbd_spent = o.sbd_amount;
-                if (o.fee.symbol == STEEM_SYMBOL_NAME) {
-                    steem_spent += o.fee;
+                protocol::asset<0, 17, 0> steem_spent = protocol::asset<0, 17, 0>(o.steem_amount.amount, o.steem_amount.symbol_name());
+                protocol::asset<0, 17, 0> sbd_spent = protocol::asset<0, 17, 0>(o.sbd_amount.amount, o.sbd_amount.symbol_name());
+                if (o.fee.symbol_name() == STEEM_SYMBOL_NAME) {
+                    steem_spent += protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name());
                 } else {
-                    sbd_spent += o.fee;
+                    sbd_spent += protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name());
                 }
 
                 FC_ASSERT(this->db.template get_balance(from_account.name, STEEM_SYMBOL_NAME) >= steem_spent,
@@ -43,9 +45,9 @@ namespace steemit {
                     esc.agent = o.agent;
                     esc.ratification_deadline = o.ratification_deadline;
                     esc.escrow_expiration = o.escrow_expiration;
-                    esc.sbd_balance = o.sbd_amount;
-                    esc.steem_balance = o.steem_amount;
-                    esc.pending_fee = o.fee;
+                    esc.sbd_balance = protocol::asset<0, 17, 0>(o.sbd_amount.amount, o.sbd_amount.symbol_name());
+                    esc.steem_balance = protocol::asset<0, 17, 0>(o.steem_amount.amount, o.steem_amount.symbol_name());
+                    esc.pending_fee = protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name());
                 });
             } FC_CAPTURE_AND_RETHROW((o))
         }
@@ -134,10 +136,10 @@ namespace steemit {
                 const auto &receiver_account = this->db.template get_account(o.receiver);
 
                 const auto &e = this->db.template get_escrow(o.from, o.escrow_id);
-                FC_ASSERT(e.steem_balance >= o.steem_amount,
+                FC_ASSERT(e.steem_balance >= typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.steem_amount.amount, o.steem_amount.symbol_name()),
                           "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}",
                           ("a", o.steem_amount)("b", e.steem_balance));
-                FC_ASSERT(e.sbd_balance >= o.sbd_amount,
+                FC_ASSERT(e.sbd_balance >= typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.sbd_amount.amount, o.sbd_amount.symbol_name()),
                           "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}",
                           ("a", o.sbd_amount)("b", e.sbd_balance));
                 FC_ASSERT(e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).",
@@ -170,12 +172,12 @@ namespace steemit {
                 }
                 // If escrow expires and there is no dispute, either party can release funds to either party.
 
-                this->db.template adjust_balance(receiver_account, o.steem_amount);
-                this->db.template adjust_balance(receiver_account, o.sbd_amount);
+                this->db.template adjust_balance(receiver_account, protocol::asset<0, 17, 0>(o.steem_amount.amount, o.steem_amount.symbol_name()));
+                this->db.template adjust_balance(receiver_account, protocol::asset<0, 17, 0>(o.sbd_amount.amount, o.sbd_amount.symbol_name()));
 
                 this->db.template modify(e, [&](escrow_object &esc) {
-                    esc.steem_balance -= o.steem_amount;
-                    esc.sbd_balance -= o.sbd_amount;
+                    esc.steem_balance -= protocol::asset<0, 17, 0>(o.steem_amount.amount, o.steem_amount.symbol_name());
+                    esc.sbd_balance -= protocol::asset<0, 17, 0>(o.sbd_amount.amount, o.sbd_amount.symbol_name());
                 });
 
                 if (e.steem_balance.amount == 0 && e.sbd_balance.amount == 0) {
@@ -185,3 +187,5 @@ namespace steemit {
         }
     }
 }
+
+#include <steemit/chain/evaluators/escrow_evaluator.tpp>

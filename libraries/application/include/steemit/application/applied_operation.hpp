@@ -3,7 +3,7 @@
 #include <steemit/protocol/operations/operations.hpp>
 
 #include <steemit/chain/steem_object_types.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 
 namespace steemit {
     namespace application {

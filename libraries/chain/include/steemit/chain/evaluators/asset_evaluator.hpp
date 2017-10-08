@@ -1,6 +1,6 @@
 #pragma once
 
-#include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
 #include <steemit/chain/evaluator.hpp>
 #include <steemit/chain/database.hpp>
 

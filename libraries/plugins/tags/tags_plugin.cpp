@@ -8,8 +8,8 @@
 #include <steemit/chain/database.hpp>
 #include <steemit/version/hardfork.hpp>
 #include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>

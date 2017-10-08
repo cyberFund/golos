@@ -4,10 +4,10 @@
 #include <steemit/application/state.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/proposal_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 #include <steemit/chain/steem_object_types.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 
 #include <steemit/follow/follow_plugin.hpp>
 

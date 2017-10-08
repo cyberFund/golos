@@ -4,7 +4,7 @@
 #include <steemit/application/api_context.hpp>
 #include <steemit/application/application.hpp>
 
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 

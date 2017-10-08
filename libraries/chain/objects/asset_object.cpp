@@ -1,4 +1,4 @@
-#include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
 #include <steemit/chain/database.hpp>
 
 #include <fc/uint128.hpp>

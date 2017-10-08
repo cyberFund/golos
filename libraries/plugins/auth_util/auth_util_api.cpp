@@ -4,7 +4,7 @@
 #include <steemit/application/api_context.hpp>
 #include <steemit/application/application.hpp>
 
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
 
 #include <steemit/plugins/auth_util/auth_util_api.hpp>
 #include <steemit/plugins/auth_util/auth_util_plugin.hpp>

@@ -1,6 +1,6 @@
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/proposal_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
 
 namespace steemit {
     namespace chain {

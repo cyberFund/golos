@@ -630,7 +630,7 @@ namespace steemit {
              */
             annotated_signed_transaction update_witness(string witness_name, string url,
                                                         public_key_type block_signing_key,
-                                                        const chain_properties &props, bool broadcast = false);
+                                                        const chain_properties<0, 17, 0> &props, bool broadcast = false);
 
             /** Set the voting proxy for an account.
              *
@@ -692,7 +692,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction escrow_transfer(string from, string to, string agent, uint32_t escrow_id,
-                                                         asset sbd_amount, asset<0, 17, 0> steem_amount, asset<0, 17, 0> fee,
+                                                         asset<0, 17, 0> sbd_amount, asset<0, 17, 0> steem_amount, asset<0, 17, 0> fee,
                                                          time_point_sec ratification_deadline,
                                                          time_point_sec escrow_expiration, string json_meta,
                                                          bool broadcast = false);
@@ -739,8 +739,7 @@ namespace steemit {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction escrow_release(string from, string to, string agent, string who,
-                                                        string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount,
-                                                        asset steem_amount, bool broadcast = false);
+                                                        string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount, asset<0, 17, 0> steem_amount, bool broadcast = false);
 
             /**
              * Transfer GOLOS into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
@@ -824,7 +823,7 @@ namespace steemit {
              * @param exchange_rate The desired exchange rate
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction publish_feed(string witness, price exchange_rate, bool broadcast);
+            annotated_signed_transaction publish_feed(string witness, price<0, 17, 0> exchange_rate, bool broadcast);
 
             /** Signs a transaction.
              *
