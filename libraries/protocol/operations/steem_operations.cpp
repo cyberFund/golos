@@ -275,3 +275,5 @@ namespace steemit {
         }
     }
 } // steemit::protocol
+
+#include <steemit/protocol/operations/steem_operations.tpp>

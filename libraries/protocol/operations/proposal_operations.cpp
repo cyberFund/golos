@@ -84,3 +84,5 @@ namespace steemit {
         }
     }
 } // graphene::chain
+
+#include <steemit/protocol/operations/proposal_operations.tpp>

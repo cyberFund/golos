@@ -393,9 +393,7 @@ namespace steemit {
                             from_string(com.parent_permlink, o.parent_permlink);
                             from_string(com.category, o.parent_permlink);
                             com.root_comment = com.id;
-                            com.cashout_time = this->db.template has_hardfork(STEEMIT_HARDFORK_0_12__177) ? this->db.template head_block_time() +
-                                                                                             STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17
-                                                                                           : fc::time_point_sec::maximum();
+                            com.cashout_time = this->db.template has_hardfork(STEEMIT_HARDFORK_0_12__177) ? this->db.template head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 : fc::time_point_sec::maximum();
                         } else {
                             com.parent_author = parent->author;
                             com.parent_permlink = parent->permlink;
