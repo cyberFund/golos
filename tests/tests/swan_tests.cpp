@@ -55,9 +55,9 @@ namespace steemit {
                     const asset_object &back = db.get_asset(bad.options.short_backing_asset);
                     const auto &idx = db.get_index<collateral_bid_index>();
                     const auto &aidx = idx.indices().get<by_price>();
-                    auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
+                    auto start = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::max(back.asset_name, asset<0, 17, 0>),
                                                                     collateral_bid_object::id_type()));
-                    auto end = aidx.lower_bound(boost::make_tuple(asset, price::min(back.asset_name, asset),
+                    auto end = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::min(back.asset_name, asset<0, 17, 0>),
                                                                   collateral_bid_object::id_type(
                                                                           STEEMIT_MAX_INSTANCE_ID)));
                     vector<collateral_bid_object> result;
@@ -180,9 +180,9 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
                 for (const account_object *actor : actors) {
                     int64_t bal = get_balance(*actor, core);
                     if (bal < init_balance) {
-                        transfer(committee_account, actor->name, asset(init_balance - bal));
+                        transfer(committee_account, actor->name, asset<0, 17, 0>(init_balance - bal));
                     } else if (bal > init_balance) {
-                        transfer(actor->name, committee_account, asset(bal - init_balance));
+                        transfer(actor->name, committee_account, asset<0, 17, 0>(bal - init_balance));
                     }
                 }
             };
@@ -251,7 +251,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
                 const asset_object &bitusd = setup_asset();
                 top_up();
                 set_price(bitusd, bitusd.amount(40) / core.amount(1000)); // $0.04
-                borrow(borrower, bitusd.amount(100), asset(5000));    // 2x collat
+                borrow(borrower, bitusd.amount(100), asset<0, 17, 0>(5000));    // 2x collat
                 transfer(borrower.name, seller.name, bitusd.amount(100));
                 const limit_order_object *oid_019 = create_sell_order(seller, bitusd.amount(39), core.amount(
                         2000));   // this order is at $0.019, we should not be able to match against it
@@ -326,10 +326,10 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             const asset_object &bitcny = create_bitasset("CNYBIT", _feedproducer);
             STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), asset(100), bitcny.amount(100)), fc::exception);
             update_feed_producers(bitcny, {_feedproducer});
-            price_feed feed;
-            feed.settlement_price = bitcny.amount(1) / asset(1);
+            price_feed<0, 17, 0> feed;
+            feed.settlement_price = bitcny.amount(1) / asset<0, 17, 0>(1);
             publish_feed(bitcny.asset_name, _feedproducer, feed);
-            borrow(borrower2(), bitcny.amount(100), asset(1000));
+            borrow(borrower2(), bitcny.amount(100), asset<0, 17, 0>(1000));
 
             // can't bid wrong collateral type
             STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), bitcny.amount(100), swan().amount(100)), fc::exception);

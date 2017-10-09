@@ -68,7 +68,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             // U,V,W : voters
 
             // set a ridiculously high STEEM price ($1 / satoshi) to disable dust threshold
-            set_price_feed(price(ASSET("0.001 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("0.001 TESTS"), ASSET("1.000 TBD")));
 
             for (const auto &voter : voters) {
                 fund(voter.name, 10000);
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             vest("alice", ASSET("10.000 TESTS"));
             vest("bob", ASSET("10.000 TESTS"));
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
             generate_block();
             validate_database();

@@ -42,7 +42,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             private_key_type priv_key = generate_private_key("temp_key");
 
             account_create_operation op;
-            op.fee = asset(10, STEEM_SYMBOL);
+            op.fee = asset<0, 17, 0>(10, STEEM_SYMBOL);
             op.new_account_name = "bob";
             op.creator = STEEMIT_INIT_MINER_NAME;
             op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -93,13 +93,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             private_key_type priv_key = generate_private_key("alice");
 
             const account_object &init = db.get_account(STEEMIT_INIT_MINER_NAME);
-            asset init_starting_balance = init.balance;
+            asset<0, 17, 0> init_starting_balance = init.balance;
 
             const auto &gpo = db.get_dynamic_global_properties();
 
             account_create_operation op;
 
-            op.fee = asset(100, STEEM_SYMBOL);
+            op.fee = asset<0, 17, 0>(100, STEEM_SYMBOL);
             op.new_account_name = "alice";
             op.creator = STEEMIT_INIT_MINER_NAME;
             op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -182,8 +182,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
             tx.signatures.clear();
             tx.operations.clear();
-            op.fee = asset(
-                    db.get_account(STEEMIT_INIT_MINER_NAME).balance.amount +
+            op.fee = asset<0, 17, 0>(db.get_account(STEEMIT_INIT_MINER_NAME).balance.amount +
                     1, STEEM_SYMBOL);
             op.new_account_name = "bob";
             tx.operations.push_back(op);
@@ -1363,8 +1362,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(alice.balance == ASSET("10.000 TESTS"));
 
-            auto shares = asset(gpo.total_vesting_shares.amount, VESTS_SYMBOL);
-            auto vests = asset(gpo.total_vesting_fund_steem.amount, STEEM_SYMBOL);
+            auto shares = asset<0, 17, 0>(gpo.total_vesting_shares.amount, VESTS_SYMBOL);
+            auto vests = asset<0, 17, 0>(gpo.total_vesting_fund_steem.amount, STEEM_SYMBOL);
             auto alice_shares = alice.vesting_shares;
             auto bob_shares = bob.vesting_shares;
 
@@ -1396,7 +1395,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             validate_database();
 
             op.to = "bob";
-            op.amount = asset(2000, STEEM_SYMBOL);
+            op.amount = asset<0, 17, 0>(2000, STEEM_SYMBOL);
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -1405,7 +1404,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            new_vest = asset((op.amount *
+            new_vest = asset<0, 17, 0>((op.amount *
                               (shares / vests)).amount, VESTS_SYMBOL);
             shares += new_vest;
             vests += op.amount;
@@ -1512,7 +1511,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
                 withdraw_vesting_operation op;
                 op.account = "alice";
-                op.vesting_shares = asset(
+                op.vesting_shares = asset<0, 17, 0>(
                         alice.vesting_shares.amount / 2, VESTS_SYMBOL);
 
                 auto old_vesting_shares = alice.vesting_shares;
@@ -1540,7 +1539,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 tx.operations.clear();
                 tx.signatures.clear();
 
-                op.vesting_shares = asset(
+                op.vesting_shares = asset<0, 17, 0>(
                         alice.vesting_shares.amount / 3, VESTS_SYMBOL);
                 tx.operations.push_back(op);
                 tx.set_expiration(db.head_block_time() +
@@ -1565,7 +1564,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 tx.operations.clear();
                 tx.signatures.clear();
 
-                op.vesting_shares = asset(
+                op.vesting_shares = asset<0, 17, 0>(
                         alice.vesting_shares.amount * 2, VESTS_SYMBOL);
                 tx.operations.push_back(op);
                 tx.set_expiration(db.head_block_time() +
@@ -1587,7 +1586,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 tx.operations.clear();
                 tx.signatures.clear();
 
-                op.vesting_shares = asset(0, VESTS_SYMBOL);
+                op.vesting_shares = asset<0, 17, 0>(0, VESTS_SYMBOL);
                 tx.operations.push_back(op);
                 tx.set_expiration(db.head_block_time() +
                                   STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -1724,7 +1723,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.url = "foo.bar";
             op.fee = ASSET("1.000 TESTS");
             op.block_signing_key = signing_key.get_public_key();
-            op.props.account_creation_fee = asset(
+            op.props.account_creation_fee = asset<0, 17, 0>(
                     STEEMIT_MIN_ACCOUNT_CREATION_FEE + 10, STEEM_SYMBOL);
             op.props.maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT + 100;
 
@@ -2330,7 +2329,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             feed_publish_operation op;
             op.publisher = "alice";
-            op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -2377,7 +2376,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test publishing price feed");
             feed_publish_operation op;
             op.publisher = "alice";
-            op.exchange_rate = price(ASSET("1000.000 TESTS"), ASSET("1.000 TBD")); // 1000 STEEM : 1 SBD
+            op.exchange_rate = price<0, 17, 0>(ASSET("1000.000 TESTS"), ASSET("1.000 TBD")); // 1000 STEEM : 1 SBD
 
             signed_transaction tx;
             tx.set_expiration(
@@ -2408,7 +2407,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             tx.operations.clear();
             tx.signatures.clear();
-            op.exchange_rate = price(ASSET(" 1500.000 TESTS"), ASSET("1.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET(" 1500.000 TESTS"), ASSET("1.000 TBD"));
             op.publisher = "alice";
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
@@ -2439,7 +2438,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
             convert("alice", ASSET("2.500 TESTS"));
 
@@ -2497,7 +2496,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             const auto &convert_request_idx = db.get_index<convert_request_index>().indices().get<by_owner>();
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
             convert("alice", ASSET("2.500 TESTS"));
             convert("bob", ASSET("7.000 TESTS"));
@@ -2649,7 +2648,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
         try {
             BOOST_TEST_MESSAGE("Testing: limit_order_create_apply");
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
             ACTORS((alice)(bob))
             fund("alice", 1000000);
@@ -2736,7 +2735,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == op.amount_to_sell.amount);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(op.amount_to_sell / op.min_to_receive));
+                          price<0, 17, 0>(op.amount_to_sell / op.min_to_receive));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -2760,7 +2759,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 10000);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("10.000 TESTS"), op.min_to_receive));
+                          price<0, 17, 0>(ASSET("10.000 TESTS"), op.min_to_receive));
             BOOST_REQUIRE(limit_order->get_market() ==
                     std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -2812,7 +2811,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 5000);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("10.000 TESTS"), ASSET("15.000 TBD")));
+                          price<0, 17, 0>(ASSET("10.000 TESTS"), ASSET("15.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(
@@ -2852,7 +2851,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == 1);
             BOOST_REQUIRE(limit_order->for_sale.value == 7500);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("15.000 TBD"), ASSET("10.000 TESTS")));
+                          price<0, 17, 0>(ASSET("15.000 TBD"), ASSET("10.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 1)) ==
@@ -2923,7 +2922,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == 4);
             BOOST_REQUIRE(limit_order->for_sale.value == 1000);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("12.000 TBD"), ASSET("10.000 TESTS")));
+                          price<0, 17, 0>(ASSET("12.000 TBD"), ASSET("10.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -2978,7 +2977,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == 5);
             BOOST_REQUIRE(limit_order->for_sale.value == 9091);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("20.000 TESTS"), ASSET("22.000 TBD")));
+                          price<0, 17, 0>(ASSET("20.000 TESTS"), ASSET("22.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -3004,7 +3003,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order_create2_operation op;
             op.owner = "alice";
             op.amount_to_sell = ASSET("1.000 TESTS");
-            op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -3042,7 +3041,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
         try {
             BOOST_TEST_MESSAGE("Testing: limit_order_create2_apply");
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
             ACTORS((alice)(bob))
             fund("alice", 1000000);
@@ -3058,7 +3057,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "bob";
             op.order_id = 1;
             op.amount_to_sell = ASSET("10.000 TESTS");
-            op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
             op.fill_or_kill = false;
             tx.operations.push_back(op);
             tx.set_expiration(
@@ -3078,7 +3077,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test failure when price is 0");
 
             op.owner = "alice";
-            op.exchange_rate = price(ASSET("0.000 TESTS"), ASSET("1.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("0.000 TESTS"), ASSET("1.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3097,7 +3096,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test failure when amount to sell is 0");
 
             op.amount_to_sell = ASSET("0.000 TESTS");
-            op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3116,7 +3115,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test success creating limit order that will not be filled");
 
             op.amount_to_sell = ASSET("10.000 TESTS");
-            op.exchange_rate = price(ASSET("2.000 TESTS"), ASSET("3.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("2.000 TESTS"), ASSET("3.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3186,7 +3185,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "bob";
             op.order_id = 1;
             op.amount_to_sell = ASSET("7.500 TBD");
-            op.exchange_rate = price(ASSET("3.000 TBD"), ASSET("2.000 TESTS"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("3.000 TBD"), ASSET("2.000 TESTS"));
             op.fill_or_kill = false;
             tx.operations.clear();
             tx.signatures.clear();
@@ -3203,7 +3202,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 5000);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("2.000 TESTS"), ASSET("3.000 TBD")));
+                          price<0, 17, 0>(ASSET("2.000 TESTS"), ASSET("3.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(
@@ -3230,7 +3229,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test filling an existing order fully, but the new order partially");
 
             op.amount_to_sell = ASSET("15.000 TBD");
-            op.exchange_rate = price(ASSET("3.000 TBD"), ASSET("2.000 TESTS"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("3.000 TBD"), ASSET("2.000 TESTS"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3243,7 +3242,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == 1);
             BOOST_REQUIRE(limit_order->for_sale.value == 7500);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("3.000 TBD"), ASSET("2.000 TESTS")));
+                          price<0, 17, 0>(ASSET("3.000 TBD"), ASSET("2.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 1)) ==
@@ -3263,7 +3262,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "alice";
             op.order_id = 3;
             op.amount_to_sell = ASSET("5.000 TESTS");
-            op.exchange_rate = price(ASSET("2.000 TESTS"), ASSET("3.000 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("2.000 TESTS"), ASSET("3.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3289,7 +3288,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "alice";
             op.order_id = 4;
             op.amount_to_sell = ASSET("10.000 TESTS");
-            op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.100 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.100 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3299,7 +3298,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "bob";
             op.order_id = 4;
             op.amount_to_sell = ASSET("12.000 TBD");
-            op.exchange_rate = price(ASSET("1.200 TBD"), ASSET("1.000 TESTS"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.200 TBD"), ASSET("1.000 TESTS"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3343,7 +3342,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "alice";
             op.order_id = 5;
             op.amount_to_sell = ASSET("20.000 TESTS");
-            op.exchange_rate = price(ASSET("1.000 TESTS"), ASSET("1.100 TBD"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.100 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3353,7 +3352,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = "bob";
             op.order_id = 5;
             op.amount_to_sell = ASSET("12.000 TBD");
-            op.exchange_rate = price(ASSET("1.200 TBD"), ASSET("1.000 TESTS"));
+            op.exchange_rate = price<0, 17, 0>(ASSET("1.200 TBD"), ASSET("1.000 TESTS"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3368,7 +3367,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->order_id == 5);
             BOOST_REQUIRE(limit_order->for_sale.value == 9091);
             BOOST_REQUIRE(limit_order->sell_price ==
-                          price(ASSET("1.000 TESTS"), ASSET("1.100 TBD")));
+                          price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.100 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(alice.balance.amount.value ==
@@ -6447,7 +6446,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob)(sam))
             generate_block();
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
 
             comment_operation comment;
             vote_operation vote;
@@ -6672,11 +6671,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test success using only STEEM to reach target delegation.");
 
             tx.clear();
-            op.fee = asset(
+            op.fee = asset<0, 17, 0>(
                     db.get_witness_schedule_object().median_props.account_creation_fee.amount *
                     STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
                     STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL);
-            op.delegation = asset(0, VESTS_SYMBOL);
+            op.delegation = asset<0, 17, 0>(0, VESTS_SYMBOL);
             op.new_account_name = "sam";
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -6697,7 +6696,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_TEST_MESSAGE("--- Test failure when insufficient fee fo reach target delegation.");
-            fund("alice", asset(
+            fund("alice", asset<0, 17, 0>(
                     db.get_witness_schedule_object().median_props.account_creation_fee.amount *
                     STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
                     STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL));
@@ -6907,11 +6906,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
        const auto& core  = asset_id_type()(db);
 
        int64_t init_balance(1000000);
-       transfer(committee_account, judge_id, asset(init_balance));
-       transfer(committee_account, dan_id, asset(init_balance));
-       transfer(committee_account, nathan_id, asset(init_balance));
+       transfer(committee_account, judge_id, asset<0, 17, 0>(init_balance));
+       transfer(committee_account, dan_id, asset<0, 17, 0>(init_balance));
+       transfer(committee_account, nathan_id, asset<0, 17, 0>(init_balance));
 
-       borrow( dan, pmark.amount(1000), asset(1000) );
+       borrow( dan, pmark.amount(1000), asset<0, 17, 0>(1000) );
        // force settle with 0 outcome
        force_global_settle( pmark, pmark.amount(100) / core.amount(0) );
 

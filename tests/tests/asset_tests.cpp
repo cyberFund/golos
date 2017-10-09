@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
             creator.common_options.issuer_permissions =
                     charge_market_fee | white_list | override_authority | transfer_restricted | disable_confidential;
             creator.common_options.flags = charge_market_fee | white_list | override_authority | disable_confidential;
-            creator.common_options.core_exchange_rate = price({asset(2), asset(1, asset_symbol_type(1))});
+            creator.common_options.core_exchange_rate = price<0, 17, 0>({asset<0, 17, 0>(2), asset<0, 17, 0>(1, asset_symbol_type(1))});
             creator.common_options.whitelist_authorities = creator.common_options.blacklist_authorities = {
                     account_name_type()
             };
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
 
             asset_issue_operation op;
             op.issuer = db.get_asset(uia_id).issuer;
-            op.asset_to_issue = asset(1000, uia_id);
+            op.asset_to_issue = asset<0, 17, 0>(1000, uia_id);
             op.issue_to_account = nathan_id;
             trx.operations.emplace_back(op);
             trx.set_expiration(db.head_block_time() +
