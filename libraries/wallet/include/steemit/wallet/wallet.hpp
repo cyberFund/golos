@@ -461,7 +461,7 @@ namespace steemit {
              *  @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction create_account_delegated(string creator, asset<0, 17, 0> steem_fee,
-                                                                  asset delegated_vests, string new_account_name,
+                                                                  asset<0, 17, 0> delegated_vests, string new_account_name,
                                                                   string json_meta, bool broadcast);
 
             /**
@@ -914,7 +914,7 @@ namespace steemit {
              *  @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction create_order(string owner, uint32_t order_id, asset<0, 17, 0> amount_to_sell,
-                                                      asset min_to_receive, bool fill_or_kill, uint32_t expiration,
+                                                      asset<0, 17, 0> min_to_receive, bool fill_or_kill, uint32_t expiration,
                                                       bool broadcast);
 
             /**
@@ -1168,7 +1168,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction settling the named asset
              */
-            signed_transaction global_settle_asset(string symbol, price settle_price, bool broadcast = false);
+            signed_transaction global_settle_asset(string symbol, price<0, 17, 0> settle_price, bool broadcast = false);
 
             /** Schedules a market-issued asset for automatic settlement.
              *
@@ -1208,9 +1208,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction changing the whitelisting status
              */
-            signed_transaction whitelist_account(string authorizing_account, string account_to_list,
-                                                 account_whitelist_operation::account_listing new_listing_status,
-                                                 bool broadcast = false);
+            signed_transaction whitelist_account(string authorizing_account, string account_to_list, account_whitelist_operation::account_listing new_listing_status, bool broadcast = false);
 
             /**
              *  Post or update a comment.

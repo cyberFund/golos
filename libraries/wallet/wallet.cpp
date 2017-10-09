@@ -607,7 +607,7 @@ namespace steemit {
                 signed_transaction set_voting_proxy(string account_to_modify, string proxy,
                                                     bool broadcast /* = false */) {
                     try {
-                        account_witness_proxy_operation op;
+                        account_witness_proxy_operation<0, 17, 0> op;
                         op.account = account_to_modify;
                         op.proxy = proxy;
 
@@ -1087,7 +1087,7 @@ namespace steemit {
                                                                uint32_t review_period_seconds = 0,
                                                                bool broadcast = true) {
                     FC_ASSERT(_builder_transactions.count(handle));
-                    proposal_create_operation op;
+                    proposal_create_operation<0, 17, 0> op;
                     op.expiration_time = expiration;
                     signed_transaction &trx = _builder_transactions[handle];
                     std::transform(trx.operations.begin(), trx.operations.end(),
@@ -1110,7 +1110,7 @@ namespace steemit {
                                                                 uint32_t review_period_seconds = 0,
                                                                 bool broadcast = true) {
                     FC_ASSERT(_builder_transactions.count(handle));
-                    proposal_create_operation op;
+                    proposal_create_operation<0, 17, 0> op;
                     op.owner = get_account(account_name_or_id).name;
                     op.expiration_time = expiration;
                     signed_transaction &trx = _builder_transactions[handle];
@@ -1139,7 +1139,7 @@ namespace steemit {
                         const asset_object &collateral = get_asset(
                                 get_bitasset_data(debt_asset->asset_name).options.short_backing_asset);
 
-                        bid_collateral_operation op;
+                        bid_collateral_operation<0, 17, 0> op;
                         op.bidder = get_account(bidder_name).name;
                         op.debt_covered = debt_asset->amount_from_string(debt_amount);
                         op.additional_collateral = collateral.amount_from_string(additional_collateral);
@@ -1591,7 +1591,7 @@ namespace steemit {
                                                                           bool broadcast) const {
             try {
                 FC_ASSERT(!is_locked());
-                account_create_operation op;
+                account_create_operation<0, 17, 0> op;
                 op.creator = creator;
                 op.new_account_name = new_account_name;
                 op.owner = authority(1, owner, 1);
@@ -1628,7 +1628,7 @@ namespace steemit {
                                                                                     bool broadcast) const {
             try {
                 FC_ASSERT(!is_locked());
-                account_create_with_delegation_operation op;
+                account_create_with_delegation_operation<0, 17, 0> op;
                 op.creator = creator;
                 op.new_account_name = new_account_name;
                 op.owner = authority(1, owner, 1);
@@ -1651,7 +1651,7 @@ namespace steemit {
                                                                           string account_to_recover,
                                                                           authority new_authority, bool broadcast) {
             FC_ASSERT(!is_locked());
-            request_account_recovery_operation op;
+            request_account_recovery_operation<0, 17, 0> op;
             op.recovery_account = recovery_account;
             op.account_to_recover = account_to_recover;
             op.new_owner_authority = new_authority;
@@ -1667,7 +1667,7 @@ namespace steemit {
                                                                  authority new_authority, bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            recover_account_operation op;
+            recover_account_operation<0, 17, 0> op;
             op.account_to_recover = account_to_recover;
             op.new_owner_authority = new_authority;
             op.recent_owner_authority = recent_authority;
@@ -1683,7 +1683,7 @@ namespace steemit {
                                                                          bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            change_recovery_account_operation op;
+            change_recovery_account_operation<0, 17, 0> op;
             op.account_to_recover = owner;
             op.new_recovery_account = new_recovery_account;
 
@@ -1705,7 +1705,7 @@ namespace steemit {
             try {
                 FC_ASSERT(!is_locked());
 
-                account_update_operation op;
+                account_update_operation<0, 17, 0> op;
                 op.account = account_name;
                 op.owner = authority(1, owner, 1);
                 op.active = authority(1, active, 1);
@@ -1730,7 +1730,7 @@ namespace steemit {
             FC_ASSERT(accounts.size() == 1, "Account does not exist");
             FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-            account_update_operation op;
+            account_update_operation<0, 17, 0> op;
             op.account = account_name;
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = accounts[0].json_metadata;
@@ -1792,7 +1792,7 @@ namespace steemit {
             FC_ASSERT(accounts.size() == 1, "Account does not exist");
             FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-            account_update_operation op;
+            account_update_operation<0, 17, 0> op;
             op.account = account_name;
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = accounts[0].json_metadata;
@@ -1854,7 +1854,7 @@ namespace steemit {
             FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
             FC_ASSERT(threshold != 0, "Authority is implicitly satisfied");
 
-            account_update_operation op;
+            account_update_operation<0, 17, 0> op;
             op.account = account_name;
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = accounts[0].json_metadata;
@@ -1910,7 +1910,7 @@ namespace steemit {
             FC_ASSERT(accounts.size() == 1, "Account does not exist");
             FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-            account_update_operation op;
+            account_update_operation<0, 17, 0> op;
             op.account = account_name;
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = json_meta;
@@ -1930,7 +1930,7 @@ namespace steemit {
             FC_ASSERT(accounts.size() == 1, "Account does not exist");
             FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-            account_update_operation op;
+            account_update_operation<0, 17, 0> op;
             op.account = account_name;
             op.memo_key = key;
             op.json_metadata = accounts[0].json_metadata;
@@ -1951,7 +1951,7 @@ namespace steemit {
             FC_ASSERT(delegator == accounts[0].name, "Delegator account is not right?");
             FC_ASSERT(delegatee == accounts[1].name, "Delegator account is not right?");
 
-            delegate_vesting_shares_operation op;
+            delegate_vesting_shares_operation<0, 17, 0> op;
             op.delegator = delegator;
             op.delegatee = delegatee;
             op.vesting_shares = vesting_shares;
@@ -2014,7 +2014,7 @@ namespace steemit {
                                                                 const chain_properties<0, 17, 0> &props, bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            witness_update_operation op;
+            witness_update_operation<0, 17, 0> op;
 
             fc::optional<witness_api_obj> wit = my->_remote_db->get_witness_by_account(witness_account_name);
             if (!wit.valid()) {
@@ -2042,7 +2042,7 @@ namespace steemit {
                                                                   bool approve, bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
-                account_witness_vote_operation op;
+                account_witness_vote_operation<0, 17, 0> op;
                 op.account = voting_account;
                 op.witness = witness_to_vote_for;
                 op.approve = approve;
@@ -2090,7 +2090,7 @@ namespace steemit {
                 fc::optional<asset_object> asset_obj = get_asset(amount.symbol);
                 FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", amount.symbol));
 
-                transfer_operation op;
+                transfer_operation<0, 17, 0> op;
                 op.from = from;
                 op.to = to;
                 op.amount = amount;
@@ -2112,7 +2112,7 @@ namespace steemit {
                                                                  time_point_sec escrow_expiration, string json_meta,
                                                                  bool broadcast) {
             FC_ASSERT(!is_locked());
-            escrow_transfer_operation op;
+            escrow_transfer_operation<0, 17, 0> op;
             op.from = from;
             op.to = to;
             op.agent = agent;
@@ -2134,7 +2134,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::escrow_approve(string from, string to, string agent, string who,
                                                                 uint32_t escrow_id, bool approve, bool broadcast) {
             FC_ASSERT(!is_locked());
-            escrow_approve_operation op;
+            escrow_approve_operation<0, 17, 0> op;
             op.from = from;
             op.to = to;
             op.agent = agent;
@@ -2151,7 +2151,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::escrow_dispute(string from, string to, string agent, string who,
                                                                 uint32_t escrow_id, bool broadcast) {
             FC_ASSERT(!is_locked());
-            escrow_dispute_operation op;
+            escrow_dispute_operation<0, 17, 0> op;
             op.from = from;
             op.to = to;
             op.agent = agent;
@@ -2168,7 +2168,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::escrow_release(string from, string to, string agent, string who,
                                                                 string receiver, uint32_t escrow_id, asset<0, 17, 0> sbd_amount, asset<0, 17, 0> steem_amount, bool broadcast) {
             FC_ASSERT(!is_locked());
-            escrow_release_operation op;
+            escrow_release_operation<0, 17, 0> op;
             op.from = from;
             op.to = to;
             op.agent = agent;
@@ -2190,7 +2190,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::transfer_to_savings(string from, string to, asset<0, 17, 0> amount, string memo,
                                                                      bool broadcast) {
             FC_ASSERT(!is_locked());
-            transfer_to_savings_operation op;
+            transfer_to_savings_operation<0, 17, 0> op;
             op.from = from;
             op.to = to;
             op.memo = get_encrypted_memo(from, to, memo);
@@ -2209,7 +2209,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::transfer_from_savings(string from, uint32_t request_id, string to,
                                                                        asset<0, 17, 0> amount, string memo, bool broadcast) {
             FC_ASSERT(!is_locked());
-            transfer_from_savings_operation op;
+            transfer_from_savings_operation<0, 17, 0> op;
             op.from = from;
             op.request_id = request_id;
             op.to = to;
@@ -2230,7 +2230,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::cancel_transfer_from_savings(string from, uint32_t request_id,
                                                                               bool broadcast) {
             FC_ASSERT(!is_locked());
-            cancel_transfer_from_savings_operation op;
+            cancel_transfer_from_savings_operation<0, 17, 0> op;
             op.from = from;
             op.request_id = request_id;
             signed_transaction tx;
@@ -2243,7 +2243,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string to, asset<0, 17, 0> amount,
                                                                      bool broadcast) {
             FC_ASSERT(!is_locked());
-            transfer_to_vesting_operation op;
+            transfer_to_vesting_operation<0, 17, 0> op;
             op.from = from;
             op.to = (to == from ? "" : to);
             op.amount = amount;
@@ -2257,7 +2257,7 @@ namespace steemit {
 
         annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset<0, 17, 0> vesting_shares, bool broadcast) {
             FC_ASSERT(!is_locked());
-            withdraw_vesting_operation op;
+            withdraw_vesting_operation<0, 17, 0> op;
             op.account = from;
             op.vesting_shares = vesting_shares;
 
@@ -2271,7 +2271,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::set_withdraw_vesting_route(string from, string to, uint16_t percent,
                                                                             bool auto_vest, bool broadcast) {
             FC_ASSERT(!is_locked());
-            set_withdraw_vesting_route_operation op;
+            set_withdraw_vesting_route_operation<0, 17, 0> op;
             op.from_account = from;
             op.to_account = to;
             op.percent = percent;
@@ -2286,7 +2286,7 @@ namespace steemit {
 
         annotated_signed_transaction wallet_api::convert_sbd(string from, asset<0, 17, 0> amount, bool broadcast) {
             FC_ASSERT(!is_locked());
-            convert_operation op;
+            convert_operation<0, 17, 0> op;
             op.owner = from;
             op.request_id = fc::time_point::now().sec_since_epoch();
             op.amount = amount;
@@ -2300,7 +2300,7 @@ namespace steemit {
 
         annotated_signed_transaction wallet_api::publish_feed(string witness, price<0, 17, 0> exchange_rate, bool broadcast) {
             FC_ASSERT(!is_locked());
-            feed_publish_operation op;
+            feed_publish_operation<0, 17, 0> op;
             op.publisher = witness;
             op.exchange_rate = exchange_rate;
 
@@ -2356,7 +2356,7 @@ namespace steemit {
 
         annotated_signed_transaction wallet_api::decline_voting_rights(string account, bool decline, bool broadcast) {
             FC_ASSERT(!is_locked());
-            decline_voting_rights_operation op;
+            decline_voting_rights_operation<0, 17, 0> op;
             op.account = account;
             op.decline = decline;
 
@@ -2442,10 +2442,10 @@ namespace steemit {
         }
 
         annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset<0, 17, 0> amount_to_sell,
-                                                              asset min_to_receive, bool fill_or_kill,
+                                                              asset<0, 17, 0> min_to_receive, bool fill_or_kill,
                                                               uint32_t expiration_sec, bool broadcast) {
             FC_ASSERT(!is_locked());
-            limit_order_create_operation op;
+            limit_order_create_operation<0, 17, 0> op;
             op.owner = owner;
             op.order_id = order_id;
             op.amount_to_sell = amount_to_sell;
@@ -2463,7 +2463,7 @@ namespace steemit {
 
         annotated_signed_transaction wallet_api::cancel_order(string owner, uint32_t order_id, bool broadcast) {
             FC_ASSERT(!is_locked());
-            limit_order_cancel_operation op;
+            limit_order_cancel_operation<0, 17, 0> op;
             op.owner = owner;
             op.order_id = order_id;
 
@@ -2480,7 +2480,7 @@ namespace steemit {
 
             auto account = get_account(seller_account);
 
-            limit_order_create_operation op;
+            limit_order_create_operation<0, 17, 0> op;
             op.owner = account.name;
             op.amount_to_sell = get_asset(amount_to_sell.symbol).amount(amount_to_sell.amount);
             op.min_to_receive = get_asset(amount_to_receive.symbol).amount(amount_to_receive.amount);
@@ -2518,7 +2518,7 @@ namespace steemit {
             asset_object collateral = get_asset(
                     asset(0, get_bitasset_data(mia.asset_name).options.short_backing_asset).symbol);
 
-            call_order_update_operation op;
+            call_order_update_operation<0, 17, 0> op;
             op.funding_account = seller.name;
             op.delta_debt = mia.amount(amount_to_borrow.amount);
             op.delta_collateral = collateral.amount(amount_of_collateral.amount);
@@ -2748,7 +2748,7 @@ namespace steemit {
                                                          account_whitelist_operation::account_listing new_listing_status,
                                                          bool broadcast /* = false */) {
             try {
-                account_whitelist_operation whitelist_op;
+                account_whitelist_operation<0, 17, 0> whitelist_op;
                 whitelist_op.authorizing_account = get_account(authorizing_account).name;
                 whitelist_op.account_to_list = get_account(account_to_list).name;
                 whitelist_op.new_listing = new_listing_status;
@@ -2765,7 +2765,7 @@ namespace steemit {
                                                               string parent_permlink, string title, string body,
                                                               string json, bool broadcast) {
             FC_ASSERT(!is_locked());
-            comment_operation op;
+            comment_operation<0, 17, 0> op;
             op.parent_author = parent_author;
             op.parent_permlink = parent_permlink;
             op.author = author;
@@ -2785,7 +2785,7 @@ namespace steemit {
                                                                        asset<0, 17, 0> extension_cost, bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            comment_payout_extension_operation op;
+            comment_payout_extension_operation<0, 17, 0> op;
             op.payer = payer;
             op.author = author;
             op.permlink = permlink;
@@ -2803,7 +2803,7 @@ namespace steemit {
                                                                        bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            comment_payout_extension_operation op;
+            comment_payout_extension_operation<0, 17, 0> op;
             op.payer = payer;
             op.author = author;
             op.permlink = permlink;
@@ -2821,7 +2821,7 @@ namespace steemit {
             FC_ASSERT(!is_locked());
             FC_ASSERT(abs(weight) <= 100, "Weight must be between -100 and 100 and not 0");
 
-            vote_operation op;
+            vote_operation<0, 17, 0> op;
             op.voter = voter;
             op.author = author;
             op.permlink = permlink;
@@ -2841,7 +2841,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::challenge(string challenger, string challenged, bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            challenge_authority_operation op;
+            challenge_authority_operation<0, 17, 0> op;
             op.challenger = challenger;
             op.challenged = challenged;
             op.require_owner = false;
@@ -2856,7 +2856,7 @@ namespace steemit {
         annotated_signed_transaction wallet_api::prove(string challenged, bool broadcast) {
             FC_ASSERT(!is_locked());
 
-            prove_authority_operation op;
+            prove_authority_operation<0, 17, 0> op;
             op.challenged = challenged;
             op.require_owner = false;
 
