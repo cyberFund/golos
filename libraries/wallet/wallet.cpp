@@ -1943,7 +1943,7 @@ namespace steemit {
         }
 
         annotated_signed_transaction wallet_api::delegate_vesting_shares(string delegator, string delegatee,
-                                                                         asset vesting_shares, bool broadcast) {
+                                                                         asset<0, 17, 0> vesting_shares, bool broadcast) {
             FC_ASSERT(!is_locked());
 
             auto accounts = my->_remote_db->get_accounts({delegator, delegatee});
@@ -2745,7 +2745,7 @@ namespace steemit {
         }
 
         signed_transaction wallet_api::whitelist_account(string authorizing_account, string account_to_list,
-                                                         account_whitelist_operation::account_listing new_listing_status,
+                                                         account_whitelist_operation<0, 17, 0>::account_listing new_listing_status,
                                                          bool broadcast /* = false */) {
             try {
                 account_whitelist_operation<0, 17, 0> whitelist_op;

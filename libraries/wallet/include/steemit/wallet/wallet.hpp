@@ -579,8 +579,7 @@ namespace steemit {
              * @param vesting_shares The amount of VESTS to delegate
              * @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction delegate_vesting_shares(string delegator, string delegatee,
-                                                                 asset vesting_shares, bool broadcast);
+            annotated_signed_transaction delegate_vesting_shares(string delegator, string delegatee, asset<0, 17, 0> vesting_shares, bool broadcast);
 
             /**
              *  This method is used to convert a JSON transaction to its transaction ID.
@@ -1208,7 +1207,7 @@ namespace steemit {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction changing the whitelisting status
              */
-            signed_transaction whitelist_account(string authorizing_account, string account_to_list, account_whitelist_operation::account_listing new_listing_status, bool broadcast = false);
+            signed_transaction whitelist_account(string authorizing_account, string account_to_list, account_whitelist_operation<0, 17, 0>::account_listing new_listing_status, bool broadcast = false);
 
             /**
              *  Post or update a comment.
