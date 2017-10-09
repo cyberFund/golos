@@ -427,6 +427,23 @@ namespace steemit {
                                                                        fc::time_point_sec timestamp,
                                                                        account_name_type owner, bool broadcast);
 
+           /**
+            *
+            * @param system
+            * @param block_number
+            * @param block_hash
+            * @param ipfs_hash_link
+            * @param block_timestamp
+            * @param timestamp
+            * @param owner
+            * @return
+            */
+           annotated_signed_transaction update_first_key_value_object(string system, fc::uint128_t block_number,
+                                                                      string block_hash, string ipfs_hash_link,
+                                                                      fc::time_point_sec block_timestamp,
+                                                                      fc::time_point_sec timestamp,
+                                                                      account_name_type owner, bool broadcast);
+
             /**
              *  This method will genrate new owner, active, and memo keys for the new account which
              *  will be controlable by this wallet. There is a fee associated with account creation

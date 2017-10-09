@@ -2021,6 +2021,25 @@ namespace steemit {
                                                      timestamp, owner, broadcast);
         }
 
+        annotated_signed_transaction wallet_api::update_first_key_value_object(string system,
+                                                                               fc::uint128_t block_number,
+                                                                               string block_hash, string ipfs_hash_link,
+                                                                               fc::time_point_sec block_timestamp,
+                                                                               fc::time_point_sec timestamp,
+                                                                               account_name_type owner,
+                                                                               bool broadcast) {
+            FC_ASSERT(!is_locked());
+
+            try {
+                my->use_key_value_api();
+            } catch (fc::exception &e) {
+                elog("Connected node needs to enable key_value_api");
+            }
+
+            return my->update_first_key_value_object(system, block_number, block_hash, ipfs_hash_link, block_timestamp,
+                                                     timestamp, owner, broadcast);
+        }
+
         /**
          *  This method will genrate new owner, active, and memo keys for the new account which
          *  will be controlable by this wallet.
