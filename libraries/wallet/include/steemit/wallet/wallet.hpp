@@ -161,11 +161,6 @@ namespace steemit {
             vector<account_name_type> get_miner_queue() const;
 
             /**
-             * Returns the state info associated with the URL
-             */
-            application::state get_state(string url);
-
-            /**
              * Returns vesting withdraw routes for an account.
              *
              * @param account Account to query routes
@@ -1054,7 +1049,7 @@ namespace steemit {
 
             /** Update the core options on an asset.
              * There are a number of options which all assets in the network use. These options are
-             * enumerated in the asset_object::asset_options struct. This command is used to update
+             * enumerated in the asset_object::asset_options<0, 17, 0> struct. This command is used to update
              * these options for an existing asset.
              *
              * @note This operation cannot be used to update BitAsset-specific options. For these options,
@@ -1063,7 +1058,7 @@ namespace steemit {
              * @param symbol the name or id of the asset to update
              * @param new_issuer if changing the asset's issuer, the name or id of the new issuer.
              *                   null if you wish to remain the issuer of the asset
-             * @param new_options the new asset_options object, which will entirely replace the existing
+             * @param new_options the new asset_options<0, 17, 0> object, which will entirely replace the existing
              *                    options.
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction updating the asset
@@ -1493,7 +1488,7 @@ FC_API(steemit::wallet::wallet_api,
                /// query api
                (info)(list_my_accounts)(list_accounts)(list_witnesses)(get_witness)(get_steem_per_mvests)(
                get_account_count)(get_account)(get_block)(get_ops_in_block)(get_feed_history)(get_conversion_requests)(
-               get_account_history)(get_state)(get_withdraw_routes)
+               get_account_history)(get_withdraw_routes)
 
                /// transaction api
                (create_account)(create_account_with_keys)(create_account_delegated)(create_account_with_keys_delegated)(
