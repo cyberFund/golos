@@ -2,6 +2,7 @@
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
+
 #include <steemit/version/hardfork.hpp>
 
 #include <steemit/chain/objects/account_object.hpp>
@@ -34,8 +35,8 @@ namespace steemit {
                 _borrower2 = borrower2_id;
                 _feedproducer = feedproducer_id;
 
-                transfer(committee_account, borrower_id, asset(init_balance));
-                transfer(committee_account, borrower2_id, asset(init_balance));
+                transfer(committee_account, borrower_id, asset<0, 17, 0>(init_balance));
+                transfer(committee_account, borrower2_id, asset<0, 17, 0>(init_balance));
             }
 
             void standard_asset() {
@@ -55,11 +56,10 @@ namespace steemit {
                     const asset_object &back = db.get_asset(bad.options.short_backing_asset);
                     const auto &idx = db.get_index<collateral_bid_index>();
                     const auto &aidx = idx.indices().get<by_price>();
-                    auto start = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::max(back.asset_name, asset<0, 17, 0>),
+                    auto start = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::max(back.asset_name, asset),
                                                                     collateral_bid_object::id_type()));
-                    auto end = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::min(back.asset_name, asset<0, 17, 0>),
-                                                                  collateral_bid_object::id_type(
-                                                                          STEEMIT_MAX_INSTANCE_ID)));
+                    auto end = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::min(back.asset_name, asset),
+                                                                  collateral_bid_object::id_type(STEEMIT_MAX_INSTANCE_ID)));
                     vector<collateral_bid_object> result;
                     while (start != end && limit-- > 0) {
                         result.emplace_back(*start);
@@ -230,14 +230,14 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
                 const asset_object &bitusd = setup_asset();
                 top_up();
                 set_price(bitusd, bitusd.amount(1) / core.amount(5));  // $0.20
-                borrow(borrower, bitusd.amount(100), asset(1000));       // 2x collat
+                borrow(borrower, bitusd.amount(100), asset<0, 17, 0>(1000));       // 2x collat
                 transfer(borrower.name, settler.name, bitusd.amount(100));
 
                 // drop to $0.02 and settle
                 BOOST_CHECK(!db.get_asset_bitasset_data(bitusd.asset_name).has_settlement());
                 set_price(bitusd, bitusd.amount(1) / core.amount(50)); // $0.02
                 BOOST_CHECK(db.get_asset_bitasset_data(bitusd.asset_name).has_settlement());
-                STEEMIT_REQUIRE_THROW(borrow(borrower2, bitusd.amount(100), asset(10000)), fc::exception);
+                STEEMIT_REQUIRE_THROW(borrow(borrower2, bitusd.amount(100), asset<0, 17, 0>(10000)), fc::exception);
                 force_settle(settler, bitusd.amount(100));
 
                 // wait for forced settlement to execute
@@ -312,7 +312,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             BOOST_CHECK_EQUAL(get_balance(borrower2(), back()), b2_balance);
 
             // can't bid for non-bitassets
-            STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), swan().amount(100), asset(100)), fc::exception);
+            STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), swan().amount(100), asset<0, 17, 0>(100)), fc::exception);
             // can't cancel a non-existant bid
             STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), back().amount(0), swan().amount(0)), fc::exception);
             // can't bid zero collateral
@@ -324,7 +324,7 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
 
             // can't bid on a live bitasset
             const asset_object &bitcny = create_bitasset("CNYBIT", _feedproducer);
-            STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), asset(100), bitcny.amount(100)), fc::exception);
+            STEEMIT_REQUIRE_THROW(bid_collateral(borrower2(), asset<0, 17, 0>(100), bitcny.amount(100)), fc::exception);
             update_feed_producers(bitcny, {_feedproducer});
             price_feed<0, 17, 0> feed;
             feed.settlement_price = bitcny.amount(1) / asset<0, 17, 0>(1);
