@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
 
             const asset_object &test_asset = db.get_asset(test_asset_id);
             BOOST_CHECK(test_asset.asset_name == test_asset_id);
-            BOOST_CHECK(asset(1, test_asset_id) * test_asset.options.core_exchange_rate == asset(2));
+            BOOST_CHECK(typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(1, test_asset_id) * test_asset.options.core_exchange_rate == typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(2));
             BOOST_CHECK(test_asset.options.flags & white_list);
             BOOST_CHECK(test_asset.options.max_supply == 100000000);
             BOOST_CHECK(!test_asset.is_market_issued());
@@ -70,10 +70,10 @@ BOOST_AUTO_TEST_CASE(override_transfer_test) {
             trx.operations.push_back(otrans);
 
             BOOST_TEST_MESSAGE("Require throwing without signature");
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), protocol::exceptions::transaction::tx_missing_active_auth<>);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), steemit::protocol::exceptions::transaction::tx_missing_active_auth<>);
             BOOST_TEST_MESSAGE("Require throwing with dan's signature");
             sign(trx, dan_private_key);
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), protocol::exceptions::transaction::tx_missing_active_auth<>);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), steemit::protocol::exceptions::transaction::tx_missing_active_auth<>);
             BOOST_TEST_MESSAGE("Pass with issuer's signature");
             trx.signatures.clear();
             sign(trx, sam_private_key);
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             op.amount = advanced.amount(100); //({advanced.amount(0), nathan.id, dan.name, advanced.amount(100)});
             trx.operations.push_back(op);
             //Fail because dan is not whitelisted.
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), typename BOOST_IDENTITY_TYPE((chain::exceptions::chain::operations::transfer::to_account_not_whitelisted<0, 17, 0>)));
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), typename BOOST_IDENTITY_TYPE((steemit::chain::exceptions::operations::transfer::to_account_not_whitelisted<0, 17, 0>)));
 
             BOOST_TEST_MESSAGE("Adding dan to whitelist for asset ADVANCED");
             account_whitelist_operation<0, 17, 0> wop;
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
 
             auto _issue_uia = [&](const account_object &recipient, asset<0, 17, 0> amount) {
                 asset_issue_operation<0, 17, 0> op;
-                op.issuer = db.get_asset(amount.symbol).issuer;
+                op.issuer = db.get_asset(amount.symbol_name()).issuer;
                 op.asset_to_issue = amount;
                 op.issue_to_account = recipient.name;
                 transaction tx;
@@ -366,12 +366,11 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
             xfer_op.amount = uia.amount(100);
             signed_transaction xfer_tx;
             xfer_tx.operations.push_back(xfer_op);
-            trx.set_expiration(db.head_block_time() +
-                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             sign(xfer_tx, alice_private_key);
 
             _restrict_xfer(true);
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, xfer_tx), chain::exceptions::chain::transfer::restricted_transfer_asset<>);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, xfer_tx), typename BOOST_IDENTITY_TYPE((steemit::chain::exceptions::operations::transfer::restricted_transfer_asset<0, 17, 0>)));
 
             BOOST_TEST_MESSAGE("Disable transfer_restricted, send succeeds");
 

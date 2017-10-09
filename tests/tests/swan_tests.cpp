@@ -56,9 +56,9 @@ namespace steemit {
                     const asset_object &back = db.get_asset(bad.options.short_backing_asset);
                     const auto &idx = db.get_index<collateral_bid_index>();
                     const auto &aidx = idx.indices().get<by_price>();
-                    auto start = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::max(back.asset_name, asset),
+                    auto start = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::max(back.asset_name, asset),
                                                                     collateral_bid_object::id_type()));
-                    auto end = aidx.lower_bound(boost::make_tuple(asset<0, 17, 0>, price<0, 17, 0>::min(back.asset_name, asset),
+                    auto end = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::min(back.asset_name, asset),
                                                                   collateral_bid_object::id_type(STEEMIT_MAX_INSTANCE_ID)));
                     vector<collateral_bid_object> result;
                     while (start != end && limit-- > 0) {
@@ -96,7 +96,7 @@ namespace steemit {
             }
 
             void set_feed(share_type usd, share_type core) {
-                price_feed feed;
+                price_feed<0, 17, 0> feed;
                 feed.settlement_price = swan().amount(usd) / back().amount(core);
                 publish_feed(swan(), feedproducer(), feed);
             }
@@ -206,8 +206,8 @@ BOOST_FIXTURE_TEST_SUITE(swan_tests, swan_fixture)
             // 2. issue 346 (price feed drops followed by force settle, drop should trigger BS)
             // 3. feed price < D/C of least collateralized short < call price < highest bid
 
-            auto set_price = [&](const asset_object &bitusd, const price &settlement_price) {
-                price_feed feed;
+            auto set_price = [&](const asset_object &bitusd, const price<0, 17, 0> &settlement_price) {
+                price_feed<0, 17, 0> feed;
                 feed.settlement_price = settlement_price;
                 feed.core_exchange_rate = settlement_price;
                 wdump((feed.max_short_squeeze_price()));
