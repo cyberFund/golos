@@ -3,6 +3,8 @@
 namespace steemit {
     namespace key_value {
         void create_first_key_value_evaluator::do_apply(const create_first_key_value_operation &o) {
+            std::cerr << "Creation evaluation" << std::endl;
+
             FC_ASSERT(db.find_account(o.owner));
 
             db.create<first_key_value_object>([&](first_key_value_object &c) {
@@ -14,6 +16,8 @@ namespace steemit {
                 c.block_timestamp = o.block_timestamp;
                 c.timestamp = o.timestamp;
             });
+
+            std::cerr << "Creation evaluation" << std::endl;
         }
 
         void update_first_key_value_evaluator::do_apply(const update_first_key_value_operation &o) {
