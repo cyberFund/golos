@@ -4,11 +4,11 @@
 
 #include <steemit/protocol/exceptions.hpp>
 
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/objects/block_summary_object.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/version/hardfork.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/history_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 #include <steemit/chain/utilities/reward.hpp>
 
 #include <steemit/plugins/debug_node/debug_node_plugin.hpp>
@@ -34,13 +34,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
                 author_actor(
                         const std::string &n,
                         fc::ecc::private_key pk,
-                        fc::optional<asset> mpay = fc::optional<asset>())
+                        fc::optional<asset<0, 17, 0>> mpay = fc::optional<asset<0, 17, 0>>())
                         : name(n), private_key(pk), max_accepted_payout(mpay) {
                 }
 
                 std::string name;
                 fc::ecc::private_key private_key;
-                fc::optional<asset> max_accepted_payout;
+                fc::optional<asset<0, 17, 0>> max_accepted_payout;
             };
 
             struct voter_actor {
@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             std::vector<voter_actor> voters;
 
             authors.emplace_back("alice", alice_private_key);
-            authors.emplace_back("bob", bob_private_key, ASSET("0.000 TBD"));
+            authors.emplace_back("bob", bob_private_key, asset<0, 17, 0>::from_string("0.000 TBD"));
             authors.emplace_back("dave", dave_private_key);
             voters.emplace_back("ulysses", ulysses_private_key, "alice");
             voters.emplace_back("vivian", vivian_private_key, "bob");
@@ -68,7 +68,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             // U,V,W : voters
 
             // set a ridiculously high STEEM price ($1 / satoshi) to disable dust threshold
-            set_price_feed(price<0, 17, 0>(ASSET("0.001 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("0.001 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
 
             for (const auto &voter : voters) {
                 fund(voter.name, 10000);
@@ -78,7 +78,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             // authors all write in the same block, but Bob declines payout
             for (const auto &author : authors) {
                 signed_transaction tx;
-                comment_operation com;
+                comment_operation<0, 17, 0> com;
                 com.author = author.name;
                 com.permlink = "mypost";
                 com.parent_author = STEEMIT_ROOT_POST_PARENT;
@@ -88,7 +88,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
                 tx.operations.push_back(com);
 
                 if (author.max_accepted_payout.valid()) {
-                    comment_options_operation copt;
+                    comment_options_operation<0, 17, 0> copt;
                     copt.author = com.author;
                     copt.permlink = com.permlink;
                     copt.max_accepted_payout = *(author.max_accepted_payout);
@@ -106,7 +106,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             // voters all vote in the same block with the same stake
             for (const auto &voter : voters) {
                 signed_transaction tx;
-                vote_operation vote;
+                vote_operation<0, 17, 0> vote;
                 vote.voter = voter.name;
                 vote.author = voter.favorite_author;
                 vote.permlink = "mypost";
@@ -138,8 +138,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             const account_object &bob_account = db.get_account("bob");
             const account_object &dave_account = db.get_account("dave");
 
-            BOOST_CHECK(alice_account.sbd_balance == ASSET("10720.000 TBD"));
-            BOOST_CHECK(bob_account.sbd_balance == ASSET("0.000 TBD"));
+            BOOST_CHECK(alice_account.sbd_balance == asset<0, 17, 0>::from_string("10720.000 TBD"));
+            BOOST_CHECK(bob_account.sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
             BOOST_CHECK(dave_account.sbd_balance == alice_account.sbd_balance);
         }
         FC_LOG_AND_RETHROW()
@@ -152,21 +152,21 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             generate_block();
 
-            vest("alice", ASSET("10.000 TESTS"));
-            vest("bob", ASSET("10.000 TESTS"));
+            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("bob", asset<0, 17, 0>::from_string("10.000 TESTS"));
 
-            set_price_feed(price<0, 17, 0>(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
 
             generate_block();
             validate_database();
 
-            comment_operation comment;
+            comment_operation<0, 17, 0> comment;
             comment.author = "alice";
             comment.permlink = "test";
             comment.parent_permlink = "test";
             comment.title = "test";
             comment.body = "test";
-            vote_operation vote;
+            vote_operation<0, 17, 0> vote;
             vote.voter = "alice";
             vote.author = "alice";
             vote.permlink = "test";
@@ -198,7 +198,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             // If comments are paid out independent of order, then the last satoshi of STEEM cannot be divided among them
             BOOST_REQUIRE(
                     db.get_dynamic_global_properties().total_reward_fund_steem ==
-                    ASSET("0.001 TESTS"));
+                    asset<0, 17, 0>::from_string("0.001 TESTS"));
 
             validate_database();
 
@@ -221,14 +221,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
       fund( "dave", 5000 );
       vest( "dave", 5000 );
 
-      price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
+      price exchange_rate( asset<0, 17, 0>::from_string( "1.000 TESTS" ), asset<0, 17, 0>::from_string( "1.000 TBD" ) );
       set_price_feed( exchange_rate );
 
       signed_transaction tx;
 
       BOOST_TEST_MESSAGE( "Creating comments." );
 
-      comment_operation com;
+      comment_operation<0, 17, 0> com;
       com.author = "alice";
       com.permlink = "test";
       com.parent_author = "";
@@ -253,7 +253,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
 
       BOOST_TEST_MESSAGE( "Voting for comments." );
 
-      vote_operation vote;
+      vote_operation<0, 17, 0> vote;
       vote.voter = "alice";
       vote.author = "alice";
       vote.permlink = "test";
@@ -293,24 +293,24 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
 
       //generate_blocks( db.get_comment( "bob", string( "test" ) ).cashout_time - STEEMIT_BLOCK_INTERVAL, true );
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "1.667 TESTS" );
+      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + asset<0, 17, 0>::from_string( "1.667 TESTS" );
       auto total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto bob_comment_rshares = db.get_comment( "bob", string( "test" ) ).net_rshares;
       auto bob_vest_shares = db.get_account( "bob" ).vesting_shares;
       auto bob_sbd_balance = db.get_account( "bob" ).sbd_balance;
 
-      auto bob_comment_payout = asset( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_steem.amount.value ) / total_rshares2 ).to_uint64(), STEEM_SYMBOL );
-      auto bob_comment_discussion_rewards = asset( bob_comment_payout.amount / 4, STEEM_SYMBOL );
+      auto bob_comment_payout = asset<0, 17, 0>( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_steem.amount.value ) / total_rshares2 ).to_uint64(), STEEM_SYMBOL );
+      auto bob_comment_discussion_rewards = asset<0, 17, 0>( bob_comment_payout.amount / 4, STEEM_SYMBOL );
       bob_comment_payout -= bob_comment_discussion_rewards;
-      auto bob_comment_sbd_reward = db.to_sbd( asset( bob_comment_payout.amount / 2, STEEM_SYMBOL ) );
-      auto bob_comment_vesting_reward = ( bob_comment_payout - asset( bob_comment_payout.amount / 2, STEEM_SYMBOL) ) * db.get_dynamic_global_properties().get_vesting_share_price();
+      auto bob_comment_sbd_reward = db.to_sbd( asset<0, 17, 0>( bob_comment_payout.amount / 2, STEEM_SYMBOL ) );
+      auto bob_comment_vesting_reward = ( bob_comment_payout - asset<0, 17, 0>( bob_comment_payout.amount / 2, STEEM_SYMBOL) ) * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
 
       BOOST_TEST_MESSAGE( "Cause first payout" );
 
       generate_block();
 
       BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem == reward_steem - bob_comment_payout );
-      BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value == bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() + bob_comment_sbd_reward * exchange_rate );
+      BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value == bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>() + bob_comment_sbd_reward * exchange_rate );
       BOOST_REQUIRE( db.get_account( "bob" ).vesting_shares == bob_vest_shares + bob_comment_vesting_reward );
       BOOST_REQUIRE( db.get_account( "bob" ).sbd_balance == bob_sbd_balance + bob_comment_sbd_reward );
 
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       fund( "dave", 5000 );
       vest( "dave", 5000 );
 
-      price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
+      price exchange_rate( asset<0, 17, 0>::from_string( "1.000 TESTS" ), asset<0, 17, 0>::from_string( "1.000 TBD" ) );
       set_price_feed( exchange_rate );
 
       auto gpo = db.get_dynamic_global_properties();
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       BOOST_TEST_MESSAGE( "Creating comments. " );
 
-      comment_operation com;
+      comment_operation<0, 17, 0> com;
       com.author = "alice";
       com.permlink = "test";
       com.parent_permlink = "test";
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       tx.operations.clear();
       tx.signatures.clear();
-      vote_operation vote;
+      vote_operation<0, 17, 0> vote;
       vote.voter = "alice";
       vote.author = "alice";
       vote.permlink = "test";
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).net_rshares.value > 0 );
       validate_database();
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
+      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + asset<0, 17, 0>::from_string( "2.000 TESTS" );
       auto total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto bob_comment_vote_total = db.get_comment( "bob", string( "test" ) ).total_vote_weight;
       auto bob_comment_rshares = db.get_comment( "bob", string( "test" ) ).net_rshares;
@@ -510,28 +510,28 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       auto sam_vest_shares = db.get_account( "sam" ).vesting_shares;
       auto dave_vest_shares = db.get_account( "dave" ).vesting_shares;
 
-      auto bob_comment_payout = asset( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_steem.amount.value ) / total_rshares2 ).to_uint64(), STEEM_SYMBOL );
-      auto bob_comment_vote_rewards = asset( bob_comment_payout.amount / 2, STEEM_SYMBOL );
+      auto bob_comment_payout = asset<0, 17, 0>( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_steem.amount.value ) / total_rshares2 ).to_uint64(), STEEM_SYMBOL );
+      auto bob_comment_vote_rewards = asset<0, 17, 0>( bob_comment_payout.amount / 2, STEEM_SYMBOL );
       bob_comment_payout -= bob_comment_vote_rewards;
-      auto bob_comment_sbd_reward = asset( bob_comment_payout.amount / 2, STEEM_SYMBOL ) * exchange_rate;
-      auto bob_comment_vesting_reward = ( bob_comment_payout - asset( bob_comment_payout.amount / 2, STEEM_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price();
+      auto bob_comment_sbd_reward = asset<0, 17, 0>( bob_comment_payout.amount / 2, STEEM_SYMBOL ) * exchange_rate;
+      auto bob_comment_vesting_reward = ( bob_comment_payout - asset<0, 17, 0>( bob_comment_payout.amount / 2, STEEM_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
       auto unclaimed_payments = bob_comment_vote_rewards;
-      auto alice_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
-      auto alice_vote_vesting = alice_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      auto bob_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
-      auto bob_vote_vesting = bob_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      auto sam_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
-      auto sam_vote_vesting = sam_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
+      auto alice_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
+      auto alice_vote_vesting = alice_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
+      auto bob_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
+      auto bob_vote_vesting = bob_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
+      auto sam_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards.amount.value ) / bob_comment_vote_total ), STEEM_SYMBOL );
+      auto sam_vote_vesting = sam_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
       unclaimed_payments -= ( alice_vote_reward + bob_vote_reward + sam_vote_reward );
 
       BOOST_TEST_MESSAGE( "Generate one block to cause a payout" );
 
       generate_block();
 
-      auto bob_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation >();
+      auto bob_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation<0, 17, 0> >();
 
       BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem.amount.value == reward_steem.amount.value - ( bob_comment_payout + bob_comment_vote_rewards - unclaimed_payments ).amount.value );
-      BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value.amount.value == ( ( bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() ) + ( bob_comment_sbd_reward * exchange_rate ) ).amount.value );
+      BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value.amount.value == ( ( bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>() ) + ( bob_comment_sbd_reward * exchange_rate ) ).amount.value );
       BOOST_REQUIRE( db.get_account( "bob" ).sbd_balance.amount.value == ( bob_sbd_balance + bob_comment_sbd_reward ).amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value > 0 );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).net_rshares.value == 0 );
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       BOOST_TEST_MESSAGE( "Generate block to cause payout" );
 
-      reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
+      reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + asset<0, 17, 0>::from_string( "2.000 TESTS" );
       total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto alice_comment_vote_total = db.get_comment( "alice", string( "test" ) ).total_vote_weight;
       auto alice_comment_rshares = db.get_comment( "alice", string( "test" ) ).net_rshares;
@@ -585,27 +585,27 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       trs2 = ( trs2 << 64 ) + total_rshares2.lo;
       auto rs2 = rs*rs;
 
-      auto alice_comment_payout = asset( static_cast< uint64_t >( ( rf * rs2 ) / trs2 ), STEEM_SYMBOL );
-      auto alice_comment_vote_rewards = asset( alice_comment_payout.amount / 2, STEEM_SYMBOL );
+      auto alice_comment_payout = asset<0, 17, 0>( static_cast< uint64_t >( ( rf * rs2 ) / trs2 ), STEEM_SYMBOL );
+      auto alice_comment_vote_rewards = asset<0, 17, 0>( alice_comment_payout.amount / 2, STEEM_SYMBOL );
       alice_comment_payout -= alice_comment_vote_rewards;
-      auto alice_comment_sbd_reward = asset( alice_comment_payout.amount / 2, STEEM_SYMBOL ) * exchange_rate;
-      auto alice_comment_vesting_reward = ( alice_comment_payout - asset( alice_comment_payout.amount / 2, STEEM_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price();
+      auto alice_comment_sbd_reward = asset<0, 17, 0>( alice_comment_payout.amount / 2, STEEM_SYMBOL ) * exchange_rate;
+      auto alice_comment_vesting_reward = ( alice_comment_payout - asset<0, 17, 0>( alice_comment_payout.amount / 2, STEEM_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
       unclaimed_payments = alice_comment_vote_rewards;
-      alice_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
-      alice_vote_vesting = alice_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      bob_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
-      bob_vote_vesting = bob_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      sam_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
-      sam_vote_vesting = sam_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
-      auto dave_vote_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "dave" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
-      auto dave_vote_vesting = dave_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price();
+      alice_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      alice_vote_vesting = alice_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
+      bob_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      bob_vote_vesting = bob_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
+      sam_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      sam_vote_vesting = sam_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
+      auto dave_vote_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "dave" ) ).id ) )->weight ) * alice_comment_vote_rewards.amount.value ) / alice_comment_vote_total ), STEEM_SYMBOL );
+      auto dave_vote_vesting = dave_vote_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>();
       unclaimed_payments -= ( alice_vote_reward + bob_vote_reward + sam_vote_reward + dave_vote_reward );
 
       generate_block();
-      auto alice_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation >();
+      auto alice_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation<0, 17, 0> >();
 
       BOOST_REQUIRE( ( db.get_dynamic_global_properties().total_reward_fund_steem + alice_comment_payout + alice_comment_vote_rewards - unclaimed_payments ).amount.value == reward_steem.amount.value );
-      BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).total_payout_value.amount.value == ( ( alice_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() ) + ( alice_comment_sbd_reward * exchange_rate ) ).amount.value );
+      BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).total_payout_value.amount.value == ( ( alice_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>() ) + ( alice_comment_sbd_reward * exchange_rate ) ).amount.value );
       BOOST_REQUIRE( db.get_account( "alice" ).sbd_balance.amount.value == ( alice_sbd_balance + alice_comment_sbd_reward ).amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value == 0 );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value == 0 );
@@ -702,11 +702,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       fund( "dave", 10000 );
       vest( "dave", 10000 );
 
-      price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
+      price exchange_rate( asset<0, 17, 0>::from_string( "1.000 TESTS" ), asset<0, 17, 0>::from_string( "1.000 TBD" ) );
       set_price_feed( exchange_rate );
 
       signed_transaction tx;
-      comment_operation comment_op;
+      comment_operation<0, 17, 0> comment_op;
       comment_op.author = "alice";
       comment_op.permlink = "test";
       comment_op.parent_permlink = "test";
@@ -745,7 +745,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       tx.operations.clear();
       tx.signatures.clear();
 
-      vote_operation vote_op;
+      vote_operation<0, 17, 0> vote_op;
       vote_op.voter = "alice";
       vote_op.author = "alice";
       vote_op.permlink = "test";
@@ -781,7 +781,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time - fc::seconds( STEEMIT_BLOCK_INTERVAL ), true );
 
       auto gpo = db.get_dynamic_global_properties();
-      uint128_t reward_steem = gpo.total_reward_fund_steem.amount.value + ASSET( "2.000 TESTS" ).amount.value;
+      uint128_t reward_steem = gpo.total_reward_fund_steem.amount.value + asset<0, 17, 0>::from_string( "2.000 TESTS" ).amount.value;
       uint128_t total_rshares2 = gpo.total_reward_shares2;
 
       auto alice_comment = db.get_comment( "alice", string( "test" ) );
@@ -798,8 +798,8 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto alice_comment_vote_rewards = alice_comment_reward / 2;
       alice_comment_reward -= alice_comment_vote_rewards;
 
-      auto alice_vote_alice_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
-      auto bob_vote_alice_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto alice_vote_alice_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto bob_vote_alice_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), STEEM_SYMBOL );
       reward_steem += alice_comment_vote_rewards - ( alice_vote_alice_reward + bob_vote_alice_reward ).amount.value;
 
       auto bob_comment_reward = ( ( reward_steem * bob_comment.net_rshares.value * bob_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
@@ -808,9 +808,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto bob_comment_vote_rewards = bob_comment_reward / 2;
       bob_comment_reward -= bob_comment_vote_rewards;
 
-      auto alice_vote_bob_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
-      auto bob_vote_bob_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
-      auto sam_vote_bob_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto alice_vote_bob_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto bob_vote_bob_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto sam_vote_bob_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), STEEM_SYMBOL );
       reward_steem += bob_comment_vote_rewards - ( alice_vote_bob_reward + bob_vote_bob_reward + sam_vote_bob_reward ).amount.value;
 
       auto dave_comment_reward = ( ( reward_steem * dave_comment.net_rshares.value * dave_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto dave_comment_vote_rewards = dave_comment_reward / 2;
       dave_comment_reward -= dave_comment_vote_rewards;
 
-      auto bob_vote_dave_reward = asset( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "dave", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * dave_comment_vote_rewards ) / dave_comment.total_vote_weight ), STEEM_SYMBOL );
+      auto bob_vote_dave_reward = asset<0, 17, 0>( static_cast< uint64_t >( ( boost::multiprecision::uint256_t( vote_idx.find( std::make_tuple( db.get_comment( "dave", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * dave_comment_vote_rewards ) / dave_comment.total_vote_weight ), STEEM_SYMBOL );
       reward_steem += dave_comment_vote_rewards - bob_vote_dave_reward.amount.value;
 
       // Calculate rewards paid to parent posts
@@ -849,13 +849,13 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       dave_pays_bob_vest -= dave_pays_alice_vest;
 
       // Calculate total comment payouts
-      auto alice_comment_total_payout = db.to_sbd( asset( alice_pays_alice_sbd + alice_pays_alice_vest, STEEM_SYMBOL ) );
-      alice_comment_total_payout += db.to_sbd( asset( bob_pays_alice_sbd + bob_pays_alice_vest, STEEM_SYMBOL ) );
-      alice_comment_total_payout += db.to_sbd( asset( dave_pays_alice_sbd + dave_pays_alice_vest, STEEM_SYMBOL ) );
-      auto bob_comment_total_payout = db.to_sbd( asset( bob_pays_bob_sbd + bob_pays_bob_vest, STEEM_SYMBOL ) );
-      bob_comment_total_payout += db.to_sbd( asset( dave_pays_bob_sbd + dave_pays_bob_vest, STEEM_SYMBOL ) );
-      auto sam_comment_total_payout = db.to_sbd( asset( dave_pays_sam_sbd + dave_pays_sam_vest, STEEM_SYMBOL ) );
-      auto dave_comment_total_payout = db.to_sbd( asset( dave_pays_dave_sbd + dave_pays_dave_vest, STEEM_SYMBOL ) );
+      auto alice_comment_total_payout = db.to_sbd( asset<0, 17, 0>( alice_pays_alice_sbd + alice_pays_alice_vest, STEEM_SYMBOL ) );
+      alice_comment_total_payout += db.to_sbd( asset<0, 17, 0>( bob_pays_alice_sbd + bob_pays_alice_vest, STEEM_SYMBOL ) );
+      alice_comment_total_payout += db.to_sbd( asset<0, 17, 0>( dave_pays_alice_sbd + dave_pays_alice_vest, STEEM_SYMBOL ) );
+      auto bob_comment_total_payout = db.to_sbd( asset<0, 17, 0>( bob_pays_bob_sbd + bob_pays_bob_vest, STEEM_SYMBOL ) );
+      bob_comment_total_payout += db.to_sbd( asset<0, 17, 0>( dave_pays_bob_sbd + dave_pays_bob_vest, STEEM_SYMBOL ) );
+      auto sam_comment_total_payout = db.to_sbd( asset<0, 17, 0>( dave_pays_sam_sbd + dave_pays_sam_vest, STEEM_SYMBOL ) );
+      auto dave_comment_total_payout = db.to_sbd( asset<0, 17, 0>( dave_pays_dave_sbd + dave_pays_dave_vest, STEEM_SYMBOL ) );
 
       auto alice_starting_vesting = db.get_account( "alice" ).vesting_shares;
       auto alice_starting_sbd = db.get_account( "alice" ).sbd_balance;
@@ -871,12 +871,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       gpo = db.get_dynamic_global_properties();
 
       // Calculate vesting share rewards from voting.
-      auto alice_vote_alice_vesting = alice_vote_alice_reward * gpo.get_vesting_share_price();
-      auto bob_vote_alice_vesting = bob_vote_alice_reward * gpo.get_vesting_share_price();
-      auto alice_vote_bob_vesting = alice_vote_bob_reward * gpo.get_vesting_share_price();
-      auto bob_vote_bob_vesting = bob_vote_bob_reward * gpo.get_vesting_share_price();
-      auto sam_vote_bob_vesting = sam_vote_bob_reward * gpo.get_vesting_share_price();
-      auto bob_vote_dave_vesting = bob_vote_dave_reward * gpo.get_vesting_share_price();
+      auto alice_vote_alice_vesting = alice_vote_alice_reward * gpo.get_vesting_share_price<0, 17, 0>();
+      auto bob_vote_alice_vesting = bob_vote_alice_reward * gpo.get_vesting_share_price<0, 17, 0>();
+      auto alice_vote_bob_vesting = alice_vote_bob_reward * gpo.get_vesting_share_price<0, 17, 0>();
+      auto bob_vote_bob_vesting = bob_vote_bob_reward * gpo.get_vesting_share_price<0, 17, 0>();
+      auto sam_vote_bob_vesting = sam_vote_bob_reward * gpo.get_vesting_share_price<0, 17, 0>();
+      auto bob_vote_dave_vesting = bob_vote_dave_reward * gpo.get_vesting_share_price<0, 17, 0>();
 
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).total_payout_value.amount.value == alice_comment_total_payout.amount.value );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value.amount.value == bob_comment_total_payout.amount.value );
@@ -888,95 +888,95 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
       BOOST_TEST_MESSAGE( "Checking Virtual Operation Correctness" );
 
-      curate_reward_operation cur_vop;
-      comment_reward_operation com_vop = ops[0].get< comment_reward_operation >();
+      curate_reward_operation<0, 17, 0> cur_vop;
+      comment_reward_operation<0, 17, 0> com_vop = ops[0].get< comment_reward_operation<0, 17, 0> >();
 
       BOOST_REQUIRE( com_vop.author == "alice" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "dave" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == dave_pays_alice_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == dave_pays_alice_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == dave_pays_alice_vest );
 
-      com_vop = ops[1].get< comment_reward_operation >();
+      com_vop = ops[1].get< comment_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( com_vop.author == "bob" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "dave" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == dave_pays_bob_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == dave_pays_bob_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == dave_pays_bob_vest );
 
-      com_vop = ops[2].get< comment_reward_operation >();
+      com_vop = ops[2].get< comment_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( com_vop.author == "sam" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "dave" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == dave_pays_sam_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == dave_pays_sam_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == dave_pays_sam_vest );
 
-      com_vop = ops[3].get< comment_reward_operation >();
+      com_vop = ops[3].get< comment_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( com_vop.author == "dave" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "dave" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == dave_pays_dave_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == dave_pays_dave_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == dave_pays_dave_vest );
 
-      cur_vop = ops[4].get< curate_reward_operation >();
+      cur_vop = ops[4].get< curate_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( cur_vop.curator == "bob" );
       BOOST_REQUIRE( cur_vop.reward.amount.value == bob_vote_dave_vesting.amount.value );
       BOOST_REQUIRE( cur_vop.comment_author == "dave" );
       BOOST_REQUIRE( cur_vop.comment_permlink == "test" );
 
-      com_vop = ops[5].get< comment_reward_operation >();
+      com_vop = ops[5].get< comment_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( com_vop.author == "alice" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "bob" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == bob_pays_alice_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == bob_pays_alice_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == bob_pays_alice_vest );
 
-      com_vop = ops[6].get< comment_reward_operation >();
+      com_vop = ops[6].get< comment_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( com_vop.author == "bob" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "bob" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == bob_pays_bob_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == bob_pays_bob_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == bob_pays_bob_vest );
 
-      cur_vop = ops[7].get< curate_reward_operation >();
+      cur_vop = ops[7].get< curate_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( cur_vop.curator == "sam" );
       BOOST_REQUIRE( cur_vop.reward.amount.value == sam_vote_bob_vesting.amount.value );
       BOOST_REQUIRE( cur_vop.comment_author == "bob" );
       BOOST_REQUIRE( cur_vop.comment_permlink == "test" );
 
-      cur_vop = ops[8].get< curate_reward_operation >();
+      cur_vop = ops[8].get< curate_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( cur_vop.curator == "bob" );
       BOOST_REQUIRE( cur_vop.reward.amount.value == bob_vote_bob_vesting.amount.value );
       BOOST_REQUIRE( cur_vop.comment_author == "bob" );
       BOOST_REQUIRE( cur_vop.comment_permlink == "test" );
 
-      cur_vop = ops[9].get< curate_reward_operation >();
+      cur_vop = ops[9].get< curate_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( cur_vop.curator == "alice" );
       BOOST_REQUIRE( cur_vop.reward.amount.value == alice_vote_bob_vesting.amount.value );
       BOOST_REQUIRE( cur_vop.comment_author == "bob" );
       BOOST_REQUIRE( cur_vop.comment_permlink == "test" );
 
-      com_vop = ops[10].get< comment_reward_operation >();
+      com_vop = ops[10].get< comment_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( com_vop.author == "alice" );
       BOOST_REQUIRE( com_vop.permlink == "test" );
       BOOST_REQUIRE( com_vop.originating_author == "alice" );
       BOOST_REQUIRE( com_vop.originating_permlink == "test" );
       BOOST_REQUIRE( com_vop.payout.amount.value == alice_pays_alice_sbd );
-      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price() ).amount.value == alice_pays_alice_vest );
+      BOOST_REQUIRE( ( com_vop.vesting_payout * gpo.get_vesting_share_price<0, 17, 0>() ).amount.value == alice_pays_alice_vest );
 
-      cur_vop = ops[11].get< curate_reward_operation >();
+      cur_vop = ops[11].get< curate_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( cur_vop.curator == "bob" );
       BOOST_REQUIRE( cur_vop.reward.amount.value == bob_vote_alice_vesting.amount.value );
       BOOST_REQUIRE( cur_vop.comment_author == "alice" );
       BOOST_REQUIRE( cur_vop.comment_permlink == "test" );
 
-      cur_vop = ops[12].get< curate_reward_operation >();
+      cur_vop = ops[12].get< curate_reward_operation<0, 17, 0> >();
       BOOST_REQUIRE( cur_vop.curator == "alice" );
       BOOST_REQUIRE( cur_vop.reward.amount.value == alice_vote_alice_vesting.amount.value );
       BOOST_REQUIRE( cur_vop.comment_author == "alice" );
@@ -984,23 +984,23 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
       BOOST_TEST_MESSAGE( "Checking account balances" );
 
-      auto alice_total_sbd = alice_starting_sbd + asset( alice_pays_alice_sbd + bob_pays_alice_sbd + dave_pays_alice_sbd, STEEM_SYMBOL ) * exchange_rate;
-      auto alice_total_vesting = alice_starting_vesting + asset( alice_pays_alice_vest + bob_pays_alice_vest + dave_pays_alice_vest + alice_vote_alice_reward.amount + alice_vote_bob_reward.amount, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
+      auto alice_total_sbd = alice_starting_sbd + asset<0, 17, 0>( alice_pays_alice_sbd + bob_pays_alice_sbd + dave_pays_alice_sbd, STEEM_SYMBOL ) * exchange_rate;
+      auto alice_total_vesting = alice_starting_vesting + asset<0, 17, 0>( alice_pays_alice_vest + bob_pays_alice_vest + dave_pays_alice_vest + alice_vote_alice_reward.amount + alice_vote_bob_reward.amount, STEEM_SYMBOL ) * gpo.get_vesting_share_price<0, 17, 0>();
       BOOST_REQUIRE( db.get_account( "alice" ).sbd_balance.amount.value == alice_total_sbd.amount.value );
       BOOST_REQUIRE( db.get_account( "alice" ).vesting_shares.amount.value == alice_total_vesting.amount.value );
 
-      auto bob_total_sbd = bob_starting_sbd + asset( bob_pays_bob_sbd + dave_pays_bob_sbd, STEEM_SYMBOL ) * exchange_rate;
-      auto bob_total_vesting = bob_starting_vesting + asset( bob_pays_bob_vest + dave_pays_bob_vest + bob_vote_alice_reward.amount + bob_vote_bob_reward.amount + bob_vote_dave_reward.amount, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
+      auto bob_total_sbd = bob_starting_sbd + asset<0, 17, 0>( bob_pays_bob_sbd + dave_pays_bob_sbd, STEEM_SYMBOL ) * exchange_rate;
+      auto bob_total_vesting = bob_starting_vesting + asset<0, 17, 0>( bob_pays_bob_vest + dave_pays_bob_vest + bob_vote_alice_reward.amount + bob_vote_bob_reward.amount + bob_vote_dave_reward.amount, STEEM_SYMBOL ) * gpo.get_vesting_share_price<0, 17, 0>();
       BOOST_REQUIRE( db.get_account( "bob" ).sbd_balance.amount.value == bob_total_sbd.amount.value );
       BOOST_REQUIRE( db.get_account( "bob" ).vesting_shares.amount.value == bob_total_vesting.amount.value );
 
-      auto sam_total_sbd = sam_starting_sbd + asset( dave_pays_sam_sbd, STEEM_SYMBOL ) * exchange_rate;
-      auto sam_total_vesting = bob_starting_vesting + asset( dave_pays_sam_vest + sam_vote_bob_reward.amount, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
+      auto sam_total_sbd = sam_starting_sbd + asset<0, 17, 0>( dave_pays_sam_sbd, STEEM_SYMBOL ) * exchange_rate;
+      auto sam_total_vesting = bob_starting_vesting + asset<0, 17, 0>( dave_pays_sam_vest + sam_vote_bob_reward.amount, STEEM_SYMBOL ) * gpo.get_vesting_share_price<0, 17, 0>();
       BOOST_REQUIRE( db.get_account( "sam" ).sbd_balance.amount.value == sam_total_sbd.amount.value );
       BOOST_REQUIRE( db.get_account( "sam" ).vesting_shares.amount.value == sam_total_vesting.amount.value );
 
-      auto dave_total_sbd = dave_starting_sbd + asset( dave_pays_dave_sbd, STEEM_SYMBOL ) * exchange_rate;
-      auto dave_total_vesting = dave_starting_vesting + asset( dave_pays_dave_vest, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
+      auto dave_total_sbd = dave_starting_sbd + asset<0, 17, 0>( dave_pays_dave_sbd, STEEM_SYMBOL ) * exchange_rate;
+      auto dave_total_vesting = dave_starting_vesting + asset<0, 17, 0>( dave_pays_dave_vest, STEEM_SYMBOL ) * gpo.get_vesting_share_price<0, 17, 0>();
       BOOST_REQUIRE( db.get_account( "dave" ).sbd_balance.amount.value == dave_total_sbd.amount.value );
       BOOST_REQUIRE( db.get_account( "dave" ).vesting_shares.amount.value == dave_total_vesting.amount.value );
    }
@@ -1018,9 +1018,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_TEST_MESSAGE("Setting up withdrawal");
 
             signed_transaction tx;
-            withdraw_vesting_operation op;
+            withdraw_vesting_operation<0, 17, 0> op;
             op.account = "alice";
-            op.vesting_shares = asset(
+            op.vesting_shares = asset<0, 17, 0>(
                     new_alice.vesting_shares.amount / 2, VESTS_SYMBOL);
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -1030,10 +1030,10 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             auto next_withdrawal = db.head_block_time() +
                                    STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS;
-            asset vesting_shares = new_alice.vesting_shares;
-            asset to_withdraw = op.vesting_shares;
-            asset original_vesting = vesting_shares;
-            asset withdraw_rate = new_alice.vesting_withdraw_rate;
+            asset<0, 17, 0> vesting_shares = new_alice.vesting_shares;
+            asset<0, 17, 0> to_withdraw = op.vesting_shares;
+            asset<0, 17, 0> original_vesting = vesting_shares;
+            asset<0, 17, 0> withdraw_rate = new_alice.vesting_withdraw_rate;
 
             BOOST_TEST_MESSAGE("Generating block up to first withdrawal");
             generate_blocks(
@@ -1051,7 +1051,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(db.get_account("alice").vesting_shares.amount.value ==
                           (vesting_shares - withdraw_rate).amount.value);
             BOOST_REQUIRE((withdraw_rate *
-                           gpo.get_vesting_share_price()).amount.value -
+                           gpo.get_vesting_share_price<0, 17, 0>()).amount.value -
                           db.get_account("alice").balance.amount.value <=
                           1); // Check a range due to differences in the share price
             BOOST_REQUIRE(fill_op.from_account == "alice");
@@ -1059,7 +1059,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_op.withdrawn.amount.value ==
                           withdraw_rate.amount.value);
             BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn *
-                                                        gpo.get_vesting_share_price()).amount.value) <=
+                                                        gpo.get_vesting_share_price<0, 17, 0>()).amount.value) <=
                           1);
             validate_database();
 
@@ -1081,14 +1081,14 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 BOOST_REQUIRE(alice.vesting_shares.amount.value ==
                               (vesting_shares - withdraw_rate).amount.value);
                 BOOST_REQUIRE(balance.amount.value + (withdraw_rate *
-                                                      gpo.get_vesting_share_price()).amount.value -
+                                                      gpo.get_vesting_share_price<0, 17, 0>()).amount.value -
                               alice.balance.amount.value <= 1);
                 BOOST_REQUIRE(fill_op.from_account == "alice");
                 BOOST_REQUIRE(fill_op.to_account == "alice");
                 BOOST_REQUIRE(fill_op.withdrawn.amount.value ==
                               withdraw_rate.amount.value);
                 BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn *
-                                                            gpo.get_vesting_share_price()).amount.value) <=
+                                                            gpo.get_vesting_share_price<0, 17, 0>()).amount.value) <=
                               1);
 
                 if (i == STEEMIT_VESTING_WITHDRAW_INTERVALS - 1)
@@ -1123,7 +1123,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 BOOST_REQUIRE(fill_op.withdrawn.amount.value ==
                               withdraw_rate.amount.value);
                 BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn *
-                                                            gpo.get_vesting_share_price()).amount.value) <=
+                                                            gpo.get_vesting_share_price<0, 17, 0>()).amount.value) <=
                               1);
 
                 generate_blocks(db.head_block_time() +
@@ -1140,7 +1140,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                               to_withdraw.amount.value %
                               withdraw_rate.amount.value);
                 BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn *
-                                                            gpo.get_vesting_share_price()).amount.value) <=
+                                                            gpo.get_vesting_share_price<0, 17, 0>()).amount.value) <=
                               1);
 
                 validate_database();
@@ -1158,7 +1158,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 BOOST_REQUIRE(fill_op.withdrawn.amount.value ==
                               withdraw_rate.amount.value);
                 BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn *
-                                                            gpo.get_vesting_share_price()).amount.value) <=
+                                                            gpo.get_vesting_share_price<0, 17, 0>()).amount.value) <=
                               1);
             }
 
@@ -1180,7 +1180,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             auto withdraw_amount = alice.vesting_shares - original_vesting;
 
             BOOST_TEST_MESSAGE("Setup vesting withdraw");
-            withdraw_vesting_operation wv;
+            withdraw_vesting_operation<0, 17, 0> wv;
             wv.account = "alice";
             wv.vesting_shares = withdraw_amount;
 
@@ -1195,7 +1195,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.signatures.clear();
 
             BOOST_TEST_MESSAGE("Setting up bob destination");
-            set_withdraw_vesting_route_operation op;
+            set_withdraw_vesting_route_operation<0, 17, 0> op;
             op.from_account = "alice";
             op.to_account = "bob";
             op.percent = STEEMIT_1_PERCENT * 50;
@@ -1229,22 +1229,22 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 BOOST_REQUIRE(alice.vesting_shares ==
                               old_alice_vesting - vesting_withdraw_rate);
                 BOOST_REQUIRE(alice.balance == old_alice_balance +
-                                               asset((vesting_withdraw_rate.amount *
+                                               asset<0, 17, 0>((vesting_withdraw_rate.amount *
                                                       STEEMIT_1_PERCENT * 20) /
                                                      STEEMIT_100_PERCENT, VESTS_SYMBOL) *
-                                               db.get_dynamic_global_properties().get_vesting_share_price());
+                                               db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>());
                 BOOST_REQUIRE(bob.vesting_shares == old_bob_vesting +
-                                                    asset((vesting_withdraw_rate.amount *
+                                                    asset<0, 17, 0>((vesting_withdraw_rate.amount *
                                                            STEEMIT_1_PERCENT *
                                                            50) /
                                                           STEEMIT_100_PERCENT, VESTS_SYMBOL));
                 BOOST_REQUIRE(bob.balance == old_bob_balance);
                 BOOST_REQUIRE(sam.vesting_shares == old_sam_vesting);
                 BOOST_REQUIRE(sam.balance == old_sam_balance +
-                                             asset((vesting_withdraw_rate.amount *
+                                             asset<0, 17, 0>((vesting_withdraw_rate.amount *
                                                     STEEMIT_1_PERCENT * 30) /
                                                    STEEMIT_100_PERCENT, VESTS_SYMBOL) *
-                                             db.get_dynamic_global_properties().get_vesting_share_price());
+                                             db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>());
 
                 old_alice_balance = alice.balance;
                 old_alice_vesting = alice.vesting_shares;
@@ -1288,17 +1288,17 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                               old_alice_vesting - vesting_withdraw_rate);
                 BOOST_REQUIRE(alice.balance == old_alice_balance);
                 BOOST_REQUIRE(bob.vesting_shares == old_bob_vesting +
-                                                    asset((vesting_withdraw_rate.amount *
+                                                    asset<0, 17, 0>((vesting_withdraw_rate.amount *
                                                            STEEMIT_1_PERCENT *
                                                            50) /
                                                           STEEMIT_100_PERCENT, VESTS_SYMBOL));
                 BOOST_REQUIRE(bob.balance == old_bob_balance);
                 BOOST_REQUIRE(sam.vesting_shares == old_sam_vesting);
                 BOOST_REQUIRE(sam.balance == old_sam_balance +
-                                             asset((vesting_withdraw_rate.amount *
+                                             asset<0, 17, 0>((vesting_withdraw_rate.amount *
                                                     STEEMIT_1_PERCENT * 50) /
                                                    STEEMIT_100_PERCENT, VESTS_SYMBOL) *
-                                             db.get_dynamic_global_properties().get_vesting_share_price());
+                                             db.get_dynamic_global_properties().get_vesting_share_price<0, 17, 0>());
             }
         }
         FC_LOG_AND_RETHROW()
@@ -1337,7 +1337,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             // Upgrade accounts to witnesses
             for (int i = 0; i < 7; i++) {
-                transfer(STEEMIT_INIT_MINER_NAME, accounts[i], asset(10000, STEEM_SYMBOL));
+                transfer(STEEMIT_INIT_MINER_NAME, accounts[i], asset<0, 17, 0>(10000, STEEM_SYMBOL));
                 witness_create(accounts[i], keys[i], "foo.bar", keys[i].get_public_key(), 1000);
 
                 ops.push_back(feed_publish_operation());
@@ -1346,13 +1346,13 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 txs.push_back(signed_transaction());
             }
 
-            ops[0].exchange_rate = price(asset(100000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
-            ops[1].exchange_rate = price(asset(105000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
-            ops[2].exchange_rate = price(asset(98000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
-            ops[3].exchange_rate = price(asset(97000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
-            ops[4].exchange_rate = price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
-            ops[5].exchange_rate = price(asset(97500, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
-            ops[6].exchange_rate = price(asset(102000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME));
+            ops[0].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(100000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
+            ops[1].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(105000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
+            ops[2].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(98000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
+            ops[3].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(97000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
+            ops[4].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(99000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
+            ops[5].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(97500, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
+            ops[6].exchange_rate = price<0, 17, 0>(asset<0, 17, 0>(102000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME));
 
             for (int i = 0; i < 7; i++) {
                 txs[i].set_expiration(db.head_block_time() +
@@ -1369,9 +1369,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             feed_history_object feed_history = db.get_feed_history();
             BOOST_TEST_MESSAGE("Check state");
             BOOST_REQUIRE(feed_history.current_median_history ==
-                          price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME)));
+                          price<0, 17, 0>(asset<0, 17, 0>(99000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME)));
             BOOST_REQUIRE(feed_history.price_history[0] ==
-                          price(asset(99000, STEEM_SYMBOL), asset(1000, SBD_SYMBOL_NAME)));
+                          price<0, 17, 0>(asset<0, 17, 0>(99000, STEEM_SYMBOL), asset<0, 17, 0>(1000, SBD_SYMBOL_NAME)));
             validate_database();
 
             for (int i = 0; i < 23; i++) {
@@ -1380,7 +1380,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                 for (int j = 0; j < 7; j++) {
                     txs[j].operations.clear();
                     txs[j].signatures.clear();
-                    ops[j].exchange_rate = price(ops[j].exchange_rate.base, asset(
+                    ops[j].exchange_rate = price<0, 17, 0>(ops[j].exchange_rate.base, asset<0, 17, 0>(
                             ops[j].exchange_rate.quote.amount +
                             10, SBD_SYMBOL_NAME));
                     txs[j].set_expiration(db.head_block_time() +
@@ -1411,13 +1411,13 @@ BOOST_AUTO_TEST_CASE( nested_comments )
         try {
             ACTORS((alice))
             generate_block();
-            vest("alice", ASSET("10.000 TESTS"));
+            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
 
-            set_price_feed(price(asset::from_string("1.250 TESTS"), asset::from_string("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(asset::from_string("1.250 TESTS"), asset::from_string("1.000 TBD")));
 
-            convert_operation op;
-            comment_operation comment;
-            vote_operation vote;
+            convert_operation<0, 17, 0> op;
+            comment_operation<0, 17, 0> comment;
+            vote_operation<0, 17, 0> vote;
             signed_transaction tx;
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -1443,7 +1443,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             generate_blocks(db.get_comment("alice", string("test")).cashout_time, true);
 
-            auto start_balance = asset(
+            auto start_balance = asset<0, 17, 0>(
                     db.get_comment("alice", string("test")).total_payout_value.amount /
                     2, SBD_SYMBOL_NAME);
 
@@ -1451,7 +1451,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.operations.clear();
             tx.signatures.clear();
             op.owner = "alice";
-            op.amount = asset(2000, SBD_SYMBOL_NAME);
+            op.amount = asset<0, 17, 0>(2000, SBD_SYMBOL_NAME);
             op.request_id = 2;
             tx.operations.push_back(op);
             tx.set_expiration(
@@ -1489,9 +1489,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(vop.owner == "alice");
             BOOST_REQUIRE(vop.requestid == 2);
             BOOST_REQUIRE(vop.amount_in.amount.value ==
-                          ASSET("2.000 TBD").amount.value);
+                          asset<0, 17, 0>::from_string("2.000 TBD").amount.value);
             BOOST_REQUIRE(vop.amount_out.amount.value ==
-                          ASSET("2.500 TESTS").amount.value);
+                          asset<0, 17, 0>::from_string("2.500 TESTS").amount.value);
             validate_database();
         }
         FC_LOG_AND_RETHROW();
@@ -1508,11 +1508,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto old_witness_balance = db.get_account( witness_name ).balance;
       auto old_witness_shares = db.get_account( witness_name ).vesting_shares;
 
-      auto new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
-         + std::max( STEEMIT_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-      auto witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-      auto witness_pay_shares = asset( 0, VESTS_SYMBOL );
-      auto new_vesting_steem = asset( 0, STEEM_SYMBOL );
+      auto new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset<0, 17, 0>( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
+         + std::max( STEEMIT_MIN_CURATE_REWARD, asset<0, 17, 0>( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+      auto witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset<0, 17, 0>( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+      auto witness_pay_shares = asset<0, 17, 0>( 0, VESTS_SYMBOL );
+      auto new_vesting_steem = asset<0, 17, 0>( 0, STEEM_SYMBOL );
       auto new_vesting_shares = gpo.total_vesting_shares;
 
       if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
@@ -1546,19 +1546,19 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          old_witness_shares = db.get_account( witness_name ).vesting_shares;
 
 
-         new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
-            + std::max( STEEMIT_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-         witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-         new_vesting_steem = asset( 0, STEEM_SYMBOL );
+         new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset<0, 17, 0>( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
+            + std::max( STEEMIT_MIN_CURATE_REWARD, asset<0, 17, 0>( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+         witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset<0, 17, 0>( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+         new_vesting_steem = asset<0, 17, 0>( 0, STEEM_SYMBOL );
          new_vesting_shares = gpo.total_vesting_shares;
 
          if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
          {
             new_vesting_steem += witness_pay;
-            witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
+            witness_pay_shares = witness_pay * gpo.get_vesting_share_price<0, 17, 0>();
             new_vesting_shares += witness_pay_shares;
             new_supply += witness_pay;
-            witness_pay = asset( 0, STEEM_SYMBOL );
+            witness_pay = asset<0, 17, 0>( 0, STEEM_SYMBOL );
          }
 
          new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
@@ -1588,20 +1588,20 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          witness_name = db.get_scheduled_witness(1);
          old_witness_balance = db.get_account( witness_name ).balance;
 
-         new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
-            + std::max( STEEMIT_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-         witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-         auto witness_pay_shares = asset( 0, VESTS_SYMBOL );
-         new_vesting_steem = asset( ( witness_pay + new_rewards ).amount * 9, STEEM_SYMBOL );
+         new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset<0, 17, 0>( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
+            + std::max( STEEMIT_MIN_CURATE_REWARD, asset<0, 17, 0>( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+         witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset<0, 17, 0>( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+         auto witness_pay_shares = asset<0, 17, 0>( 0, VESTS_SYMBOL );
+         new_vesting_steem = asset<0, 17, 0>( ( witness_pay + new_rewards ).amount * 9, STEEM_SYMBOL );
          new_vesting_shares = gpo.total_vesting_shares;
 
          if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
          {
             new_vesting_steem += witness_pay;
-            witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
+            witness_pay_shares = witness_pay * gpo.get_vesting_share_price<0, 17, 0>();
             new_vesting_shares += witness_pay_shares;
             new_supply += witness_pay;
-            witness_pay = asset( 0, STEEM_SYMBOL );
+            witness_pay = asset<0, 17, 0>( 0, STEEM_SYMBOL );
          }
 
          new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
@@ -1629,11 +1629,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
          witness_name = db.get_scheduled_witness(1);
          old_witness_balance = db.get_account( witness_name ).balance;
 
-         new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
-            + std::max( STEEMIT_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-         witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
-         witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
-         new_vesting_steem = asset( ( witness_pay + new_rewards ).amount * 9, STEEM_SYMBOL ) + witness_pay;
+         new_rewards = std::max( STEEMIT_MIN_CONTENT_REWARD, asset<0, 17, 0>( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) )
+            + std::max( STEEMIT_MIN_CURATE_REWARD, asset<0, 17, 0>( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+         witness_pay = std::max( STEEMIT_MIN_PRODUCER_REWARD, asset<0, 17, 0>( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( STEEMIT_BLOCKS_PER_YEAR * 100 ), STEEM_SYMBOL ) );
+         witness_pay_shares = witness_pay * gpo.get_vesting_share_price<0, 17, 0>();
+         new_vesting_steem = asset<0, 17, 0>( ( witness_pay + new_rewards ).amount * 9, STEEM_SYMBOL ) + witness_pay;
          new_vesting_shares = gpo.total_vesting_shares + witness_pay_shares;
          new_supply = gpo.current_supply + new_rewards + new_vesting_steem;
          new_rewards += gpo.total_reward_fund_steem;
@@ -1672,7 +1672,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       BOOST_REQUIRE_EQUAL( gpo.total_reward_fund_steem.amount.value,
          reward_steem.amount.value + virtual_supply.amount.value / 10 / STEEMIT_BLOCKS_PER_YEAR + virtual_supply.amount.value / 10 / STEEMIT_BLOCKS_PER_DAY );
       BOOST_REQUIRE_EQUAL( db.get_account( witness_name ).vesting_shares.amount.value,
-         old_witness_shares.amount.value + ( asset( ( ( virtual_supply.amount.value / STEEMIT_BLOCKS_PER_YEAR ) * STEEMIT_1_PERCENT ) / STEEMIT_100_PERCENT, STEEM_SYMBOL ) * ( vesting_shares / vesting_steem ) ).amount.value );
+         old_witness_shares.amount.value + ( asset<0, 17, 0>( ( ( virtual_supply.amount.value / STEEMIT_BLOCKS_PER_YEAR ) * STEEMIT_1_PERCENT ) / STEEMIT_100_PERCENT, STEEM_SYMBOL ) * ( vesting_shares / vesting_steem ) ).amount.value );
       validate_database();
       */
         }
@@ -1683,16 +1683,16 @@ BOOST_AUTO_TEST_CASE( nested_comments )
         try {
             ACTORS((alice)(bob))
             generate_block();
-            vest("alice", ASSET("10.000 TESTS"));
-            vest("bob", ASSET("10.000 TESTS"));
+            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("bob", asset<0, 17, 0>::from_string("10.000 TESTS"));
 
-            set_price_feed(price(asset::from_string("1.000 TESTS"), asset::from_string("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(asset::from_string("1.000 TESTS"), asset::from_string("1.000 TBD")));
 
             BOOST_TEST_MESSAGE("Testing interest over smallest interest period");
 
-            convert_operation op;
-            comment_operation comment;
-            vote_operation vote;
+            convert_operation<0, 17, 0> op;
+            comment_operation<0, 17, 0> comment;
+            vote_operation<0, 17, 0> vote;
             signed_transaction tx;
             tx.set_expiration(
                     db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -1724,10 +1724,10 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             generate_blocks(db.head_block_time() +
                             fc::seconds(STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC), true);
 
-            transfer_operation transfer;
+            transfer_operation<0, 17, 0> transfer;
             transfer.to = "bob";
             transfer.from = "alice";
-            transfer.amount = ASSET("1.000 TBD");
+            transfer.amount = asset<0, 17, 0>::from_string("1.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.set_expiration(
@@ -1742,7 +1742,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(gpo.sbd_interest_rate > 0);
             BOOST_REQUIRE(db.get_account("alice").sbd_balance.amount.value ==
                           alice_sbd.amount.value -
-                          ASSET("1.000 TBD").amount.value +
+                          asset<0, 17, 0>::from_string("1.000 TBD").amount.value +
                           ((((uint128_t(alice_sbd.amount.value) *
                               (db.head_block_time() -
                                start_time).to_seconds()) /
@@ -1753,7 +1753,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(interest_op.interest.amount.value ==
                           db.get_account("alice").sbd_balance.amount.value -
                           (alice_sbd.amount.value -
-                           ASSET("1.000 TBD").amount.value));
+                           asset<0, 17, 0>::from_string("1.000 TBD").amount.value));
             validate_database();
 
             BOOST_TEST_MESSAGE("Testing interest under interest period");
@@ -1774,7 +1774,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_REQUIRE(db.get_account("alice").sbd_balance.amount.value ==
                           alice_sbd.amount.value -
-                          ASSET("1.000 TBD").amount.value);
+                          asset<0, 17, 0>::from_string("1.000 TBD").amount.value);
             validate_database();
 
             auto alice_coindays = uint128_t(alice_sbd.amount.value) *
@@ -1799,7 +1799,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_REQUIRE(db.get_account("alice").sbd_balance.amount.value ==
                           alice_sbd.amount.value -
-                          ASSET("1.000 TBD").amount.value +
+                          asset<0, 17, 0>::from_string("1.000 TBD").amount.value +
                           ((((uint128_t(alice_sbd.amount.value) *
                               (db.head_block_time() - start_time).to_seconds() +
                               alice_coindays) / STEEMIT_SECONDS_PER_YEAR) *
@@ -1818,18 +1818,18 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             ACTORS((alice)(bob)(sam)(dave))
             generate_block();
-            vest("alice", ASSET("10.000 TESTS"));
-            vest("bob", ASSET("10.000 TESTS"));
-            vest("sam", ASSET("10.000 TESTS"));
-            vest("dave", ASSET("10.000 TESTS"));
+            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("bob", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("sam", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("dave", asset<0, 17, 0>::from_string("10.000 TESTS"));
 
             BOOST_TEST_MESSAGE("Rewarding Bob with TESTS");
 
-            auto exchange_rate = price(ASSET("1.250 TESTS"), ASSET("1.000 TBD"));
+            auto exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.250 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
             set_price_feed(exchange_rate);
 
             signed_transaction tx;
-            comment_operation comment;
+            comment_operation<0, 17, 0> comment;
             comment.author = "alice";
             comment.permlink = "test";
             comment.parent_permlink = "test";
@@ -1841,7 +1841,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            vote_operation vote;
+            vote_operation<0, 17, 0> vote;
             vote.voter = "alice";
             vote.weight = STEEMIT_100_PERCENT;
             vote.author = "alice";
@@ -1875,9 +1875,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Creating Limit Order for STEEM that will stay on the books for 30 minutes exactly.");
 
-            limit_order_create_operation op;
+            limit_order_create_operation<0, 17, 0> op;
             op.owner = "alice";
-            op.amount_to_sell = asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
+            op.amount_to_sell = asset<0, 17, 0>(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
             op.min_to_receive = op.amount_to_sell * exchange_rate;
             op.order_id = 1;
 
@@ -1910,10 +1910,10 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.sign(bob_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            alice_steem_volume += (asset(alice_sbd.amount / 20, SBD_SYMBOL_NAME) *
+            alice_steem_volume += (asset<0, 17, 0>(alice_sbd.amount / 20, SBD_SYMBOL_NAME) *
                                    exchange_rate).amount.value;
             alice_reward_last_update = db.head_block_time();
-            bob_steem_volume -= (asset(alice_sbd.amount / 20, SBD_SYMBOL_NAME) *
+            bob_steem_volume -= (asset<0, 17, 0>(alice_sbd.amount / 20, SBD_SYMBOL_NAME) *
                                  exchange_rate).amount.value;
             bob_reward_last_update = db.head_block_time();
 
@@ -1940,12 +1940,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
             BOOST_REQUIRE(fill_order_op.open_order_id == 1);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, SBD_SYMBOL_NAME).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
             BOOST_REQUIRE(fill_order_op.current_order_id == 2);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
-                          (asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME) *
+                          (asset<0, 17, 0>(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME) *
                            exchange_rate).amount.value);
 
             BOOST_CHECK(limit_order_idx.find(std::make_tuple("alice", 1)) ==
@@ -1956,9 +1956,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_TEST_MESSAGE("Creating Limit Order for SBD that will stay on the books for 60 minutes.");
 
             op.owner = "sam";
-            op.amount_to_sell = asset((alice_sbd.amount.value /
+            op.amount_to_sell = asset<0, 17, 0>((alice_sbd.amount.value /
                                        20), STEEM_SYMBOL);
-            op.min_to_receive = asset((alice_sbd.amount.value /
+            op.min_to_receive = asset<0, 17, 0>((alice_sbd.amount.value /
                                        20), SBD_SYMBOL_NAME);
             op.order_id = 3;
 
@@ -1977,10 +1977,10 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "bob";
             op.order_id = 4;
-            op.amount_to_sell = asset((alice_sbd.amount.value / 10) * 3 -
+            op.amount_to_sell = asset<0, 17, 0>((alice_sbd.amount.value / 10) * 3 -
                                       alice_sbd.amount.value /
                                       20, STEEM_SYMBOL);
-            op.min_to_receive = asset((alice_sbd.amount.value / 10) * 3 -
+            op.min_to_receive = asset<0, 17, 0>((alice_sbd.amount.value / 10) * 3 -
                                       alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
 
             tx.signatures.clear();
@@ -2000,9 +2000,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "alice";
             op.order_id = 5;
-            op.amount_to_sell = asset(
+            op.amount_to_sell = asset<0, 17, 0>(
                     (alice_sbd.amount.value / 10) * 3, SBD_SYMBOL_NAME);
-            op.min_to_receive = asset(
+            op.min_to_receive = asset<0, 17, 0>(
                     (alice_sbd.amount.value / 10) * 3, STEEM_SYMBOL);
 
             tx.signatures.clear();
@@ -2026,13 +2026,13 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_owner == "bob");
             BOOST_REQUIRE(fill_order_op.open_order_id == 4);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
-                          asset((alice_sbd.amount.value / 10) * 3 -
+                          asset<0, 17, 0>((alice_sbd.amount.value / 10) * 3 -
                                 alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "alice");
             BOOST_REQUIRE(fill_order_op.current_order_id == 5);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
-                          asset((alice_sbd.amount.value / 10) * 3 -
+                          asset<0, 17, 0>((alice_sbd.amount.value / 10) * 3 -
                                 alice_sbd.amount.value /
                                 20, SBD_SYMBOL_NAME).amount.value);
 
@@ -2040,12 +2040,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_owner == "sam");
             BOOST_REQUIRE(fill_order_op.open_order_id == 3);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "alice");
             BOOST_REQUIRE(fill_order_op.current_order_id == 5);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, SBD_SYMBOL_NAME).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
@@ -2072,9 +2072,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_TEST_MESSAGE("Testing a partial fill before minimum time and full fill after minimum time");
 
             op.order_id = 6;
-            op.amount_to_sell = asset(
+            op.amount_to_sell = asset<0, 17, 0>(
                     alice_sbd.amount.value / 20 * 2, SBD_SYMBOL_NAME);
-            op.min_to_receive = asset(
+            op.min_to_receive = asset<0, 17, 0>(
                     alice_sbd.amount.value / 20 * 2, STEEM_SYMBOL);
 
             tx.signatures.clear();
@@ -2091,9 +2091,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "bob";
             op.order_id = 7;
-            op.amount_to_sell = asset(
+            op.amount_to_sell = asset<0, 17, 0>(
                     alice_sbd.amount.value / 20, STEEM_SYMBOL);
-            op.min_to_receive = asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
+            op.min_to_receive = asset<0, 17, 0>(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME);
 
             tx.signatures.clear();
             tx.operations.clear();
@@ -2113,12 +2113,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
             BOOST_REQUIRE(fill_order_op.open_order_id == 6);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, SBD_SYMBOL_NAME).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
             BOOST_REQUIRE(fill_order_op.current_order_id == 7);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
@@ -2167,12 +2167,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
             BOOST_REQUIRE(fill_order_op.open_order_id == 6);
             BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, SBD_SYMBOL_NAME).amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "sam");
             BOOST_REQUIRE(fill_order_op.current_order_id == 8);
             BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
-                          asset(alice_sbd.amount.value /
+                          asset<0, 17, 0>(alice_sbd.amount.value /
                                 20, STEEM_SYMBOL).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
@@ -2198,10 +2198,10 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             BOOST_TEST_MESSAGE("Trading to give Alice and Bob positive volumes to receive rewards");
 
-            transfer_operation transfer;
+            transfer_operation<0, 17, 0> transfer;
             transfer.to = "dave";
             transfer.from = "alice";
-            transfer.amount = asset(alice_sbd.amount / 2, SBD_SYMBOL_NAME);
+            transfer.amount = asset<0, 17, 0>(alice_sbd.amount / 2, SBD_SYMBOL_NAME);
 
             tx.operations.clear();
             tx.signatures.clear();
@@ -2212,9 +2212,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             db.push_transaction(tx, 0);
 
             op.owner = "alice";
-            op.amount_to_sell = asset(
+            op.amount_to_sell = asset<0, 17, 0>(
                     8 * (alice_sbd.amount.value / 20), STEEM_SYMBOL);
-            op.min_to_receive = asset(op.amount_to_sell.amount, SBD_SYMBOL_NAME);
+            op.min_to_receive = asset<0, 17, 0>(op.amount_to_sell.amount, SBD_SYMBOL_NAME);
             op.order_id = 9;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2226,9 +2226,9 @@ BOOST_AUTO_TEST_CASE( nested_comments )
                             STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10, true);
 
             op.owner = "dave";
-            op.amount_to_sell = asset(
+            op.amount_to_sell = asset<0, 17, 0>(
                     7 * (alice_sbd.amount.value / 20), SBD_SYMBOL_NAME);;
-            op.min_to_receive = asset(op.amount_to_sell.amount, STEEM_SYMBOL);
+            op.min_to_receive = asset<0, 17, 0>(op.amount_to_sell.amount, STEEM_SYMBOL);
             op.order_id = 10;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2340,7 +2340,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             transfer.to = "bob";
             transfer.from = "alice";
-            transfer.amount = asset(alice_sbd.amount / 5, SBD_SYMBOL_NAME);
+            transfer.amount = asset<0, 17, 0>(alice_sbd.amount / 5, SBD_SYMBOL_NAME);
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(transfer);
@@ -2351,8 +2351,8 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "bob";
             op.order_id = 12;
-            op.amount_to_sell = asset(3 * (alice_sbd.amount / 40), SBD_SYMBOL_NAME);
-            op.min_to_receive = asset(op.amount_to_sell.amount, STEEM_SYMBOL);
+            op.amount_to_sell = asset<0, 17, 0>(3 * (alice_sbd.amount / 40), SBD_SYMBOL_NAME);
+            op.min_to_receive = asset<0, 17, 0>(op.amount_to_sell.amount, STEEM_SYMBOL);
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2491,8 +2491,8 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             op.owner = "sam";
             op.order_id = 14;
-            op.amount_to_sell = ASSET("1.000 TESTS");
-            op.min_to_receive = ASSET("1.000 TBD");
+            op.amount_to_sell = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.min_to_receive = asset<0, 17, 0>::from_string("1.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2526,7 +2526,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            sam_sbd_volume = ASSET("1.000 TBD").amount.value;
+            sam_sbd_volume = asset<0, 17, 0>::from_string("1.000 TBD").amount.value;
             sam_steem_volume = 0;
             sam_reward_last_update = db.head_block_time();
 
@@ -2547,7 +2547,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             fund("alice", 10000);
             vest("alice", 10000);
 
-            comment_operation op;
+            comment_operation<0, 17, 0> op;
             op.author = "alice";
             op.permlink = "test1";
             op.parent_author = "";
@@ -2690,12 +2690,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             vest("sam", 10000);
             vest("dave", 10000);
 
-            auto exchange_rate = price(ASSET("1.250 TESTS"), ASSET("1.000 TBD"));
+            auto exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.250 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
             set_price_feed(exchange_rate);
 
             signed_transaction tx;
 
-            comment_operation comment;
+            comment_operation<0, 17, 0> comment;
             comment.author = "alice";
             comment.parent_author = "";
             comment.permlink = "test";
@@ -2717,7 +2717,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            vote_operation vote;
+            vote_operation<0, 17, 0> vote;
             vote.weight = STEEMIT_100_PERCENT;
             vote.voter = "bob";
             vote.author = "alice";
@@ -2846,12 +2846,12 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       vest( "alice", 10000 );
       vest( "bob", 10000 );
 
-      auto exchange_rate = price( ASSET( "1.000 TBD" ), ASSET( "10.000 TESTS" ) );
+      auto exchange_rate = price<0, 17, 0>( asset<0, 17, 0>::from_string( "1.000 TBD" ), asset<0, 17, 0>::from_string( "10.000 TESTS" ) );
       set_price_feed( exchange_rate );
 
       BOOST_REQUIRE( db.get_dynamic_global_properties().sbd_print_rate == STEEMIT_100_PERCENT );
 
-      comment_operation comment;
+      comment_operation<0, 17, 0> comment;
       comment.author = "alice";
       comment.permlink = "test";
       comment.parent_permlink = "test";
@@ -2864,7 +2864,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       tx.sign( alice_private_key, db.get_chain_id() );
       db.push_transaction( tx, 0 );
 
-      vote_operation vote;
+      vote_operation<0, 17, 0> vote;
       vote.voter = "bob";
       vote.author = "alice";
       vote.permlink = "test";
@@ -2885,7 +2885,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
       BOOST_TEST_MESSAGE( "Changing sam and gpo to set up market cap conditions" );
 
-      asset sbd_balance = asset( ( gpo.virtual_supply.amount * ( STEEMIT_SBD_STOP_PERCENT + 30 ) ) / STEEMIT_100_PERCENT, STEEM_SYMBOL ) * exchange_rate;
+      asset sbd_balance = asset<0, 17, 0>( ( gpo.virtual_supply.amount * ( STEEMIT_SBD_STOP_PERCENT + 30 ) ) / STEEMIT_100_PERCENT, STEEM_SYMBOL ) * exchange_rate;
       db_plugin->debug_update( [=]( database& db )
       {
          db.modify( db.get_account( "sam" ), [&]( account_object& a )
@@ -2910,7 +2910,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       auto comment_reward = ( gpo.total_reward_fund_steem.amount + 2000 ) - ( ( gpo.total_reward_fund_steem.amount + 2000 ) * 25 * STEEMIT_1_PERCENT ) / STEEMIT_100_PERCENT ;
       comment_reward /= 2;
       auto sbd_reward = ( comment_reward * gpo.sbd_print_rate ) / STEEMIT_100_PERCENT;
-      auto alice_sbd = db.get_account( "alice" ).sbd_balance + asset( sbd_reward, STEEM_SYMBOL ) * exchange_rate;
+      auto alice_sbd = db.get_account( "alice" ).sbd_balance + asset<0, 17, 0>( sbd_reward, STEEM_SYMBOL ) * exchange_rate;
       auto alice_steem = db.get_account( "alice" ).balance;
 
       BOOST_TEST_MESSAGE( "Checking printing SBD has slowed" );
@@ -2931,7 +2931,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       {
          db.modify( db.get_account( "sam" ), [&]( account_object& a )
          {
-            a.sbd_balance = asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL_NAME );
+            a.sbd_balance = asset<0, 17, 0>( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL_NAME );
          });
       }, database::skip_witness_signature );
 
@@ -2939,7 +2939,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       {
          db.modify( db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
          {
-            gpo.current_sbd_supply = alice_sbd + asset( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL_NAME );
+            gpo.current_sbd_supply = alice_sbd + asset<0, 17, 0>( ( 194 * sbd_balance.amount ) / 500, SBD_SYMBOL_NAME );
          });
       }, database::skip_witness_signature );
 
@@ -2972,19 +2972,19 @@ BOOST_AUTO_TEST_CASE( nested_comments )
         try {
             ACTORS((alice));
             generate_block();
-            vest("alice", ASSET("10.000 TESTS"));
+            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
 
-            price exchange_rate(ASSET("1.000 TBD"), ASSET("1.000 TESTS"));
+            price exchange_rate(asset<0, 17, 0>::from_string("1.000 TBD"), asset<0, 17, 0>::from_string("1.000 TESTS"));
             set_price_feed(exchange_rate);
 
-            comment_operation comment;
+            comment_operation<0, 17, 0> comment;
             comment.author = "alice";
             comment.permlink = "test";
             comment.parent_permlink = "test";
             comment.title = "test";
             comment.body = "test";
 
-            vote_operation vote;
+            vote_operation<0, 17, 0> vote;
             vote.voter = "alice";
             vote.author = "alice";
             vote.permlink = "test";
@@ -3004,7 +3004,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 
             db.skip_price_feed_limit_check = false;
             const auto &gpo = db.get_dynamic_global_properties();
-            auto new_exchange_rate = price(gpo.current_sbd_supply, asset(
+            auto new_exchange_rate = price<0, 17, 0>(gpo.current_sbd_supply, asset<0, 17, 0>(
                     (STEEMIT_100_PERCENT) * gpo.current_supply.amount));
             set_price_feed(new_exchange_rate);
             set_price_feed(new_exchange_rate);
@@ -3024,33 +3024,33 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             ACTORS((alice));
             generate_block();
 
-            fund("alice", ASSET("10.000 TESTS"));
-            fund("alice", ASSET("10.000 TBD"));
+            fund("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            fund("alice", asset<0, 17, 0>::from_string("10.000 TBD"));
 
-            transfer_operation transfer1;
+            transfer_operation<0, 17, 0> transfer1;
             transfer1.from = "alice";
             transfer1.to = STEEMIT_NULL_ACCOUNT;
-            transfer1.amount = ASSET("1.000 TESTS");
+            transfer1.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
 
-            transfer_operation transfer2;
+            transfer_operation<0, 17, 0> transfer2;
             transfer2.from = "alice";
             transfer2.to = STEEMIT_NULL_ACCOUNT;
-            transfer2.amount = ASSET("2.000 TBD");
+            transfer2.amount = asset<0, 17, 0>::from_string("2.000 TBD");
 
-            transfer_to_vesting_operation vest;
+            transfer_to_vesting_operation<0, 17, 0> vest;
             vest.from = "alice";
             vest.to = STEEMIT_NULL_ACCOUNT;
-            vest.amount = ASSET("3.000 TESTS");
+            vest.amount = asset<0, 17, 0>::from_string("3.000 TESTS");
 
-            transfer_to_savings_operation save1;
+            transfer_to_savings_operation<0, 17, 0> save1;
             save1.from = "alice";
             save1.to = STEEMIT_NULL_ACCOUNT;
-            save1.amount = ASSET("4.000 TESTS");
+            save1.amount = asset<0, 17, 0>::from_string("4.000 TESTS");
 
-            transfer_to_savings_operation save2;
+            transfer_to_savings_operation<0, 17, 0> save2;
             save2.from = "alice";
             save2.to = STEEMIT_NULL_ACCOUNT;
-            save2.amount = ASSET("5.000 TBD");
+            save2.amount = asset<0, 17, 0>::from_string("5.000 TBD");
 
             BOOST_TEST_MESSAGE("--- Transferring to NULL Account");
 
@@ -3067,42 +3067,42 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             validate_database();
 
             BOOST_REQUIRE(db.get_account(STEEMIT_NULL_ACCOUNT).balance ==
-                          ASSET("1.000 TESTS"));
+                          asset<0, 17, 0>::from_string("1.000 TESTS"));
             BOOST_REQUIRE(db.get_account(STEEMIT_NULL_ACCOUNT).sbd_balance ==
-                          ASSET("2.000 TBD"));
+                          asset<0, 17, 0>::from_string("2.000 TBD"));
             BOOST_REQUIRE(db.get_account(STEEMIT_NULL_ACCOUNT).vesting_shares >
-                          ASSET("0.000000 VESTS"));
+                          asset<0, 17, 0>::from_string("0.000000 VESTS"));
             BOOST_REQUIRE(
                     db.get_account(STEEMIT_NULL_ACCOUNT).savings_balance ==
-                    ASSET("4.000 TESTS"));
+                    asset<0, 17, 0>::from_string("4.000 TESTS"));
             BOOST_REQUIRE(
                     db.get_account(STEEMIT_NULL_ACCOUNT).savings_sbd_balance ==
-                    ASSET("5.000 TBD"));
+                    asset<0, 17, 0>::from_string("5.000 TBD"));
             BOOST_REQUIRE(
-                    db.get_account("alice").balance == ASSET("2.000 TESTS"));
+                    db.get_account("alice").balance == asset<0, 17, 0>::from_string("2.000 TESTS"));
             BOOST_REQUIRE(
-                    db.get_account("alice").sbd_balance == ASSET("3.000 TBD"));
+                    db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("3.000 TBD"));
 
             BOOST_TEST_MESSAGE("--- Generating block to clear balances");
             generate_block();
             validate_database();
 
             BOOST_REQUIRE(db.get_account(STEEMIT_NULL_ACCOUNT).balance ==
-                          ASSET("0.000 TESTS"));
+                          asset<0, 17, 0>::from_string("0.000 TESTS"));
             BOOST_REQUIRE(db.get_account(STEEMIT_NULL_ACCOUNT).sbd_balance ==
-                          ASSET("0.000 TBD"));
+                          asset<0, 17, 0>::from_string("0.000 TBD"));
             BOOST_REQUIRE(db.get_account(STEEMIT_NULL_ACCOUNT).vesting_shares ==
-                          ASSET("0.000000 VESTS"));
+                          asset<0, 17, 0>::from_string("0.000000 VESTS"));
             BOOST_REQUIRE(
                     db.get_account(STEEMIT_NULL_ACCOUNT).savings_balance ==
-                    ASSET("0.000 TESTS"));
+                    asset<0, 17, 0>::from_string("0.000 TESTS"));
             BOOST_REQUIRE(
                     db.get_account(STEEMIT_NULL_ACCOUNT).savings_sbd_balance ==
-                    ASSET("0.000 TBD"));
+                    asset<0, 17, 0>::from_string("0.000 TBD"));
             BOOST_REQUIRE(
-                    db.get_account("alice").balance == ASSET("2.000 TESTS"));
+                    db.get_account("alice").balance == asset<0, 17, 0>::from_string("2.000 TESTS"));
             BOOST_REQUIRE(
-                    db.get_account("alice").sbd_balance == ASSET("3.000 TBD"));
+                    db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("3.000 TBD"));
         }
         FC_LOG_AND_RETHROW()
     }
@@ -3114,11 +3114,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             ACTORS((alice)(bob))
             generate_block();
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
             generate_block();
 
-            comment_operation comment;
-            vote_operation vote;
+            comment_operation<0, 17, 0> comment;
+            vote_operation<0, 17, 0> vote;
             signed_transaction tx;
 
             comment.author = "alice";
@@ -3188,11 +3188,11 @@ BOOST_AUTO_TEST_CASE( nested_comments )
             ACTORS((alice)(bob))
             generate_block();
 
-            set_price_feed(price(ASSET("1.000 TESTS"), ASSET("1.000 TBD")));
+            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
             generate_block();
 
-            comment_operation comment;
-            vote_operation vote;
+            comment_operation<0, 17, 0> comment;
+            vote_operation<0, 17, 0> vote;
             signed_transaction tx;
 
             comment.author = "alice";

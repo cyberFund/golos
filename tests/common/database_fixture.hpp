@@ -129,9 +129,6 @@ extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
 #define ACTORS(names) BOOST_PP_SEQ_FOR_EACH(ACTORS_IMPL, ~, names) \
    validate_database();
 
-#define ASSET(s) \
-   asset::from_string( s )
-
 namespace steemit {
     namespace chain {
 

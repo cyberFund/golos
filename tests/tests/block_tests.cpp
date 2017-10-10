@@ -5,8 +5,8 @@
 #include <steemit/protocol/exceptions.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 
 #include <steemit/account_history/account_history_plugin.hpp>
 
@@ -36,8 +36,10 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             {
                 database db;
                 db._log_hardforks = false;
-                db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
-                b = db.generate_block(db.get_slot_time(1), db.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                        chainbase::database::read_write);
+                b = db.generate_block(db.get_slot_time(1), db.get_scheduled_witness(1), init_account_priv_key,
+                                      database::skip_nothing);
 
                 // TODO:  Change this test when we correct #406
                 // n.b. we generate STEEMIT_MIN_UNDO_HISTORY+1 extra blocks which will be discarded on save
@@ -46,7 +48,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                     //witness_object::id_type prev_witness = b.witness;
                     string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
-                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, database::skip_nothing);
+                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key,
+                                          database::skip_nothing);
                     BOOST_CHECK(b.witness == cur_witness);
                     uint32_t cutoff_height = db.get_dynamic_global_properties().last_irreversible_block_num;
                     if (cutoff_height >= 200) {
@@ -61,7 +64,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             {
                 database db;
                 db._log_hardforks = false;
-                db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+                db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                        chainbase::database::read_write);
                 BOOST_CHECK_EQUAL(db.head_block_num(), cutoff_block.block_num());
                 b = cutoff_block;
                 for (uint32_t i = 0; i < 200; ++i) {
@@ -69,10 +73,10 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                     //witness_object::id_type prev_witness = b.witness;
                     string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
-                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key, database::skip_nothing);
+                    b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key,
+                                          database::skip_nothing);
                 }
-                BOOST_CHECK_EQUAL(db.head_block_num(),
-                        cutoff_block.block_num() + 200);
+                BOOST_CHECK_EQUAL(db.head_block_num(), cutoff_block.block_num() + 200);
             }
         } catch (fc::exception &e) {
             edump((e.to_detail_string()));
@@ -86,7 +90,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             {
                 database db;
                 db._log_hardforks = false;
-                db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+                db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                        chainbase::database::read_write);
                 fc::time_point_sec now(STEEMIT_TESTING_GENESIS_TIMESTAMP);
                 std::vector<time_point_sec> time_stack;
 
@@ -94,7 +99,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 for (uint32_t i = 0; i < 5; ++i) {
                     now = db.get_slot_time(1);
                     time_stack.push_back(now);
-                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key,
+                                               database::skip_nothing);
                 }
                 BOOST_CHECK(db.head_block_num() == 5);
                 BOOST_CHECK(db.head_block_time() == now);
@@ -116,7 +122,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 for (uint32_t i = 0; i < 5; ++i) {
                     now = db.get_slot_time(1);
                     time_stack.push_back(now);
-                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                    auto b = db.generate_block(now, db.get_scheduled_witness(1), init_account_priv_key,
+                                               database::skip_nothing);
                 }
                 BOOST_CHECK(db.head_block_num() == 7);
             }
@@ -135,25 +142,30 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             database db1;
             db1._log_hardforks = false;
-            db1.open(data_dir1.path(), data_dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db1.open(data_dir1.path(), data_dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
             database db2;
             db2._log_hardforks = false;
-            db2.open(data_dir2.path(), data_dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db2.open(data_dir2.path(), data_dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
 
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             for (uint32_t i = 0; i < 10; ++i) {
-                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                            database::skip_nothing);
                 try {
                     PUSH_BLOCK(db2, b);
                 } FC_CAPTURE_AND_RETHROW(("db2"));
             }
             for (uint32_t i = 10; i < 13; ++i) {
-                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                            database::skip_nothing);
             }
             string db1_tip = db1.head_block_id().str();
             uint32_t next_slot = 3;
             for (uint32_t i = 13; i < 16; ++i) {
-                auto b = db2.generate_block(db2.get_slot_time(next_slot), db2.get_scheduled_witness(next_slot), init_account_priv_key, database::skip_nothing);
+                auto b = db2.generate_block(db2.get_slot_time(next_slot), db2.get_scheduled_witness(next_slot),
+                                            init_account_priv_key, database::skip_nothing);
                 next_slot = 1;
                 // notify both databases of the new block.
                 // only db2 should switch to the new fork, db1 should not
@@ -168,10 +180,11 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_CHECK_EQUAL(db1.head_block_num(), 13);
             BOOST_CHECK_EQUAL(db2.head_block_num(), 13);
             {
-                auto b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+                auto b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key,
+                                            database::skip_nothing);
                 good_block = b;
                 b.transactions.emplace_back(signed_transaction());
-                b.transactions.back().operations.emplace_back(transfer_operation());
+                b.transactions.back().operations.emplace_back(transfer_operation<0, 17, 0>());
                 b.sign(init_account_priv_key);
                 BOOST_CHECK_EQUAL(b.block_num(), 14);
                 STEEMIT_CHECK_THROW(PUSH_BLOCK(db1, b), fc::exception);
@@ -191,14 +204,15 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
     BOOST_AUTO_TEST_CASE(switch_forks_undo_create) {
         try {
-            fc::temp_directory dir1(graphene::utilities::temp_directory_path()),
-                    dir2(graphene::utilities::temp_directory_path());
-            database db1,
-                    db2;
+            fc::temp_directory dir1(graphene::utilities::temp_directory_path()), dir2(
+                    graphene::utilities::temp_directory_path());
+            database db1, db2;
             db1._log_hardforks = false;
-            db1.open(dir1.path(), dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db1.open(dir1.path(), dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
             db2._log_hardforks = false;
-            db2.open(dir2.path(), dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db2.open(dir2.path(), dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
 
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
@@ -206,14 +220,13 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             //*
             signed_transaction trx;
-            account_create_operation cop;
+            account_create_operation<0, 17, 0> cop;
             cop.new_account_name = "alice";
             cop.creator = STEEMIT_INIT_MINER_NAME;
             cop.owner = authority(1, init_account_pub_key, 1);
             cop.active = cop.owner;
             trx.operations.push_back(cop);
-            trx.set_expiration(
-                    db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.sign(init_account_priv_key, db1.get_chain_id());
             PUSH_TX(db1, trx);
             //*/
@@ -221,14 +234,17 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             // db1 : A
             // db2 : B C D
 
-            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                        database::skip_nothing);
 
             auto alice_id = db1.get_account("alice").id;
             BOOST_CHECK(db1.get(alice_id).name == "alice");
 
-            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key,
+                                   database::skip_nothing);
             db1.push_block(b);
-            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key,
+                                   database::skip_nothing);
             db1.push_block(b);
             STEEMIT_REQUIRE_THROW(db2.get(alice_id), std::exception);
             db1.get(alice_id); /// it should be included in the pending state
@@ -237,7 +253,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             PUSH_TX(db2, trx);
 
-            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key,
+                                   database::skip_nothing);
             db1.push_block(b);
 
             BOOST_CHECK(db1.get(alice_id).name == "alice");
@@ -250,48 +267,47 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
     BOOST_AUTO_TEST_CASE(duplicate_transactions) {
         try {
-            fc::temp_directory dir1(graphene::utilities::temp_directory_path()),
-                    dir2(graphene::utilities::temp_directory_path());
-            database db1,
-                    db2;
+            fc::temp_directory dir1(graphene::utilities::temp_directory_path()), dir2(
+                    graphene::utilities::temp_directory_path());
+            database db1, db2;
             db1._log_hardforks = false;
-            db1.open(dir1.path(), dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db1.open(dir1.path(), dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
             db2._log_hardforks = false;
-            db2.open(dir2.path(), dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db2.open(dir2.path(), dir2.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
             BOOST_CHECK(db1.get_chain_id() == db2.get_chain_id());
 
-            auto skip_sigs = database::skip_transaction_signatures |
-                             database::skip_authority_check;
+            auto skip_sigs = database::skip_transaction_signatures | database::skip_authority_check;
 
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
 
             signed_transaction trx;
-            account_create_operation cop;
+            account_create_operation<0, 17, 0> cop;
             cop.new_account_name = "alice";
             cop.creator = STEEMIT_INIT_MINER_NAME;
             cop.owner = authority(1, init_account_pub_key, 1);
             cop.active = cop.owner;
             trx.operations.push_back(cop);
-            trx.set_expiration(
-                    db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.sign(init_account_priv_key, db1.get_chain_id());
             PUSH_TX(db1, trx, skip_sigs);
 
             trx = decltype(trx)();
-            transfer_operation t;
+            transfer_operation<0, 17, 0> t;
             t.from = STEEMIT_INIT_MINER_NAME;
             t.to = "alice";
             t.amount = asset<0, 17, 0>(500, STEEM_SYMBOL);
             trx.operations.push_back(t);
-            trx.set_expiration(
-                    db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.sign(init_account_priv_key, db1.get_chain_id());
             PUSH_TX(db1, trx, skip_sigs);
 
             STEEMIT_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
 
-            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, skip_sigs);
+            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                        skip_sigs);
             PUSH_BLOCK(db2, b, skip_sigs);
 
             STEEMIT_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
@@ -309,12 +325,14 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             fc::temp_directory dir1(graphene::utilities::temp_directory_path());
             database db1;
             db1._log_hardforks = false;
-            db1.open(dir1.path(), dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write);
+            db1.open(dir1.path(), dir1.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE,
+                     chainbase::database::read_write);
 
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
 
-            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                        database::skip_nothing);
 
             BOOST_TEST_MESSAGE("Creating a transaction with reference block");
             idump((db1.head_block_id()));
@@ -322,24 +340,24 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             //This transaction must be in the next block after its reference, or it is invalid.
             trx.set_reference_block(db1.head_block_id());
 
-            account_create_operation cop;
+            account_create_operation<0, 17, 0> cop;
             cop.new_account_name = "alice";
             cop.creator = STEEMIT_INIT_MINER_NAME;
             cop.owner = authority(1, init_account_pub_key, 1);
             cop.active = cop.owner;
             trx.operations.push_back(cop);
-            trx.set_expiration(
-                    db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db1.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.sign(init_account_priv_key, db1.get_chain_id());
 
             BOOST_TEST_MESSAGE("Pushing Pending Transaction");
             idump((trx));
             db1.push_transaction(trx);
             BOOST_TEST_MESSAGE("Generating a block");
-            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                   database::skip_nothing);
             trx.clear();
 
-            transfer_operation t;
+            transfer_operation<0, 17, 0> t;
             t.from = STEEMIT_INIT_MINER_NAME;
             t.to = "alice";
             t.amount = asset<0, 17, 0>(50, STEEM_SYMBOL);
@@ -347,12 +365,16 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             trx.set_expiration(db1.head_block_time() + fc::seconds(2));
             trx.sign(init_account_priv_key, db1.get_chain_id());
             idump((trx)(db1.head_block_time()));
-            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                   database::skip_nothing);
             idump((b));
-            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
+            b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
+                                   database::skip_nothing);
             trx.signatures.clear();
             trx.sign(init_account_priv_key, db1.get_chain_id());
-            BOOST_REQUIRE_THROW(db1.push_transaction(trx, 0/*database::skip_transaction_signatures | database::skip_authority_check*/), fc::exception);
+            BOOST_REQUIRE_THROW(db1.push_transaction(trx,
+                                                     0/*database::skip_transaction_signatures | database::skip_authority_check*/),
+                                fc::exception);
         } catch (fc::exception &e) {
             edump((e.to_detail_string()));
             throw;
@@ -369,7 +391,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_TEST_MESSAGE("Create transaction");
 
             transfer(STEEMIT_INIT_MINER_NAME, "alice", asset<0, 17, 0>(1000000, STEEM_SYMBOL));
-            transfer_operation op;
+            transfer_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
             op.amount = asset<0, 17, 0>(1000, STEEM_SYMBOL);
@@ -381,16 +403,14 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.ref_block_num = 0;
             tx.ref_block_prefix = 0;
             tx.signatures.clear();
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
             PUSH_TX(db, tx);
 
             BOOST_TEST_MESSAGE("proper ref_block_num, ref_block_prefix");
 
             tx.signatures.clear();
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
             PUSH_TX(db, tx, database::skip_transaction_dupe_check);
 
@@ -399,8 +419,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.ref_block_num = 0;
             tx.ref_block_prefix = 0x12345678;
             tx.signatures.clear();
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
 
@@ -409,8 +428,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.ref_block_num = 1;
             tx.ref_block_prefix = 0x12345678;
             tx.signatures.clear();
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
 
@@ -419,12 +437,10 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             tx.ref_block_num = 9999;
             tx.ref_block_prefix = 0x12345678;
             tx.signatures.clear();
-            tx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
-        }
-        catch (fc::exception &e) {
+        } catch (fc::exception &e) {
             edump((e.to_detail_string()));
             throw;
         }
@@ -436,13 +452,12 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             ACTOR(bob);
             share_type amount = 1000;
 
-            transfer_operation t;
+            transfer_operation<0, 17, 0> t;
             t.from = STEEMIT_INIT_MINER_NAME;
             t.to = "bob";
             t.amount = asset<0, 17, 0>(amount, STEEM_SYMBOL);
             trx.operations.push_back(t);
-            trx.set_expiration(
-                    db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.validate();
 
             db.push_transaction(trx, ~0);
@@ -477,11 +492,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
     BOOST_FIXTURE_TEST_CASE(pop_block_twice, clean_database_fixture) {
         try {
-            uint32_t skip_flags = (
-                    database::skip_witness_signature
-                    | database::skip_transaction_signatures
-                    | database::skip_authority_check
-            );
+            uint32_t skip_flags = (database::skip_witness_signature | database::skip_transaction_signatures |
+                                   database::skip_authority_check);
 
             // Sam is the creator of accounts
             auto init_account_priv_key = STEEMIT_INIT_PRIVATE_KEY;
@@ -533,113 +545,84 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             };
 
             BOOST_TEST_MESSAGE("checking initial participation rate");
-            BOOST_CHECK_EQUAL(rsf(),
-                    "1111111111111111111111111111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "1111111111111111111111111111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), STEEMIT_100_PERCENT);
 
             BOOST_TEST_MESSAGE("Generating a block skipping 1");
             generate_block(~database::skip_fork_db, init_account_priv_key, 1);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0111111111111111111111111111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0111111111111111111111111111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(127));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 1");
             generate_block(~database::skip_fork_db, init_account_priv_key, 1);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0101111111111111111111111111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0101111111111111111111111111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(126));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 2");
             generate_block(~database::skip_fork_db, init_account_priv_key, 2);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0010101111111111111111111111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0010101111111111111111111111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(124));
 
             BOOST_TEST_MESSAGE("Generating a block for skipping 3");
             generate_block(~database::skip_fork_db, init_account_priv_key, 3);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0001001010111111111111111111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0001001010111111111111111111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(121));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 5");
             generate_block(~database::skip_fork_db, init_account_priv_key, 5);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0000010001001010111111111111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0000010001001010111111111111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(116));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 8");
             generate_block(~database::skip_fork_db, init_account_priv_key, 8);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0000000010000010001001010111111111111111111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0000000010000010001001010111111111111111111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(108));
 
             BOOST_TEST_MESSAGE("Generating a block skipping 13");
             generate_block(~database::skip_fork_db, init_account_priv_key, 13);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0000000000000100000000100000100010010101111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0000000000000100000000100000100010010101111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(95));
 
             BOOST_TEST_MESSAGE("Generating a block skipping none");
             generate_block();
-            BOOST_CHECK_EQUAL(rsf(),
-                    "1000000000000010000000010000010001001010111111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "1000000000000010000000010000010001001010111111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(95));
 
             BOOST_TEST_MESSAGE("Generating a block");
             generate_block();
-            BOOST_CHECK_EQUAL(rsf(),
-                    "1100000000000001000000001000001000100101011111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "1100000000000001000000001000001000100101011111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(95));
 
             generate_block();
-            BOOST_CHECK_EQUAL(rsf(),
-                    "1110000000000000100000000100000100010010101111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "1110000000000000100000000100000100010010101111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(95));
 
             generate_block();
-            BOOST_CHECK_EQUAL(rsf(),
-                    "1111000000000000010000000010000010001001010111111111111111111111"
-                            "1111111111111111111111111111111111111111111111111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "1111000000000000010000000010000010001001010111111111111111111111"
+                    "1111111111111111111111111111111111111111111111111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(95));
 
             generate_block(~database::skip_fork_db, init_account_priv_key, 64);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0000000000000000000000000000000000000000000000000000000000000000"
-                            "1111100000000000001000000001000001000100101011111111111111111111"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0000000000000000000000000000000000000000000000000000000000000000"
+                    "1111100000000000001000000001000001000100101011111111111111111111");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(31));
 
             generate_block(~database::skip_fork_db, init_account_priv_key, 32);
-            BOOST_CHECK_EQUAL(rsf(),
-                    "0000000000000000000000000000000010000000000000000000000000000000"
-                            "0000000000000000000000000000000001111100000000000001000000001000"
-            );
+            BOOST_CHECK_EQUAL(rsf(), "0000000000000000000000000000000010000000000000000000000000000000"
+                    "0000000000000000000000000000000001111100000000000001000000001000");
             BOOST_CHECK_EQUAL(db.witness_participation_rate(), pct(8));
-        }
-        FC_LOG_AND_RETHROW()
+        } FC_LOG_AND_RETHROW()
     }
 
     BOOST_FIXTURE_TEST_CASE(skip_block, clean_database_fixture) {
@@ -648,8 +631,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_REQUIRE(db.head_block_num() == 2);
 
             int init_block_num = db.head_block_num();
-            int miss_blocks =
-                    fc::minutes(1).to_seconds() / STEEMIT_BLOCK_INTERVAL;
+            int miss_blocks = fc::minutes(1).to_seconds() / STEEMIT_BLOCK_INTERVAL;
             auto witness = db.get_scheduled_witness(miss_blocks);
             auto block_time = db.get_slot_time(miss_blocks);
             db.generate_block(block_time, witness, init_account_priv_key, 0);
@@ -661,10 +643,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             generate_block();
 
             BOOST_CHECK_EQUAL(db.head_block_num(), init_block_num + 2);
-            BOOST_CHECK(db.head_block_time() ==
-                        block_time + STEEMIT_BLOCK_INTERVAL);
-        }
-        FC_LOG_AND_RETHROW();
+            BOOST_CHECK(db.head_block_time() == block_time + STEEMIT_BLOCK_INTERVAL);
+        } FC_LOG_AND_RETHROW();
     }
 
     BOOST_FIXTURE_TEST_CASE(hardfork_test, database_fixture) {
@@ -678,8 +658,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                         fc::enable_record_assert_trip = true;
                     }
                     if (arg == "--show-test-names") {
-                        std::cout << "running test "
-                                  << boost::unit_test::framework::current_test_case().p_name
+                        std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name
                                   << std::endl;
                     }
                 }
@@ -702,14 +681,11 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 vest("initminer", 10000);
 
                 // Fill up the rest of the required miners
-                for (int i = STEEMIT_NUM_INIT_MINERS;
-                     i < STEEMIT_MAX_WITNESSES; i++) {
-                    account_create(STEEMIT_INIT_MINER_NAME +
-                                   fc::to_string(i), init_account_pub_key);
-                    fund(STEEMIT_INIT_MINER_NAME +
-                         fc::to_string(i), STEEMIT_MIN_PRODUCER_REWARD.amount.value);
-                    witness_create(STEEMIT_INIT_MINER_NAME +
-                                   fc::to_string(i), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount);
+                for (int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++) {
+                    account_create(STEEMIT_INIT_MINER_NAME + fc::to_string(i), init_account_pub_key);
+                    fund(STEEMIT_INIT_MINER_NAME + fc::to_string(i), STEEMIT_MIN_PRODUCER_REWARD.amount.value);
+                    witness_create(STEEMIT_INIT_MINER_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
+                                   init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount);
                 }
 
                 validate_database();
@@ -723,8 +699,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_REQUIRE(!db.has_hardfork(STEEMIT_HARDFORK_0_1));
 
             BOOST_TEST_MESSAGE("Generate blocks up to the hardfork time and check hardfork still not applied");
-            generate_blocks(fc::time_point_sec(
-                    STEEMIT_HARDFORK_0_1_TIME - STEEMIT_BLOCK_INTERVAL), true);
+            generate_blocks(fc::time_point_sec(STEEMIT_HARDFORK_0_1_TIME - STEEMIT_BLOCK_INTERVAL), true);
 
             BOOST_REQUIRE(db.has_hardfork(0));
             BOOST_REQUIRE(!db.has_hardfork(STEEMIT_HARDFORK_0_1));
@@ -738,9 +713,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             BOOST_REQUIRE(db.has_hardfork(0));
             BOOST_REQUIRE(db.has_hardfork(STEEMIT_HARDFORK_0_1));
-            BOOST_REQUIRE(
-                    get_last_operations(1)[0].get<custom_operation>().data ==
-                    vector<char>(op_msg.begin(), op_msg.end()));
+            BOOST_REQUIRE(get_last_operations(1)[0].get<custom_operation>().data ==
+                          vector<char>(op_msg.begin(), op_msg.end()));
             BOOST_REQUIRE(db.get(itr->op).timestamp == db.head_block_time());
 
             BOOST_TEST_MESSAGE("Testing hardfork is only applied once");
@@ -751,13 +725,10 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 
             BOOST_REQUIRE(db.has_hardfork(0));
             BOOST_REQUIRE(db.has_hardfork(STEEMIT_HARDFORK_0_1));
-            BOOST_REQUIRE(
-                    get_last_operations(1)[0].get<custom_operation>().data ==
-                    vector<char>(op_msg.begin(), op_msg.end()));
-            BOOST_REQUIRE(db.get(itr->op).timestamp ==
-                          db.head_block_time() - STEEMIT_BLOCK_INTERVAL);
-        }
-        FC_LOG_AND_RETHROW()
+            BOOST_REQUIRE(get_last_operations(1)[0].get<custom_operation>().data ==
+                          vector<char>(op_msg.begin(), op_msg.end()));
+            BOOST_REQUIRE(db.get(itr->op).timestamp == db.head_block_time() - STEEMIT_BLOCK_INTERVAL);
+        } FC_LOG_AND_RETHROW()
     }
 
 BOOST_AUTO_TEST_SUITE_END()
