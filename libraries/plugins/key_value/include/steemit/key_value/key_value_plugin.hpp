@@ -32,6 +32,5 @@ namespace steemit {
 
             std::unique_ptr<detail::key_value_plugin_impl> my;
         };
-
     }
 } // steemit::key_value

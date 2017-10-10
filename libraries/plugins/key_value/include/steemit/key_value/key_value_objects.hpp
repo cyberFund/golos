@@ -18,8 +18,8 @@ namespace steemit {
 
         enum key_value_object_types {
             first_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 8),
-            second_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 9),
-            third_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 10)
+            second_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 8) + 1,
+            third_key_value_object_type = (KEY_VALUE_STORE_SPACE_ID << 8) + 2
         };
 
         class first_key_value_object
