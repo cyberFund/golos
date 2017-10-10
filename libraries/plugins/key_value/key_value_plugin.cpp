@@ -74,7 +74,8 @@ namespace steemit {
                 _custom_operation_interpreter->register_evaluator<update_first_key_value_evaluator>(&self);
                 _custom_operation_interpreter->register_evaluator<delete_first_key_value_evaluator>(&self);
 
-                // Add the registry to the database so the database can delegate custom ops to the plugin
+                // Add the registry to the database so the database can delegate custom ops to the plugin]
+                std::cerr << "AAA name plugin "<< self.plugin_name() << std::endl;
                 database().set_custom_operation_interpreter(self.plugin_name(), _custom_operation_interpreter);
             }
 
@@ -101,9 +102,11 @@ namespace steemit {
                 my->plugin_initialize();
 
                 db.pre_apply_operation.connect([&](const operation_notification &o) {
+                std::cerr << "init pre" << std::endl;
                     my->pre_operation(o);
                 });
                 db.post_apply_operation.connect([&](const operation_notification &o) {
+                    std::cerr << "init post" << std::endl;
                     my->post_operation(o);
                 });
 
