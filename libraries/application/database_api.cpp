@@ -1761,9 +1761,7 @@ namespace steemit {
                 query.validate();
                 auto parent = get_parent(query);
 
-                std::multimap<tags::tag_object, discussion, tags::by_parent_net_votes> map_result;
-
-                select<tags::tag_object, tags::tag_index, tags::by_parent_net_votes, tags::by_comment>(query.select_tags,
+                std::multimap<tags::tag_object, discussion, tags::by_parent_net_votes> map_result = select<tags::tag_object, tags::tag_index, tags::by_parent_net_votes, tags::by_comment>(query.select_tags,
                         query,
                         parent,
                         std::bind(tags::tags_plugin::filter, query, std::placeholders::_1, [&](const comment_api_obj &c) -> bool {
