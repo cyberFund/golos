@@ -25,6 +25,12 @@ namespace steemit {
 
             }
 
+            ~asset_interface() {
+
+            }
+
+            virtual uint8_t get_decimals() const = 0;
+
             amount_container_type amount;
             asset_container_type symbol;
         };
@@ -39,19 +45,17 @@ namespace steemit {
                 Major, Hardfork, Release, asset_symbol_type, share_type> {
         asset();
 
-        asset(share_type
-        a,
-        asset_symbol_type id = STEEM_SYMBOL
-        );
+        asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
 
-        asset(share_type
-        a,
-        asset_name_type name
-        );
+        asset(share_type a, asset_name_type name);
+
+        virtual ~asset() {
+
+        }
 
         double to_real() const;
 
-        uint8_t decimals() const;
+        virtual uint8_t get_decimals() const override;
 
         asset_name_type symbol_name() const;
 
@@ -129,16 +133,15 @@ namespace steemit {
                                            17>> : public asset_interface <Major, Hardfork, Release, asset_name_type, share_type> {
     asset();
 
-    asset(share_type
-    a,
-    asset_symbol_type name
-    );
+    asset(share_type a, asset_symbol_type name);
 
-    asset(share_type
-    a,
-    asset_name_type name = STEEM_SYMBOL_NAME, uint8_t
-    d = 3
-    );
+    asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
+
+    virtual ~asset() {
+
+    }
+
+    virtual uint8_t get_decimals() const override;
 
     uint8_t decimals;
 
