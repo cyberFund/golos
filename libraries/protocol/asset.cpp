@@ -181,10 +181,10 @@ namespace steemit {
 
         }
 
-template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-uint8_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::get_decimals() const {
-return decimals;
-}
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        uint8_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::get_decimals() const {
+            return this->decimals;
+        }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         double asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::to_real() const {
