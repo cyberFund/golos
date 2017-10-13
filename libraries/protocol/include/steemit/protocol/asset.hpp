@@ -25,7 +25,7 @@ namespace steemit {
 
             }
 
-            ~asset_interface() {
+            virtual ~asset_interface() {
 
             }
 
@@ -49,7 +49,7 @@ namespace steemit {
 
         asset(share_type a, asset_name_type name);
 
-        virtual ~asset() {
+        virtual ~asset() override {
 
         }
 
@@ -137,7 +137,7 @@ namespace steemit {
 
     asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
-    virtual ~asset() {
+    virtual ~asset() override {
 
     }
 
