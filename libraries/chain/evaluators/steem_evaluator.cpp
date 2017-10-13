@@ -552,8 +552,7 @@ namespace steemit {
             FC_ASSERT(account.vesting_shares >= typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(0, VESTS_SYMBOL),
                       "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.vesting_shares.amount,
-                                                                                o.vesting_shares.symbol_name()),
+                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.vesting_shares.amount, VESTS_SYMBOL),
                       "Account does not have sufficient Golos Power for withdraw. Vesting amount: ${a}. Vesting required: ${r}",
                       ("a", o.vesting_shares)("r", account.vesting_shares - account.delegated_vesting_shares));
 
