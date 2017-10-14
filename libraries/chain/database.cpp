@@ -4753,9 +4753,9 @@ namespace steemit {
         void database::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
-                asset<0, 17, 0> total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
-                asset<0, 17, 0> total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
-                asset<0, 17, 0> total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
+                asset<0, 17, 0> total_supply(0, STEEM_SYMBOL_NAME);
+                asset<0, 17, 0> total_sbd(0, SBD_SYMBOL_NAME);
+                asset<0, 17, 0> total_vesting(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
                 auto gpo = get_dynamic_global_properties();
