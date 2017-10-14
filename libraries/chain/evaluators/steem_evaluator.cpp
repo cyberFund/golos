@@ -549,10 +549,8 @@ namespace steemit {
         void withdraw_vesting_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             const auto &account = this->db.get_account(o.account);
 
-            FC_ASSERT(account.vesting_shares >= typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(0, VESTS_SYMBOL),
-                      "Account does not have sufficient Golos Power for withdraw.");
-            FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.vesting_shares.amount, VESTS_SYMBOL),
+            FC_ASSERT(account.vesting_shares.amount >= 0, "Account does not have sufficient Golos Power for withdraw.");
+            FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
                       "Account does not have sufficient Golos Power for withdraw. Vesting amount: ${a}. Vesting required: ${r}",
                       ("a", o.vesting_shares)("r", account.vesting_shares - account.delegated_vesting_shares));
 

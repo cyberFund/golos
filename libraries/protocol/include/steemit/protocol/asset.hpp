@@ -12,6 +12,10 @@ namespace steemit {
 
         extern const int64_t scaled_precision_lut[];
 
+        bool operator==(const asset_symbol_type &a, const asset_name_type &b);
+
+        bool operator==(const asset_name_type &b, const asset_symbol_type &a);
+
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType, typename AmountType>
         struct asset_interface : public static_version<Major, Hardfork, Release> {
             typedef StorageType asset_container_type;
@@ -30,6 +34,8 @@ namespace steemit {
             }
 
             virtual uint8_t get_decimals() const = 0;
+
+            virtual void set_decimals(uint8_t d) = 0;
 
             amount_container_type amount;
             asset_container_type symbol;
@@ -55,7 +61,11 @@ namespace steemit {
 
         double to_real() const;
 
-        virtual uint8_t get_decimals() const override;
+        virtual uint8_t get_decimals()
+
+        const override;
+
+        virtual void set_decimals(uint8_t d) override;
 
         asset_name_type symbol_name() const;
 
@@ -63,19 +73,19 @@ namespace steemit {
 
         int64_t precision() const;
 
-        void set_decimals(uint8_t d);
-
         static asset<Major, Hardfork, Release> from_string(const string &from);
 
         string to_string() const;
 
-        asset<Major, Hardfork, Release> &operator+=(const asset<Major, Hardfork, Release> &o) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        asset<Major, Hardfork, Release> &operator+=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
             FC_ASSERT(this->symbol == o.symbol);
             this->amount += o.amount;
             return *this;
         }
 
-        asset<Major, Hardfork, Release> &operator-=(const asset<Major, Hardfork, Release> &o) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        asset<Major, Hardfork, Release> &operator-=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
             FC_ASSERT(this->symbol == o.symbol);
             this->amount -= o.amount;
             return *this;
@@ -85,41 +95,61 @@ namespace steemit {
             return asset < Major, Hardfork, Release > (-this->amount, this->symbol);
         }
 
-        friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        friend bool operator==(const asset<Major, Hardfork, Release> &a,
+                               const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
             return std::tie(a.symbol, a.amount) == std::tie(b.symbol, b.amount);
         }
 
-        friend bool operator<(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        friend bool operator<(const asset<Major, Hardfork, Release> &a,
+                              const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
             FC_ASSERT(a.symbol == b.symbol);
-            return std::tie(a.amount, a.symbol) < std::tie(b.amount, b.symbol);
+            return a.amount < b.amount;
         }
 
-        friend bool operator<=(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        friend bool operator<=(const asset<Major, Hardfork, Release> &a,
+                               const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
             return (a == b) || (a < b);
         }
 
-        friend bool operator!=(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        friend bool operator!=(const asset<Major, Hardfork, Release> &a,
+                               const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
             return !(a == b);
         }
 
-        friend bool operator>(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        friend bool operator>(const asset<Major, Hardfork, Release> &a,
+                              const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
             return !(a <= b);
         }
 
-        friend bool operator>=(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+        friend bool operator>=(const asset<Major, Hardfork, Release> &a,
+                               const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
             return !(a < b);
         }
 
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
         friend asset<Major, Hardfork, Release> operator-(const asset<Major, Hardfork, Release> &a,
-                                                         const asset<Major, Hardfork, Release> &b) {
-            FC_ASSERT(a.symbol == b.symbol);
-            return asset < Major, Hardfork, Release > (a.amount - b.amount, a.symbol);
+                                                         const asset<ArgumentMajor, ArgumentHardfork,
+                                                                 ArgumentRelease> &b) {
+            FC_ASSERT(a.symbol == b.symbol && a.get_decimals() == b.get_decimals());
+            asset < Major, Hardfork, Release > amount(a.amount - b.amount, a.symbol);
+            amount.set_decimals(a.get_decimals());
+            return amount;
         }
 
+        template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
         friend asset<Major, Hardfork, Release> operator+(const asset<Major, Hardfork, Release> &a,
-                                                         const asset<Major, Hardfork, Release> &b) {
-            FC_ASSERT(a.symbol == b.symbol);
-            return asset < Major, Hardfork, Release > (a.amount + b.amount, a.symbol);
+                                                         const asset<ArgumentMajor, ArgumentHardfork,
+                                                                 ArgumentRelease> &b) {
+            FC_ASSERT(a.symbol == b.symbol && a.get_decimals() == b.get_decimals());
+            asset < Major, Hardfork, Release > amount(a.amount + b.amount, a.symbol);
+            amount.set_decimals(a.get_decimals());
+            return amount;
         }
 
         static share_type scaled_precision(uint8_t precision) {
@@ -143,6 +173,8 @@ namespace steemit {
 
     virtual uint8_t get_decimals() const override;
 
+    virtual void set_decimals(uint8_t d) override;
+
     uint8_t decimals;
 
     double to_real() const;
@@ -157,13 +189,15 @@ namespace steemit {
 
     string to_string() const;
 
-    asset<Major, Hardfork, Release> &operator+=(const asset<Major, Hardfork, Release> &o) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    asset<Major, Hardfork, Release> &operator+=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
         FC_ASSERT(this->symbol == o.symbol);
         this->amount += o.amount;
         return *this;
     }
 
-    asset<Major, Hardfork, Release> &operator-=(const asset<Major, Hardfork, Release> &o) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    asset<Major, Hardfork, Release> &operator-=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
         FC_ASSERT(this->symbol == o.symbol);
         this->amount -= o.amount;
         return *this;
@@ -173,41 +207,63 @@ namespace steemit {
         return asset < Major, Hardfork, Release > (-this->amount, this->symbol);
     }
 
-    friend bool operator==(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    friend bool operator==(const asset<Major, Hardfork, Release> &a,
+                           const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
         return std::tie(a.symbol, a.amount) == std::tie(b.symbol, b.amount);
     }
 
-    friend bool operator<(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    friend bool operator<(const asset<Major, Hardfork, Release> &a,
+                          const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
         FC_ASSERT(a.symbol == b.symbol);
-        return std::tie(a.amount, a.symbol) < std::tie(b.amount, b.symbol);
+        return a.amount < b.amount;
     }
 
-    friend bool operator<=(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    friend bool operator<=(const asset<Major, Hardfork, Release> &a,
+                           const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
         return (a == b) || (a < b);
     }
 
-    friend bool operator!=(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    friend bool operator!=(const asset<Major, Hardfork, Release> &a,
+                           const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
         return !(a == b);
     }
 
-    friend bool operator>(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    friend bool operator>(const asset<Major, Hardfork, Release> &a,
+                          const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
         return !(a <= b);
     }
 
-    friend bool operator>=(const asset<Major, Hardfork, Release> &a, const asset<Major, Hardfork, Release> &b) {
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+    friend bool operator>=(const asset<Major, Hardfork, Release> &a,
+                           const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
         return !(a < b);
     }
 
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
     friend asset<Major, Hardfork, Release> operator-(const asset<Major, Hardfork, Release> &a,
-                                                     const asset<Major, Hardfork, Release> &b) {
+                                                     const asset<ArgumentMajor, ArgumentHardfork,
+                                                             ArgumentRelease> &b) {
         FC_ASSERT(a.symbol == b.symbol);
-        return asset < Major, Hardfork, Release > (a.amount - b.amount, a.symbol);
+        FC_ASSERT(a.get_decimals() == b.get_decimals());
+        asset < Major, Hardfork, Release > amount(a.amount - b.amount, a.symbol);
+        amount.set_decimals(a.get_decimals());
+        return amount;
     }
 
+    template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
     friend asset<Major, Hardfork, Release> operator+(const asset<Major, Hardfork, Release> &a,
-                                                     const asset<Major, Hardfork, Release> &b) {
+                                                     const asset<ArgumentMajor, ArgumentHardfork,
+                                                             ArgumentRelease> &b) {
         FC_ASSERT(a.symbol == b.symbol);
-        return asset < Major, Hardfork, Release > (a.amount + b.amount, a.symbol);
+        FC_ASSERT(a.get_decimals() == b.get_decimals());
+        asset < Major, Hardfork, Release > amount(a.amount + b.amount, a.symbol);
+        amount.set_decimals(a.get_decimals());
+        return amount;
     }
 
     static share_type scaled_precision(uint8_t

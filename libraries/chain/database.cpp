@@ -1796,7 +1796,7 @@ namespace steemit {
                     modify(get<reward_fund_object, by_id>(reward_fund_object::id_type(i)),
                            [&](reward_fund_object &rfo) {
                                rfo.recent_claims = funds[i].recent_claims;
-                               rfo.reward_balance -= funds[i].steem_awarded;
+                               rfo.reward_balance.amount -= funds[i].steem_awarded;
                            });
                 }
             }
@@ -4767,9 +4767,9 @@ namespace steemit {
                 }
 
                 for (const auto &itr : account_idx) {
-                    total_supply += get_balance(itr.name, STEEM_SYMBOL_NAME).amount;
+                    total_supply += get_balance(itr.name, STEEM_SYMBOL_NAME);
                     total_supply += itr.savings_balance;
-                    total_sbd += get_balance(itr.name, SBD_SYMBOL_NAME).amount;
+                    total_sbd += get_balance(itr.name, SBD_SYMBOL_NAME);
                     total_sbd += itr.savings_sbd_balance;
                     total_vesting += itr.vesting_shares;
                     total_vsf_votes += (itr.proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr.witness_vote_weight() : (

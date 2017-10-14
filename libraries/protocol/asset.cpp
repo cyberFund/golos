@@ -14,6 +14,18 @@ namespace steemit {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
+        bool operator==(const asset_symbol_type &a, const asset_name_type &b) {
+            auto ta = (const char *) &a;
+            FC_ASSERT(ta[7] == 0);
+            return b == &ta[1];
+        }
+
+        bool operator==(const asset_name_type &b, const asset_symbol_type &a) {
+            auto ta = (const char *) &a;
+            FC_ASSERT(ta[7] == 0);
+            return b == &ta[1];
+        }
+
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset() : asset_interface<Major,
                 Hardfork, Release, asset_symbol_type, share_type>(0, STEEM_SYMBOL) {
@@ -184,6 +196,11 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         uint8_t asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::get_decimals() const {
             return this->decimals;
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::set_decimals(uint8_t d) {
+            this->decimals = d;
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
