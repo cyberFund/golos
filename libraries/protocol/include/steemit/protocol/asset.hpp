@@ -61,9 +61,7 @@ namespace steemit {
 
         double to_real() const;
 
-        virtual uint8_t get_decimals()
-
-        const override;
+        virtual uint8_t get_decimals() const override;
 
         virtual void set_decimals(uint8_t d) override;
 
@@ -364,12 +362,6 @@ template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
 inline price<Major, Hardfork, Release> operator~(const price<Major, Hardfork, Release> &p) {
     return {p.quote, p.base};
 }
-
-template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-bool operator<(const asset <Major, Hardfork, Release> &a, const asset <Major, Hardfork, Release> &b);
-
-template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-bool operator<=(const asset <Major, Hardfork, Release> &a, const asset <Major, Hardfork, Release> &b);
 
 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
 bool operator==(const price<Major, Hardfork, Release> &a, const price<Major, Hardfork, Release> &b) {
