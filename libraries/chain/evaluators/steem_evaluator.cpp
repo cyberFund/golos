@@ -552,7 +552,7 @@ namespace steemit {
             FC_ASSERT(account.vesting_shares.amount >= 0, "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
                       "Account does not have sufficient Golos Power for withdraw. Vesting amount: ${a}. Vesting required: ${r}",
-                      ("a", o.vesting_shares)("r", account.vesting_shares - account.delegated_vesting_shares));
+                      ("a", account.vesting_shares - account.delegated_vesting_shares)("r", o.vesting_shares));
 
             if (!account.mined && this->db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const auto &props = this->db.get_dynamic_global_properties();

@@ -23,6 +23,9 @@ using namespace steemit::chain;
 using namespace steemit::protocol;
 using fc::string;
 
+typedef asset<0, 17, 0> latest_asset;
+typedef price<0, 17, 0> latest_price;
+
 BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
     BOOST_AUTO_TEST_CASE(account_create_validate) {
@@ -41,7 +44,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             private_key_type priv_key = generate_private_key("temp_key");
 
             account_create_operation<0, 17, 0> op;
-            op.fee = asset<0, 17, 0>(10, STEEM_SYMBOL);
+            op.fee = latest_asset(10, STEEM_SYMBOL_NAME);
             op.new_account_name = "bob";
             op.creator = STEEMIT_INIT_MINER_NAME;
             op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -53,7 +56,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.sign(init_account_priv_key, db.get_chain_id());
@@ -66,19 +70,20 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
             tx.sign(init_account_priv_key, db.get_chain_id());
             tx.sign(init_account_priv_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(init_account_priv_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -91,13 +96,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             private_key_type priv_key = generate_private_key("alice");
 
             const account_object &init = db.get_account(STEEMIT_INIT_MINER_NAME);
-            asset<0, 17, 0> init_starting_balance = init.balance;
+            latest_asset init_starting_balance = init.balance;
 
             const auto &gpo = db.get_dynamic_global_properties();
 
             account_create_operation<0, 17, 0> op;
 
-            op.fee = asset<0, 17, 0>(100, STEEM_SYMBOL);
+            op.fee = latest_asset(100, STEEM_SYMBOL_NAME);
             op.new_account_name = "alice";
             op.creator = STEEMIT_INIT_MINER_NAME;
             op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -124,8 +129,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(acct.memo_key == priv_key.get_public_key());
             BOOST_REQUIRE(acct.proxy == "");
             BOOST_REQUIRE(acct.created == db.head_block_time());
-            BOOST_REQUIRE(acct.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
-            BOOST_REQUIRE(acct.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(acct.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(acct.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             BOOST_REQUIRE(acct.id._id == acct_auth.id._id);
 
             /* This is being moved out of consensus...
@@ -138,9 +143,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             /// because init_witness has created vesting shares and blocks have been produced, 100 STEEM is worth less than 100 vesting shares due to rounding
             BOOST_REQUIRE(acct.vesting_shares.amount.value == (op.fee * (vest_shares / vests)).amount.value);
-            BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value == asset<0, 17, 0>::from_string("0.000000 VESTS").amount.value);
+            BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value ==
+                          latest_asset::from_string("0.000000 VESTS").amount.value);
             BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
-            BOOST_REQUIRE((init_starting_balance - asset<0, 17, 0>::from_string("0.100 TESTS")).amount.value == init.balance.amount.value);
+            BOOST_REQUIRE((init_starting_balance - latest_asset::from_string("0.100 TESTS")).amount.value ==
+                          init.balance.amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure of duplicate account creation");
@@ -152,18 +159,20 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(acct.memo_key == priv_key.get_public_key());
             BOOST_REQUIRE(acct.proxy == "");
             BOOST_REQUIRE(acct.created == db.head_block_time());
-            BOOST_REQUIRE(acct.balance.amount.value == asset<0, 17, 0>::from_string("0.000 STEEM ").amount.value);
-            BOOST_REQUIRE(acct.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(acct.balance.amount.value == latest_asset::from_string("0.000 STEEM ").amount.value);
+            BOOST_REQUIRE(acct.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             BOOST_REQUIRE(acct.vesting_shares.amount.value == (op.fee * (vest_shares / vests)).amount.value);
-            BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value == asset<0, 17, 0>::from_string("0.000000 VESTS").amount.value);
+            BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value ==
+                          latest_asset::from_string("0.000000 VESTS").amount.value);
             BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
-            BOOST_REQUIRE((init_starting_balance - asset<0, 17, 0>::from_string("0.100 TESTS")).amount.value == init.balance.amount.value);
+            BOOST_REQUIRE((init_starting_balance - latest_asset::from_string("0.100 TESTS")).amount.value ==
+                          init.balance.amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
             tx.signatures.clear();
             tx.operations.clear();
-            op.fee = asset<0, 17, 0>(db.get_account(STEEMIT_INIT_MINER_NAME).balance.amount + 1, STEEM_SYMBOL);
+            op.fee = latest_asset(db.get_account(STEEMIT_INIT_MINER_NAME).balance.amount + 1, STEEM_SYMBOL_NAME);
             op.new_account_name = "bob";
             tx.operations.push_back(op);
             tx.sign(init_account_priv_key, db.get_chain_id());
@@ -223,21 +232,23 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("  Tests when owner authority is not updated ---");
             BOOST_TEST_MESSAGE("--- Test failure when no signature");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when wrong signature");
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when containing additional incorrect signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when containing duplicate signatures");
             tx.signatures.clear();
             tx.sign(active_key, db.get_chain_id());
             tx.sign(active_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success on active key");
             tx.signatures.clear();
@@ -256,22 +267,22 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.owner = authority(1, active_key.get_public_key(), 1);
             tx.operations.push_back(op);
             tx.sign(active_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_owner_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_missing_owner_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when owner key and active key are present");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_owner_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_missing_owner_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate owner keys are present");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success when updating the owner authority with an owner key");
             tx.signatures.clear();
@@ -334,7 +345,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when account authority does not exist");
             tx.clear();
-            op = account_update_operation();
+            op = account_update_operation<0, 17, 0>();
             op.account = "alice";
             op.posting = authority();
             op.posting->weight_threshold = 1;
@@ -376,12 +387,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_posting_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_posting_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.sign(alice_post_key, db.get_chain_id());
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with post signature");
             tx.signatures.clear();
@@ -391,13 +403,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(bob_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_posting_auth);
+                                  protocol::exceptions::transaction::tx_missing_posting_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -611,11 +624,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob)(sam)(dave))
             generate_block();
 
-            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("alice", latest_asset::from_string("10.000 TESTS"));
             validate_database();
-            vest("bob", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            vest("sam", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            vest("dave", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("bob", latest_asset::from_string("10.000 TESTS"));
+            vest("sam", latest_asset::from_string("10.000 TESTS"));
+            vest("dave", latest_asset::from_string("10.000 TESTS"));
             generate_block();
 
             const auto &vote_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
@@ -1018,31 +1031,33 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("2.500 TESTS");
+            op.amount = latest_asset::from_string("2.500 TESTS");
 
             signed_transaction tx;
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.signatures.clear();
@@ -1079,18 +1094,19 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_operation<0, 17, 0> transfer_op;
             transfer_op.from = "corp";
             transfer_op.to = "sam";
-            transfer_op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            transfer_op.amount = latest_asset::from_string("1.000 TESTS");
 
             tx.operations.push_back(transfer_op);
 
             tx.sign(alice_private_key, db.get_chain_id());
             signature_type alice_sig = tx.signatures.back();
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
             tx.sign(bob_private_key, db.get_chain_id());
             signature_type bob_sig = tx.signatures.back();
             tx.sign(sam_private_key, db.get_chain_id());
             signature_type sam_sig = tx.signatures.back();
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             tx.signatures.clear();
             tx.signatures.push_back(alice_sig);
@@ -1111,15 +1127,15 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string(" 0.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string(" 0.000 TESTS").amount.value);
 
             signed_transaction tx;
             transfer_operation<0, 17, 0> op;
 
             op.from = "alice";
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("5.000 TESTS");
+            op.amount = latest_asset::from_string("5.000 TESTS");
 
             BOOST_TEST_MESSAGE("--- Test normal transaction");
             tx.operations.push_back(op);
@@ -1127,8 +1143,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Generating a block");
@@ -1137,8 +1153,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             const auto &new_alice = db.get_account("alice");
             const auto &new_bob = db.get_account("bob");
 
-            BOOST_REQUIRE(new_alice.balance.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
-            BOOST_REQUIRE(new_bob.balance.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_alice.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_bob.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test emptying an account");
@@ -1149,8 +1165,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, database::skip_transaction_dupe_check);
 
-            BOOST_REQUIRE(new_alice.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
-            BOOST_REQUIRE(new_bob.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_alice.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_bob.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test transferring non-existent funds");
@@ -1161,8 +1177,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
 
-            BOOST_REQUIRE(new_alice.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
-            BOOST_REQUIRE(new_bob.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_alice.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_bob.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
             validate_database();
 
         } FC_LOG_AND_RETHROW()
@@ -1186,31 +1202,33 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_to_vesting_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("2.500 TESTS");
+            op.amount = latest_asset::from_string("2.500 TESTS");
 
             signed_transaction tx;
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with from signature");
             tx.signatures.clear();
@@ -1230,17 +1248,17 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             const auto &gpo = db.get_dynamic_global_properties();
 
-            BOOST_REQUIRE(alice.balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(alice.balance == latest_asset::from_string("10.000 TESTS"));
 
-            auto shares = asset<0, 17, 0>(gpo.total_vesting_shares.amount, VESTS_SYMBOL);
-            auto vests = asset<0, 17, 0>(gpo.total_vesting_fund_steem.amount, STEEM_SYMBOL);
+            auto shares = latest_asset(gpo.total_vesting_shares.amount, VESTS_SYMBOL);
+            auto vests = latest_asset(gpo.total_vesting_fund_steem.amount, STEEM_SYMBOL_NAME);
             auto alice_shares = alice.vesting_shares;
             auto bob_shares = bob.vesting_shares;
 
             transfer_to_vesting_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "";
-            op.amount = asset<0, 17, 0>::from_string("7.500 TESTS");
+            op.amount = latest_asset::from_string("7.500 TESTS");
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -1253,14 +1271,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             vests += op.amount;
             alice_shares += new_vest;
 
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("2.500 TESTS").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("2.500 TESTS").amount.value);
             BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
             BOOST_REQUIRE(gpo.total_vesting_fund_steem.amount.value == vests.amount.value);
             BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
             validate_database();
 
             op.to = "bob";
-            op.amount = asset<0, 17, 0>(2000, STEEM_SYMBOL);
+            op.amount = latest_asset(2000, STEEM_SYMBOL_NAME);
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -1268,14 +1286,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            new_vest = asset<0, 17, 0>((op.amount * (shares / vests)).amount, VESTS_SYMBOL);
+            new_vest = latest_asset((op.amount * (shares / vests)).amount, VESTS_SYMBOL);
             shares += new_vest;
             vests += op.amount;
             bob_shares += new_vest;
 
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("0.500 TESTS").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("0.500 TESTS").amount.value);
             BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
             BOOST_REQUIRE(bob.vesting_shares.amount.value == bob_shares.amount.value);
             BOOST_REQUIRE(gpo.total_vesting_fund_steem.amount.value == vests.amount.value);
             BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
@@ -1283,9 +1301,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
 
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("0.500 TESTS").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("0.500 TESTS").amount.value);
             BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
             BOOST_REQUIRE(bob.vesting_shares.amount.value == bob_shares.amount.value);
             BOOST_REQUIRE(gpo.total_vesting_fund_steem.amount.value == vests.amount.value);
             BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
@@ -1311,7 +1329,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             withdraw_vesting_operation<0, 17, 0> op;
             op.account = "alice";
-            op.vesting_shares = asset<0, 17, 0>::from_string("0.001000 VESTS");
+            op.vesting_shares = latest_asset::from_string("0.001000 VESTS");
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -1319,7 +1337,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
@@ -1327,19 +1345,21 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -1351,7 +1371,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             ACTORS((alice))
             generate_block();
-            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("alice", latest_asset::from_string("10.000 TESTS"));
 
             BOOST_TEST_MESSAGE("--- Test withdraw of existing VESTS");
 
@@ -1360,7 +1380,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
                 withdraw_vesting_operation<0, 17, 0> op;
                 op.account = "alice";
-                op.vesting_shares = asset<0, 17, 0>(alice.vesting_shares.amount / 2, VESTS_SYMBOL);
+                op.vesting_shares = latest_asset(alice.vesting_shares.amount / 2, VESTS_SYMBOL);
 
                 auto old_vesting_shares = alice.vesting_shares;
 
@@ -1382,7 +1402,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 tx.operations.clear();
                 tx.signatures.clear();
 
-                op.vesting_shares = asset<0, 17, 0>(alice.vesting_shares.amount / 3, VESTS_SYMBOL);
+                op.vesting_shares = latest_asset(alice.vesting_shares.amount / 3, VESTS_SYMBOL);
                 tx.operations.push_back(op);
                 tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 tx.sign(alice_private_key, db.get_chain_id());
@@ -1401,7 +1421,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 tx.operations.clear();
                 tx.signatures.clear();
 
-                op.vesting_shares = asset<0, 17, 0>(alice.vesting_shares.amount * 2, VESTS_SYMBOL);
+                op.vesting_shares = latest_asset(alice.vesting_shares.amount * 2, VESTS_SYMBOL);
                 tx.operations.push_back(op);
                 tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 tx.sign(alice_private_key, db.get_chain_id());
@@ -1418,7 +1438,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 tx.operations.clear();
                 tx.signatures.clear();
 
-                op.vesting_shares = asset<0, 17, 0>(0, VESTS_SYMBOL);
+                op.vesting_shares = latest_asset(0, VESTS_SYMBOL);
                 tx.operations.push_back(op);
                 tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 tx.sign(alice_private_key, db.get_chain_id());
@@ -1443,13 +1463,15 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 auto &wso = db.get_witness_schedule_object();
 
                 db.modify(wso, [&](witness_schedule_object &w) {
-                    w.median_props.account_creation_fee = asset<0, 17, 0>::from_string("10.000 TESTS");
+                    w.median_props.account_creation_fee = latest_asset::from_string("10.000 TESTS");
                 });
 
                 db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &gpo) {
                     gpo.current_supply +=
-                            wso.median_props.account_creation_fee - asset<0, 17, 0>::from_string("0.001 TESTS") - gpo.total_vesting_fund_steem;
-                    gpo.total_vesting_fund_steem = wso.median_props.account_creation_fee - asset<0, 17, 0>::from_string("0.001 TESTS");
+                            wso.median_props.account_creation_fee - latest_asset::from_string("0.001 TESTS") -
+                            gpo.total_vesting_fund_steem;
+                    gpo.total_vesting_fund_steem =
+                            wso.median_props.account_creation_fee - latest_asset::from_string("0.001 TESTS");
                 });
 
                 db.update_virtual_supply();
@@ -1458,13 +1480,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             withdraw_vesting_operation<0, 17, 0> op;
             signed_transaction tx;
             op.account = "alice";
-            op.vesting_shares = asset<0, 17, 0>::from_string("0.000000 VESTS");
+            op.vesting_shares = latest_asset::from_string("0.000000 VESTS");
             tx.operations.push_back(op);
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").vesting_withdraw_rate == asset<0, 17, 0>::from_string("0.000000 VESTS"));
+            BOOST_REQUIRE(
+                    db.get_account("alice").vesting_withdraw_rate == latest_asset::from_string("0.000000 VESTS"));
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -1489,7 +1512,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             witness_update_operation<0, 17, 0> op;
             op.owner = "alice";
             op.url = "foo.bar";
-            op.fee = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.fee = latest_asset::from_string("1.000 TESTS");
             op.block_signing_key = signing_key.get_public_key();
 
             signed_transaction tx;
@@ -1497,24 +1520,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.signatures.clear();
@@ -1524,7 +1549,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.signatures.clear();
             tx.sign(signing_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -1543,9 +1568,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             witness_update_operation<0, 17, 0> op;
             op.owner = "alice";
             op.url = "foo.bar";
-            op.fee = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.fee = latest_asset::from_string("1.000 TESTS");
             op.block_signing_key = signing_key.get_public_key();
-            op.props.account_creation_fee = asset<0, 17, 0>(STEEMIT_MIN_ACCOUNT_CREATION_FEE + 10, STEEM_SYMBOL);
+            op.props.account_creation_fee = latest_asset(STEEMIT_MIN_ACCOUNT_CREATION_FEE + 10, STEEM_SYMBOL_NAME);
             op.props.maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT + 100;
 
             signed_transaction tx;
@@ -1571,7 +1596,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
             BOOST_REQUIRE(alice_witness.virtual_position == 0);
             BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value); // No fee
+            BOOST_REQUIRE(
+                    alice.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value); // No fee
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test updating a witness");
@@ -1598,7 +1624,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
             BOOST_REQUIRE(alice_witness.virtual_position == 0);
             BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when upgrading a non-existent account");
@@ -1640,24 +1666,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
             tx.sign(bob_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.signatures.clear();
             tx.sign(bob_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(bob_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.signatures.clear();
@@ -1669,7 +1697,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.signatures.clear();
             tx.sign(sam_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -1811,24 +1839,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
             tx.sign(bob_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.signatures.clear();
             tx.sign(bob_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(bob_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.signatures.clear();
@@ -1839,7 +1869,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -2103,7 +2133,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             feed_publish_operation<0, 17, 0> op;
             op.publisher = "alice";
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
+            op.exchange_rate = latest_price(latest_asset::from_string("1.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD"));
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -2111,24 +2142,26 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness account signature");
             tx.signatures.clear();
@@ -2150,7 +2183,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test publishing price feed");
             feed_publish_operation<0, 17, 0> op;
             op.publisher = "alice";
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1000.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")); // 1000 STEEM : 1 SBD
+            op.exchange_rate = latest_price(latest_asset::from_string("1000.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD")); // 1000 STEEM : 1 SBD
 
             signed_transaction tx;
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -2179,7 +2213,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             tx.operations.clear();
             tx.signatures.clear();
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string(" 1500.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
+            op.exchange_rate = latest_price(latest_asset::from_string(" 1500.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD"));
             op.publisher = "alice";
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
@@ -2206,39 +2241,42 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             fund("alice", 10000);
 
-            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
+            set_price_feed(latest_price(latest_asset::from_string("1.000 TESTS"),
+                                           latest_asset::from_string("1.000 TBD")));
 
-            convert("alice", asset<0, 17, 0>::from_string("2.500 TESTS"));
+            convert("alice", latest_asset::from_string("2.500 TESTS"));
 
             validate_database();
 
             convert_operation<0, 17, 0> op;
             op.owner = "alice";
-            op.amount = asset<0, 17, 0>::from_string("2.500 TBD");
+            op.amount = latest_asset::from_string("2.500 TBD");
 
             signed_transaction tx;
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
             tx.sign(alice_post_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test success with owner signature");
             tx.signatures.clear();
@@ -2262,36 +2300,37 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             const auto &convert_request_idx = db.get_index<convert_request_index>().indices().get<by_owner>();
 
-            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
+            set_price_feed(latest_price(latest_asset::from_string("1.000 TESTS"),
+                                           latest_asset::from_string("1.000 TBD")));
 
-            convert("alice", asset<0, 17, 0>::from_string("2.500 TESTS"));
-            convert("bob", asset<0, 17, 0>::from_string("7.000 TESTS"));
+            convert("alice", latest_asset::from_string("2.500 TESTS"));
+            convert("bob", latest_asset::from_string("7.000 TESTS"));
 
             const auto &new_alice = db.get_account("alice");
             const auto &new_bob = db.get_account("bob");
 
             BOOST_TEST_MESSAGE("--- Test failure when account does not have the required TESTS");
             op.owner = "bob";
-            op.amount = asset<0, 17, 0>::from_string("5.000 TESTS");
+            op.amount = latest_asset::from_string("5.000 TESTS");
             tx.operations.push_back(op);
             tx.sign(bob_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-            BOOST_REQUIRE(new_bob.balance.amount.value == asset<0, 17, 0>::from_string("3.000 TESTS").amount.value);
-            BOOST_REQUIRE(new_bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("7.000 TBD").amount.value);
+            BOOST_REQUIRE(new_bob.balance.amount.value == latest_asset::from_string("3.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_bob.sbd_balance.amount.value == latest_asset::from_string("7.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when account does not have the required TBD");
             op.owner = "alice";
-            op.amount = asset<0, 17, 0>::from_string("5.000 TBD");
+            op.amount = latest_asset::from_string("5.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-            BOOST_REQUIRE(new_alice.balance.amount.value == asset<0, 17, 0>::from_string("7.500 TESTS").amount.value);
-            BOOST_REQUIRE(new_alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("2.500 TBD").amount.value);
+            BOOST_REQUIRE(new_alice.balance.amount.value == latest_asset::from_string("7.500 TESTS").amount.value);
+            BOOST_REQUIRE(new_alice.sbd_balance.amount.value == latest_asset::from_string("2.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when account does not exist");
@@ -2304,7 +2343,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test success converting SBD to TESTS");
             op.owner = "bob";
-            op.amount = asset<0, 17, 0>::from_string("3.000 TBD");
+            op.amount = latest_asset::from_string("3.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2312,33 +2351,34 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(bob_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(new_bob.balance.amount.value == asset<0, 17, 0>::from_string("3.000 TESTS").amount.value);
-            BOOST_REQUIRE(new_bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("4.000 TBD").amount.value);
+            BOOST_REQUIRE(new_bob.balance.amount.value == latest_asset::from_string("3.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_bob.sbd_balance.amount.value == latest_asset::from_string("4.000 TBD").amount.value);
 
             auto convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.request_id));
             BOOST_REQUIRE(convert_request != convert_request_idx.end());
             BOOST_REQUIRE(convert_request->owner == op.owner);
-            BOOST_REQUIRE(convert_request->requestid == op.request_id);
+            BOOST_REQUIRE(convert_request->request_id == op.request_id);
             BOOST_REQUIRE(convert_request->amount.amount.value == op.amount.amount.value);
             //BOOST_REQUIRE( convert_request->premium == 100000 );
             BOOST_REQUIRE(convert_request->conversion_date == db.head_block_time() + STEEMIT_CONVERSION_DELAY);
 
             BOOST_TEST_MESSAGE("--- Test failure from repeated id");
-            op.amount = asset<0, 17, 0>::from_string("2.000 TESTS");
+            op.amount = latest_asset::from_string("2.000 TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-            BOOST_REQUIRE(new_bob.balance.amount.value == asset<0, 17, 0>::from_string("3.000 TESTS").amount.value);
-            BOOST_REQUIRE(new_bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("4.000 TBD").amount.value);
+            BOOST_REQUIRE(new_bob.balance.amount.value == latest_asset::from_string("3.000 TESTS").amount.value);
+            BOOST_REQUIRE(new_bob.sbd_balance.amount.value == latest_asset::from_string("4.000 TBD").amount.value);
 
             convert_request = convert_request_idx.find(std::make_tuple(op.owner, op.request_id));
             BOOST_REQUIRE(convert_request != convert_request_idx.end());
             BOOST_REQUIRE(convert_request->owner == op.owner);
-            BOOST_REQUIRE(convert_request->requestid == op.request_id);
-            BOOST_REQUIRE(convert_request->amount.amount.value == asset<0, 17, 0>::from_string("3.000 TBD").amount.value);
+            BOOST_REQUIRE(convert_request->request_id == op.request_id);
+            BOOST_REQUIRE(
+                    convert_request->amount.amount.value == latest_asset::from_string("3.000 TBD").amount.value);
             //BOOST_REQUIRE( convert_request->premium == 100000 );
             BOOST_REQUIRE(convert_request->conversion_date == db.head_block_time() + STEEMIT_CONVERSION_DELAY);
             validate_database();
@@ -2360,8 +2400,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             limit_order_create_operation<0, 17, 0> op;
             op.owner = "alice";
-            op.amount_to_sell = asset<0, 17, 0>::from_string("1.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount_to_sell = latest_asset::from_string("1.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("1.000 TBD");
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -2369,7 +2409,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
@@ -2377,19 +2417,21 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -2399,12 +2441,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
         try {
             BOOST_TEST_MESSAGE("Testing: limit_order_create_apply");
 
-            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
+            set_price_feed(latest_price(latest_asset::from_string("1.000 TESTS"),
+                                           latest_asset::from_string("1.000 TBD")));
 
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert("bob", asset<0, 17, 0>::from_string("1000.000 TESTS"));
+            convert("bob", latest_asset::from_string("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
@@ -2414,8 +2457,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 1;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("10.000 TBD");
+            op.amount_to_sell = latest_asset::from_string("10.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("10.000 TBD");
             op.fill_or_kill = false;
             tx.operations.push_back(op);
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -2423,14 +2466,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("100.0000 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("100.0000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when amount to receive is 0");
 
             op.owner = "alice";
-            op.min_to_receive = asset<0, 17, 0>::from_string("0.000 TBD");
+            op.min_to_receive = latest_asset::from_string("0.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2438,14 +2481,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("1000.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("1000.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when amount to sell is 0");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("0.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("10.000 TBD");
+            op.amount_to_sell = latest_asset::from_string("0.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("10.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2453,14 +2496,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("1000.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("1000.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test success creating limit order that will not be filled");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("15.000 TBD");
+            op.amount_to_sell = latest_asset::from_string("10.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("15.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2472,16 +2515,16 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == op.owner);
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == op.amount_to_sell.amount);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(op.amount_to_sell / op.min_to_receive));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(op.amount_to_sell / op.min_to_receive));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure creating limit order with duplicate id");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("20.000 TESTS");
+            op.amount_to_sell = latest_asset::from_string("20.000 TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2493,11 +2536,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == op.owner);
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 10000);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("10.000 TESTS"), op.min_to_receive));
+            BOOST_REQUIRE(limit_order->sell_price ==
+                          latest_price(latest_asset::from_string("10.000 TESTS"), op.min_to_receive));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test success killing an order that will not be filled");
@@ -2511,8 +2555,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test having a partial match to limit order");
@@ -2521,8 +2565,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 1;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("7.500 TBD");
-            op.min_to_receive = asset<0, 17, 0>::from_string("5.000 TESTS");
+            op.amount_to_sell = latest_asset::from_string("7.500 TBD");
+            op.min_to_receive = latest_asset::from_string("5.000 TESTS");
             op.fill_or_kill = false;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2531,33 +2575,36 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             auto recent_ops = get_last_operations(1);
-            auto fill_order_op = recent_ops[0].get<fill_order_operation>();
+            auto fill_order_op = recent_ops[0].get<fill_order_operation<0, 17, 0>>();
 
             limit_order = limit_order_idx.find(std::make_tuple("alice", 1));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "alice");
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 5000);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("10.000 TESTS"), asset<0, 17, 0>::from_string("15.000 TBD")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("10.000 TESTS"),
+                                                                     latest_asset::from_string("15.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("7.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("992.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("992.500 TBD").amount.value);
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
             BOOST_REQUIRE(fill_order_op.open_order_id == 1);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(
+                    fill_order_op.open_pays.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
             BOOST_REQUIRE(fill_order_op.current_order_id == 1);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value == asset<0, 17, 0>::from_string("7.500 TBD").amount.value);
+            BOOST_REQUIRE(
+                    fill_order_op.current_pays.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling an existing order fully, but the new order partially");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("15.000 TBD");
-            op.min_to_receive = asset<0, 17, 0>::from_string("10.000 TESTS");
+            op.amount_to_sell = latest_asset::from_string("15.000 TBD");
+            op.min_to_receive = latest_asset::from_string("10.000 TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2569,22 +2616,23 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == "bob");
             BOOST_REQUIRE(limit_order->order_id == 1);
             BOOST_REQUIRE(limit_order->for_sale.value == 7500);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("15.000 TBD"), asset<0, 17, 0>::from_string("10.000 TESTS")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("15.000 TBD"),
+                                                                     latest_asset::from_string("10.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 1)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("15.000 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("977.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("15.000 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("977.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling an existing order and new order fully");
 
             op.owner = "alice";
             op.order_id = 3;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("5.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("7.500 TBD");
+            op.amount_to_sell = latest_asset::from_string("5.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("7.500 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2593,18 +2641,18 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 3)) == limit_order_idx.end());
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", 1)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("985.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("22.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("15.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("977.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("985.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("22.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("15.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("977.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling limit order with better order when partial order is better.");
 
             op.owner = "alice";
             op.order_id = 4;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("11.000 TBD");
+            op.amount_to_sell = latest_asset::from_string("10.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("11.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2613,8 +2661,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 4;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("12.000 TBD");
-            op.min_to_receive = asset<0, 17, 0>::from_string("10.000 TESTS");
+            op.amount_to_sell = latest_asset::from_string("12.000 TBD");
+            op.min_to_receive = latest_asset::from_string("10.000 TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2627,13 +2675,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == "bob");
             BOOST_REQUIRE(limit_order->order_id == 4);
             BOOST_REQUIRE(limit_order->for_sale.value == 1000);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("12.000 TBD"), asset<0, 17, 0>::from_string("10.000 TESTS")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("12.000 TBD"),
+                                                                     latest_asset::from_string("10.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("975.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("33.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("25.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("965.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("975.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("33.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("25.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("965.500 TBD").amount.value);
             validate_database();
 
             limit_order_cancel_operation<0, 17, 0> can;
@@ -2652,8 +2701,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "alice";
             op.order_id = 5;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("20.000 TESTS");
-            op.min_to_receive = asset<0, 17, 0>::from_string("22.000 TBD");
+            op.amount_to_sell = latest_asset::from_string("20.000 TESTS");
+            op.min_to_receive = latest_asset::from_string("22.000 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2662,8 +2711,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 5;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("12.000 TBD");
-            op.min_to_receive = asset<0, 17, 0>::from_string("10.000 TESTS");
+            op.amount_to_sell = latest_asset::from_string("12.000 TBD");
+            op.min_to_receive = latest_asset::from_string("10.000 TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2676,13 +2725,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == "alice");
             BOOST_REQUIRE(limit_order->order_id == 5);
             BOOST_REQUIRE(limit_order->for_sale.value == 9091);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("20.000 TESTS"), asset<0, 17, 0>::from_string("22.000 TBD")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("20.000 TESTS"),
+                                                                     latest_asset::from_string("22.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("955.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("45.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("35.909 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("954.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("955.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("45.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("35.909 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("954.500 TBD").amount.value);
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -2696,8 +2746,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             limit_order_create2_operation<0, 17, 0> op;
             op.owner = "alice";
-            op.amount_to_sell = asset<0, 17, 0>::from_string("1.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
+            op.amount_to_sell = latest_asset::from_string("1.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD"));
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -2705,7 +2756,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
@@ -2713,19 +2764,21 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -2735,12 +2788,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
         try {
             BOOST_TEST_MESSAGE("Testing: limit_order_create2_apply");
 
-            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
+            set_price_feed(latest_price(latest_asset::from_string("1.000 TESTS"),
+                                           latest_asset::from_string("1.000 TBD")));
 
             ACTORS((alice)(bob))
             fund("alice", 1000000);
             fund("bob", 1000000);
-            convert("bob", asset<0, 17, 0>::from_string("1000.000 TESTS"));
+            convert("bob", latest_asset::from_string("1000.000 TESTS"));
 
             const auto &limit_order_idx = db.get_index<limit_order_index>().indices().get<by_account>();
 
@@ -2750,8 +2804,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 1;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
+            op.amount_to_sell = latest_asset::from_string("10.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD"));
             op.fill_or_kill = false;
             tx.operations.push_back(op);
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -2759,14 +2814,15 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("0.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("100.0000 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("0.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("100.0000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when price is 0");
 
             op.owner = "alice";
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("0.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
+            op.exchange_rate = latest_price(latest_asset::from_string("0.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2774,14 +2830,15 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("1000.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("1000.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure when amount to sell is 0");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("0.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD"));
+            op.amount_to_sell = latest_asset::from_string("0.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.000 TESTS"),
+                                               latest_asset::from_string("1.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2789,14 +2846,15 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("1000.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("1000.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test success creating limit order that will not be filled");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("2.000 TESTS"), asset<0, 17, 0>::from_string("3.000 TBD"));
+            op.amount_to_sell = latest_asset::from_string("10.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("2.000 TESTS"),
+                                               latest_asset::from_string("3.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2811,13 +2869,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test failure creating limit order with duplicate id");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("20.000 TESTS");
+            op.amount_to_sell = latest_asset::from_string("20.000 TESTS");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2832,8 +2890,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test sucess killing an order that will not be filled");
@@ -2847,8 +2905,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test having a partial match to limit order");
@@ -2857,8 +2915,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 1;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("7.500 TBD");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("3.000 TBD"), asset<0, 17, 0>::from_string("2.000 TESTS"));
+            op.amount_to_sell = latest_asset::from_string("7.500 TBD");
+            op.exchange_rate = latest_price(latest_asset::from_string("3.000 TBD"),
+                                               latest_asset::from_string("2.000 TESTS"));
             op.fill_or_kill = false;
             tx.operations.clear();
             tx.signatures.clear();
@@ -2867,33 +2926,37 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             auto recent_ops = get_last_operations(1);
-            auto fill_order_op = recent_ops[0].get<fill_order_operation>();
+            auto fill_order_op = recent_ops[0].get<fill_order_operation<0, 17, 0>>();
 
             limit_order = limit_order_idx.find(std::make_tuple("alice", 1));
             BOOST_REQUIRE(limit_order != limit_order_idx.end());
             BOOST_REQUIRE(limit_order->seller == "alice");
             BOOST_REQUIRE(limit_order->order_id == op.order_id);
             BOOST_REQUIRE(limit_order->for_sale == 5000);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("2.000 TESTS"), asset<0, 17, 0>::from_string("3.000 TBD")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("2.000 TESTS"),
+                                                                     latest_asset::from_string("3.000 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", op.order_id)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("7.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("992.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("992.500 TBD").amount.value);
             BOOST_REQUIRE(fill_order_op.open_owner == "alice");
             BOOST_REQUIRE(fill_order_op.open_order_id == 1);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value == asset<0, 17, 0>::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(
+                    fill_order_op.open_pays.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
             BOOST_REQUIRE(fill_order_op.current_owner == "bob");
             BOOST_REQUIRE(fill_order_op.current_order_id == 1);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value == asset<0, 17, 0>::from_string("7.500 TBD").amount.value);
+            BOOST_REQUIRE(
+                    fill_order_op.current_pays.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling an existing order fully, but the new order partially");
 
-            op.amount_to_sell = asset<0, 17, 0>::from_string("15.000 TBD");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("3.000 TBD"), asset<0, 17, 0>::from_string("2.000 TESTS"));
+            op.amount_to_sell = latest_asset::from_string("15.000 TBD");
+            op.exchange_rate = latest_price(latest_asset::from_string("3.000 TBD"),
+                                               latest_asset::from_string("2.000 TESTS"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2905,22 +2968,24 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == "bob");
             BOOST_REQUIRE(limit_order->order_id == 1);
             BOOST_REQUIRE(limit_order->for_sale.value == 7500);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("3.000 TBD"), asset<0, 17, 0>::from_string("2.000 TESTS")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("3.000 TBD"),
+                                                                     latest_asset::from_string("2.000 TESTS")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 1)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("990.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("15.000 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("977.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("990.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("15.000 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("977.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling an existing order and new order fully");
 
             op.owner = "alice";
             op.order_id = 3;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("5.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("2.000 TESTS"), asset<0, 17, 0>::from_string("3.000 TBD"));
+            op.amount_to_sell = latest_asset::from_string("5.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("2.000 TESTS"),
+                                               latest_asset::from_string("3.000 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2929,18 +2994,19 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 3)) == limit_order_idx.end());
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("bob", 1)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("985.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("22.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("15.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("977.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("985.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("22.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("15.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("977.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling limit order with better order when partial order is better.");
 
             op.owner = "alice";
             op.order_id = 4;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.100 TBD"));
+            op.amount_to_sell = latest_asset::from_string("10.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.000 TESTS"),
+                                               latest_asset::from_string("1.100 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2949,8 +3015,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 4;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("12.000 TBD");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.200 TBD"), asset<0, 17, 0>::from_string("1.000 TESTS"));
+            op.amount_to_sell = latest_asset::from_string("12.000 TBD");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.200 TBD"),
+                                               latest_asset::from_string("1.000 TESTS"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2966,10 +3033,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->sell_price == op.exchange_rate);
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("975.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("33.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("25.000 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("965.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("975.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("33.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("25.000 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("965.500 TBD").amount.value);
             validate_database();
 
             limit_order_cancel_operation<0, 17, 0> can;
@@ -2988,8 +3055,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "alice";
             op.order_id = 5;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("20.000 TESTS");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.100 TBD"));
+            op.amount_to_sell = latest_asset::from_string("20.000 TESTS");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.000 TESTS"),
+                                               latest_asset::from_string("1.100 TBD"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -2998,8 +3066,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.owner = "bob";
             op.order_id = 5;
-            op.amount_to_sell = asset<0, 17, 0>::from_string("12.000 TBD");
-            op.exchange_rate = price<0, 17, 0>(asset<0, 17, 0>::from_string("1.200 TBD"), asset<0, 17, 0>::from_string("1.000 TESTS"));
+            op.amount_to_sell = latest_asset::from_string("12.000 TBD");
+            op.exchange_rate = latest_price(latest_asset::from_string("1.200 TBD"),
+                                               latest_asset::from_string("1.000 TESTS"));
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(op);
@@ -3012,13 +3081,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(limit_order->seller == "alice");
             BOOST_REQUIRE(limit_order->order_id == 5);
             BOOST_REQUIRE(limit_order->for_sale.value == 9091);
-            BOOST_REQUIRE(limit_order->sell_price == price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.100 TBD")));
+            BOOST_REQUIRE(limit_order->sell_price == latest_price(latest_asset::from_string("1.000 TESTS"),
+                                                                     latest_asset::from_string("1.100 TBD")));
             BOOST_REQUIRE(limit_order->get_market() ==
                           std::make_pair(asset_name_type(SBD_SYMBOL_NAME), asset_name_type(STEEM_SYMBOL_NAME)));
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("955.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("45.500 TBD").amount.value);
-            BOOST_REQUIRE(bob.balance.amount.value == asset<0, 17, 0>::from_string("35.909 TESTS").amount.value);
-            BOOST_REQUIRE(bob.sbd_balance.amount.value == asset<0, 17, 0>::from_string("954.500 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("955.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("45.500 TBD").amount.value);
+            BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("35.909 TESTS").amount.value);
+            BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("954.500 TBD").amount.value);
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -3039,8 +3109,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order_create_operation<0, 17, 0> c;
             c.owner = "alice";
             c.order_id = 1;
-            c.amount_to_sell = asset<0, 17, 0>::from_string("1.000 TESTS");
-            c.min_to_receive = asset<0, 17, 0>::from_string("1.000 TBD");
+            c.amount_to_sell = latest_asset::from_string("1.000 TESTS");
+            c.min_to_receive = latest_asset::from_string("1.000 TBD");
 
             signed_transaction tx;
             tx.operations.push_back(c);
@@ -3058,7 +3128,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when no signature.");
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with account signature");
             tx.sign(alice_private_key, db.get_chain_id());
@@ -3066,19 +3136,21 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
+                                  protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
             tx.signatures.clear();
             tx.sign(alice_post_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check),
-                                  tx_missing_active_auth);
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -3110,8 +3182,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             limit_order_create_operation<0, 17, 0> create;
             create.owner = "alice";
             create.order_id = 5;
-            create.amount_to_sell = asset<0, 17, 0>::from_string("5.000 TESTS");
-            create.min_to_receive = asset<0, 17, 0>::from_string("7.500 TBD");
+            create.amount_to_sell = latest_asset::from_string("5.000 TESTS");
+            create.min_to_receive = latest_asset::from_string("7.500 TBD");
             tx.operations.clear();
             tx.signatures.clear();
             tx.operations.push_back(create);
@@ -3127,8 +3199,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             BOOST_REQUIRE(limit_order_idx.find(std::make_tuple("alice", 5)) == limit_order_idx.end());
-            BOOST_REQUIRE(alice.balance.amount.value == asset<0, 17, 0>::from_string("10.000 TESTS").amount.value);
-            BOOST_REQUIRE(alice.sbd_balance.amount.value == asset<0, 17, 0>::from_string("0.000 TBD").amount.value);
+            BOOST_REQUIRE(alice.balance.amount.value == latest_asset::from_string("10.000 TESTS").amount.value);
+            BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("0.000 TBD").amount.value);
         } FC_LOG_AND_RETHROW()
     }
 
@@ -3160,7 +3232,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("Creating account bob with alice");
 
             account_create_operation<0, 17, 0> acc_create;
-            acc_create.fee = asset<0, 17, 0>::from_string("10.000 TESTS");
+            acc_create.fee = latest_asset::from_string("10.000 TESTS");
             acc_create.creator = "alice";
             acc_create.new_account_name = "bob";
             acc_create.owner = authority(1, generate_private_key("bob_owner").get_public_key(), 1);
@@ -3759,17 +3831,17 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             escrow_transfer_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
-            op.sbd_amount = asset<0, 17, 0>::from_string("1.000 TBD");
-            op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.sbd_amount = latest_asset::from_string("1.000 TBD");
+            op.steem_amount = latest_asset::from_string("1.000 TESTS");
             op.escrow_id = 0;
             op.agent = "sam";
-            op.fee = asset<0, 17, 0>::from_string("0.100 TESTS");
+            op.fee = latest_asset::from_string("0.100 TESTS");
             op.json_meta = "";
             op.ratification_deadline = db.head_block_time() + 100;
             op.escrow_expiration = db.head_block_time() + 200;
 
             BOOST_TEST_MESSAGE("--- failure when sbd symbol != SBD");
-            op.sbd_amount.symbol = STEEM_SYMBOL;
+            op.sbd_amount.symbol = STEEM_SYMBOL_NAME;
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
             BOOST_TEST_MESSAGE("--- failure when steem symbol != STEEM");
@@ -3778,12 +3850,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
             BOOST_TEST_MESSAGE("--- failure when fee symbol != SBD and fee symbol != STEEM");
-            op.steem_amount.symbol = STEEM_SYMBOL;
-            op.fee.symbol = VESTS_SYMBOL;
+            op.steem_amount.symbol = STEEM_SYMBOL_NAME;
+            op.fee.symbol = latest_asset(0, VESTS_SYMBOL).symbol_name();
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
             BOOST_TEST_MESSAGE("--- failure when sbd == 0 and steem == 0");
-            op.fee.symbol = STEEM_SYMBOL;
+            op.fee.symbol = STEEM_SYMBOL_NAME;
             op.sbd_amount.amount = 0;
             op.steem_amount.amount = 0;
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
@@ -3825,11 +3897,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             escrow_transfer_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
-            op.sbd_amount = asset<0, 17, 0>::from_string("1.000 TBD");
-            op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.sbd_amount = latest_asset::from_string("1.000 TBD");
+            op.steem_amount = latest_asset::from_string("1.000 TESTS");
             op.escrow_id = 0;
             op.agent = "sam";
-            op.fee = asset<0, 17, 0>::from_string("0.100 TESTS");
+            op.fee = latest_asset::from_string("0.100 TESTS");
             op.json_meta = "";
             op.ratification_deadline = db.head_block_time() + 100;
             op.escrow_expiration = db.head_block_time() + 200;
@@ -3860,11 +3932,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             escrow_transfer_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
-            op.sbd_amount = asset<0, 17, 0>::from_string("1.000 TBD");
-            op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.sbd_amount = latest_asset::from_string("1.000 TBD");
+            op.steem_amount = latest_asset::from_string("1.000 TESTS");
             op.escrow_id = 0;
             op.agent = "sam";
-            op.fee = asset<0, 17, 0>::from_string("0.100 TESTS");
+            op.fee = latest_asset::from_string("0.100 TESTS");
             op.json_meta = "";
             op.ratification_deadline = db.head_block_time() + 100;
             op.escrow_expiration = db.head_block_time() + 200;
@@ -4017,8 +4089,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             et_op.from = "alice";
             et_op.to = "bob";
             et_op.agent = "sam";
-            et_op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
-            et_op.fee = asset<0, 17, 0>::from_string("0.100 TESTS");
+            et_op.steem_amount = latest_asset::from_string("1.000 TESTS");
+            et_op.fee = latest_asset::from_string("0.100 TESTS");
             et_op.json_meta = "";
             et_op.ratification_deadline = db.head_block_time() + 100;
             et_op.escrow_expiration = db.head_block_time() + 200;
@@ -4073,9 +4145,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(escrow.agent == "sam");
             BOOST_REQUIRE(escrow.ratification_deadline == et_op.ratification_deadline);
             BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
-            BOOST_REQUIRE(escrow.sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-            BOOST_REQUIRE(escrow.steem_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-            BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.100 TESTS"));
+            BOOST_REQUIRE(escrow.sbd_balance == latest_asset::from_string("0.000 TBD"));
+            BOOST_REQUIRE(escrow.steem_balance == latest_asset::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.100 TESTS"));
             BOOST_REQUIRE(escrow.to_approved);
             BOOST_REQUIRE(!escrow.agent_approved);
             BOOST_REQUIRE(!escrow.disputed);
@@ -4092,9 +4164,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(escrow.agent == "sam");
             BOOST_REQUIRE(escrow.ratification_deadline == et_op.ratification_deadline);
             BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
-            BOOST_REQUIRE(escrow.sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-            BOOST_REQUIRE(escrow.steem_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-            BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.100 TESTS"));
+            BOOST_REQUIRE(escrow.sbd_balance == latest_asset::from_string("0.000 TBD"));
+            BOOST_REQUIRE(escrow.steem_balance == latest_asset::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.100 TESTS"));
             BOOST_REQUIRE(escrow.to_approved);
             BOOST_REQUIRE(!escrow.agent_approved);
             BOOST_REQUIRE(!escrow.disputed);
@@ -4114,9 +4186,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(escrow.agent == "sam");
             BOOST_REQUIRE(escrow.ratification_deadline == et_op.ratification_deadline);
             BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
-            BOOST_REQUIRE(escrow.sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-            BOOST_REQUIRE(escrow.steem_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-            BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.100 TESTS"));
+            BOOST_REQUIRE(escrow.sbd_balance == latest_asset::from_string("0.000 TBD"));
+            BOOST_REQUIRE(escrow.steem_balance == latest_asset::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.100 TESTS"));
             BOOST_REQUIRE(escrow.to_approved);
             BOOST_REQUIRE(!escrow.agent_approved);
             BOOST_REQUIRE(!escrow.disputed);
@@ -4133,7 +4205,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             db.push_transaction(tx, 0);
 
             STEEMIT_REQUIRE_THROW(db.get_escrow(op.from, op.escrow_id), fc::exception);
-            BOOST_REQUIRE(alice.balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(alice.balance == latest_asset::from_string("10.000 TESTS"));
             validate_database();
 
 
@@ -4147,7 +4219,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             generate_blocks(et_op.ratification_deadline + STEEMIT_BLOCK_INTERVAL, true);
 
             STEEMIT_REQUIRE_THROW(db.get_escrow(op.from, op.escrow_id), fc::exception);
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("10.000 TESTS"));
             validate_database();
 
 
@@ -4172,7 +4244,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             generate_blocks(et_op.ratification_deadline + STEEMIT_BLOCK_INTERVAL, true);
 
             STEEMIT_REQUIRE_THROW(db.get_escrow(op.from, op.escrow_id), fc::exception);
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("10.000 TESTS"));
             validate_database();
 
 
@@ -4196,7 +4268,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             generate_blocks(et_op.ratification_deadline + STEEMIT_BLOCK_INTERVAL, true);
 
             STEEMIT_REQUIRE_THROW(db.get_escrow(op.from, op.escrow_id), fc::exception);
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("10.000 TESTS"));
             validate_database();
 
 
@@ -4230,9 +4302,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 BOOST_REQUIRE(escrow.agent == "sam");
                 BOOST_REQUIRE(escrow.ratification_deadline == et_op.ratification_deadline);
                 BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
-                BOOST_REQUIRE(escrow.sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-                BOOST_REQUIRE(escrow.steem_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-                BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+                BOOST_REQUIRE(escrow.sbd_balance == latest_asset::from_string("0.000 TBD"));
+                BOOST_REQUIRE(escrow.steem_balance == latest_asset::from_string("1.000 TESTS"));
+                BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
                 BOOST_REQUIRE(escrow.to_approved);
                 BOOST_REQUIRE(escrow.agent_approved);
                 BOOST_REQUIRE(!escrow.disputed);
@@ -4251,9 +4323,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 BOOST_REQUIRE(escrow.agent == "sam");
                 BOOST_REQUIRE(escrow.ratification_deadline == et_op.ratification_deadline);
                 BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
-                BOOST_REQUIRE(escrow.sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-                BOOST_REQUIRE(escrow.steem_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-                BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+                BOOST_REQUIRE(escrow.sbd_balance == latest_asset::from_string("0.000 TBD"));
+                BOOST_REQUIRE(escrow.steem_balance == latest_asset::from_string("1.000 TESTS"));
+                BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
                 BOOST_REQUIRE(escrow.to_approved);
                 BOOST_REQUIRE(escrow.agent_approved);
                 BOOST_REQUIRE(!escrow.disputed);
@@ -4327,8 +4399,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             et_op.from = "alice";
             et_op.to = "bob";
             et_op.agent = "sam";
-            et_op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
-            et_op.fee = asset<0, 17, 0>::from_string("0.100 TESTS");
+            et_op.steem_amount = latest_asset::from_string("1.000 TESTS");
+            et_op.fee = latest_asset::from_string("0.100 TESTS");
             et_op.ratification_deadline = db.head_block_time() + STEEMIT_BLOCK_INTERVAL;
             et_op.escrow_expiration = db.head_block_time() + 2 * STEEMIT_BLOCK_INTERVAL;
 
@@ -4402,7 +4474,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
             BOOST_REQUIRE(escrow.sbd_balance == et_op.sbd_amount);
             BOOST_REQUIRE(escrow.steem_balance == et_op.steem_amount);
-            BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
             BOOST_REQUIRE(escrow.to_approved);
             BOOST_REQUIRE(escrow.agent_approved);
             BOOST_REQUIRE(!escrow.disputed);
@@ -4424,7 +4496,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
             BOOST_REQUIRE(escrow.sbd_balance == et_op.sbd_amount);
             BOOST_REQUIRE(escrow.steem_balance == et_op.steem_amount);
-            BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
             BOOST_REQUIRE(escrow.to_approved);
             BOOST_REQUIRE(escrow.agent_approved);
             BOOST_REQUIRE(!escrow.disputed);
@@ -4449,7 +4521,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
                 BOOST_REQUIRE(escrow.sbd_balance == et_op.sbd_amount);
                 BOOST_REQUIRE(escrow.steem_balance == et_op.steem_amount);
-                BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+                BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
                 BOOST_REQUIRE(escrow.to_approved);
                 BOOST_REQUIRE(escrow.agent_approved);
                 BOOST_REQUIRE(!escrow.disputed);
@@ -4488,7 +4560,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
                 BOOST_REQUIRE(escrow.sbd_balance == et_op.sbd_amount);
                 BOOST_REQUIRE(escrow.steem_balance == et_op.steem_amount);
-                BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+                BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
                 BOOST_REQUIRE(escrow.to_approved);
                 BOOST_REQUIRE(escrow.agent_approved);
                 BOOST_REQUIRE(escrow.disputed);
@@ -4511,7 +4583,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
                 BOOST_REQUIRE(escrow.escrow_expiration == et_op.escrow_expiration);
                 BOOST_REQUIRE(escrow.sbd_balance == et_op.sbd_amount);
                 BOOST_REQUIRE(escrow.steem_balance == et_op.steem_amount);
-                BOOST_REQUIRE(escrow.pending_fee == asset<0, 17, 0>::from_string("0.000 TESTS"));
+                BOOST_REQUIRE(escrow.pending_fee == latest_asset::from_string("0.000 TESTS"));
                 BOOST_REQUIRE(escrow.to_approved);
                 BOOST_REQUIRE(escrow.agent_approved);
                 BOOST_REQUIRE(escrow.disputed);
@@ -4547,18 +4619,18 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
 
             BOOST_TEST_MESSAGE("--- failure when sbd is not sbd symbol");
-            op.sbd_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.sbd_amount = latest_asset::from_string("1.000 TESTS");
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
 
             BOOST_TEST_MESSAGE("--- failure when steem is not steem symbol");
             op.sbd_amount.symbol = SBD_SYMBOL_NAME;
-            op.steem_amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.steem_amount = latest_asset::from_string("1.000 TBD");
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
 
             BOOST_TEST_MESSAGE("--- success");
-            op.steem_amount.symbol = STEEM_SYMBOL;
+            op.steem_amount.symbol = STEEM_SYMBOL_NAME;
             op.validate();
         } FC_LOG_AND_RETHROW()
     }
@@ -4611,8 +4683,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             et_op.from = "alice";
             et_op.to = "bob";
             et_op.agent = "sam";
-            et_op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
-            et_op.fee = asset<0, 17, 0>::from_string("0.100 TESTS");
+            et_op.steem_amount = latest_asset::from_string("1.000 TESTS");
+            et_op.fee = latest_asset::from_string("0.100 TESTS");
             et_op.ratification_deadline = db.head_block_time() + STEEMIT_BLOCK_INTERVAL;
             et_op.escrow_expiration = db.head_block_time() + 2 * STEEMIT_BLOCK_INTERVAL;
 
@@ -4631,7 +4703,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.agent = et_op.agent;
             op.who = et_op.from;
             op.receiver = et_op.to;
-            op.steem_amount = asset<0, 17, 0>::from_string("0.100 TESTS");
+            op.steem_amount = latest_asset::from_string("0.100 TESTS");
 
             tx.clear();
             tx.operations.push_back(op);
@@ -4747,8 +4819,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(bob_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_escrow(op.from, op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.900 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("9.000 TESTS"));
+            BOOST_REQUIRE(
+                    db.get_escrow(op.from, op.escrow_id).steem_balance == latest_asset::from_string("0.900 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("9.000 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- failure when 'from' attempts to release non-disputed escrow to 'from'");
@@ -4787,12 +4860,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_escrow(op.from, op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.800 TESTS"));
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("0.100 TESTS"));
+            BOOST_REQUIRE(
+                    db.get_escrow(op.from, op.escrow_id).steem_balance == latest_asset::from_string("0.800 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("0.100 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- failure when releasing more sbd than available");
-            op.steem_amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.steem_amount = latest_asset::from_string("1.000 TESTS");
 
             tx.clear();
             tx.operations.push_back(op);
@@ -4801,8 +4875,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
 
             BOOST_TEST_MESSAGE("--- failure when releasing less steem than available");
-            op.steem_amount = asset<0, 17, 0>::from_string("0.000 TESTS");
-            op.sbd_amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.steem_amount = latest_asset::from_string("0.000 TESTS");
+            op.sbd_amount = latest_asset::from_string("1.000 TBD");
 
             tx.clear();
             tx.operations.push_back(op);
@@ -4826,8 +4900,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.from = et_op.from;
             op.receiver = et_op.from;
             op.who = et_op.to;
-            op.steem_amount = asset<0, 17, 0>::from_string("0.100 TESTS");
-            op.sbd_amount = asset<0, 17, 0>::from_string("0.000 TBD");
+            op.steem_amount = latest_asset::from_string("0.100 TESTS");
+            op.sbd_amount = latest_asset::from_string("0.000 TBD");
             tx.operations.push_back(op);
             tx.sign(bob_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
@@ -4868,8 +4942,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(sam_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("0.200 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.700 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("0.200 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.700 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- success releasing disputed escrow with agent to 'from'");
@@ -4880,8 +4955,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(sam_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("9.100 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.600 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("9.100 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.600 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- failure when 'to' attempts to release disputed expired escrow");
@@ -4913,18 +4989,19 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(sam_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("9.200 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.500 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("9.200 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.500 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- success deleting escrow when balances are both zero");
             tx.clear();
-            op.steem_amount = asset<0, 17, 0>::from_string("0.500 TESTS");
+            op.steem_amount = latest_asset::from_string("0.500 TESTS");
             tx.operations.push_back(op);
             tx.sign(sam_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("9.700 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("9.700 TESTS"));
             STEEMIT_REQUIRE_THROW(db.get_escrow(et_op.from, et_op.escrow_id), fc::exception);
 
 
@@ -4946,7 +5023,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.clear();
             op.receiver = et_op.to;
             op.who = et_op.agent;
-            op.steem_amount = asset<0, 17, 0>::from_string("0.100 TESTS");
+            op.steem_amount = latest_asset::from_string("0.100 TESTS");
             tx.operations.push_back(op);
             tx.sign(sam_private_key, db.get_chain_id());
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
@@ -4994,8 +5071,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(bob_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("0.300 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.900 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("0.300 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.900 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- success release non-disputed expired escrow to 'from' from 'to'");
@@ -5005,8 +5083,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(bob_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("8.700 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.800 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("8.700 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.800 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- failure when 'from' attempts to release non-disputed expired escrow to 'agent'");
@@ -5034,8 +5113,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("0.400 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.700 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("0.400 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.700 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- success release non-disputed expired escrow to 'from' from 'from'");
@@ -5045,18 +5125,19 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("8.800 TESTS"));
-            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance == asset<0, 17, 0>::from_string("0.600 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("8.800 TESTS"));
+            BOOST_REQUIRE(db.get_escrow(et_op.from, et_op.escrow_id).steem_balance ==
+                          latest_asset::from_string("0.600 TESTS"));
 
 
             BOOST_TEST_MESSAGE("--- success deleting escrow when balances are zero on non-disputed escrow");
             tx.clear();
-            op.steem_amount = asset<0, 17, 0>::from_string("0.600 TESTS");
+            op.steem_amount = latest_asset::from_string("0.600 TESTS");
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("9.400 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("9.400 TESTS"));
             STEEMIT_REQUIRE_THROW(db.get_escrow(et_op.from, et_op.escrow_id), fc::exception);
         } FC_LOG_AND_RETHROW()
     }
@@ -5068,7 +5149,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_to_savings_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
 
             BOOST_TEST_MESSAGE("failure when 'from' is empty");
@@ -5089,17 +5170,17 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("failure when amount is VESTS");
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("1.000 VESTS");
+            op.amount = latest_asset::from_string("1.000 VESTS");
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
 
             BOOST_TEST_MESSAGE("success when amount is SBD");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount = latest_asset::from_string("1.000 TBD");
             op.validate();
 
 
             BOOST_TEST_MESSAGE("success when amount is STEEM");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
             op.validate();
         } FC_LOG_AND_RETHROW()
     }
@@ -5111,7 +5192,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_to_savings_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
             flat_set<account_name_type> auths;
             flat_set<account_name_type> expected;
@@ -5142,11 +5223,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob));
             generate_block();
 
-            fund("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            fund("alice", asset<0, 17, 0>::from_string("10.000 TBD"));
+            fund("alice", latest_asset::from_string("10.000 TESTS"));
+            fund("alice", latest_asset::from_string("10.000 TBD"));
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("10.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("10.000 TBD"));
 
             transfer_to_savings_operation<0, 17, 0> op;
             signed_transaction tx;
@@ -5154,7 +5235,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- failure with insufficient funds");
             op.from = "alice";
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("20.000 TESTS");
+            op.amount = latest_asset::from_string("20.000 TESTS");
 
             tx.operations.push_back(op);
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -5165,7 +5246,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- failure when transferring to non-existent account");
             op.to = "sam";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
             tx.clear();
             tx.operations.push_back(op);
@@ -5182,48 +5263,48 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("9.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").savings_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("9.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").savings_balance == latest_asset::from_string("1.000 TESTS"));
             validate_database();
 
 
             BOOST_TEST_MESSAGE("--- success transferring SBD to self");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount = latest_asset::from_string("1.000 TBD");
 
             tx.clear();
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("9.000 TBD"));
-            BOOST_REQUIRE(db.get_account("alice").savings_sbd_balance == asset<0, 17, 0>::from_string("1.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("9.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").savings_sbd_balance == latest_asset::from_string("1.000 TBD"));
             validate_database();
 
 
             BOOST_TEST_MESSAGE("--- success transferring STEEM to other");
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
             tx.clear();
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("8.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("bob").savings_balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("8.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").savings_balance == latest_asset::from_string("1.000 TESTS"));
             validate_database();
 
 
             BOOST_TEST_MESSAGE("--- success transferring SBD to other");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount = latest_asset::from_string("1.000 TBD");
 
             tx.clear();
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("8.000 TBD"));
-            BOOST_REQUIRE(db.get_account("bob").savings_sbd_balance == asset<0, 17, 0>::from_string("1.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("8.000 TBD"));
+            BOOST_REQUIRE(db.get_account("bob").savings_sbd_balance == latest_asset::from_string("1.000 TBD"));
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -5236,7 +5317,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             op.from = "alice";
             op.request_id = 0;
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
 
             BOOST_TEST_MESSAGE("failure when 'from' is empty");
@@ -5257,17 +5338,17 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("failure when amount is VESTS");
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("1.000 VESTS");
+            op.amount = latest_asset::from_string("1.000 VESTS");
             STEEMIT_REQUIRE_THROW(op.validate(), fc::exception);
 
 
             BOOST_TEST_MESSAGE("success when amount is SBD");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount = latest_asset::from_string("1.000 TBD");
             op.validate();
 
 
             BOOST_TEST_MESSAGE("success when amount is STEEM");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
             op.validate();
         } FC_LOG_AND_RETHROW()
     }
@@ -5279,7 +5360,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_from_savings_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
             flat_set<account_name_type> auths;
             flat_set<account_name_type> expected;
@@ -5310,13 +5391,13 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob));
             generate_block();
 
-            fund("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            fund("alice", asset<0, 17, 0>::from_string("10.000 TBD"));
+            fund("alice", latest_asset::from_string("10.000 TESTS"));
+            fund("alice", latest_asset::from_string("10.000 TBD"));
 
             transfer_to_savings_operation<0, 17, 0> save;
             save.from = "alice";
             save.to = "alice";
-            save.amount = asset<0, 17, 0>::from_string("10.000 TESTS");
+            save.amount = latest_asset::from_string("10.000 TESTS");
 
             signed_transaction tx;
             tx.operations.push_back(save);
@@ -5324,7 +5405,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            save.amount = asset<0, 17, 0>::from_string("10.000 TBD");
+            save.amount = latest_asset::from_string("10.000 TBD");
             tx.clear();
             tx.operations.push_back(save);
             tx.sign(alice_private_key, db.get_chain_id());
@@ -5335,7 +5416,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             transfer_from_savings_operation<0, 17, 0> op;
             op.from = "alice";
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("20.000 TESTS");
+            op.amount = latest_asset::from_string("20.000 TESTS");
             op.request_id = 0;
 
             tx.clear();
@@ -5346,7 +5427,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- failure withdrawing to non-existant account");
             op.to = "sam";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
             tx.clear();
             tx.operations.push_back(op);
@@ -5362,8 +5443,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").savings_balance == asset<0, 17, 0>::from_string("9.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").savings_balance == latest_asset::from_string("9.000 TESTS"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 1);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).from == op.from);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).to == op.to);
@@ -5376,7 +5457,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
 
             BOOST_TEST_MESSAGE("--- success withdrawing SBD to self");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount = latest_asset::from_string("1.000 TBD");
             op.request_id = 1;
 
             tx.clear();
@@ -5384,8 +5465,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-            BOOST_REQUIRE(db.get_account("alice").savings_sbd_balance == asset<0, 17, 0>::from_string("9.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("0.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").savings_sbd_balance == latest_asset::from_string("9.000 TBD"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 2);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).from == op.from);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).to == op.to);
@@ -5398,7 +5479,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
 
             BOOST_TEST_MESSAGE("--- failure withdrawing with repeat request id");
-            op.amount = asset<0, 17, 0>::from_string("2.000 TESTS");
+            op.amount = latest_asset::from_string("2.000 TESTS");
 
             tx.clear();
             tx.operations.push_back(op);
@@ -5408,7 +5489,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- success withdrawing STEEM to other");
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
             op.request_id = 3;
 
             tx.clear();
@@ -5416,8 +5497,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").savings_balance == asset<0, 17, 0>::from_string("8.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").savings_balance == latest_asset::from_string("8.000 TESTS"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 3);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).from == op.from);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).to == op.to);
@@ -5430,7 +5511,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
 
             BOOST_TEST_MESSAGE("--- success withdrawing SBD to other");
-            op.amount = asset<0, 17, 0>::from_string("1.000 TBD");
+            op.amount = latest_asset::from_string("1.000 TBD");
             op.request_id = 4;
 
             tx.clear();
@@ -5438,8 +5519,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-            BOOST_REQUIRE(db.get_account("alice").savings_sbd_balance == asset<0, 17, 0>::from_string("8.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("0.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").savings_sbd_balance == latest_asset::from_string("8.000 TBD"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 4);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).from == op.from);
             BOOST_REQUIRE(db.get_savings_withdraw("alice", op.request_id).to == op.to);
@@ -5455,19 +5536,19 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             generate_blocks(db.head_block_time() + STEEMIT_SAVINGS_WITHDRAW_TIME - fc::seconds(STEEMIT_BLOCK_INTERVAL),
                             true);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("bob").sbd_balance == asset<0, 17, 0>::from_string("0.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("0.000 TBD"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").sbd_balance == latest_asset::from_string("0.000 TBD"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 4);
             validate_database();
 
             generate_block();
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").sbd_balance == asset<0, 17, 0>::from_string("1.000 TBD"));
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("1.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("bob").sbd_balance == asset<0, 17, 0>::from_string("1.000 TBD"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").sbd_balance == latest_asset::from_string("1.000 TBD"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("1.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").sbd_balance == latest_asset::from_string("1.000 TBD"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 0);
             validate_database();
 
@@ -5475,7 +5556,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- savings withdraw request limit");
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             op.to = "alice";
-            op.amount = asset<0, 17, 0>::from_string("0.001 TESTS");
+            op.amount = latest_asset::from_string("0.001 TESTS");
 
             for (int i = 0; i < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT; i++) {
                 op.request_id = i;
@@ -5552,18 +5633,18 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob))
             generate_block();
 
-            fund("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            fund("alice", latest_asset::from_string("10.000 TESTS"));
 
             transfer_to_savings_operation<0, 17, 0> save;
             save.from = "alice";
             save.to = "alice";
-            save.amount = asset<0, 17, 0>::from_string("10.000 TESTS");
+            save.amount = latest_asset::from_string("10.000 TESTS");
 
             transfer_from_savings_operation<0, 17, 0> withdraw;
             withdraw.from = "alice";
             withdraw.to = "bob";
             withdraw.request_id = 1;
-            withdraw.amount = asset<0, 17, 0>::from_string("3.000 TESTS");
+            withdraw.amount = latest_asset::from_string("3.000 TESTS");
 
             signed_transaction tx;
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -5600,11 +5681,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE(db.get_account("alice").balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("alice").savings_balance == asset<0, 17, 0>::from_string("10.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").balance == latest_asset::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("alice").savings_balance == latest_asset::from_string("10.000 TESTS"));
             BOOST_REQUIRE(db.get_account("alice").savings_withdraw_requests == 0);
-            BOOST_REQUIRE(db.get_account("bob").balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
-            BOOST_REQUIRE(db.get_account("bob").savings_balance == asset<0, 17, 0>::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").balance == latest_asset::from_string("0.000 TESTS"));
+            BOOST_REQUIRE(db.get_account("bob").savings_balance == latest_asset::from_string("0.000 TESTS"));
             BOOST_REQUIRE(db.get_account("bob").savings_withdraw_requests == 0);
             validate_database();
         } FC_LOG_AND_RETHROW()
@@ -5638,8 +5719,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             ACTORS((alice)(bob));
             generate_block();
-            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            vest("bob", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("alice", latest_asset::from_string("10.000 TESTS"));
+            vest("bob", latest_asset::from_string("10.000 TESTS"));
             generate_block();
 
             account_witness_proxy_operation<0, 17, 0> proxy;
@@ -5786,9 +5867,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
         try {
             ACTORS((alice)(bob))
             generate_block();
-            vest("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            fund("alice", asset<0, 17, 0>::from_string("10.000 TESTS"));
-            vest("bob", asset<0, 17, 0>::from_string("10.000 TESTS"));
+            vest("alice", latest_asset::from_string("10.000 TESTS"));
+            fund("alice", latest_asset::from_string("10.000 TESTS"));
+            vest("bob", latest_asset::from_string("10.000 TESTS"));
 
             generate_block();
             db.skip_transaction_delta_check = false;
@@ -5798,7 +5879,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             op.from = "alice";
             op.to = "bob";
-            op.amount = asset<0, 17, 0>::from_string("1.000 TESTS");
+            op.amount = latest_asset::from_string("1.000 TESTS");
 
             tx.operations.push_back(op);
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -5814,7 +5895,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(average_bandwidth == fc::raw::pack_size(tx) * 10 * STEEMIT_BANDWIDTH_PRECISION);
             auto total_bandwidth = average_bandwidth;
 
-            op.amount = asset<0, 17, 0>::from_string("0.100 TESTS");
+            op.amount = latest_asset::from_string("0.100 TESTS");
             tx.clear();
             tx.operations.push_back(op);
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -5874,7 +5955,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((alice)(bob)(sam))
             generate_block();
 
-            set_price_feed(price<0, 17, 0>(asset<0, 17, 0>::from_string("1.000 TESTS"), asset<0, 17, 0>::from_string("1.000 TBD")));
+            set_price_feed(latest_price(latest_asset::from_string("1.000 TESTS"),
+                                           latest_asset::from_string("1.000 TBD")));
 
             comment_operation<0, 17, 0> comment;
             vote_operation<0, 17, 0> vote;
@@ -5978,12 +6060,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             signed_transaction tx;
             ACTORS((alice));
             generate_blocks(1);
-            fund("alice", asset<0, 17, 0>::from_string("1000.000 TESTS"));
-            vest("alice", asset<0, 17, 0>::from_string("10000.000 VESTS"));
+            fund("alice", latest_asset::from_string("1000.000 TESTS"));
+            vest("alice", latest_asset::from_string("10000.000 VESTS"));
             private_key_type priv_key = generate_private_key("temp_key");
             account_create_with_delegation_operation<0, 17, 0> op;
-            op.fee = asset<0, 17, 0>::from_string("0.000 TESTS");
-            op.delegation = asset(100, VESTS_SYMBOL);
+            op.fee = latest_asset::from_string("0.000 TESTS");
+            op.delegation = latest_asset(100, VESTS_SYMBOL);
             op.creator = "alice";
             op.new_account_name = "bob";
             op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -5995,7 +6077,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.sign(alice_private_key, db.get_chain_id());
@@ -6008,19 +6091,20 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(init_account_priv_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(init_account_priv_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
             validate_database();
         } FC_LOG_AND_RETHROW()
 
@@ -6034,16 +6118,16 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             // 150 * fee = ( 5 * STEEM ) + SP
             auto gpo = db.get_dynamic_global_properties();
             generate_blocks(1);
-            fund("alice", asset<0, 17, 0>::from_string("1510.000 TESTS"));
-            vest("alice", asset<0, 17, 0>::from_string("1000000.000000 VESTS"));
+            fund("alice", latest_asset::from_string("1510.000 TESTS"));
+            vest("alice", latest_asset::from_string("1000000.000000 VESTS"));
 
             private_key_type priv_key = generate_private_key("temp_key");
 
             BOOST_TEST_MESSAGE("--- Test success under normal conditions. ");
 
             account_create_with_delegation_operation<0, 17, 0> op;
-            op.fee = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.delegation = asset<0, 17, 0>::from_string("10000.000000 VESTS");
+            op.fee = latest_asset::from_string("10.000 TESTS");
+            op.delegation = latest_asset::from_string("10000.000000 VESTS");
             op.creator = "alice";
             op.new_account_name = "bob";
             op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -6057,8 +6141,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             const account_object &bob_acc = db.get_account("bob");
             const account_object &alice_acc = db.get_account("alice");
-            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == asset<0, 17, 0>::from_string("10000.000000 VESTS"));
-            BOOST_REQUIRE(bob_acc.received_vesting_shares == asset<0, 17, 0>::from_string("10000.000000 VESTS"));
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == latest_asset::from_string("10000.000000 VESTS"));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares == latest_asset::from_string("10000.000000 VESTS"));
             BOOST_REQUIRE(bob_acc.effective_vesting_shares() ==
                           bob_acc.vesting_shares - bob_acc.delegated_vesting_shares + bob_acc.received_vesting_shares);
 
@@ -6069,7 +6153,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(delegation != nullptr);
             BOOST_REQUIRE(delegation->delegator == op.creator);
             BOOST_REQUIRE(delegation->delegatee == op.new_account_name);
-            BOOST_REQUIRE(delegation->vesting_shares == asset<0, 17, 0>::from_string("10000.000000 VESTS"));
+            BOOST_REQUIRE(delegation->vesting_shares == latest_asset::from_string("10000.000000 VESTS"));
             BOOST_REQUIRE(
                     delegation->min_delegation_time == db.head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME);
             auto del_amt = delegation->vesting_shares;
@@ -6079,7 +6163,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             db_plugin->debug_update([=](database &db) {
                 db.modify(db.get_witness_schedule_object(), [&](witness_schedule_object &w) {
-                    w.median_props.account_creation_fee = asset<0, 17, 0>::from_string("10.000 TESTS");
+                    w.median_props.account_creation_fee = latest_asset::from_string("10.000 TESTS");
                 });
             });
 
@@ -6088,10 +6172,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("--- Test success using only STEEM to reach target delegation.");
 
             tx.clear();
-            op.fee = asset<0, 17, 0>(db.get_witness_schedule_object().median_props.account_creation_fee.amount *
+            op.fee = latest_asset(db.get_witness_schedule_object().median_props.account_creation_fee.amount *
                                      STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
-                                     STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL);
-            op.delegation = asset<0, 17, 0>(0, VESTS_SYMBOL);
+                                     STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME);
+            op.delegation = latest_asset(0, VESTS_SYMBOL);
             op.new_account_name = "sam";
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
@@ -6100,8 +6184,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_TEST_MESSAGE("--- Test failure when insufficient funds to process transaction.");
             tx.clear();
-            op.fee = asset<0, 17, 0>::from_string("10.000 TESTS");
-            op.delegation = asset<0, 17, 0>::from_string("0.000000 VESTS");
+            op.fee = latest_asset::from_string("10.000 TESTS");
+            op.delegation = latest_asset::from_string("0.000000 VESTS");
             op.new_account_name = "pam";
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
@@ -6110,9 +6194,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             BOOST_TEST_MESSAGE("--- Test failure when insufficient fee fo reach target delegation.");
-            fund("alice", asset<0, 17, 0>(db.get_witness_schedule_object().median_props.account_creation_fee.amount *
+            fund("alice", latest_asset(db.get_witness_schedule_object().median_props.account_creation_fee.amount *
                                           STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
-                                          STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL));
+                                          STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME));
             STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
             validate_database();
@@ -6121,7 +6205,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             delegate_vesting_shares_operation<0, 17, 0> delegate;
             delegate.delegator = "alice";
             delegate.delegatee = "bob";
-            delegate.vesting_shares = asset<0, 17, 0>::from_string("0.000000 VESTS");
+            delegate.vesting_shares = latest_asset::from_string("0.000000 VESTS");
             tx.operations.push_back(delegate);
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
@@ -6142,10 +6226,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("Testing: delegate_vesting_shares_authorities");
             signed_transaction tx;
             ACTORS((alice)(bob))
-            vest("alice", asset<0, 17, 0>::from_string("10000.000000 VESTS"));
+            vest("alice", latest_asset::from_string("10000.000000 VESTS"));
 
             delegate_vesting_shares_operation<0, 17, 0> op;
-            op.vesting_shares = asset<0, 17, 0>::from_string("300.000000 VESTS");
+            op.vesting_shares = latest_asset::from_string("300.000000 VESTS");
             op.delegator = "alice";
             op.delegatee = "bob";
 
@@ -6153,7 +6237,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
 
             BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
 
             BOOST_TEST_MESSAGE("--- Test success with witness signature");
             tx.sign(alice_private_key, db.get_chain_id());
@@ -6166,19 +6251,20 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE(
                     "--- Test failure when signed by an additional signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(init_account_priv_key, db.get_chain_id());
             tx.sign(alice_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
             tx.signatures.clear();
             tx.sign(init_account_priv_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(tx, 0),
+                                  protocol::exceptions::transaction::tx_missing_active_auth<>);
             validate_database();
         } FC_LOG_AND_RETHROW()
     }
@@ -6188,10 +6274,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_TEST_MESSAGE("Testing: delegate_vesting_shares_apply");
             signed_transaction tx;
             ACTORS((alice)(bob))
-            vest("alice", asset<0, 17, 0>::from_string("10000.000000 VESTS"));
+            vest("alice", latest_asset::from_string("10000.000000 VESTS"));
 
             delegate_vesting_shares_operation<0, 17, 0> op;
-            op.vesting_shares = asset<0, 17, 0>::from_string("300.000000 VESTS");
+            op.vesting_shares = latest_asset::from_string("300.000000 VESTS");
             op.delegator = "alice";
             op.delegatee = "bob";
 
@@ -6204,8 +6290,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             const account_object &alice_acc = db.get_account("alice");
             const account_object &bob_acc = db.get_account("bob");
 
-            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == asset<0, 17, 0>::from_string("300.000000 VESTS"));
-            BOOST_REQUIRE(bob_acc.received_vesting_shares == asset<0, 17, 0>::from_string("300.000000 VESTS"));
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == latest_asset::from_string("300.000000 VESTS"));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares == latest_asset::from_string("300.000000 VESTS"));
 
             BOOST_TEST_MESSAGE("--- Test that the delegation object is correct. ");
 
@@ -6214,11 +6300,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(delegation != nullptr);
             BOOST_REQUIRE(delegation->delegator == op.delegator);
-            BOOST_REQUIRE(delegation->vesting_shares == asset<0, 17, 0>::from_string("300.000000 VESTS"));
+            BOOST_REQUIRE(delegation->vesting_shares == latest_asset::from_string("300.000000 VESTS"));
 
             validate_database();
             tx.clear();
-            op.vesting_shares = asset<0, 17, 0>::from_string("400.000000 VESTS");
+            op.vesting_shares = latest_asset::from_string("400.000000 VESTS");
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
@@ -6227,14 +6313,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(delegation != nullptr);
             BOOST_REQUIRE(delegation->delegator == op.delegator);
-            BOOST_REQUIRE(delegation->vesting_shares == asset<0, 17, 0>::from_string("400.000000 VESTS"));
-            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == asset<0, 17, 0>::from_string("400.000000 VESTS"));
-            BOOST_REQUIRE(bob_acc.received_vesting_shares == asset<0, 17, 0>::from_string("400.000000 VESTS"));
+            BOOST_REQUIRE(delegation->vesting_shares == latest_asset::from_string("400.000000 VESTS"));
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == latest_asset::from_string("400.000000 VESTS"));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares == latest_asset::from_string("400.000000 VESTS"));
 
 
             tx.clear();
             op.delegator = "alice";
-            op.vesting_shares = asset<0, 17, 0>::from_string("000.000000 VESTS");
+            op.vesting_shares = latest_asset::from_string("000.000000 VESTS");
             tx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             tx.operations.push_back(op);
             tx.sign(alice_private_key, db.get_chain_id());
@@ -6243,9 +6329,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             BOOST_REQUIRE(delegation != nullptr);
             BOOST_REQUIRE(delegation->delegator == op.delegator);
-            BOOST_REQUIRE(delegation->vesting_shares == asset<0, 17, 0>::from_string("0.000000 VESTS"));
-            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == asset<0, 17, 0>::from_string("0.000000 VESTS"));
-            BOOST_REQUIRE(bob_acc.received_vesting_shares == asset<0, 17, 0>::from_string("0.000000 VESTS"));
+            BOOST_REQUIRE(delegation->vesting_shares == latest_asset::from_string("0.000000 VESTS"));
+            BOOST_REQUIRE(alice_acc.delegated_vesting_shares == latest_asset::from_string("0.000000 VESTS"));
+            BOOST_REQUIRE(bob_acc.received_vesting_shares == latest_asset::from_string("0.000000 VESTS"));
 
             BOOST_TEST_MESSAGE("--- Test that effective vesting shares is accurate and being applied.");
             tx.operations.clear();
@@ -6298,14 +6384,14 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             ACTORS((judge)(dan)(nathan));
 
             const auto &pmark = create_prediction_market("PMARK", judge_id);
-            const auto &core = asset_id_type()(db);
+            const auto &core = db.get_asset(STEEM_SYMBOL_NAME);
 
             int64_t init_balance(1000000);
-            transfer(committee_account, judge_id, asset<0, 17, 0>(init_balance));
-            transfer(committee_account, dan_id, asset<0, 17, 0>(init_balance));
-            transfer(committee_account, nathan_id, asset<0, 17, 0>(init_balance));
+            transfer(committee_account, judge_id, latest_asset(init_balance));
+            transfer(committee_account, dan_id, latest_asset(init_balance));
+            transfer(committee_account, nathan_id, latest_asset(init_balance));
 
-            borrow(dan, pmark.amount(1000), asset<0, 17, 0>(1000));
+            borrow(dan, pmark.amount(1000), latest_asset(1000));
             // force settle with 0 outcome
             force_global_settle(pmark, pmark.amount(100) / core.amount(0));
 

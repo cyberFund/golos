@@ -426,7 +426,7 @@ namespace steemit {
                 t->async([=, &db = database()]() {
                     const auto &acct_idx = db.get_index<chain::account_index>().indices().get<chain::by_name>();
 
-                    if (db.has_hardfork(STEEMIT_HARDFORK_0_17)) {
+                    if (db.has_hardfork(STEEMIT_HARDFORK_0_17__177)) {
                         protocol::pow2_operation<0, 17, 0> op;
                         protocol::equihash_pow work;
                         work.input.prev_block = block_id;

@@ -1675,7 +1675,7 @@ namespace steemit {
                 });
 
                 push_virtual_operation(
-                        comment_payout_update_operation<0, 16, 0>(comment.author, to_string(comment.permlink)));
+                        comment_payout_update_operation<0, 17, 0>(comment.author, to_string(comment.permlink)));
 
                 const auto &vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
                 auto vote_itr = vote_idx.lower_bound(comment.id);

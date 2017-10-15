@@ -475,12 +475,12 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_TEST_MESSAGE("Verify that double-signing causes an exception");
             trx.sign(bob_private_key, db.get_chain_id());
             trx.sign(bob_private_key, db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(trx, 0), tx_duplicate_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(trx, 0), protocol::exceptions::transaction::tx_duplicate_sig<>);
 
             BOOST_TEST_MESSAGE("Verify that signing with an extra, unused key fails");
             trx.signatures.pop_back();
             trx.sign(generate_private_key("bogus"), db.get_chain_id());
-            STEEMIT_REQUIRE_THROW(db.push_transaction(trx, 0), tx_irrelevant_sig);
+            STEEMIT_REQUIRE_THROW(db.push_transaction(trx, 0), protocol::exceptions::transaction::tx_irrelevant_sig<>);
 
             BOOST_TEST_MESSAGE("Verify that signing once with the proper key passes");
             trx.signatures.pop_back();

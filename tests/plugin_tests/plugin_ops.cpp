@@ -4,7 +4,7 @@
 
 #include <steemit/application/plugin.hpp>
 #include <steemit/chain/generic_custom_operation_interpreter.hpp>
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
 
 #include "../common/database_fixture.hpp"
 
