@@ -411,22 +411,22 @@ namespace steemit {
             auto head_block_num = b.block_num();
             auto head_block_time = b.timestamp;
             auto block_id = b.id();
-
             fc::thread *mainthread = &fc::thread::current();
             _total_hashes = 0;
             _hash_start_time = fc::time_point::now();
-
             auto stop = head_block_time + fc::seconds(STEEMIT_BLOCK_INTERVAL * 2);
             uint32_t thread_num = 0;
             uint32_t num_threads = _mining_threads;
             uint32_t target = db.get_pow_summary_target();
-
+            const auto &acct_idx = db.get_index<chain::account_index>().indices().get<chain::by_name>();
+            auto acct_it = acct_idx.find(miner);
+            bool has_account = (acct_it != acct_idx.end());
+            bool has_hardfork_17 = db.has_hardfork(STEEMIT_HARDFORK_0_17__177);
+            bool has_hardfork_16 = db.has_hardfork(STEEMIT_HARDFORK_0_16__551);
             for (auto &t : _thread_pool) {
                 thread_num++;
-                t->async([=, &db = database()]() {
-                    const auto &acct_idx = db.get_index<chain::account_index>().indices().get<chain::by_name>();
-
-                    if (db.has_hardfork(STEEMIT_HARDFORK_0_17__177)) {
+                t->async([=]() {
+                    if (has_hardfork_17) {
                         protocol::pow2_operation<0, 17, 0> op;
                         protocol::equihash_pow work;
                         work.input.prev_block = block_id;
@@ -452,11 +452,9 @@ namespace steemit {
                                 protocol::signed_transaction trx;
                                 work.prev_block = this->_head_block_id;
                                 op.work = work;
-
-                                if (acct_idx.find(miner) == acct_idx.end()) {
+                                if (!has_account) {
                                     op.new_owner_key = pub;
                                 }
-
                                 trx.operations.push_back(op);
                                 trx.ref_block_num = head_block_num;
                                 trx.ref_block_prefix = work.input.prev_block._hash[1];
@@ -475,7 +473,7 @@ namespace steemit {
                                 return;
                             }
                         }
-                    } else if (db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
+                    } else if (has_hardfork_16) {
                         protocol::pow2_operation<0, 16, 0> op;
                         protocol::equihash_pow work;
                         work.input.prev_block = block_id;
@@ -503,11 +501,9 @@ namespace steemit {
                                 protocol::signed_transaction trx;
                                 work.prev_block = this->_head_block_id;
                                 op.work = work;
-
-                                if (acct_idx.find(miner) == acct_idx.end()) {
+                                if (!has_account) {
                                     op.new_owner_key = pub;
                                 }
-
                                 trx.operations.push_back(op);
                                 trx.ref_block_num = head_block_num;
                                 trx.ref_block_prefix = work.input.prev_block._hash[1];
@@ -536,7 +532,6 @@ namespace steemit {
                         op.props = {protocol::asset<0, 16, 0>(_miner_prop_vote.account_creation_fee.amount,
                                                               _miner_prop_vote.account_creation_fee.symbol_name()),
                                     _miner_prop_vote.maximum_block_size, _miner_prop_vote.sbd_interest_rate};
-
                         while (true) {
                             //  if( ((op.nonce/num_threads) % 1000) == 0 ) idump((op.nonce));
                             if (fc::time_point::now() > stop) {
@@ -555,11 +550,9 @@ namespace steemit {
                                 ++this->_head_block_num; /// signal other workers to stop
                                 protocol::signed_transaction trx;
                                 op.work = work;
-
-                                if (acct_idx.find(miner) == acct_idx.end()) {
+                                if (!has_account) {
                                     op.new_owner_key = pub;
                                 }
-
                                 trx.operations.push_back(op);
                                 trx.ref_block_num = head_block_num;
                                 trx.ref_block_prefix = work.input.prev_block._hash[1];

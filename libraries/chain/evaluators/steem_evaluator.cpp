@@ -78,7 +78,9 @@ namespace steemit {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
                     w.created = this->db.head_block_time();
-                    w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size, o.props.sbd_interest_rate};
+                    w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
+                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
                 });
             }
         }
