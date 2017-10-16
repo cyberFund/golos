@@ -402,7 +402,7 @@ namespace steemit {
              * @param to_account - the account to receive the new vesting shares
              * @param STEEM - STEEM to be converted to vesting shares
              */
-            asset<0, 17, 0> create_vesting(const account_object &to_account, asset<0, 17, 0> steem);
+            asset<0, 17, 0> create_vesting(const account_object &to_account, const asset<0, 17, 0> &steem);
 
             void adjust_total_payout(const comment_object &a, const asset<0, 17, 0> &sbd, const asset<0, 17, 0> &curator_sbd_value,
                                      const asset<0, 17, 0> &beneficiary_value);

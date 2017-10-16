@@ -184,9 +184,7 @@ namespace steemit {
             }
 
             const auto &comment = this->db.get_comment(o.author, o.permlink);
-            if (!o.allow_curation_rewards || !o.allow_votes ||
-                asset<0, 17, 0>(o.max_accepted_payout.amount, o.max_accepted_payout.symbol_name()) <
-                comment.max_accepted_payout) {
+            if (!o.allow_curation_rewards || !o.allow_votes || o.max_accepted_payout < comment.max_accepted_payout) {
                 FC_ASSERT(comment.abs_rshares == 0,
                           "One of the included comment options requires the comment to have no rshares allocated to it.");
             }
@@ -200,8 +198,7 @@ namespace steemit {
                       "Curation rewards cannot be re-enabled.");
             FC_ASSERT(comment.allow_votes >= o.allow_votes, "Voting cannot be re-enabled.");
             FC_ASSERT(comment.max_accepted_payout >=
-                      typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(o.max_accepted_payout.amount,
-                                                                      o.max_accepted_payout.symbol_name()),
+                      o.max_accepted_payout,
                       "A comment cannot accept a greater payout.");
             FC_ASSERT(comment.percent_steem_dollars >= o.percent_steem_dollars,
                       "A comment cannot accept a greater percent SBD.");
@@ -1414,10 +1411,11 @@ namespace steemit {
 
             if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
                 /// pay the witness that includes this POW
-                this->db.adjust_supply(this->db.get_pow_reward(), true);
+                asset<0, 17, 0> inc_reward = this->db.get_pow_reward();
+                this->db.adjust_supply(inc_reward, true);
 
                 const auto &inc_witness = this->db.get_account(dgp.current_witness);
-                this->db.template create_vesting(inc_witness, this->db.get_pow_reward());
+                this->db.template create_vesting(inc_witness, inc_reward);
             }
         }
 
@@ -1456,7 +1454,7 @@ namespace steemit {
                 FC_ASSERT(this->db.head_block_time() - challenged.last_owner_proved > STEEMIT_OWNER_CHALLENGE_COOLDOWN);
 
                 this->db.adjust_balance(challenger, -STEEMIT_OWNER_CHALLENGE_FEE);
-                this->db.template create_vesting(this->db.get_account(o.challenged), STEEMIT_OWNER_CHALLENGE_FEE);
+                this->db.create_vesting(this->db.get_account(o.challenged), STEEMIT_OWNER_CHALLENGE_FEE);
 
                 this->db.modify(challenged, [&](account_object &a) {
                     a.owner_challenged = true;
@@ -1471,7 +1469,7 @@ namespace steemit {
                         "Account cannot be challenged because it was recently challenged.");
 
                 this->db.adjust_balance(challenger, -STEEMIT_ACTIVE_CHALLENGE_FEE);
-                this->db.template create_vesting(this->db.get_account(o.challenged), STEEMIT_ACTIVE_CHALLENGE_FEE);
+                this->db.create_vesting(this->db.get_account(o.challenged), STEEMIT_ACTIVE_CHALLENGE_FEE);
 
                 this->db.modify(challenged, [&](account_object &a) {
                     a.active_challenged = true;

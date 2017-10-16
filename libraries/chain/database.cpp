@@ -1139,7 +1139,7 @@ namespace steemit {
             return assets;
         }
 
-        asset<0, 17, 0> database::create_vesting(const account_object &to_account, asset<0, 17, 0> steem) {
+        asset<0, 17, 0> database::create_vesting(const account_object &to_account, const asset<0, 17, 0> &steem) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
                 asset<0, 17, 0> new_vesting = steem * cprops.get_vesting_share_price();
@@ -1920,7 +1920,7 @@ namespace steemit {
             asset<0, 17, 0> percent(
                     protocol::calc_percent_reward_per_hour<STEEMIT_LIQUIDITY_APR_PERCENT>(props.virtual_supply.amount),
                     STEEM_SYMBOL_NAME);
-            return std::max(percent, asset<0, 17, 0>(STEEMIT_MIN_LIQUIDITY_REWARD));
+            return std::max(percent, STEEMIT_MIN_LIQUIDITY_REWARD);
         }
 
         asset<0, 17, 0> database::get_content_reward() const {
@@ -1930,7 +1930,7 @@ namespace steemit {
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
                 asset<0, 17, 0> percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
                         props.virtual_supply.amount), STEEM_SYMBOL_NAME);
-                reward = std::max(percent, asset<0, 17, 0>(STEEMIT_MIN_CONTENT_REWARD));
+                reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
             }
 
             return reward;
@@ -1943,7 +1943,7 @@ namespace steemit {
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
                 asset<0, 17, 0> percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
                         props.virtual_supply.amount), STEEM_SYMBOL_NAME);
-                reward = std::max(percent, asset<0, 17, 0>(STEEMIT_MIN_CURATE_REWARD));
+                reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
             }
 
             return reward;
@@ -1961,9 +1961,9 @@ namespace steemit {
             asset<0, 17, 0> pay;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
-                pay = std::max(percent, asset<0, 17, 0>(STEEMIT_MIN_PRODUCER_REWARD));
+                pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
             } else {
-                pay = std::max(percent, asset<0, 17, 0>(STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16));
+                pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16);
             }
 
             /// pay witness in vesting shares
@@ -1986,7 +1986,7 @@ namespace steemit {
             /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
             if (props.num_pow_witnesses < STEEMIT_MAX_WITNESSES &&
                 props.head_block_number < STEEMIT_START_VESTING_BLOCK) {
-                return {0, STEEM_SYMBOL_NAME};
+                return asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             }
 #endif
 
