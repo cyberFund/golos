@@ -77,7 +77,7 @@ namespace fc {
     void from_variant(const fc::variant &var, steemit::protocol::operation &vo) {
         static std::map<string, uint32_t> to_tag = []() {
             std::map<string, uint32_t> name_map;
-            for (int i = 0; i < steemit::protocol::operation::count(); ++i) {
+            for (unsigned int i = 0; i < steemit::protocol::operation::count(); ++i) {
                 steemit::protocol::operation tmp;
                 tmp.set_which(i);
                 string n;

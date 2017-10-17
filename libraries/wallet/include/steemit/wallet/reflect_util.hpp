@@ -42,14 +42,11 @@ namespace steemit {
                 const static std::string prefix = "steemit::protocol::";
                 const static std::string suffix = "_operation";
                 // graphene::chain::.*_operation
-                if ((name.size() >= prefix.size() + suffix.size())
-                    && (name.substr(0, prefix.size()) == prefix)
-                    &&
-                    (name.substr(name.size() - suffix.size(), suffix.size()) ==
-                     suffix)
-                        ) {
-                            return name.substr(prefix.size(),
-                                    name.size() - prefix.size() - suffix.size());
+                if ((name.size() >= prefix.size() + suffix.size()) && (name.substr(0, prefix.size()) == prefix) &&
+                    (name.substr(name.size() - suffix.size() - std::distance(name.find('<'), name.find('>')),
+                                 suffix.size() - std::distance(name.find('<'), name.find('>'))) == suffix)) {
+                    return name.substr(prefix.size(), name.size() - prefix.size() - suffix.size() -
+                                                      std::distance(name.find('<'), name.find('>')));
                 }
 
                 // If this line spams the console, please don't just comment it out.
