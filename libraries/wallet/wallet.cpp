@@ -45,7 +45,7 @@
 #include <steemit/private_message/private_message_operations.hpp>
 #include <steemit/wallet/wallet.hpp>
 #include <steemit/wallet/api_documentation.hpp>
-#include <steemit/wallet/reflect_util.hpp>
+#include <steemit/wallet/reflect_utilities.hpp>
 
 #include <steemit/account_by_key/account_by_key_api.hpp>
 
