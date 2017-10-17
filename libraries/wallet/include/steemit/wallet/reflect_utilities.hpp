@@ -20,15 +20,16 @@ namespace steemit {
                 const static std::string suffix = "_operation";
                 // graphene::chain::.*_operation
                 if ((name.size() >= prefix.size() + suffix.size()) && (name.substr(0, prefix.size()) == prefix) &&
-                    (name.substr(name.size() - suffix.size() - name.find('>') + name.find('<'),
-                                 suffix.size()) == suffix)) {
-                    return name.substr(prefix.size(), name.size() - prefix.size() - suffix.size() -
-                            name.find('>') + name.find('<'));
+                    (name.substr(name.size() - suffix.size() - name.find('>') + name.find('<'), suffix.size()) ==
+                     suffix)) {
+                    return name.substr(prefix.size(),
+                                       name.size() - prefix.size() - suffix.size() - name.find('>') + name.find('<'));
                 }
 
                 // If this line spams the console, please don't just comment it out.
                 // Instead, add code above to deal specifically with the names that are causing the spam.
-                wlog("don't know how to clean name: ${name}", ("name", name));
+                wlog("don't know how to clean name: ${name}, suffix: ${suffix}", ("name", name)("suffix", name.substr(
+                        name.size() - suffix.size() - name.find('>') + name.find('<'), suffix.size())));
                 return name;
             }
 
