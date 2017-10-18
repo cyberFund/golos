@@ -1011,7 +1011,8 @@ namespace steemit {
 
                 /// save the head block so we can recover its transactions
                 optional<signed_block> head_block = fetch_block_by_id(head_id);
-                STEEMIT_ASSERT(head_block.valid(), exceptions::chain::undo_database::pop_empty_chain<>, "there are no blocks to pop");
+                STEEMIT_ASSERT(head_block.valid(), exceptions::chain::undo_database::pop_empty_chain<>,
+                               "there are no blocks to pop");
 
                 _fork_db.pop_block();
                 undo();
@@ -1108,7 +1109,8 @@ namespace steemit {
 
         std::pair<asset<0, 17, 0>, asset<0, 17, 0>> database::create_sbd(const account_object &to_account,
                                                                          asset<0, 17, 0> steem) {
-            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets(protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME), protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME));
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets(protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME),
+                                                               protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME));
 
             try {
                 if (steem.amount == 0) {
@@ -4414,6 +4416,9 @@ namespace steemit {
             FC_ASSERT(_hardfork_versions[hardforks.last_hardfork] <= STEEMIT_BLOCKCHAIN_VERSION,
                       "Blockchain version is older than last applied hardfork");
             FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
+
+            steemit::version::state::instance().current_version = protocol::hardfork_version(0,
+                                                                                             hardforks.last_hardfork);
         }
 
         void database::reset_virtual_schedule_time() {
@@ -4490,17 +4495,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
@@ -5165,7 +5170,10 @@ namespace steemit {
                 call.borrower = bid.bidder;
                 call.collateral = bid.inv_swan_price.base.amount + collateral_from_fund;
                 call.debt = debt_covered;
-                call.call_price = price<0, 17, 0>::call_price(asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol), asset<0, 17, 0>(call.collateral, bid.inv_swan_price.base.symbol), current_feed.maintenance_collateral_ratio);
+                call.call_price = price<0, 17, 0>::call_price(
+                        asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol),
+                        asset<0, 17, 0>(call.collateral, bid.inv_swan_price.base.symbol),
+                        current_feed.maintenance_collateral_ratio);
             });
 
             if (bid.inv_swan_price.base.symbol == STEEM_SYMBOL_NAME) {
@@ -5174,7 +5182,10 @@ namespace steemit {
                 });
             }
 
-            push_virtual_operation(execute_bid_operation<0, 17, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral, bid.inv_swan_price.base.symbol), asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol)));
+            push_virtual_operation(execute_bid_operation<0, 17, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral,
+                                                                                               bid.inv_swan_price.base.symbol),
+                                                                   asset<0, 17, 0>(debt_covered,
+                                                                                   bid.inv_swan_price.quote.symbol)));
 
             remove(bid);
         }
