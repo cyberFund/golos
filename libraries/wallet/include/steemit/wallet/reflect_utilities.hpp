@@ -19,11 +19,21 @@ namespace steemit {
                 const static std::string prefix = "steemit::protocol::";
                 const static std::string suffix = "_operation";
                 // graphene::chain::.*_operation
-                if ((name.size() >= prefix.size() + suffix.size()) && (name.substr(0, prefix.size()) == prefix) &&
-                    (name.substr(name.size() - suffix.size() - name.find('>') + name.find('<') - 1, suffix.size()) ==
-                     suffix)) {
-                    return name.substr(prefix.size(),
-                                       name.size() - prefix.size() - suffix.size() - name.find('>') + name.find('<'));
+                if (name.find('<') != std::string::npos && name.find('>') != std::string::npos) {
+                    if ((name.size() >= prefix.size() + suffix.size()) && (name.substr(0, prefix.size()) == prefix) &&
+                        (name.substr(name.size() - suffix.size() - name.find('>') + name.find('<') - 1,
+                                     suffix.size()) == suffix)) {
+
+                        return name.substr(prefix.size(), name.size() - prefix.size() - suffix.size() - name.find('>') +
+                                                          name.find('<'));
+                    }
+                } else if ((name.size() >= prefix.size() + suffix.size()) &&
+                           (name.substr(0, prefix.size()) == prefix) &&
+                           (name.substr(name.size() - suffix.size(), suffix.size()) == suffix)) {
+
+                    result = name.substr(prefix.size(), name.size() - prefix.size() - suffix.size());
+
+                    return result;
                 }
 
                 // If this line spams the console, please don't just comment it out.

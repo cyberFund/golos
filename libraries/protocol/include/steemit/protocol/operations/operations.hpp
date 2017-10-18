@@ -19,18 +19,25 @@ namespace steemit {
         /** NOTE: do not change the order of any operations prior to the virtual operations
          * or it will trigger a hardfork.
          */
-        typedef fc::static_variant<vote_operation<0, 16, 0>, comment_operation<0, 16, 0>,
+        typedef fc::static_variant<
+                vote_operation<0, 16, 0>,
+                comment_operation<0, 16, 0>,
 
-                transfer_operation<0, 16, 0>, transfer_to_vesting_operation<0, 16, 0>,
+                transfer_operation<0, 16, 0>,
+                transfer_to_vesting_operation<0, 16, 0>,
                 withdraw_vesting_operation<0, 16, 0>,
 
-                limit_order_create_operation<0, 16, 0>, limit_order_cancel_operation<0, 16, 0>,
+                limit_order_create_operation<0, 16, 0>,
+                limit_order_cancel_operation<0, 16, 0>,
 
-                feed_publish_operation<0, 16, 0>, convert_operation<0, 16, 0>,
+                feed_publish_operation<0, 16, 0>,
+                convert_operation<0, 16, 0>,
 
-                account_create_operation<0, 16, 0>, account_update_operation<0, 16, 0>,
+                account_create_operation<0, 16, 0>,
+                account_update_operation<0, 16, 0>,
 
-                witness_update_operation<0, 16, 0>, account_witness_vote_operation<0, 16, 0>,
+                witness_update_operation<0, 16, 0>,
+                account_witness_vote_operation<0, 16, 0>,
                 account_witness_proxy_operation<0, 16, 0>,
 
                 pow_operation<0, 16, 0>,
@@ -39,36 +46,52 @@ namespace steemit {
 
                 report_over_production_operation<0, 16, 0>,
 
-                delete_comment_operation<0, 16, 0>, custom_json_operation,
-                comment_options_operation<0, 16, 0>, set_withdraw_vesting_route_operation<0, 16, 0>,
-                limit_order_create2_operation<0, 16, 0>, challenge_authority_operation<0, 16, 0>,
-                prove_authority_operation<0, 16, 0>, request_account_recovery_operation<0, 16, 0>,
-                recover_account_operation<0, 16, 0>, change_recovery_account_operation<0, 16, 0>,
+                delete_comment_operation<0, 16, 0>,
+                custom_json_operation,
+                comment_options_operation<0, 16, 0>,
+                set_withdraw_vesting_route_operation<0, 16, 0>,
+                limit_order_create2_operation<0, 16, 0>,
+                challenge_authority_operation<0, 16, 0>,
+                prove_authority_operation<0, 16, 0>,
+                request_account_recovery_operation<0, 16, 0>,
+                recover_account_operation<0, 16, 0>,
+                change_recovery_account_operation<0, 16, 0>,
 
-                escrow_transfer_operation<0, 16, 0>, escrow_dispute_operation<0, 16, 0>,
+                escrow_transfer_operation<0, 16, 0>,
+                escrow_dispute_operation<0, 16, 0>,
                 escrow_release_operation<0, 16, 0>,
 
-                pow2_operation<0, 16, 0>, escrow_approve_operation<0, 16, 0>,
+                pow2_operation<0, 16, 0>,
+                escrow_approve_operation<0, 16, 0>,
 
-                transfer_to_savings_operation<0, 16, 0>, transfer_from_savings_operation<0, 16, 0>,
+                transfer_to_savings_operation<0, 16, 0>,
+                transfer_from_savings_operation<0, 16, 0>,
                 cancel_transfer_from_savings_operation<0, 16, 0>,
 
-                custom_binary_operation, decline_voting_rights_operation<0, 16, 0>,
-                reset_account_operation<0, 16, 0>, set_reset_account_operation<0, 16, 0>,
+                custom_binary_operation,
+                decline_voting_rights_operation<0, 16, 0>,
+                reset_account_operation<0, 16, 0>,
+                set_reset_account_operation<0, 16, 0>,
                 comment_benefactor_reward_operation<0, 16, 0>,
 
-                vote_operation<0, 17, 0>, comment_operation<0, 17, 0>,
+                vote_operation<0, 17, 0>,
+                comment_operation<0, 17, 0>,
 
-                transfer_operation<0, 17, 0>, transfer_to_vesting_operation<0, 17, 0>,
+                transfer_operation<0, 17, 0>,
+                transfer_to_vesting_operation<0, 17, 0>,
                 withdraw_vesting_operation<0, 17, 0>,
 
-                limit_order_create_operation<0, 17, 0>, limit_order_cancel_operation<0, 17, 0>,
+                limit_order_create_operation<0, 17, 0>,
+                limit_order_cancel_operation<0, 17, 0>,
 
-                feed_publish_operation<0, 17, 0>, convert_operation<0, 17, 0>,
+                feed_publish_operation<0, 17, 0>,
+                convert_operation<0, 17, 0>,
 
-                account_create_operation<0, 17, 0>, account_update_operation<0, 17, 0>,
+                account_create_operation<0, 17, 0>,
+                account_update_operation<0, 17, 0>,
 
-                witness_update_operation<0, 17, 0>, account_witness_vote_operation<0, 17, 0>,
+                witness_update_operation<0, 17, 0>,
+                account_witness_vote_operation<0, 17, 0>,
                 account_witness_proxy_operation<0, 17, 0>,
 
                 pow_operation<0, 17, 0>,
@@ -76,30 +99,46 @@ namespace steemit {
                 report_over_production_operation<0, 17, 0>,
 
                 delete_comment_operation<0, 17, 0>,
-                comment_options_operation<0, 17, 0>, set_withdraw_vesting_route_operation<0, 17, 0>,
-                limit_order_create2_operation<0, 17, 0>, challenge_authority_operation<0, 17, 0>,
-                prove_authority_operation<0, 17, 0>, request_account_recovery_operation<0, 17, 0>,
-                recover_account_operation<0, 17, 0>, change_recovery_account_operation<0, 17, 0>,
+                comment_options_operation<0, 17, 0>,
+                set_withdraw_vesting_route_operation<0, 17, 0>,
+                limit_order_create2_operation<0, 17, 0>,
+                challenge_authority_operation<0, 17, 0>,
+                prove_authority_operation<0, 17, 0>,
+                request_account_recovery_operation<0, 17, 0>,
+                recover_account_operation<0, 17, 0>,
+                change_recovery_account_operation<0, 17, 0>,
 
-                escrow_transfer_operation<0, 17, 0>, escrow_dispute_operation<0, 17, 0>,
+                escrow_transfer_operation<0, 17, 0>,
+                escrow_dispute_operation<0, 17, 0>,
                 escrow_release_operation<0, 17, 0>,
 
-                pow2_operation<0, 17, 0>, escrow_approve_operation<0, 17, 0>,
+                pow2_operation<0, 17, 0>,
+                escrow_approve_operation<0, 17, 0>,
 
-                transfer_to_savings_operation<0, 17, 0>, transfer_from_savings_operation<0, 17, 0>,
+                transfer_to_savings_operation<0, 17, 0>,
+                transfer_from_savings_operation<0, 17, 0>,
                 cancel_transfer_from_savings_operation<0, 17, 0>,
 
                 decline_voting_rights_operation<0, 17, 0>,
-                reset_account_operation<0, 17, 0>, set_reset_account_operation<0, 17, 0>,
-                comment_benefactor_reward_operation<0, 17, 0>, delegate_vesting_shares_operation<0, 17, 0>,
-                account_create_with_delegation_operation<0, 17, 0>, comment_payout_extension_operation<0, 17, 0>,
+                reset_account_operation<0, 17, 0>,
+                set_reset_account_operation<0, 17, 0>,
+                comment_benefactor_reward_operation<0, 17, 0>,
+                delegate_vesting_shares_operation<0, 17, 0>,
+                account_create_with_delegation_operation<0, 17, 0>,
+                comment_payout_extension_operation<0, 17, 0>,
 
-                asset_create_operation<0, 17, 0>, asset_update_operation<0, 17, 0>,
-                asset_update_bitasset_operation<0, 17, 0>, asset_update_feed_producers_operation<0, 17, 0>,
-                asset_issue_operation<0, 17, 0>, asset_reserve_operation<0, 17, 0>,
-                asset_fund_fee_pool_operation<0, 17, 0>, asset_settle_operation<0, 17, 0>,
-                asset_force_settle_operation<0, 17, 0>, asset_global_settle_operation<0, 17, 0>,
-                asset_publish_feed_operation<0, 17, 0>, asset_claim_fees_operation<0, 17, 0>,
+                asset_create_operation<0, 17, 0>,
+                asset_update_operation<0, 17, 0>,
+                asset_update_bitasset_operation<0, 17, 0>,
+                asset_update_feed_producers_operation<0, 17, 0>,
+                asset_issue_operation<0, 17, 0>,
+                asset_reserve_operation<0, 17, 0>,
+                asset_fund_fee_pool_operation<0, 17, 0>,
+                asset_settle_operation<0, 17, 0>,
+                asset_force_settle_operation<0, 17, 0>,
+                asset_global_settle_operation<0, 17, 0>,
+                asset_publish_feed_operation<0, 17, 0>,
+                asset_claim_fees_operation<0, 17, 0>,
 
                 call_order_update_operation<0, 17, 0>,
 
@@ -107,7 +146,8 @@ namespace steemit {
 
                 override_transfer_operation<0, 17, 0>,
 
-                proposal_create_operation<0, 17, 0>, proposal_update_operation<0, 17, 0>,
+                proposal_create_operation<0, 17, 0>,
+                proposal_update_operation<0, 17, 0>,
                 proposal_delete_operation<0, 17, 0>,
 
                 bid_collateral_operation<0, 17, 0>,
