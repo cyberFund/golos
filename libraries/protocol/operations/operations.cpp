@@ -98,13 +98,13 @@ namespace fc {
                                   0).str();
             } else {
                 std::stringstream major_stream;
-                major_stream << std::dec << steemit::version::state::instance().current_version.major();
+                major_stream << std::dec << std::to_string(steemit::version::state::instance().current_version.major());
 
                 std::stringstream hardfork_stream;
-                hardfork_stream << std::dec << steemit::version::state::instance().current_version.hardfork();
+                hardfork_stream << std::dec << std::to_string(steemit::version::state::instance().current_version.hardfork());
 
                 std::stringstream release_stream;
-                release_stream << std::dec << steemit::version::state::instance().current_version.release();
+                release_stream << std::dec << std::to_string(steemit::version::state::instance().current_version.release());
 
                 operation_name = (boost::format(ar[0].as_string().append("_operation<%1%, %2%, %3%>")) %
                                   major_stream.str() % hardfork_stream.str() % release_stream.str()).str();
