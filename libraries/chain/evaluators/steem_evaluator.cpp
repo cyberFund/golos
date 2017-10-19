@@ -197,8 +197,7 @@ namespace steemit {
             FC_ASSERT(comment.allow_curation_rewards >= o.allow_curation_rewards,
                       "Curation rewards cannot be re-enabled.");
             FC_ASSERT(comment.allow_votes >= o.allow_votes, "Voting cannot be re-enabled.");
-            FC_ASSERT(comment.max_accepted_payout >=
-                      o.max_accepted_payout,
+            FC_ASSERT(comment.max_accepted_payout >= o.max_accepted_payout,
                       "A comment cannot accept a greater payout.");
             FC_ASSERT(comment.percent_steem_dollars >= o.percent_steem_dollars,
                       "A comment cannot accept a greater percent SBD.");
@@ -550,7 +549,8 @@ namespace steemit {
 
             asset<Major, Hardfork, Release> default_vests(0, VESTS_SYMBOL);
 
-            FC_ASSERT(account.vesting_shares >= default_vests, "Account does not have sufficient Golos Power for withdraw.");
+            FC_ASSERT(account.vesting_shares >= default_vests,
+                      "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
                       "Account does not have sufficient Golos Power for withdraw. Vesting amount: ${a}. Vesting required: ${r}",
                       ("a", account.vesting_shares - account.delegated_vesting_shares)("r", o.vesting_shares));
@@ -742,6 +742,7 @@ namespace steemit {
                     this->db.template create<witness_vote_object>([&](witness_vote_object &v) {
                         v.witness = witness.id;
                         v.account = voter.id;
+                        v.created = this->db.head_block_time();
                     });
 
                     if (this->db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
@@ -755,6 +756,7 @@ namespace steemit {
                     this->db.template create<witness_vote_object>([&](witness_vote_object &v) {
                         v.witness = witness.id;
                         v.account = voter.id;
+                        v.created = this->db.head_block_time();
                     });
                     this->db.modify(witness, [&](witness_object &w) {
                         w.votes += voter.witness_vote_weight();
