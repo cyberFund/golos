@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fc/exception/exception.hpp>
+
 #include <steemit/protocol/protocol.hpp>
 
 #define STEEMIT_ASSERT(expr, exc_type, FORMAT, ...)                \
@@ -11,20 +12,34 @@
 
 namespace steemit {
     namespace protocol {
+        namespace exceptions {
+            namespace transaction {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+                template<uint32_t Code = 3000000,
+                        typename What = boost::mpl::string<'transaction exception'>> using basic = fc::basic_exception<
+                        Code, What>;
 
-        FC_DECLARE_EXCEPTION(transaction_exception, 3000000, "transaction exception")
+                template<uint32_t Code = 3010000, typename What = boost::mpl::string<
+                        'missing required active authority'>> using tx_missing_active_auth = basic<Code, What>;
 
-        FC_DECLARE_DERIVED_EXCEPTION(tx_missing_active_auth, steemit::protocol::transaction_exception, 3010000, "missing required active authority")
+                template<uint32_t Code = 3020000, typename What = boost::mpl::string<
+                        'missing required owner authority'>> using tx_missing_owner_auth = basic<Code, What>;
 
-        FC_DECLARE_DERIVED_EXCEPTION(tx_missing_owner_auth, steemit::protocol::transaction_exception, 3020000, "missing required owner authority")
+                template<uint32_t Code = 3030000, typename What = boost::mpl::string<
+                        'missing required posting authority'>> using tx_missing_posting_auth = basic<Code, What>;
 
-        FC_DECLARE_DERIVED_EXCEPTION(tx_missing_posting_auth, steemit::protocol::transaction_exception, 3030000, "missing required posting authority")
+                template<uint32_t Code = 3040000, typename What = boost::mpl::string<
+                        'missing required other authority'>> using tx_missing_other_auth = basic<Code, What>;
 
-        FC_DECLARE_DERIVED_EXCEPTION(tx_missing_other_auth, steemit::protocol::transaction_exception, 3040000, "missing required other authority")
+                template<uint32_t Code = 3050000, typename What = boost::mpl::string<
+                        'irrelevant signature included'>> using tx_irrelevant_sig = basic<Code, What>;
 
-        FC_DECLARE_DERIVED_EXCEPTION(tx_irrelevant_sig, steemit::protocol::transaction_exception, 3050000, "irrelevant signature included")
-
-        FC_DECLARE_DERIVED_EXCEPTION(tx_duplicate_sig, steemit::protocol::transaction_exception, 3060000, "duplicate signature included")
+                template<uint32_t Code = 3060000, typename What = boost::mpl::string<
+                        'duplicate signature includedty'>> using tx_duplicate_sig = basic<Code, What>;
+#pragma GCC diagnostic pop
+            }
+        }
 
 #define STEEMIT_RECODE_EXC(cause_type, effect_type) \
       catch( const cause_type& e ) \

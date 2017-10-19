@@ -1,26 +1,3 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #include <sstream>
 #include <iomanip>
 #include <deque>
@@ -242,7 +219,7 @@ namespace steemit {
         }
     }
 } // end namespace network::detail
-FC_REFLECT(steemit::network::detail::node_configuration, (listen_endpoint)
+FC_REFLECT((steemit::network::detail::node_configuration), (listen_endpoint)
         (accept_incoming_connections)
         (wait_if_endpoint_is_busy)
         (private_key));
@@ -2380,7 +2357,7 @@ namespace steemit {
                     reply_message.item_hashes_available = _delegate->get_block_ids(fetch_blockchain_item_ids_message_received.blockchain_synopsis,
                             reply_message.total_remaining_item_count);
                 }
-                catch (const peer_is_on_an_unreachable_fork &) {
+                catch (const exceptions::peer_is_on_an_unreachable_fork<> &) {
                     dlog("Peer is on a fork and there's no set of blocks we can provide to switch them to our fork");
                     // we reply with an empty list as if we had an empty blockchain;
                     // we don't want to disconnect because they may be able to provide
@@ -2501,7 +2478,7 @@ namespace steemit {
       // in the second case, we should mark this peer as one we're unable to sync with and
       // disconnect them.
       if (reference_point != item_hash_t() && synopsis.empty())
-        FC_THROW_EXCEPTION(block_older_than_undo_history, "You are on a fork I'm unable to switch to");
+        FC_THROW_EXCEPTION(exceptions::block_older_than_undo_history<>, "You are on a fork I'm unable to switch to");
 #endif
 
                 if (number_of_blocks_after_reference_point) {
@@ -2552,7 +2529,7 @@ namespace steemit {
                     peer->item_ids_requested_from_peer = boost::make_tuple(blockchain_synopsis, fc::time_point::now());
                     peer->send_message(fetch_blockchain_item_ids_message(_sync_item_type, blockchain_synopsis));
                 }
-                catch (const block_older_than_undo_history &e) {
+                catch (const exceptions::block_older_than_undo_history<> &e) {
                     synopsis_exception = e;
                 }
                 if (synopsis_exception) {
@@ -3142,7 +3119,7 @@ namespace steemit {
 
                     client_accepted_block = true;
                 }
-                catch (const block_older_than_undo_history &e) {
+                catch (const exceptions::block_older_than_undo_history<> &e) {
                     fc_wlog(fc::logger::get("sync"),
                             "p2p failed to push sync block #${block_num} ${block_hash}: block is on a fork older than our undo history would "
                                     "allow us to switch to: ${e}",
@@ -3546,7 +3523,7 @@ namespace steemit {
                 catch (const fc::canceled_exception &) {
                     throw;
                 }
-                catch (const unlinkable_block_exception &e) {
+                catch (const exceptions::unlinkable_block<> &e) {
                     restart_sync_exception = e;
                 }
                 catch (const fc::exception &e) {
@@ -4650,7 +4627,7 @@ namespace steemit {
             void node_impl::connect_to_endpoint(const fc::ip::endpoint &remote_endpoint) {
                 VERIFY_CORRECT_THREAD();
                 if (is_connection_to_endpoint_in_progress(remote_endpoint))
-                    FC_THROW_EXCEPTION(already_connected_to_requested_peer, "already connected to requested endpoint ${endpoint}",
+                    FC_THROW_EXCEPTION(exceptions::already_connected_to_requested_peer<>, "already connected to requested endpoint ${endpoint}",
                             ("endpoint", remote_endpoint));
 
                 dlog("node_impl::connect_to_endpoint(${endpoint})", ("endpoint", remote_endpoint));

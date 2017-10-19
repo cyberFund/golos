@@ -109,5 +109,5 @@ namespace steemit {
     }
 } // graphene::network
 
-FC_REFLECT(steemit::network::message_header, (size)(msg_type))
-FC_REFLECT_DERIVED(steemit::network::message, (steemit::network::message_header), (data))
+FC_REFLECT((steemit::network::message_header), (size)(msg_type))
+FC_REFLECT_DERIVED((steemit::network::message), ((steemit::network::message_header)), (data))

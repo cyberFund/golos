@@ -1,7 +1,8 @@
 #include <steemit/protocol/get_config.hpp>
 #include <steemit/protocol/config.hpp>
 #include <steemit/protocol/asset.hpp>
-#include <steemit/protocol/version.hpp>
+
+#include <steemit/version/version.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -16,7 +17,7 @@ namespace steemit {
 #endif
 
             result["GRAPHENE_CURRENT_DB_VERSION"] = GRAPHENE_CURRENT_DB_VERSION;
-            result["SBD_SYMBOL"] = SBD_SYMBOL;
+            result["SBD_SYMBOL_NAME"] = SBD_SYMBOL_NAME;
             result["STEEMIT_100_PERCENT"] = STEEMIT_100_PERCENT;
             result["STEEMIT_1_PERCENT"] = STEEMIT_1_PERCENT;
             result["STEEMIT_ADDRESS_PREFIX"] = STEEMIT_ADDRESS_PREFIX;
@@ -118,7 +119,7 @@ namespace steemit {
             result["STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS"] = STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS;
             result["STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD"] = STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD;
             result["STEEMIT_VOTE_REGENERATION_SECONDS"] = STEEMIT_VOTE_REGENERATION_SECONDS;
-            result["STEEM_SYMBOL"] = STEEM_SYMBOL;
+            result["STEEM_SYMBOL"] = STEEM_SYMBOL_NAME;
             result["VESTS_SYMBOL"] = VESTS_SYMBOL;
             result["BLOCKCHAIN_NAME"] = BLOCKCHAIN_NAME;
             result["STEEMIT_ADDRESS_PREFIX"] = STEEMIT_ADDRESS_PREFIX;

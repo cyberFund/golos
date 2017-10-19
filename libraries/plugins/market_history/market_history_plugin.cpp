@@ -28,7 +28,8 @@ namespace steemit {
 
                     }
 
-                    void operator()(const fill_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const fill_order_operation<Major, Hardfork, Release> &o) const {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
@@ -75,7 +76,7 @@ namespace steemit {
 
 
                         auto max_history = _plugin.get_max_history_per_bucket();
-                        for (auto bucket : buckets) {
+                        for (const auto bucket : buckets) {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
@@ -92,7 +93,9 @@ namespace steemit {
                                 continue;
                             }
 
-                            price trade_price = o.current_pays / o.open_pays;
+                            price<Major, Hardfork, Release> v_trade_price = (o.current_pays / o.open_pays);
+
+                            price<0, 17, 0> trade_price(asset<0, 17, 0>(v_trade_price.base.template amount, v_trade_price.base.template symbol_name()), asset<0, 17, 0>(v_trade_price.quote.template amount, v_trade_price.quote.template symbol_name()));
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +
@@ -151,7 +154,8 @@ namespace steemit {
                         }
                     }
 
-                    void operator()(const fill_call_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const fill_call_order_operation<Major, Hardfork, Release> &o) const {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
@@ -201,7 +205,7 @@ namespace steemit {
                                 continue;
                             }
 
-                            price trade_price = o.pays / o.receives;
+                            price<0, 17, 0> trade_price = o.pays / o.receives;
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +
@@ -260,7 +264,8 @@ namespace steemit {
                         }
                     }
 
-                    void operator()(const fill_settlement_order_operation &o) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const fill_settlement_order_operation<Major, Hardfork, Release> &o) const {
                         //ilog( "processing ${o}", ("o",o) );
                         const auto &buckets = _plugin.get_tracked_buckets();
                         auto &db = _plugin.database();
@@ -310,7 +315,7 @@ namespace steemit {
                                 continue;
                             }
 
-                            price trade_price = o.pays / o.receives;
+                            price<0, 17, 0> trade_price = o.pays / o.receives;
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +

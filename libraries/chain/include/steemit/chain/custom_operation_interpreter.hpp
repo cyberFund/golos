@@ -1,17 +1,12 @@
-
 #pragma once
 
 #include <memory>
 
+#include <steemit/protocol/operations/custom_operations.hpp>
+
 namespace graphene {
     namespace schema {
         struct abstract_schema;
-    }
-}
-
-namespace steemit {
-    namespace protocol {
-        struct custom_json_operation;
     }
 }
 

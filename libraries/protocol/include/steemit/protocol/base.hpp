@@ -2,7 +2,8 @@
 
 #include <steemit/protocol/types.hpp>
 #include <steemit/protocol/authority.hpp>
-#include <steemit/protocol/version.hpp>
+
+#include <steemit/version/version.hpp>
 
 #include <fc/time.hpp>
 
@@ -60,7 +61,8 @@ namespace steemit {
          *  @{
          */
 
-        struct base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct base_operation : public static_version<Major, Hardfork, Release> {
             void get_required_authorities(vector<authority> &) const {
             }
 
@@ -80,10 +82,15 @@ namespace steemit {
             void validate() const {
             }
 
-            static uint64_t calculate_data_fee(uint64_t bytes, uint64_t price_per_kbyte);
+            static uint64_t calculate_data_fee(uint64_t bytes, uint64_t price_per_kbyte) {
+            auto result = (fc::uint128(bytes) * price_per_kbyte) / 1024;
+            FC_ASSERT(result <= STEEMIT_MAX_SHARE_SUPPLY);
+            return result.to_uint64();
+        }
         };
 
-        struct virtual_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct virtual_operation : public base_operation<Major, Hardfork, Release> {
             bool is_virtual() const {
                 return true;
             }
@@ -94,7 +101,7 @@ namespace steemit {
         };
 
         typedef static_variant<
-                void_t,
+                type_traits::void_t,
                 version,              // Normal witness version reporting, for diagnostics and voting
                 hardfork_version_vote // Voting for the next hardfork to trigger
         > block_header_extensions;
@@ -107,7 +114,7 @@ namespace steemit {
          */
 
         typedef static_variant<
-                void_t
+                type_traits::void_t
         > future_extensions;
 
         typedef flat_set<block_header_extensions> block_header_extensions_type;
@@ -125,5 +132,5 @@ namespace steemit {
     }
 } // steemit::protocol
 
-FC_REFLECT_TYPENAME(steemit::protocol::block_header_extensions)
-FC_REFLECT_TYPENAME(steemit::protocol::future_extensions)
+FC_REFLECT_TYPENAME((steemit::protocol::block_header_extensions))
+FC_REFLECT_TYPENAME((steemit::protocol::future_extensions))

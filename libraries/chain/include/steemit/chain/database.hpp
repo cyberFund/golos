@@ -1,15 +1,17 @@
 #pragma once
 
-#include <steemit/chain/global_property_object.hpp>
-#include <steemit/chain/hardfork.hpp>
-#include <steemit/chain/proposal_object.hpp>
-#include <steemit/chain/node_property_object.hpp>
+#include <steemit/version/hardfork.hpp>
+
+#include <steemit/chain/objects/global_property_object.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
+#include <steemit/chain/objects/hardfork_object.hpp>
+#include <steemit/chain/objects/node_property_object.hpp>
 #include <steemit/chain/fork_database.hpp>
 #include <steemit/chain/block_log.hpp>
-#include <steemit/chain/asset_object.hpp>
-#include <steemit/chain/comment_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/market_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/market_object.hpp>
 
 #include <steemit/protocol/protocol.hpp>
 
@@ -116,10 +118,10 @@ namespace steemit {
              * @param asset_name ID of the asset to get balance in
              * @return owner's balance in asset
              */
-            asset get_balance(account_name_type owner, asset_name_type asset_name) const;
+            asset<0, 17, 0> get_balance(account_name_type owner, asset_name_type asset_name) const;
 
             /// This is an overloaded method.
-            asset get_balance(const account_object &owner, const asset_object &asset_obj) const;
+            asset<0, 17, 0> get_balance(const account_object &owner, const asset_object &asset_obj) const;
 
             bool is_authorized_asset(const account_object &acct, const asset_object &asset_obj) const;
 
@@ -220,7 +222,7 @@ namespace steemit {
             /**
              *  Deducts fee from the account and the share supply
              */
-            void pay_fee(const account_object &a, asset fee);
+            void pay_fee(const account_object &a, asset<0, 17, 0> fee);
 
             void old_update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
 
@@ -228,8 +230,6 @@ namespace steemit {
              * Update an account's bandwidth and returns if the account had the requisite bandwidth for the trx
              */
             bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
-
-            void max_bandwidth_per_share() const;
 
             void process_bids(const asset_bitasset_data_object &bad);
 
@@ -383,7 +383,7 @@ namespace steemit {
              *  by STEEM and increasing the sbd supply by the specified amount.
              *  @return the sbd created and deposited to_account, may return STEEM if there is no median feed
              */
-            std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> create_sbd(const account_object &to_account, asset<0, 17, 0> steem);
 
             /**
              *  Creates vesting steem values
@@ -402,18 +402,18 @@ namespace steemit {
              * @param to_account - the account to receive the new vesting shares
              * @param STEEM - STEEM to be converted to vesting shares
              */
-            asset create_vesting(const account_object &to_account, asset steem);
+            asset<0, 17, 0> create_vesting(const account_object &to_account, const asset<0, 17, 0> &steem);
 
-            void adjust_total_payout(const comment_object &a, const asset &sbd, const asset &curator_sbd_value,
-                                     const asset &beneficiary_value);
+            void adjust_total_payout(const comment_object &a, const asset<0, 17, 0> &sbd, const asset<0, 17, 0> &curator_sbd_value,
+                                     const asset<0, 17, 0> &beneficiary_value);
 
-            void adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_bid);
+            void adjust_liquidity_reward(const account_object &owner, const asset<0, 17, 0> &volume, bool is_bid);
 
-            void adjust_balance(const account_object &a, const asset &delta);
+            void adjust_balance(const account_object &a, const asset<0, 17, 0> &delta);
 
-            void adjust_savings_balance(const account_object &a, const asset &delta);
+            void adjust_savings_balance(const account_object &a, const asset<0, 17, 0> &delta);
 
-            void adjust_supply(const asset &delta, bool adjust_vesting = false);
+            void adjust_supply(const asset<0, 17, 0> &delta, bool adjust_vesting = false);
 
             /**
              * This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's             rshares2 changes
@@ -424,9 +424,9 @@ namespace steemit {
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);
 
-            asset get_balance(const account_object &a, const asset_name_type &asset_name) const;
+            asset<0, 17, 0> get_balance(const account_object &a, const asset_name_type &asset_name) const;
 
-            asset get_savings_balance(const account_object &a, const asset_name_type &asset_name) const;
+            asset<0, 17, 0> get_savings_balance(const account_object &a, const asset_name_type &asset_name) const;
 
             /** this updates the votes for witnesses as a result of account voting proxy changing */
             void adjust_proxied_witness_votes(const account_object &a, const std::array<share_type,
@@ -490,25 +490,25 @@ namespace steemit {
 
             void update_median_feed();
 
-            asset get_liquidity_reward() const;
+            asset<0, 17, 0> get_liquidity_reward() const;
 
-            asset get_content_reward() const;
+            asset<0, 17, 0> get_content_reward() const;
 
-            asset get_producer_reward();
+            asset<0, 17, 0> get_producer_reward();
 
-            asset get_curation_reward() const;
+            asset<0, 17, 0> get_curation_reward() const;
 
-            asset get_pow_reward() const;
+            asset<0, 17, 0> get_pow_reward() const;
 
             uint16_t get_curation_rewards_percent(const comment_object &c) const;
 
             share_type pay_reward_funds(share_type reward);
 
-            asset get_payout_extension_cost(const comment_object &input_comment,
+            asset<0, 17, 0> get_payout_extension_cost(const comment_object &input_comment,
                                             const fc::time_point_sec &input_time) const;
 
             time_point_sec get_payout_extension_time(const comment_object &input_comment,
-                                                     const asset &input_cost) const;
+                                                     const asset<0, 17, 0> &input_cost) const;
 
             void pay_liquidity_reward();
 
@@ -516,9 +516,9 @@ namespace steemit {
              * Helper method to return the current sbd value of a given amount of
              * STEEM.  Return 0 SBD if there isn't a current_median_history
              */
-            asset to_sbd(const asset &steem) const;
+            asset<0, 17, 0> to_sbd(const asset<0, 17, 0> &steem) const;
 
-            asset to_steem(const asset &sbd) const;
+            asset<0, 17, 0> to_steem(const asset<0, 17, 0> &sbd) const;
 
             time_point_sec head_block_time() const;
 
@@ -564,7 +564,7 @@ namespace steemit {
              * Force settlement happens without delay at the swan price, deducting from force-settlement fund
              * No more asset updates may be issued.
              */
-            void globally_settle_asset(const asset_object &bitasset, const price &settle_price);
+            void globally_settle_asset(const asset_object &bitasset, const price<0, 17, 0> &settle_price);
 
             void cancel_order(const force_settlement_object &order, bool create_virtual_op = true);
 
@@ -574,8 +574,7 @@ namespace steemit {
 
             void cancel_bid(const collateral_bid_object &bid, bool create_virtual_op = true);
 
-            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund,
-                             const price_feed &current_feed);
+            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund, const price_feed<0, 17, 0> &current_feed);
 
             /**
              * @brief Process a new limit order through the markets
@@ -598,21 +597,20 @@ namespace steemit {
              * 3 - both were filled
              */
             ///@{
-            int match(const limit_order_object &bid, const limit_order_object &ask, const price &trade_price);
+            int match(const limit_order_object &bid, const limit_order_object &ask, const price<0, 17, 0> &trade_price);
 
             /// @return the amount of asset settled
-            asset match(const call_order_object &call, const force_settlement_object &settle, const price &match_price,
-                        asset max_settlement);
+            asset<0, 17, 0> match(const call_order_object &call, const force_settlement_object &settle, const price<0, 17, 0> &match_price, const asset<0, 17, 0> &max_settlement);
             ///@}
 
             /**
              * @return true if the order was completely filled and thus freed.
              */
-            bool fill_order(const limit_order_object &order, const asset &pays, const asset &receives);
+            bool fill_order(const limit_order_object &order, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives);
 
-            bool fill_order(const call_order_object &order, const asset &pays, const asset &receives);
+            bool fill_order(const call_order_object &order, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives);
 
-            bool fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives);
+            bool fill_order(const force_settlement_object &settle, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives);
 
             /**
              *  Starting with the least collateralized orders, fill them if their
@@ -629,11 +627,11 @@ namespace steemit {
             bool check_call_orders(const asset_object &mia, bool enable_black_swan = true);
 
             // helpers to fill_order
-            void pay_order(const account_object &receiver, const asset &receives, const asset &pays);
+            void pay_order(const account_object &receiver, const asset<0, 17, 0> &receives, const asset<0, 17, 0> &pays);
 
-            asset calculate_market_fee(const asset_object &recv_asset, const asset &trade_amount);
+            asset<0, 17, 0> calculate_market_fee(const asset_object &recv_asset, const asset<0, 17, 0> &trade_amount);
 
-            asset pay_market_fees(const asset_object &recv_asset, const asset &receives);
+            asset<0, 17, 0> pay_market_fees(const asset_object &recv_asset, const asset<0, 17, 0> &receives);
 
             ///@}
 
@@ -700,6 +698,7 @@ namespace steemit {
 
             void apply_operation(const operation &op);
 
+            void adjust_sbd_balance(const account_object &a, account_balance_object &b);
 
             ///Steps involved in applying a new block
             ///@{
@@ -724,7 +723,7 @@ namespace steemit {
 
             void clear_expired_orders();
 
-            string to_pretty_string(const asset &a) const;
+            string to_pretty_string(const asset<0, 17, 0> &a) const;
 
             void update_expired_feeds();
 
@@ -766,7 +765,6 @@ namespace steemit {
             uint32_t _current_block_num = 0;
             uint16_t _current_trx_in_block = 0;
             uint16_t _current_op_in_trx = 0;
-            uint16_t _current_virtual_op = 0;
 
             flat_map<uint32_t, block_id_type> _checkpoints;
 
@@ -779,8 +777,6 @@ namespace steemit {
 
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
-
-            void adjust_sbd_balance(const account_object &a, account_balance_object &b);
         };
     }
 }

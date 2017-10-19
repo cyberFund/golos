@@ -49,13 +49,13 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::plugin::auth_util::check_authority_signature_params,
+FC_REFLECT((steemit::plugin::auth_util::check_authority_signature_params),
         (account_name)
                 (level)
                 (dig)
                 (sigs)
 )
-FC_REFLECT(steemit::plugin::auth_util::check_authority_signature_result,
+FC_REFLECT((steemit::plugin::auth_util::check_authority_signature_result),
         (keys)
 )
 

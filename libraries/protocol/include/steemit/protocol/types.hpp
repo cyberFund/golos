@@ -62,19 +62,11 @@ namespace steemit {
     using fc::ecc::range_proof_type;
     using fc::ecc::range_proof_info;
     using fc::ecc::commitment_type;
-    struct void_t {
-
-    };
 
     namespace type_traits {
-        template<bool>
-        struct static_range;
+        struct void_t {
 
-        template<bool...>
-        struct bool_pack;
-
-        template<bool... v>
-        using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
+        };
     }
 
     namespace protocol {
@@ -252,13 +244,13 @@ namespace fc {
     void from_variant(const fc::variant &var, steemit::protocol::extended_private_key_type &vo);
 }
 
-FC_REFLECT(steemit::protocol::public_key_type, (key_data))
-FC_REFLECT(steemit::protocol::public_key_type::binary_key, (data)(check))
-FC_REFLECT(steemit::protocol::extended_public_key_type, (key_data))
-FC_REFLECT(steemit::protocol::extended_public_key_type::binary_key, (check)(data))
-FC_REFLECT(steemit::protocol::extended_private_key_type, (key_data))
-FC_REFLECT(steemit::protocol::extended_private_key_type::binary_key, (check)(data))
+FC_REFLECT((steemit::protocol::public_key_type), (key_data))
+FC_REFLECT((steemit::protocol::public_key_type::binary_key), (data)(check))
+FC_REFLECT((steemit::protocol::extended_public_key_type), (key_data))
+FC_REFLECT((steemit::protocol::extended_public_key_type::binary_key), (check)(data))
+FC_REFLECT((steemit::protocol::extended_private_key_type), (key_data))
+FC_REFLECT((steemit::protocol::extended_private_key_type::binary_key), (check)(data))
 
-FC_REFLECT_TYPENAME(steemit::protocol::share_type)
+FC_REFLECT_TYPENAME((steemit::protocol::share_type))
 
-FC_REFLECT(steemit::void_t,)
+FC_REFLECT((steemit::type_traits::void_t),)

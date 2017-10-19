@@ -22,8 +22,8 @@ struct tx_signing_result {
     steemit::protocol::signature_type sig;
 };
 
-FC_REFLECT(tx_signing_request, (tx)(wif))
-FC_REFLECT(tx_signing_result, (digest)(sig_digest)(key)(sig))
+FC_REFLECT((tx_signing_request), (tx)(wif))
+FC_REFLECT((tx_signing_result), (digest)(sig_digest)(key)(sig))
 
 int main(int argc, char **argv, char **envp) {
     // hash key pairs on stdin

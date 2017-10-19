@@ -47,13 +47,9 @@ namespace steemit {
 
             id_type id;
 
-            protocol::price high() const {
-                return protocol::asset(high_base, key.base) / protocol::asset(high_quote, key.quote);
-            }
+            protocol::price<0, 17, 0> high() const;
 
-            protocol::price low() const {
-                return protocol::asset(low_base, key.base) / protocol::asset(low_quote, key.quote);
-            }
+            protocol::price<0, 17, 0> low() const;
 
             bucket_key key;
             protocol::share_type high_base;
@@ -75,9 +71,9 @@ namespace steemit {
     }
 }
 
-FC_REFLECT_DERIVED(steemit::market_history::bucket_key, (steemit::market_history::key_interface), (seconds)(open));
+FC_REFLECT_DERIVED((steemit::market_history::bucket_key), ((steemit::market_history::key_interface)), (seconds)(open));
 
-FC_REFLECT(steemit::market_history::bucket_object,
+FC_REFLECT((steemit::market_history::bucket_object),
            (id)(key)(high_base)(high_quote)(low_base)(low_quote)(open_base)(open_quote)(close_base)(close_quote)(
                    base_volume)(quote_volume))
 CHAINBASE_SET_INDEX_TYPE(steemit::market_history::bucket_object, steemit::market_history::bucket_index);

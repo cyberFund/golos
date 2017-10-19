@@ -1,7 +1,7 @@
 #include <steemit/account_statistics/account_statistics_api.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 namespace steemit {
     namespace account_statistics {

@@ -2,10 +2,10 @@
 
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/hardfork.hpp>
+#include <steemit/version/hardfork.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/asset_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
 
 #include <fc/crypto/digest.hpp>
 
@@ -19,7 +19,7 @@ BOOST_FIXTURE_TEST_SUITE(uia_tests, database_fixture)
 BOOST_AUTO_TEST_CASE(create_advanced_uia) {
         try {
             asset_name_type test_asset_id = "ADVANCED";
-            asset_create_operation creator;
+            asset_create_operation<0, 17, 0> creator;
             creator.issuer = account_name_type();
             creator.asset_name = "ADVANCED";
             creator.common_options.max_supply = 100000000;
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
             creator.common_options.issuer_permissions =
                     charge_market_fee | white_list | override_authority | transfer_restricted | disable_confidential;
             creator.common_options.flags = charge_market_fee | white_list | override_authority | disable_confidential;
-            creator.common_options.core_exchange_rate = price({asset(2), asset(1, asset_symbol_type(1))});
+            creator.common_options.core_exchange_rate = price<0, 17, 0>({asset<0, 17, 0>(2), asset<0, 17, 0>(1, asset_symbol_type(1))});
             creator.common_options.whitelist_authorities = creator.common_options.blacklist_authorities = {
                     account_name_type()
             };
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(create_advanced_uia) {
 
             const asset_object &test_asset = db.get_asset(test_asset_id);
             BOOST_CHECK(test_asset.asset_name == test_asset_id);
-            BOOST_CHECK(asset(1, test_asset_id) * test_asset.options.core_exchange_rate == asset(2));
+            BOOST_CHECK(typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(1, test_asset_id) * test_asset.options.core_exchange_rate == typename BOOST_IDENTITY_TYPE((asset<0, 17, 0>))(2));
             BOOST_CHECK(test_asset.options.flags & white_list);
             BOOST_CHECK(test_asset.options.max_supply == 100000000);
             BOOST_CHECK(!test_asset.is_market_issued());
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(override_transfer_test) {
             BOOST_TEST_MESSAGE("Checking dan's balance");
             BOOST_REQUIRE_EQUAL(get_balance(dan, advanced), 1000);
 
-            override_transfer_operation otrans;
+            override_transfer_operation<0, 17, 0> otrans;
             otrans.issuer = advanced.issuer;
             otrans.from = dan.name;
             otrans.to = eric.name;
@@ -70,10 +70,10 @@ BOOST_AUTO_TEST_CASE(override_transfer_test) {
             trx.operations.push_back(otrans);
 
             BOOST_TEST_MESSAGE("Require throwing without signature");
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), steemit::protocol::exceptions::transaction::tx_missing_active_auth<>);
             BOOST_TEST_MESSAGE("Require throwing with dan's signature");
             sign(trx, dan_private_key);
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), tx_missing_active_auth);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, 0), steemit::protocol::exceptions::transaction::tx_missing_active_auth<>);
             BOOST_TEST_MESSAGE("Pass with issuer's signature");
             trx.signatures.clear();
             sign(trx, sam_private_key);
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(override_transfer_test2) {
             BOOST_REQUIRE_EQUAL(get_balance(dan, advanced), 1000);
 
             trx.operations.clear();
-            override_transfer_operation otrans;
+            override_transfer_operation<0, 17, 0> otrans;
             otrans.issuer = advanced.issuer;
             otrans.from = dan.name;
             otrans.to = eric.name;
@@ -123,9 +123,9 @@ BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
             account_name_type vikram_id = account_create("vikram").name;
             trx.clear();
 
-            asset_issue_operation op;
+            asset_issue_operation<0, 17, 0> op;
             op.issuer = db.get_asset(uia_id).issuer;
-            op.asset_to_issue = asset(1000, uia_id);
+            op.asset_to_issue = asset<0, 17, 0>(1000, uia_id);
             op.issue_to_account = nathan_id;
             trx.operations.emplace_back(op);
             trx.set_expiration(db.head_block_time() +
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
             // Make a whitelist, now it should fail
             {
                 BOOST_TEST_MESSAGE("Changing the whitelist authority");
-                asset_update_operation uop;
+                asset_update_operation<0, 17, 0> uop;
                 uop.issuer = izzy_id;
                 uop.asset_to_update = uia_id;
                 uop.new_options = db.get_asset(uia_id).options;
@@ -153,10 +153,10 @@ BOOST_AUTO_TEST_CASE(issue_whitelist_uia) {
             trx.operations.back() = op;
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
 
-            account_whitelist_operation wop;
+            account_whitelist_operation<0, 17, 0> wop;
             wop.authorizing_account = izzy_id;
             wop.account_to_list = vikram_id;
-            wop.new_listing = account_whitelist_operation::white_listed;
+            wop.new_listing = account_whitelist_operation<0, 17, 0>::white_listed;
 
             trx.operations.back() = wop;
             // Fail because whitelist function is restricted to members only
@@ -194,19 +194,19 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             trx.clear();
 
             BOOST_TEST_MESSAGE("Atempting to transfer asset ADVANCED from nathan to dan when dan is not whitelisted, should fail");
-            transfer_operation op;
+            transfer_operation<0, 17, 0> op;
             op.from = nathan.name;
             op.to = dan.name;
             op.amount = advanced.amount(100); //({advanced.amount(0), nathan.id, dan.name, advanced.amount(100)});
             trx.operations.push_back(op);
             //Fail because dan is not whitelisted.
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), transfer_to_account_not_whitelisted);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), typename BOOST_IDENTITY_TYPE((steemit::chain::exceptions::operations::transfer::to_account_not_whitelisted<0, 17, 0>)));
 
             BOOST_TEST_MESSAGE("Adding dan to whitelist for asset ADVANCED");
-            account_whitelist_operation wop;
+            account_whitelist_operation<0, 17, 0> wop;
             wop.authorizing_account = izzy_id;
             wop.account_to_list = dan.name;
-            wop.new_listing = account_whitelist_operation::white_listed;
+            wop.new_listing = account_whitelist_operation<0, 17, 0>::white_listed;
             trx.operations.back() = wop;
             PUSH_TX(db, trx, ~0);
             BOOST_TEST_MESSAGE("Attempting to transfer from nathan to dan after whitelisting dan, should succeed");
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             BOOST_TEST_MESSAGE("Attempting to blacklist nathan");
             {
                 BOOST_TEST_MESSAGE("Changing the blacklist authority");
-                asset_update_operation uop;
+                asset_update_operation<0, 17, 0> uop;
                 uop.issuer = izzy_id;
                 uop.asset_to_update = advanced.asset_name;
                 uop.new_options = advanced.options;
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
                             advanced.options.blacklist_authorities.end());
             }
 
-            wop.new_listing |= account_whitelist_operation::black_listed;
+            wop.new_listing |= account_whitelist_operation<0, 17, 0>::black_listed;
             wop.account_to_list = nathan.name;
             trx.operations.back() = wop;
             PUSH_TX(db, trx, ~0);
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             STEEMIT_REQUIRE_THROW(PUSH_TX(db, trx, ~0), fc::exception);
 
             BOOST_TEST_MESSAGE("Attempting to burn from nathan after blacklisting, should fail");
-            asset_reserve_operation burn;
+            asset_reserve_operation<0, 17, 0> burn;
             burn.payer = nathan.name;
             burn.amount_to_reserve = advanced.amount(10);
             trx.operations.back() = burn;
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
 
             {
                 BOOST_TEST_MESSAGE("Changing the blacklist authority to dan");
-                asset_update_operation op;
+                asset_update_operation<0, 17, 0> op;
                 op.issuer = izzy_id;
                 op.asset_to_update = advanced.asset_name;
                 op.new_options = advanced.options;
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             BOOST_TEST_MESSAGE("Blacklisting nathan by dan");
             wop.authorizing_account = dan.name;
             wop.account_to_list = nathan.name;
-            wop.new_listing = account_whitelist_operation::black_listed;
+            wop.new_listing = account_whitelist_operation<0, 17, 0>::black_listed;
             trx.operations.back() = wop;
             PUSH_TX(db, trx, ~0);
 
@@ -290,12 +290,12 @@ BOOST_AUTO_TEST_CASE(transfer_whitelist_uia) {
             //Remove nathan from committee's whitelist, add him to dan's. This should not authorize him to hold ADVANCED.
             wop.authorizing_account = izzy_id;
             wop.account_to_list = nathan.name;
-            wop.new_listing = account_whitelist_operation::no_listing;
+            wop.new_listing = account_whitelist_operation<0, 17, 0>::no_listing;
             trx.operations.back() = wop;
             PUSH_TX(db, trx, ~0);
             wop.authorizing_account = dan.name;
             wop.account_to_list = nathan.name;
-            wop.new_listing = account_whitelist_operation::white_listed;
+            wop.new_listing = account_whitelist_operation<0, 17, 0>::white_listed;
             trx.operations.back() = wop;
             PUSH_TX(db, trx, ~0);
 
@@ -324,8 +324,8 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
 
             BOOST_TEST_MESSAGE("Issuing 1000 UIA to Alice");
 
-            auto _issue_uia = [&](const account_object &recipient, asset amount) {
-                asset_issue_operation op;
+            auto _issue_uia = [&](const account_object &recipient, asset<0, 17, 0> amount) {
+                asset_issue_operation<0, 17, 0> op;
                 op.issuer = db.get_asset(amount.symbol_name()).issuer;
                 op.asset_to_issue = amount;
                 op.issue_to_account = recipient.name;
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
             _issue_uia(alice, uia.amount(1000));
 
             auto _restrict_xfer = [&](bool xfer_flag) {
-                asset_update_operation op;
+                asset_update_operation<0, 17, 0> op;
                 op.issuer = sam_id;
                 op.asset_to_update = uia.asset_name;
                 op.new_options = uia.options;
@@ -360,18 +360,17 @@ BOOST_AUTO_TEST_CASE(transfer_restricted_test) {
 
             BOOST_TEST_MESSAGE("Enable transfer_restricted, send fails");
 
-            transfer_operation xfer_op;
+            transfer_operation<0, 17, 0> xfer_op;
             xfer_op.from = alice_id;
             xfer_op.to = bob_id;
             xfer_op.amount = uia.amount(100);
             signed_transaction xfer_tx;
             xfer_tx.operations.push_back(xfer_op);
-            trx.set_expiration(db.head_block_time() +
-                               STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+            trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             sign(xfer_tx, alice_private_key);
 
             _restrict_xfer(true);
-            STEEMIT_REQUIRE_THROW(PUSH_TX(db, xfer_tx), transfer_restricted_transfer_asset);
+            STEEMIT_REQUIRE_THROW(PUSH_TX(db, xfer_tx), typename BOOST_IDENTITY_TYPE((steemit::chain::exceptions::operations::transfer::restricted_transfer_asset<0, 17, 0>)));
 
             BOOST_TEST_MESSAGE("Disable transfer_restricted, send succeeds");
 

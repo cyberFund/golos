@@ -16,14 +16,15 @@ namespace steemit {
             virtual int get_type() const = 0;
         };
 
-        template<typename EvaluatorType, typename OperationType=steemit::protocol::operation>
-        class evaluator : public generic_evaluator<OperationType> {
+        template<typename EvaluatorType, uint8_t Major, uint8_t Hardfork, uint16_t Release,
+                typename OperationType=steemit::protocol::operation>
+        class evaluator : public generic_evaluator<OperationType>,
+                          public protocol::static_version<Major, Hardfork, Release> {
         public:
             typedef OperationType operation_sv_type;
             // typedef typename EvaluatorType::operation_type op_type;
 
-            evaluator(database &d)
-                    : db(d) {
+            evaluator(database &d) : db(d) {
             }
 
             virtual void apply(const OperationType &o) final override {
@@ -43,6 +44,5 @@ namespace steemit {
         protected:
             database &db;
         };
-
     }
 }

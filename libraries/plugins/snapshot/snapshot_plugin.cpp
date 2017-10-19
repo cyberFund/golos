@@ -1,7 +1,7 @@
 #include <steemit/snapshot/snapshot_plugin.hpp>
 #include <steemit/snapshot/snapshot_state.hpp>
 
-#include <steemit/chain/account_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
 #include <steemit/chain/operation_notification.hpp>
 
 #include <steemit/account_by_key/account_by_key_plugin.hpp>
@@ -59,7 +59,8 @@ namespace steemit {
                     void operator()(const T &) const {
                     }
 
-                    void operator()(const chain::hardfork_operation &op) const {
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    void operator()(const chain::hardfork_operation<Major, Hardfork, Release> &op) const {
                         if (op.hardfork_id == STEEMIT_HARDFORK_0_17) {
                             auto &db = _plugin.database();
 

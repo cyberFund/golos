@@ -15,4 +15,4 @@ namespace steemit {
     }
 } // steemit::protocol
 
-FC_REFLECT_DERIVED(steemit::protocol::signed_block, (steemit::protocol::signed_block_header), (transactions))
+FC_REFLECT_DERIVED((steemit::protocol::signed_block), ((steemit::protocol::signed_block_header)), (transactions))

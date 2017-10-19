@@ -1,154 +1,50 @@
 #pragma once
 
+#include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/base.hpp>
 #include <steemit/protocol/block_header.hpp>
-#include <steemit/protocol/asset.hpp>
+#include <steemit/protocol/chain_properties.hpp>
 
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
 
 namespace steemit {
     namespace protocol {
-        struct comment_operation : public base_operation {
-            account_name_type parent_author;
-            string parent_permlink;
-
-            account_name_type author;
-            string permlink;
-            string title;
-            string body;
-            string json_metadata;
-
-            void validate() const;
-
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                a.insert(author);
-            }
-        };
-
-        struct beneficiary_route_type {
-            beneficiary_route_type() {
-            }
-
-            beneficiary_route_type(const account_name_type &a, const uint16_t &w)
-                    : account(a), weight(w) {
-            }
-
-            account_name_type account;
-            uint16_t weight;
-
-            // For use by std::sort such that the route is sorted first by name (ascending)
-            bool operator<(const beneficiary_route_type &o) const {
-                return string_less()(account, o.account);
-            }
-        };
-
-        struct comment_payout_beneficiaries {
-            vector<beneficiary_route_type> beneficiaries;
-
-            void validate() const;
-        };
-
-        typedef static_variant<
-                comment_payout_beneficiaries
-        > comment_options_extension;
-
-        typedef flat_set<comment_options_extension> comment_options_extensions_type;
-
-
-        /**
-         *  Authors of posts may not want all of the benefits that come from creating a post. This
-         *  operation allows authors to update properties associated with their post.
-         *
-         *  The max_accepted_payout may be decreased, but never increased.
-         *  The percent_steem_dollars may be decreased, but never increased
-         *
-         */
-        struct comment_options_operation : public base_operation {
-            account_name_type author;
-            string permlink;
-
-            asset max_accepted_payout = asset(1000000000, SBD_SYMBOL);       /// SBD value of the maximum payout this post will receive
-            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
-            bool allow_votes = true;      /// allows a post to receive votes;
-            bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
-            comment_options_extensions_type extensions;
-
-            void validate() const;
-
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                a.insert(author);
-            }
-        };
-
-        struct comment_payout_extension_operation : public base_operation {
-            account_name_type payer;
-            account_name_type author;
-            string permlink;
-
-            optional<fc::time_point_sec> extension_time;
-            optional<asset> amount;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (amount && amount->symbol == SBD_SYMBOL) {
-                    a.insert(payer);
-                }
-            }
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (amount && amount->symbol == SBD_SYMBOL) {
-                    a.insert(payer);
-                }
-            }
-        };
-
-        struct challenge_authority_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct challenge_authority_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type challenger;
             account_name_type challenged;
             bool require_owner = false;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(challenger);
             }
         };
 
-        struct prove_authority_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct prove_authority_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type challenged;
             bool require_owner = false;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 if (!require_owner) {
                     a.insert(challenged);
                 }
             }
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (require_owner) {
                     a.insert(challenged);
                 }
             }
         };
 
-
-        struct delete_comment_operation : public base_operation {
-            account_name_type author;
-            string permlink;
-
-            void validate() const;
-
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                a.insert(author);
-            }
-        };
-
-
-        struct vote_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct vote_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type voter;
             account_name_type author;
             string permlink;
@@ -156,120 +52,8 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(voter);
-            }
-        };
-
-        /**
-         *  The purpose of this operation is to enable someone to send money contingently to
-         *  another individual. The funds leave the *from* account and go into a temporary balance
-         *  where they are held until *from* releases it to *to* or *to* refunds it to *from*.
-         *
-         *  In the event of a dispute the *agent* can divide the funds between the to/from account.
-         *  Disputes can be raised any time before or on the dispute deadline time, after the escrow
-         *  has been approved by all parties.
-         *
-         *  This operation only creates a proposed escrow transfer. Both the *agent* and *to* must
-         *  agree to the terms of the arrangement by approving the escrow.
-         *
-         *  The escrow agent is paid the fee on approval of all parties. It is up to the escrow agent
-         *  to determine the fee.
-         *
-         *  Escrow transactions are uniquely identified by 'from' and 'escrow_id', the 'escrow_id' is defined
-         *  by the sender.
-         */
-        struct escrow_transfer_operation : public base_operation {
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
-            uint32_t escrow_id = 30;
-
-            asset sbd_amount = asset(0, SBD_SYMBOL);
-            asset steem_amount = asset(0, STEEM_SYMBOL);
-            asset fee;
-
-            time_point_sec ratification_deadline;
-            time_point_sec escrow_expiration;
-
-            string json_meta;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-        };
-
-
-        /**
-         *  The agent and to accounts must approve an escrow transaction for it to be valid on
-         *  the blockchain. Once a part approves the escrow, the cannot revoke their approval.
-         *  Subsequent escrow approve operations, regardless of the approval, will be rejected.
-         */
-        struct escrow_approve_operation : public base_operation {
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
-            account_name_type who; // Either to or agent
-
-            uint32_t escrow_id = 30;
-            bool approve = true;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(who);
-            }
-        };
-
-
-        /**
-         *  If either the sender or receiver of an escrow payment has an issue, they can
-         *  raise it for dispute. Once a payment is in dispute, the agent has authority over
-         *  who gets what.
-         */
-        struct escrow_dispute_operation : public base_operation {
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
-            account_name_type who;
-
-            uint32_t escrow_id = 30;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(who);
-            }
-        };
-
-
-        /**
-         *  This operation can be used by anyone associated with the escrow transfer to
-         *  release funds if they have permission.
-         *
-         *  The permission scheme is as follows:
-         *  If there is no dispute and escrow has not expired, either party can release funds to the other.
-         *  If escrow expires and there is no dispute, either party can release funds to either party.
-         *  If there is a dispute regardless of expiration, the agent can release funds to either party
-         *     following whichever agreement was in place between the parties.
-         */
-        struct escrow_release_operation : public base_operation {
-            account_name_type from;
-            account_name_type to; ///< the original 'to'
-            account_name_type agent;
-            account_name_type who; ///< the account that is attempting to release the funds, determines valid 'receiver'
-            account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
-
-            uint32_t escrow_id = 30;
-            asset sbd_amount = asset(0, SBD_SYMBOL); ///< the amount of sbd to release
-            asset steem_amount = asset(0, STEEM_SYMBOL); ///< the amount of steem to release
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(who);
             }
         };
 
@@ -284,13 +68,14 @@ namespace steemit {
          *
          * This operation is not valid if the user has no vesting shares.
          */
-        struct withdraw_vesting_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct withdraw_vesting_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
-            asset vesting_shares;
+            asset <Major, Hardfork, Release> vesting_shares;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -303,7 +88,9 @@ namespace steemit {
          * can be immediately vested again, circumventing the conversion from
          * vests to steem and back, guaranteeing they maintain their value.
          */
-        struct set_withdraw_vesting_route_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct set_withdraw_vesting_route_operation
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type from_account;
             account_name_type to_account;
             uint16_t percent = 0;
@@ -311,43 +98,10 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from_account);
             }
         };
-
-
-        /**
-         * Witnesses must vote on how to set certain chain properties to ensure a smooth
-         * and well functioning network.  Any time @owner is in the active set of witnesses these
-         * properties will be used to control the blockchain configuration.
-         */
-        struct chain_properties {
-            /**
-             *  This fee, paid in STEEM, is converted into VESTING SHARES for the new account. Accounts
-             *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
-             *  fee requires all accounts to have some kind of commitment to the network that includes the
-             *  ability to vote and make transactions.
-             */
-            asset account_creation_fee =
-                    asset(STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL);
-
-            /**
-             *  This witnesses vote for the maximum_block_size which is used by the network
-             *  to tune rate limiting and capacity
-             */
-            uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-            uint16_t sbd_interest_rate = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
-
-            void validate() const {
-                FC_ASSERT(account_creation_fee.amount >=
-                          STEEMIT_MIN_ACCOUNT_CREATION_FEE);
-                FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-                FC_ASSERT(sbd_interest_rate >= 0);
-                FC_ASSERT(sbd_interest_rate <= STEEMIT_100_PERCENT);
-            }
-        };
-
 
         /**
          *  Users who wish to become a witness must pay a fee acceptable to
@@ -363,16 +117,17 @@ namespace steemit {
          *  contention.  The network will pick the top 21 witnesses for
          *  producing blocks.
          */
-        struct witness_update_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct witness_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             string url;
             public_key_type block_signing_key;
-            chain_properties props;
-            asset fee; ///< the fee paid to register a new witness, should be 10x current block production pay
+            chain_properties<Major, Hardfork, Release> props;
+            asset <Major, Hardfork, Release> fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(owner);
             }
         };
@@ -383,125 +138,44 @@ namespace steemit {
          *
          * If a proxy is specified then all existing votes are removed.
          */
-        struct account_witness_vote_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct account_witness_vote_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             account_name_type witness;
             bool approve = true;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
 
-
-        struct account_witness_proxy_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct account_witness_proxy_operation
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             account_name_type proxy;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
-
-
-        /**
-         * @brief provides a generic way to add higher level protocols on top of witness consensus
-         * @ingroup operations
-         *
-         * There is no validation for this operation other than that required auths are valid
-         */
-        struct custom_operation : public base_operation {
-            flat_set<account_name_type> required_auths;
-            uint16_t id = 0;
-            vector<char> data;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_auths) {
-                    a.insert(i);
-                }
-            }
-        };
-
-
-        /** serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
-         * this operation is designed to be human readable/developer friendly.
-         **/
-        struct custom_json_operation : public base_operation {
-            flat_set<account_name_type> required_auths;
-            flat_set<account_name_type> required_posting_auths;
-            string id; ///< must be less than 32 characters long
-            string json; ///< must be proper utf8 / JSON string.
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_posting_auths) {
-                    a.insert(i);
-                }
-            }
-        };
-
-
-        struct custom_binary_operation : public base_operation {
-            flat_set<account_name_type> required_owner_auths;
-            flat_set<account_name_type> required_active_auths;
-            flat_set<account_name_type> required_posting_auths;
-            vector<authority> required_auths;
-
-            string id; ///< must be less than 32 characters long
-            vector<char> data;
-
-            void validate() const;
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_owner_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_active_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_posting_auths) {
-                    a.insert(i);
-                }
-            }
-
-            void get_required_authorities(vector<authority> &a) const {
-                for (const auto &i : required_auths) {
-                    a.push_back(i);
-                }
-            }
-        };
-
 
         /**
          *  Feeds can only be published by the top N witnesses which are included in every round and are
          *  used to define the exchange rate between steem and the dollar.
          */
-        struct feed_publish_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct feed_publish_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type publisher;
-            price exchange_rate;
+            price<Major, Hardfork, Release> exchange_rate;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(publisher);
             }
         };
@@ -517,13 +191,13 @@ namespace steemit {
             void validate() const;
         };
 
-
-        struct pow_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct pow_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type worker_account;
             block_id_type block_id;
             uint64_t nonce = 0;
             pow work;
-            chain_properties props;
+            chain_properties<Major, Hardfork, Release> props;
 
             void validate() const;
 
@@ -534,17 +208,15 @@ namespace steemit {
             }
 
             /** there is no need to verify authority, the proof of work is sufficient */
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
             }
         };
-
 
         struct pow2_input {
             account_name_type worker_account;
             block_id_type prev_block;
             uint64_t nonce = 0;
         };
-
 
         struct pow2 {
             pow2_input input;
@@ -568,16 +240,17 @@ namespace steemit {
 
         typedef fc::static_variant<pow2, equihash_pow> pow2_work;
 
-        struct pow2_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct pow2_operation : public base_operation<Major, Hardfork, Release> {
             pow2_work work;
-            optional<public_key_type> new_owner_key;
-            chain_properties props;
+            optional <public_key_type> new_owner_key;
+            chain_properties<Major, Hardfork, Release> props;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const;
+            void get_required_active_authorities(flat_set <account_name_type> &a) const;
 
-            void get_required_authorities(vector<authority> &a) const {
+            void get_required_authorities(vector <authority> &a) const {
                 if (new_owner_key) {
                     a.push_back(authority(1, *new_owner_key, 1));
                 }
@@ -598,7 +271,9 @@ namespace steemit {
          * The result of the operation is to transfer the full VESTING STEEM balance
          * of the block producer to the reporter.
          */
-        struct report_over_production_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct report_over_production_operation
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type reporter;
             signed_block_header first_block;
             signed_block_header second_block;
@@ -634,7 +309,8 @@ namespace steemit {
          * The account to recover confirms its identity to the blockchain in
          * the recover account operation.
          */
-        struct request_account_recovery_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct request_account_recovery_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type recovery_account;       ///< The recovery account is listed as the recovery account on the account to recover.
 
             account_name_type account_to_recover;     ///< The account to recover. This is likely due to a compromised owner authority.
@@ -644,7 +320,7 @@ namespace steemit {
 
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(recovery_account);
             }
 
@@ -689,7 +365,8 @@ namespace steemit {
          * complicated, but that is an application level concern, not the blockchain's
          * concern.
          */
-        struct recover_account_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct recover_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account_to_recover;        ///< The account to be recovered
 
             authority new_owner_authority;       ///< The new owner authority as specified in the request account recovery operation.
@@ -698,7 +375,7 @@ namespace steemit {
 
             extensions_type extensions;                ///< Extensions. Not currently used.
 
-            void get_required_authorities(vector<authority> &a) const {
+            void get_required_authorities(vector <authority> &a) const {
                 a.push_back(new_owner_authority);
                 a.push_back(recent_owner_authority);
             }
@@ -711,12 +388,13 @@ namespace steemit {
          *  This operation allows recovery_accoutn to change account_to_reset's owner authority to
          *  new_owner_authority after 60 days of inactivity.
          */
-        struct reset_account_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct reset_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type reset_account;
             account_name_type account_to_reset;
             authority new_owner_authority;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(reset_account);
             }
 
@@ -727,20 +405,21 @@ namespace steemit {
          * This operation allows 'account' owner to control which account has the power
          * to execute the 'reset_account_operation' after 60 days.
          */
-        struct set_reset_account_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct set_reset_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             account_name_type current_reset_account;
             account_name_type reset_account;
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (current_reset_account.size()) {
                     a.insert(account);
                 }
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 if (!current_reset_account.size()) {
                     a.insert(account);
                 }
@@ -766,23 +445,27 @@ namespace steemit {
          * witness vote weights. The top voted witness is explicitly the most trusted
          * witness according to stake.
          */
-        struct change_recovery_account_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct change_recovery_account_operation
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type account_to_recover;     ///< The account that would be recovered in case of compromise
             account_name_type new_recovery_account;   ///< The account that creates the recover request
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account_to_recover);
             }
 
             void validate() const;
         };
 
-        struct decline_voting_rights_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct decline_voting_rights_operation
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             bool decline = true;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
 
@@ -798,13 +481,14 @@ namespace steemit {
          * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
          * of VESTS from voting on the same content twice.
          */
-
-        struct delegate_vesting_shares_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct delegate_vesting_shares_operation
+                : public base_operation<Major, Hardfork, Release> {
             account_name_type delegator;        ///< The account delegating vesting shares
             account_name_type delegatee;        ///< The account receiving vesting shares
-            asset vesting_shares;   ///< The amount of vesting shares delegated
+            asset <Major, Hardfork, Release> vesting_shares;   ///< The amount of vesting shares delegated
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(delegator);
             }
 
@@ -814,49 +498,64 @@ namespace steemit {
 } // steemit::protocol
 
 
-FC_REFLECT(steemit::protocol::reset_account_operation, (reset_account)(account_to_reset)(new_owner_authority))
-FC_REFLECT(steemit::protocol::set_reset_account_operation, (account)(current_reset_account)(reset_account))
+FC_REFLECT((steemit::protocol::reset_account_operation<0, 16, 0>), (reset_account)(account_to_reset)(new_owner_authority))
+FC_REFLECT((steemit::protocol::reset_account_operation<0, 17, 0>), (reset_account)(account_to_reset)(new_owner_authority))
 
+FC_REFLECT((steemit::protocol::set_reset_account_operation<0, 16, 0>), (account)(current_reset_account)(reset_account))
+FC_REFLECT((steemit::protocol::set_reset_account_operation<0, 17, 0>), (account)(current_reset_account)(reset_account))
 
-FC_REFLECT(steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block))
-FC_REFLECT(steemit::protocol::feed_publish_operation, (publisher)(exchange_rate))
-FC_REFLECT(steemit::protocol::pow, (worker)(input)(signature)(work))
-FC_REFLECT(steemit::protocol::pow2, (input)(pow_summary))
-FC_REFLECT(steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce))
-FC_REFLECT(steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary))
-FC_REFLECT(steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
+FC_REFLECT((steemit::protocol::report_over_production_operation<0, 16, 0>), (reporter)(first_block)(second_block))
+FC_REFLECT((steemit::protocol::report_over_production_operation<0, 17, 0>), (reporter)(first_block)(second_block))
 
-FC_REFLECT_TYPENAME(steemit::protocol::pow2_work)
-FC_REFLECT(steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props))
-FC_REFLECT(steemit::protocol::pow2_operation, (work)(new_owner_key)(props))
+FC_REFLECT((steemit::protocol::feed_publish_operation<0, 16, 0>), (publisher)(exchange_rate))
+FC_REFLECT((steemit::protocol::feed_publish_operation<0, 17, 0>), (publisher)(exchange_rate))
 
-FC_REFLECT(steemit::protocol::withdraw_vesting_operation, (account)(vesting_shares))
-FC_REFLECT(steemit::protocol::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest))
-FC_REFLECT(steemit::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee))
-FC_REFLECT(steemit::protocol::account_witness_vote_operation, (account)(witness)(approve))
-FC_REFLECT(steemit::protocol::account_witness_proxy_operation, (account)(proxy))
-FC_REFLECT(steemit::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
-FC_REFLECT(steemit::protocol::vote_operation, (voter)(author)(permlink)(weight))
-FC_REFLECT(steemit::protocol::custom_operation, (required_auths)(id)(data))
-FC_REFLECT(steemit::protocol::custom_json_operation, (required_auths)(required_posting_auths)(id)(json))
-FC_REFLECT(steemit::protocol::custom_binary_operation, (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+FC_REFLECT((steemit::protocol::pow), (worker)(input)(signature)(work))
+FC_REFLECT((steemit::protocol::pow2), (input)(pow_summary))
+FC_REFLECT((steemit::protocol::pow2_input), (worker_account)(prev_block)(nonce))
+FC_REFLECT((steemit::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summary))
 
-FC_REFLECT(steemit::protocol::delete_comment_operation, (author)(permlink));
+FC_REFLECT_TYPENAME((steemit::protocol::pow2_work))
+FC_REFLECT((steemit::protocol::pow_operation<0, 16, 0>), (worker_account)(block_id)(nonce)(work)(props))
+FC_REFLECT((steemit::protocol::pow_operation<0, 17, 0>), (worker_account)(block_id)(nonce)(work)(props))
 
-FC_REFLECT(steemit::protocol::beneficiary_route_type, (account)(weight))
-FC_REFLECT(steemit::protocol::comment_payout_beneficiaries, (beneficiaries))
-FC_REFLECT_TYPENAME(steemit::protocol::comment_options_extension)
-FC_REFLECT(steemit::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions))
+FC_REFLECT((steemit::protocol::pow2_operation<0, 16, 0>), (work)(new_owner_key)(props))
+FC_REFLECT((steemit::protocol::pow2_operation<0, 17, 0>), (work)(new_owner_key)(props))
 
-FC_REFLECT(steemit::protocol::escrow_transfer_operation, (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
-FC_REFLECT(steemit::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve));
-FC_REFLECT(steemit::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id));
-FC_REFLECT(steemit::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount));
-FC_REFLECT(steemit::protocol::challenge_authority_operation, (challenger)(challenged)(require_owner));
-FC_REFLECT(steemit::protocol::prove_authority_operation, (challenged)(require_owner));
-FC_REFLECT(steemit::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
-FC_REFLECT(steemit::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
-FC_REFLECT(steemit::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions));
-FC_REFLECT(steemit::protocol::decline_voting_rights_operation, (account)(decline));
-FC_REFLECT(steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares));
-FC_REFLECT(steemit::protocol::comment_payout_extension_operation, (payer)(author)(permlink)(extension_time)(amount));
+FC_REFLECT((steemit::protocol::withdraw_vesting_operation<0, 16, 0>), (account)(vesting_shares))
+FC_REFLECT((steemit::protocol::withdraw_vesting_operation<0, 17, 0>), (account)(vesting_shares))
+
+FC_REFLECT((steemit::protocol::set_withdraw_vesting_route_operation<0, 16, 0>), (from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT((steemit::protocol::set_withdraw_vesting_route_operation<0, 17, 0>), (from_account)(to_account)(percent)(auto_vest))
+
+FC_REFLECT((steemit::protocol::witness_update_operation<0, 16, 0>), (owner)(url)(block_signing_key)(props)(fee))
+FC_REFLECT((steemit::protocol::witness_update_operation<0, 17, 0>), (owner)(url)(block_signing_key)(props)(fee))
+
+FC_REFLECT((steemit::protocol::account_witness_vote_operation<0, 16, 0>), (account)(witness)(approve))
+FC_REFLECT((steemit::protocol::account_witness_vote_operation<0, 17, 0>), (account)(witness)(approve))
+
+FC_REFLECT((steemit::protocol::account_witness_proxy_operation<0, 16, 0>), (account)(proxy))
+FC_REFLECT((steemit::protocol::account_witness_proxy_operation<0, 17, 0>), (account)(proxy))
+
+FC_REFLECT((steemit::protocol::vote_operation<0, 16, 0>), (voter)(author)(permlink)(weight))
+FC_REFLECT((steemit::protocol::vote_operation<0, 17, 0>), (voter)(author)(permlink)(weight))
+
+FC_REFLECT((steemit::protocol::challenge_authority_operation<0, 16, 0>), (challenger)(challenged)(require_owner));
+FC_REFLECT((steemit::protocol::challenge_authority_operation<0, 17, 0>), (challenger)(challenged)(require_owner));
+
+FC_REFLECT((steemit::protocol::prove_authority_operation<0, 16, 0>), (challenged)(require_owner));
+FC_REFLECT((steemit::protocol::prove_authority_operation<0, 17, 0>), (challenged)(require_owner));
+
+FC_REFLECT((steemit::protocol::request_account_recovery_operation<0, 16, 0>), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+FC_REFLECT((steemit::protocol::request_account_recovery_operation<0, 17, 0>), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+
+FC_REFLECT((steemit::protocol::recover_account_operation<0, 16, 0>), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT((steemit::protocol::recover_account_operation<0, 17, 0>), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+
+FC_REFLECT((steemit::protocol::change_recovery_account_operation<0, 16, 0>), (account_to_recover)(new_recovery_account)(extensions));
+FC_REFLECT((steemit::protocol::change_recovery_account_operation<0, 17, 0>), (account_to_recover)(new_recovery_account)(extensions));
+
+FC_REFLECT((steemit::protocol::decline_voting_rights_operation<0, 16, 0>), (account)(decline));
+FC_REFLECT((steemit::protocol::decline_voting_rights_operation<0, 17, 0>), (account)(decline));
+
+FC_REFLECT((steemit::protocol::delegate_vesting_shares_operation<0, 17, 0>), (delegator)(delegatee)(vesting_shares));

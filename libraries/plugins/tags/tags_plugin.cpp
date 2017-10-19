@@ -6,10 +6,10 @@
 #include <steemit/protocol/config.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/hardfork.hpp>
+#include <steemit/version/hardfork.hpp>
 #include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
@@ -30,8 +30,7 @@ namespace steemit {
 
             class tags_plugin_impl {
             public:
-                tags_plugin_impl(tags_plugin &_plugin)
-                        : _self(_plugin) {
+                tags_plugin_impl(tags_plugin &_plugin) : _self(_plugin) {
                 }
 
                 virtual ~tags_plugin_impl();
@@ -46,7 +45,7 @@ namespace steemit {
             };
 
             tags_plugin_impl::~tags_plugin_impl() {
-                return;
+
             }
 
             struct operation_visitor {
@@ -86,8 +85,7 @@ namespace steemit {
 
                     const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(tag.author, tag.name));
-                    if (itr != idx.end() && itr->author == tag.author &&
-                        itr->tag == tag.name) {
+                    if (itr != idx.end() && itr->author == tag.author && itr->tag == tag.name) {
                         _db.modify(*itr, [&](author_tag_stats_object &stats) {
                             stats.total_posts--;
                         });
@@ -126,8 +124,7 @@ namespace steemit {
                     uint8_t count = 0;
                     for (const auto &tag : meta.tags) {
                         ++count;
-                        if (count > tag_limit ||
-                            lower_tags.size() > tag_limit) {
+                        if (count > tag_limit || lower_tags.size() > tag_limit) {
                             break;
                         }
                         if (tag.empty()) {
@@ -147,7 +144,8 @@ namespace steemit {
                 }
 
 
-                void update_tag(const tag_object &current, const comment_object &comment, double hot, double trending) const {
+                void update_tag(const tag_object &current, const comment_object &comment, double hot,
+                                double trending) const {
                     const auto &stats = get_stats(current.name);
                     remove_stats(current, stats);
 
@@ -201,8 +199,7 @@ namespace steemit {
 
                     const auto &idx = _db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
                     auto itr = idx.lower_bound(boost::make_tuple(author, tag));
-                    if (itr != idx.end() && itr->author == author &&
-                        itr->tag == tag) {
+                    if (itr != idx.end() && itr->author == author && itr->tag == tag) {
                         _db.modify(*itr, [&](author_tag_stats_object &stats) {
                             stats.total_posts++;
                         });
@@ -233,8 +230,7 @@ namespace steemit {
                         sign = -1;
                     }
 
-                    return sign * order +
-                           double(created.sec_since_epoch()) / double(T);
+                    return sign * order + double(created.sec_since_epoch()) / double(T);
                 }
 
                 inline double calculate_hot(const share_type &score, const time_point_sec &created) const {
@@ -296,7 +292,8 @@ namespace steemit {
                     } FC_CAPTURE_LOG_AND_RETHROW((c))
                 }
 
-                const peer_stats_object &get_or_create_peer_stats(account_object::id_type voter, account_object::id_type peer) const {
+                const peer_stats_object &get_or_create_peer_stats(account_object::id_type voter,
+                                                                  account_object::id_type peer) const {
                     const auto &peeridx = _db.get_index<peer_stats_index>().indices().get<by_voter_peer>();
                     auto itr = peeridx.find(boost::make_tuple(voter, peer));
                     if (itr == peeridx.end()) {
@@ -326,7 +323,8 @@ namespace steemit {
                     });
                 }
 
-                void update_peer_stats(const account_object &voter, const account_object &author, const comment_object &c, int vote) const {
+                void update_peer_stats(const account_object &voter, const account_object &author,
+                                       const comment_object &c, int vote) const {
                     if (voter.id == author.id) {
                         return;
                     } /// ignore votes for yourself
@@ -342,26 +340,27 @@ namespace steemit {
                     });
 
                     const auto &voteidx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                    auto itr = voteidx.lower_bound(boost::make_tuple(comment_object::id_type(c.id), account_object::id_type()));
+                    auto itr = voteidx.lower_bound(
+                            boost::make_tuple(comment_object::id_type(c.id), account_object::id_type()));
                     while (itr != voteidx.end() && itr->comment == c.id) {
-                        update_indirect_vote(voter.id, itr->voter,
-                                (itr->vote_percent > 0) == (vote > 0));
+                        update_indirect_vote(voter.id, itr->voter, (itr->vote_percent > 0) == (vote > 0));
                         ++itr;
                     }
                 }
 
-                void operator()(const comment_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const comment_operation<Major, Hardfork, Release> &op) const {
                     update_tags(_db.get_comment(op.author, op.permlink), true);
                 }
 
-                void operator()(const transfer_operation &op) const {
-                    if (op.to == STEEMIT_NULL_ACCOUNT &&
-                        op.amount.symbol == SBD_SYMBOL) {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const transfer_operation<Major, Hardfork, Release> &op) const {
+                    if (op.to == STEEMIT_NULL_ACCOUNT && op.amount.symbol_name() == SBD_SYMBOL_NAME) {
                         vector<string> part;
                         part.reserve(4);
                         auto path = op.memo;
                         boost::split(part, path, boost::is_any_of("/"));
-                        if (part[0].size() && part[0][0] == '@') {
+                        if (!part[0].empty() && part[0][0] == '@') {
                             auto acnt = part[0].substr(1);
                             auto perm = part[1];
 
@@ -369,11 +368,9 @@ namespace steemit {
                             if (c && c->parent_author.size() == 0) {
                                 const auto &comment_idx = _db.get_index<tag_index>().indices().get<by_comment>();
                                 auto citr = comment_idx.lower_bound(c->id);
-                                while (citr != comment_idx.end() &&
-                                       citr->comment == c->id) {
+                                while (citr != comment_idx.end() && citr->comment == c->id) {
                                     _db.modify(*citr, [&](tag_object &t) {
-                                        if (t.cashout !=
-                                            fc::time_point_sec::maximum()) {
+                                        if (t.cashout != fc::time_point_sec::maximum()) {
                                             t.promoted_balance += op.amount.amount;
                                         }
                                     });
@@ -386,7 +383,8 @@ namespace steemit {
                     }
                 }
 
-                void operator()(const vote_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const vote_operation<Major, Hardfork, Release> &op) const {
                     update_tags(_db.get_comment(op.author, op.permlink));
                     /*
                     update_peer_stats( db.get_account(op.voter),
@@ -396,7 +394,8 @@ namespace steemit {
                                        */
                 }
 
-                void operator()(const delete_comment_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const delete_comment_operation<Major, Hardfork, Release> &op) const {
                     const auto &idx = _db.get_index<tag_index>().indices().get<by_author_comment>();
 
                     const auto &auth = _db.get_account(op.author);
@@ -411,27 +410,28 @@ namespace steemit {
                     }
                 }
 
-                void operator()(const comment_reward_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const comment_reward_operation<Major, Hardfork, Release> &op) const {
                     const auto &c = _db.get_comment(op.author, op.permlink);
                     update_tags(c);
 
                     auto meta = filter_tags(c);
 
-                    for (auto tag : meta.tags) {
+                    for (const auto &tag : meta.tags) {
                         _db.modify(get_stats(tag), [&](tag_stats_object &ts) {
-                            ts.total_payout += op.payout;
+                            ts.total_payout += asset<0, 17, 0>(op.payout.amount, op.payout.symbol);
                         });
                     }
                 }
 
-                void operator()(const comment_payout_update_operation &op) const {
+                template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                void operator()(const comment_payout_update_operation<Major, Hardfork, Release> &op) const {
                     const auto &c = _db.get_comment(op.author, op.permlink);
                     update_tags(c);
                 }
 
                 template<typename Op>
-                void operator()(Op &&) const {
-                } /// ignore all other ops
+                void operator()(Op &&) const {} /// ignore all other ops
             };
 
 
@@ -439,19 +439,16 @@ namespace steemit {
                 try {
                     /// plugins shouldn't ever throw
                     note.op.visit(operation_visitor(database()));
-                }
-                catch (const fc::exception &e) {
+                } catch (const fc::exception &e) {
                     edump((e.to_detail_string()));
-                }
-                catch (...) {
+                } catch (...) {
                     elog("unhandled exception");
                 }
             }
 
         } /// end detail namespace
 
-        tags_plugin::tags_plugin(application *app)
-                : plugin(app), my(new detail::tags_plugin_impl(*this)) {
+        tags_plugin::tags_plugin(application *app) : plugin(app), my(new detail::tags_plugin_impl(*this)) {
             chain::database &db = database();
             db.add_plugin_index<tag_index>();
             db.add_plugin_index<tag_stats_index>();
@@ -463,8 +460,10 @@ namespace steemit {
 
         }
 
-        bool tags_plugin::filter(const steemit::application::discussion_query &query, const steemit::application::comment_api_obj &c, const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
-            if (query.select_authors.size()) {
+        bool tags_plugin::filter(const steemit::application::discussion_query &query,
+                                 const steemit::application::comment_api_obj &c,
+                                 const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
+            if (!query.select_authors.empty()) {
                 if (query.select_authors.find(c.author) == query.select_authors.end()) {
                     return true;
                 }
@@ -486,20 +485,19 @@ namespace steemit {
                 }
             }
 
-            return condition(c) ||
-                   query.filter_tags.find(c.category) !=
-                   query.filter_tags.end();
+            return condition(c) || query.filter_tags.find(c.category) != query.filter_tags.end();
         }
 
-        void tags_plugin::plugin_set_program_options(
-                boost::program_options::options_description &cli,
-                boost::program_options::options_description &cfg) {
+        void tags_plugin::plugin_set_program_options(boost::program_options::options_description &cli,
+                                                     boost::program_options::options_description &cfg) {
 
         }
 
         void tags_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
             ilog("Initializing tags plugin");
-            database().post_apply_operation.connect([&](const operation_notification &note) { my->on_operation(note); });
+            database().post_apply_operation.connect([&](const operation_notification &note) {
+                my->on_operation(note);
+            });
 
             app().register_api_factory<tag_api>("tag_api");
         }
@@ -510,5 +508,4 @@ namespace steemit {
     }
 } /// steemit::tags
 
-STEEMIT_DEFINE_PLUGIN(tags, steemit::tags::tags_plugin
-)
+STEEMIT_DEFINE_PLUGIN(tags, steemit::tags::tags_plugin)

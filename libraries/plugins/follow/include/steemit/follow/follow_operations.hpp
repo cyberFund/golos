@@ -7,48 +7,56 @@
 namespace steemit {
     namespace follow {
 
-        using namespace std;
-        using steemit::protocol::base_operation;
-
-        struct follow_operation : base_operation {
+        struct follow_operation : chain::base_operation<0, 17, 0> {
             protocol::account_name_type follower;
             protocol::account_name_type following;
-            set<string> what; /// blog, mute
+            std::set<std::string> what; /// blog, mute
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<protocol::account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <protocol::account_name_type> &a) const {
                 a.insert(follower);
             }
         };
 
-        struct reblog_operation : base_operation {
+        struct reblog_operation : chain::base_operation<0, 17, 0> {
             protocol::account_name_type account;
             protocol::account_name_type author;
-            string permlink;
+            std::string permlink;
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<protocol::account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <protocol::account_name_type> &a) const {
                 a.insert(account);
             }
         };
 
-        typedef fc::static_variant<
-                follow_operation,
-                reblog_operation
-        > follow_plugin_operation;
-
-        DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, follow);
-
-        DEFINE_PLUGIN_EVALUATOR(follow_plugin, follow_plugin_operation, reblog);
-
+        typedef fc::static_variant<follow_operation, reblog_operation> follow_plugin_operation;
     }
 } // steemit::follow
 
-FC_REFLECT(steemit::follow::follow_operation, (follower)(following)(what))
-FC_REFLECT(steemit::follow::reblog_operation, (account)(author)(permlink))
+FC_REFLECT((steemit::follow::follow_operation), (follower)(following)(what));
+FC_REFLECT((steemit::follow::reblog_operation), (account)(author)(permlink));
 
-STEEMIT_DECLARE_OPERATION_TYPE(steemit::follow::follow_plugin_operation)
+namespace fc {
 
-FC_REFLECT_TYPENAME(steemit::follow::follow_plugin_operation)
+    void to_variant(const steemit::follow::follow_plugin_operation &, fc::variant &);
+
+    void from_variant(const fc::variant &, steemit::follow::follow_plugin_operation &);
+
+} /* fc */
+
+namespace steemit {
+    namespace protocol {
+
+        void operation_validate(const follow::follow_plugin_operation &o);
+
+        void operation_get_required_authorities(const follow::follow_plugin_operation &op,
+                                                flat_set <account_name_type> &active,
+                                                flat_set <account_name_type> &owner,
+                                                flat_set <account_name_type> &posting, vector <authority> &other);
+
+    }
+}
+
+FC_REFLECT_TYPENAME((steemit::follow::follow_plugin_operation));

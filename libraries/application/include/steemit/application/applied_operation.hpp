@@ -3,7 +3,7 @@
 #include <steemit/protocol/operations/operations.hpp>
 
 #include <steemit/chain/steem_object_types.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 
 namespace steemit {
     namespace application {
@@ -25,12 +25,5 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::application::applied_operation,
-        (trx_id)
-                (block)
-                (trx_in_block)
-                (op_in_trx)
-                (virtual_op)
-                (timestamp)
-                (op)
-)
+FC_REFLECT((steemit::application::applied_operation),
+           (trx_id)(block)(trx_in_block)(op_in_trx)(virtual_op)(timestamp)(op))

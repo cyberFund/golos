@@ -4,7 +4,7 @@
 
 #include <steemit/protocol/types.hpp>
 
-#include <steemit/chain/market_object.hpp>
+#include <steemit/chain/objects/market_object.hpp>
 
 #include <steemit/application/state.hpp>
 
@@ -228,14 +228,14 @@ namespace steemit {
     }
 } // steemit::market_history
 
-FC_REFLECT(steemit::market_history::order, (price)(quote)(base));
-FC_REFLECT(steemit::market_history::order_book, (asks)(bids)(base)(quote));
-FC_REFLECT(steemit::market_history::market_ticker,
+FC_REFLECT((steemit::market_history::order), (price)(quote)(base));
+FC_REFLECT((steemit::market_history::order_book), (asks)(bids)(base)(quote));
+FC_REFLECT((steemit::market_history::market_ticker),
            (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
-FC_REFLECT(steemit::market_history::market_volume, (base)(quote)(base_volume)(quote_volume));
-FC_REFLECT(steemit::market_history::market_trade, (date)(price)(amount)(value));
+FC_REFLECT((steemit::market_history::market_volume), (base)(quote)(base_volume)(quote_volume));
+FC_REFLECT((steemit::market_history::market_trade), (date)(price)(amount)(value));
 
-FC_REFLECT(steemit::market_history::liquidity_balance, (account)(weight));
+FC_REFLECT((steemit::market_history::liquidity_balance), (account)(weight));
 
 FC_API(steemit::market_history::market_history_api,
 // Subscriptions

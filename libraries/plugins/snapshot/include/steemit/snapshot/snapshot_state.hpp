@@ -13,14 +13,14 @@ namespace steemit {
             };
 
             struct account_balances {
-                vector <chain::asset> assets;
+                vector <chain::asset<0, 17, 0>> assets;
             };
 
             struct snapshot_summary {
-                chain::asset balance;
-                chain::asset sbd_balance;
-                chain::asset total_vesting_shares;
-                chain::asset total_vesting_fund_steem;
+                chain::asset<0, 17, 0> balance;
+                chain::asset<0, 17, 0> sbd_balance;
+                chain::asset<0, 17, 0> total_vesting_shares;
+                chain::asset<0, 17, 0> total_vesting_fund_steem;
                 uint32_t accounts_count;
             };
 
@@ -51,8 +51,8 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::plugin::snapshot::account_keys, (owner_key)(active_key)(posting_key)(memo_key))
-FC_REFLECT(steemit::plugin::snapshot::account_balances, (assets))
-FC_REFLECT(steemit::plugin::snapshot::snapshot_summary, (balance)(sbd_balance)(total_vesting_shares)(total_vesting_fund_steem)(accounts_count))
-FC_REFLECT(steemit::plugin::snapshot::account_summary, (id)(name)(posting_rewards)(curation_rewards)(keys)(balances)(json_metadata)(proxy)(post_count)(recovery_account)(reputation))
-FC_REFLECT(steemit::plugin::snapshot::snapshot_state, (timestamp)(head_block_num)(head_block_id)(chain_id)(summary)(accounts))
+FC_REFLECT((steemit::plugin::snapshot::account_keys), (owner_key)(active_key)(posting_key)(memo_key))
+FC_REFLECT((steemit::plugin::snapshot::account_balances), (assets))
+FC_REFLECT((steemit::plugin::snapshot::snapshot_summary), (balance)(sbd_balance)(total_vesting_shares)(total_vesting_fund_steem)(accounts_count))
+FC_REFLECT((steemit::plugin::snapshot::account_summary), (id)(name)(posting_rewards)(curation_rewards)(keys)(balances)(json_metadata)(proxy)(post_count)(recovery_account)(reputation))
+FC_REFLECT((steemit::plugin::snapshot::snapshot_state), (timestamp)(head_block_num)(head_block_id)(chain_id)(summary)(accounts))

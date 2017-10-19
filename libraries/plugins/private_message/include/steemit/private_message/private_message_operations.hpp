@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <steemit/protocol/base.hpp>
@@ -13,8 +12,7 @@
 namespace steemit {
     namespace private_message {
 
-        struct private_message_operation
-                : public steemit::protocol::base_operation {
+        struct private_message_operation : public steemit::protocol::base_operation<0, 17, 0> {
             protocol::account_name_type from;
             protocol::account_name_type to;
             protocol::public_key_type from_memo_key;
@@ -29,7 +27,28 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::private_message::private_message_operation, (from)(to)(from_memo_key)(to_memo_key)(sent_time)(checksum)(encrypted_message))
+FC_REFLECT((steemit::private_message::private_message_operation),
+           (from)(to)(from_memo_key)(to_memo_key)(sent_time)(checksum)(encrypted_message))
 
-STEEMIT_DECLARE_OPERATION_TYPE(steemit::private_message::private_message_plugin_operation)
-FC_REFLECT_TYPENAME(steemit::private_message::private_message_plugin_operation)
+namespace fc {
+
+    void to_variant(const steemit::private_message::private_message_plugin_operation &, fc::variant &);
+
+    void from_variant(const fc::variant &, steemit::private_message::private_message_plugin_operation &);
+
+} /* fc */
+
+namespace steemit {
+    namespace protocol {
+
+        void operation_validate(const private_message::private_message_plugin_operation &o);
+
+        void operation_get_required_authorities(const private_message::private_message_plugin_operation &op,
+                                                flat_set <account_name_type> &active,
+                                                flat_set <account_name_type> &owner,
+                                                flat_set <account_name_type> &posting, vector <authority> &other);
+
+    }
+}
+
+FC_REFLECT_TYPENAME((steemit::private_message::private_message_plugin_operation))

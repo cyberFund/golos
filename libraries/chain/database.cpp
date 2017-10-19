@@ -1,20 +1,20 @@
 #include <steemit/protocol/operations/steem_operations.hpp>
 
-#include <steemit/chain/block_summary_object.hpp>
+#include <steemit/chain/objects/block_summary_object.hpp>
 #include <steemit/chain/compound.hpp>
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/database.hpp>
 #include <steemit/chain/database_exceptions.hpp>
 #include <steemit/chain/db_with.hpp>
 #include <steemit/chain/evaluator_registry.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/market_object.hpp>
-#include <steemit/chain/account_evaluator.hpp>
-#include <steemit/chain/market_evaluator.hpp>
-#include <steemit/chain/proposal_object.hpp>
-#include <steemit/chain/steem_evaluator.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
+#include <steemit/chain/objects/market_object.hpp>
+#include <steemit/chain/evaluators/account_evaluator.hpp>
+#include <steemit/chain/evaluators/market_evaluator.hpp>
+#include <steemit/chain/objects/proposal_object.hpp>
+#include <steemit/chain/evaluators/steem_evaluator.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/transaction_object.hpp>
 #include <steemit/chain/shared_db_merkle.hpp>
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/witness_schedule.hpp>
@@ -30,9 +30,12 @@
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
 
-#include <steemit/chain/asset_evaluator.hpp>
-#include <steemit/chain/transfer_evaluator.hpp>
-#include <steemit/chain/proposal_evaluator.hpp>
+#include <steemit/chain/evaluators/asset_evaluator.hpp>
+#include <steemit/chain/evaluators/custom_evaluator.hpp>
+#include <steemit/chain/evaluators/transfer_evaluator.hpp>
+#include <steemit/chain/evaluators/proposal_evaluator.hpp>
+#include <steemit/chain/evaluators/escrow_evaluator.hpp>
+#include <steemit/version/version_state.hpp>
 
 namespace steemit {
     namespace chain {
@@ -56,12 +59,9 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::chain::object_schema_repr, (space_type)(type)
-)
-FC_REFLECT(steemit::chain::operation_schema_repr, (id)(type)
-)
-FC_REFLECT(steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types)
-)
+FC_REFLECT((steemit::chain::object_schema_repr), (space_type)(type))
+FC_REFLECT((steemit::chain::operation_schema_repr), (id)(type))
+FC_REFLECT((steemit::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
 
 namespace steemit {
     namespace chain {
@@ -70,7 +70,7 @@ namespace steemit {
 
         struct reward_fund_context {
             uint128_t recent_claims = 0;
-            asset reward_balance = asset(0, STEEM_SYMBOL);
+            asset<0, 17, 0> reward_balance = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             share_type steem_awarded = 0;
         };
 
@@ -152,8 +152,7 @@ namespace steemit {
                     init_hardforks(); // Writes to local state, but reads from get_database
                 });
 
-            }
-            FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
+            } FC_CAPTURE_LOG_AND_RETHROW((data_dir)(shared_mem_dir)(shared_file_size))
         }
 
         void database::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint64_t shared_file_size) {
@@ -164,7 +163,7 @@ namespace steemit {
                 _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
                 auto start = fc::time_point::now();
-                STEEMIT_ASSERT(_block_log.head(), block_log_exception,
+                STEEMIT_ASSERT(_block_log.head(), exceptions::chain::block_log<>,
                                "No blocks in block log. Cannot reindex an empty chain.");
 
                 ilog("Replaying blocks...");
@@ -201,8 +200,7 @@ namespace steemit {
 
                 auto end = fc::time_point::now();
                 ilog("Done reindexing, elapsed time: ${t} sec", ("t", double((end - start).count()) / 1000000.0));
-            }
-            FC_CAPTURE_AND_RETHROW((data_dir)(shared_mem_dir))
+            } FC_CAPTURE_AND_RETHROW((data_dir)(shared_mem_dir))
 
         }
 
@@ -228,20 +226,19 @@ namespace steemit {
                 _block_log.close();
 
                 _fork_db.reset();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
-        asset database::get_balance(account_name_type owner, asset_name_type asset_name) const {
+        asset<0, 17, 0> database::get_balance(account_name_type owner, asset_name_type asset_name) const {
             auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
             auto itr = index.find(boost::make_tuple(owner, asset_name));
             if (itr == index.end()) {
-                return asset(0, asset_name);
+                return protocol::asset<0, 17, 0>(0, asset_name);
             }
             return itr->get_balance();
         }
 
-        asset database::get_balance(const account_object &owner, const asset_object &asset_obj) const {
+        asset<0, 17, 0> database::get_balance(const account_object &owner, const asset_object &asset_obj) const {
             return get_balance(owner.name, asset_obj.asset_name);
         }
 
@@ -259,8 +256,7 @@ namespace steemit {
         bool database::is_known_block(const block_id_type &id) const {
             try {
                 return fetch_block_by_id(id).valid();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         /**
@@ -272,8 +268,7 @@ namespace steemit {
             try {
                 const auto &trx_idx = get_index<transaction_index>().indices().get<by_trx_id>();
                 return trx_idx.find(id) != trx_idx.end();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         block_id_type database::find_block_id_for_num(uint32_t block_num) const {
@@ -300,14 +295,13 @@ namespace steemit {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr <fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
 
                 return block_id_type();
-            }
-            FC_CAPTURE_AND_RETHROW((block_num))
+            } FC_CAPTURE_AND_RETHROW((block_num))
         }
 
         block_id_type database::get_block_id_for_num(uint32_t block_num) const {
@@ -316,7 +310,7 @@ namespace steemit {
             return bid;
         }
 
-        optional <signed_block> database::fetch_block_by_id(const block_id_type &id) const {
+        optional<signed_block> database::fetch_block_by_id(const block_id_type &id) const {
             try {
                 auto b = _fork_db.fetch_block(id);
                 if (!b) {
@@ -331,13 +325,12 @@ namespace steemit {
                 }
 
                 return b->data;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
-        optional <signed_block> database::fetch_block_by_number(uint32_t block_num) const {
+        optional<signed_block> database::fetch_block_by_number(uint32_t block_num) const {
             try {
-                optional <signed_block> b;
+                optional<signed_block> b;
 
                 auto results = _fork_db.fetch_block_by_number(block_num);
                 if (results.size() == 1) {
@@ -347,8 +340,7 @@ namespace steemit {
                 }
 
                 return b;
-            }
-            FC_LOG_AND_RETHROW()
+            } FC_LOG_AND_RETHROW()
         }
 
         const signed_transaction database::get_recent_transaction(const transaction_id_type &trx_id) const {
@@ -359,13 +351,12 @@ namespace steemit {
                 signed_transaction trx;
                 fc::raw::unpack(itr->packed_trx, trx);
                 return trx;;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
-        vector <block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair <fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
+                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
                         head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)(head_block_id())(branches.first.size())(branches.second.size()));
@@ -377,8 +368,7 @@ namespace steemit {
                 }
                 result.emplace_back(branches.first.back()->previous_id());
                 return result;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         chain_id_type database::get_chain_id() const {
@@ -388,8 +378,7 @@ namespace steemit {
         const asset_object &database::get_asset(const asset_name_type &name) const {
             try {
                 return get<asset_object, by_asset_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const asset_object *database::find_asset(const asset_name_type &name) const {
@@ -399,8 +388,7 @@ namespace steemit {
         const asset_dynamic_data_object &database::get_asset_dynamic_data(const asset_name_type &name) const {
             try {
                 return get<asset_dynamic_data_object, by_asset_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const asset_bitasset_data_object *database::find_asset_bitasset_data(const asset_name_type &name) const {
@@ -410,8 +398,7 @@ namespace steemit {
         const asset_bitasset_data_object &database::get_asset_bitasset_data(const asset_name_type &name) const {
             try {
                 return get<asset_bitasset_data_object, by_asset_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const asset_dynamic_data_object *database::find_asset_dynamic_data(const asset_name_type &name) const {
@@ -422,8 +409,7 @@ namespace steemit {
                                                       protocol::integral_id_type id) const {
             try {
                 return get<proposal_object, by_account>(boost::make_tuple(name, id));
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const proposal_object *database::find_proposal(const account_name_type &name,
@@ -434,8 +420,7 @@ namespace steemit {
         const witness_object &database::get_witness(const account_name_type &name) const {
             try {
                 return get<witness_object, by_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const witness_object *database::find_witness(const account_name_type &name) const {
@@ -445,8 +430,7 @@ namespace steemit {
         const account_object &database::get_account(const account_name_type &name) const {
             try {
                 return get<account_object, by_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const account_object *database::find_account(const account_name_type &name) const {
@@ -456,8 +440,7 @@ namespace steemit {
         const account_statistics_object &database::get_account_statistics(const account_name_type &name) const {
             try {
                 return get<account_statistics_object, by_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const account_statistics_object *database::find_account_statistics(const account_name_type &name) const {
@@ -468,8 +451,7 @@ namespace steemit {
                                                     const shared_string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-            }
-            FC_CAPTURE_AND_RETHROW((author)(permlink))
+            } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
         const comment_object *database::find_comment(const account_name_type &author,
@@ -480,8 +462,7 @@ namespace steemit {
         const comment_object &database::get_comment(const account_name_type &author, const string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-            }
-            FC_CAPTURE_AND_RETHROW((author)(permlink))
+            } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
         const comment_object *database::find_comment(const account_name_type &author, const string &permlink) const {
@@ -491,8 +472,7 @@ namespace steemit {
         const category_object &database::get_category(const shared_string &name) const {
             try {
                 return get<category_object, by_name>(name);
-            }
-            FC_CAPTURE_AND_RETHROW((name))
+            } FC_CAPTURE_AND_RETHROW((name))
         }
 
         const category_object *database::find_category(const shared_string &name) const {
@@ -502,8 +482,7 @@ namespace steemit {
         const escrow_object &database::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
             try {
                 return get<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
-            }
-            FC_CAPTURE_AND_RETHROW((name)(escrow_id))
+            } FC_CAPTURE_AND_RETHROW((name)(escrow_id))
         }
 
         const escrow_object *database::find_escrow(const account_name_type &name, uint32_t escrow_id) const {
@@ -518,8 +497,7 @@ namespace steemit {
                 }
 
                 return get<limit_order_object, by_account>(boost::make_tuple(name, order_id));
-            }
-            FC_CAPTURE_AND_RETHROW((name)(order_id))
+            } FC_CAPTURE_AND_RETHROW((name)(order_id))
         }
 
         const limit_order_object *database::find_limit_order(const account_name_type &name,
@@ -535,8 +513,7 @@ namespace steemit {
                                                                       uint32_t request_id) const {
             try {
                 return get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
-            }
-            FC_CAPTURE_AND_RETHROW((owner)(request_id))
+            } FC_CAPTURE_AND_RETHROW((owner)(request_id))
         }
 
         const savings_withdraw_object *database::find_savings_withdraw(const account_name_type &owner,
@@ -547,8 +524,7 @@ namespace steemit {
         const dynamic_global_property_object &database::get_dynamic_global_properties() const {
             try {
                 return get<dynamic_global_property_object>();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         const node_property_object &database::get_node_properties() const {
@@ -558,22 +534,19 @@ namespace steemit {
         const feed_history_object &database::get_feed_history() const {
             try {
                 return get<feed_history_object>();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         const witness_schedule_object &database::get_witness_schedule_object() const {
             try {
                 return get<witness_schedule_object>();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         const hardfork_property_object &database::get_hardfork_property_object() const {
             try {
                 return get<hardfork_property_object>();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         const time_point_sec database::calculate_discussion_payout_time(const comment_object &comment) const {
@@ -590,7 +563,7 @@ namespace steemit {
                                                                 : STEEMIT_COMMENT_REWARD_FUND_NAME);
         }
 
-        void database::pay_fee(const account_object &account, asset fee) {
+        void database::pay_fee(const account_object &account, asset<0, 17, 0> fee) {
             FC_ASSERT(fee.amount >= 0); /// NOTE if this fails then validate() on some operation is probably wrong
             if (fee.amount == 0) {
                 return;
@@ -650,8 +623,7 @@ namespace steemit {
                                                                                               max_virtual_bandwidth)(
                                       "total_vesting_shares", total_vshares));
                 }
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
@@ -712,7 +684,7 @@ namespace steemit {
             return uint64_t(STEEMIT_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
         }
 
-        void database::add_checkpoints(const flat_map <uint32_t, block_id_type> &checkpts) {
+        void database::add_checkpoints(const flat_map<uint32_t, block_id_type> &checkpts) {
             for (const auto &i : checkpts) {
                 _checkpoints[i.first] = i.second;
             }
@@ -737,8 +709,7 @@ namespace steemit {
                     detail::without_pending_transactions(*this, std::move(_pending_tx), [&]() {
                         try {
                             result = _push_block(new_block);
-                        }
-                        FC_CAPTURE_AND_RETHROW((new_block))
+                        } FC_CAPTURE_AND_RETHROW((new_block))
                     });
                 });
             });
@@ -753,7 +724,7 @@ namespace steemit {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector <std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -770,7 +741,7 @@ namespace steemit {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr <fork_item> new_head = _fork_db.push_block(new_block);
+                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -788,7 +759,7 @@ namespace steemit {
                             // push all blocks on the new fork
                             for (auto ritr = branches.first.rbegin(); ritr != branches.first.rend(); ++ritr) {
                                 // ilog( "pushing blocks from fork ${n} ${id}", ("n",(*ritr)->data.block_num())("id",(*ritr)->data.id()) );
-                                optional <fc::exception> except;
+                                optional<fc::exception> except;
                                 try {
                                     auto session = start_undo_session(true);
                                     apply_block((*ritr)->data, skip);
@@ -837,8 +808,7 @@ namespace steemit {
                 }
 
                 return false;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::push_transaction(const signed_transaction &trx, uint32_t skip) {
@@ -856,8 +826,7 @@ namespace steemit {
                     set_producing(false);
                     throw;
                 }
-            }
-            FC_CAPTURE_AND_RETHROW((trx))
+            } FC_CAPTURE_AND_RETHROW((trx))
         }
 
         void database::_push_transaction(const signed_transaction &trx) {
@@ -890,8 +859,7 @@ namespace steemit {
                     apply_operation(op);
                 }
                 remove(proposal);
-            }
-            FC_CAPTURE_AND_RETHROW((proposal))
+            } FC_CAPTURE_AND_RETHROW((proposal))
         }
 
         signed_block database::generate_block(fc::time_point_sec when, const account_name_type &witness_owner,
@@ -902,8 +870,7 @@ namespace steemit {
             detail::with_skip_flags(*this, skip, [&]() {
                 try {
                     result = _generate_block(when, witness_owner, block_signing_private_key);
-                }
-                FC_CAPTURE_AND_RETHROW((witness_owner))
+                } FC_CAPTURE_AND_RETHROW((witness_owner))
             });
             return result;
         }
@@ -1043,16 +1010,16 @@ namespace steemit {
                 auto head_id = head_block_id();
 
                 /// save the head block so we can recover its transactions
-                optional <signed_block> head_block = fetch_block_by_id(head_id);
-                STEEMIT_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
+                optional<signed_block> head_block = fetch_block_by_id(head_id);
+                STEEMIT_ASSERT(head_block.valid(), exceptions::chain::undo_database::pop_empty_chain<>,
+                               "there are no blocks to pop");
 
                 _fork_db.pop_block();
                 undo();
 
                 _popped_tx.insert(_popped_tx.begin(), head_block->transactions.begin(), head_block->transactions.end());
 
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::clear_pending() {
@@ -1060,8 +1027,7 @@ namespace steemit {
                 assert((_pending_tx.size() == 0) || _pending_tx_session.valid());
                 _pending_tx.clear();
                 _pending_tx_session.reset();
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::notify_pre_apply_operation(operation_notification &note) {
@@ -1141,8 +1107,10 @@ namespace steemit {
             return (when - first_slot_time).to_seconds() / STEEMIT_BLOCK_INTERVAL + 1;
         }
 
-        std::pair<asset, asset> database::create_sbd(const account_object &to_account, asset steem) {
-            std::pair<asset, asset> assets(asset(0, SBD_SYMBOL), asset(0, STEEM_SYMBOL));
+        std::pair<asset<0, 17, 0>, asset<0, 17, 0>> database::create_sbd(const account_object &to_account,
+                                                                         asset<0, 17, 0> steem) {
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> assets(protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME),
+                                                               protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME));
 
             try {
                 if (steem.amount == 0) {
@@ -1156,11 +1124,11 @@ namespace steemit {
                     auto to_sbd = (gpo.sbd_print_rate * steem.amount) / STEEMIT_100_PERCENT;
                     auto to_steem = steem.amount - to_sbd;
 
-                    auto sbd = asset(to_sbd, STEEM_SYMBOL) * median_price;
+                    auto sbd = asset<0, 17, 0>(to_sbd, STEEM_SYMBOL_NAME) * median_price;
 
                     adjust_balance(to_account, sbd);
-                    adjust_balance(to_account, asset(to_steem, STEEM_SYMBOL));
-                    adjust_supply(asset(-to_sbd, STEEM_SYMBOL));
+                    adjust_balance(to_account, asset<0, 17, 0>(to_steem, STEEM_SYMBOL_NAME));
+                    adjust_supply(asset<0, 17, 0>(-to_sbd, STEEM_SYMBOL_NAME));
                     adjust_supply(sbd);
                     assets.first = sbd;
                     assets.second = to_steem;
@@ -1168,16 +1136,15 @@ namespace steemit {
                     adjust_balance(to_account, steem);
                     assets.second = steem;
                 }
-            }
-            FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
+            } FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
 
             return assets;
         }
 
-        asset database::create_vesting(const account_object &to_account, asset steem) {
+        asset<0, 17, 0> database::create_vesting(const account_object &to_account, const asset<0, 17, 0> &steem) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
-                asset new_vesting = steem * cprops.get_vesting_share_price();
+                asset<0, 17, 0> new_vesting = steem * cprops.get_vesting_share_price();
 
                 modify(to_account, [&](account_object &to) {
                     to.vesting_shares += new_vesting;
@@ -1191,8 +1158,7 @@ namespace steemit {
                 adjust_proxied_witness_votes(to_account, new_vesting.amount);
 
                 return new_vesting;
-            }
-            FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
+            } FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
         }
 
         fc::sha256 database::get_pow_target() const {
@@ -1324,11 +1290,11 @@ namespace steemit {
             }
 
             const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
-            asset total_steem(0, STEEM_SYMBOL);
-            asset total_sbd(0, SBD_SYMBOL);
+            asset<0, 17, 0> total_steem(0, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> total_sbd(0, SBD_SYMBOL_NAME);
 
-            asset null_account_balance = get_balance(STEEMIT_NULL_ACCOUNT, STEEM_SYMBOL_NAME);
-            asset null_account_sbd_balance = get_balance(STEEMIT_NULL_ACCOUNT, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> null_account_balance = get_balance(STEEMIT_NULL_ACCOUNT, STEEM_SYMBOL_NAME);
+            asset<0, 17, 0> null_account_sbd_balance = get_balance(STEEMIT_NULL_ACCOUNT, SBD_SYMBOL_NAME);
 
             if (null_account_balance.amount > 0) {
                 total_steem += null_account_balance;
@@ -1449,7 +1415,7 @@ namespace steemit {
 
                 share_type vests_deposited_as_steem = 0;
                 share_type vests_deposited_as_vests = 0;
-                asset total_steem_converted = asset(0, STEEM_SYMBOL);
+                asset<0, 17, 0> total_steem_converted = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
 
                 // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
                 for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_object::id_type()));
@@ -1468,9 +1434,11 @@ namespace steemit {
 
                             adjust_proxied_witness_votes(to_account, to_deposit);
 
-                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                                   asset(to_deposit, VESTS_SYMBOL),
-                                                                                   asset(to_deposit, VESTS_SYMBOL)));
+                            push_virtual_operation(
+                                    fill_vesting_withdraw_operation<0, 17, 0>(from_account.name, to_account.name,
+                                                                              asset<0, 17, 0>(to_deposit, VESTS_SYMBOL),
+                                                                              asset<0, 17, 0>(to_deposit,
+                                                                                              VESTS_SYMBOL)));
                         }
                     }
                 }
@@ -1483,7 +1451,8 @@ namespace steemit {
                         share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) /
                                                  STEEMIT_100_PERCENT).to_uint64();
                         vests_deposited_as_steem += to_deposit;
-                        auto converted_steem = asset(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                        asset<0, 17, 0> converted_steem =
+                                asset<0, 17, 0>(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
                         total_steem_converted += converted_steem;
 
                         if (to_deposit > 0) {
@@ -1494,9 +1463,10 @@ namespace steemit {
                                 o.total_vesting_shares.amount -= to_deposit;
                             });
 
-                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                                   asset(to_deposit, VESTS_SYMBOL),
-                                                                                   converted_steem));
+                            push_virtual_operation(
+                                    fill_vesting_withdraw_operation<0, 17, 0>(from_account.name, to_account.name,
+                                                                              asset<0, 17, 0>(to_deposit, VESTS_SYMBOL),
+                                                                              converted_steem));
                         }
                     }
                 }
@@ -1504,8 +1474,8 @@ namespace steemit {
                 share_type to_convert = to_withdraw - vests_deposited_as_steem - vests_deposited_as_vests;
                 FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
 
-                auto converted_steem = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
-
+                asset<0, 17, 0> converted_steem =
+                        asset<0, 17, 0>(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;
                     a.withdrawn += to_withdraw;
@@ -1529,14 +1499,16 @@ namespace steemit {
                     adjust_proxied_witness_votes(from_account, -to_withdraw);
                 }
 
-                push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name,
-                                                                       asset(to_withdraw, VESTS_SYMBOL),
-                                                                       converted_steem));
+                push_virtual_operation(fill_vesting_withdraw_operation<0, 17, 0>(from_account.name, from_account.name,
+                                                                                 asset<0, 17, 0>(to_withdraw,
+                                                                                                 VESTS_SYMBOL),
+                                                                                 converted_steem));
             }
         }
 
-        void database::adjust_total_payout(const comment_object &cur, const asset &sbd_created,
-                                           const asset &curator_sbd_value, const asset &beneficiary_value) {
+        void database::adjust_total_payout(const comment_object &cur, const asset<0, 17, 0> &sbd_created,
+                                           const asset<0, 17, 0> &curator_sbd_value,
+                                           const asset<0, 17, 0> &beneficiary_value) {
             modify(cur, [&](comment_object &c) {
                 if (c.total_payout_value.symbol == sbd_created.symbol) {
                     c.total_payout_value += sbd_created;
@@ -1566,10 +1538,10 @@ namespace steemit {
                         {
                             unclaimed_rewards -= claim;
                             const auto &voter = get(itr->voter);
-                            auto reward = create_vesting(voter, asset(claim, STEEM_SYMBOL));
+                            auto reward = create_vesting(voter, asset<0, 17, 0>(claim, STEEM_SYMBOL_NAME));
 
-                            push_virtual_operation(
-                                    curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
+                            push_virtual_operation(curation_reward_operation<0, 17, 0>(voter.name, reward, c.author,
+                                                                                       to_string(c.permlink)));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                             modify(voter, [&](account_object &a) {
@@ -1583,8 +1555,7 @@ namespace steemit {
                 max_rewards -= unclaimed_rewards;
 
                 return unclaimed_rewards;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void fill_comment_reward_context_local_state(utilities::comment_reward_context &ctx,
@@ -1621,10 +1592,12 @@ namespace steemit {
                         for (auto &b : comment.beneficiaries) {
                             auto benefactor_tokens = (author_tokens * b.weight) / STEEMIT_100_PERCENT;
                             auto vest_created = create_vesting(get_account(b.account),
-                                                               asset(benefactor_tokens, STEEM_SYMBOL));
-                            push_virtual_operation(comment_benefactor_reward_operation(b.account, comment.author,
-                                                                                       to_string(comment.permlink),
-                                                                                       vest_created));
+                                                               asset<0, 17, 0>(benefactor_tokens, STEEM_SYMBOL_NAME));
+
+                            push_virtual_operation(
+                                    comment_benefactor_reward_operation<0, 17, 0>(b.account, comment.author,
+                                                                                  to_string(comment.permlink),
+                                                                                  vest_created));
                             total_beneficiary += benefactor_tokens;
                         }
 
@@ -1637,16 +1610,19 @@ namespace steemit {
                         auto vest_created = create_vesting(author, vesting_steem);
                         auto sbd_payout = create_sbd(author, sbd_steem);
 
-                        adjust_total_payout(comment, sbd_payout.first +
-                                                     to_sbd(sbd_payout.second + asset(vesting_steem, STEEM_SYMBOL)),
-                                            to_sbd(asset(curation_tokens, STEEM_SYMBOL)),
-                                            to_sbd(asset(total_beneficiary, STEEM_SYMBOL)));
+                        adjust_total_payout(comment, sbd_payout.first + to_sbd(sbd_payout.second +
+                                                                               asset<0, 17, 0>(vesting_steem,
+                                                                                               STEEM_SYMBOL_NAME)),
+                                            to_sbd(asset<0, 17, 0>(curation_tokens, STEEM_SYMBOL_NAME)),
+                                            to_sbd(asset<0, 17, 0>(total_beneficiary, STEEM_SYMBOL_NAME)));
 
                         push_virtual_operation(
-                                author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first,
-                                                        sbd_payout.second, vest_created));
-                        push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink),
-                                                                        to_sbd(asset(claimed_reward, STEEM_SYMBOL))));
+                                author_reward_operation<0, 17, 0>(comment.author, to_string(comment.permlink),
+                                                                  sbd_payout.first, sbd_payout.second, vest_created));
+                        push_virtual_operation(
+                                comment_reward_operation<0, 17, 0>(comment.author, to_string(comment.permlink),
+                                                                   to_sbd(asset<0, 17, 0>(claimed_reward,
+                                                                                          STEEM_SYMBOL_NAME))));
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                         modify(comment, [&](comment_object &c) {
@@ -1659,7 +1635,7 @@ namespace steemit {
 #endif
 
                         modify(cat, [&](category_object &c) {
-                            c.total_payouts += to_sbd(asset(claimed_reward, STEEM_SYMBOL));
+                            c.total_payouts += to_sbd(asset<0, 17, 0>(claimed_reward, STEEM_SYMBOL_NAME));
                         });
                     }
 
@@ -1700,7 +1676,8 @@ namespace steemit {
                     c.last_payout = head_block_time();
                 });
 
-                push_virtual_operation(comment_payout_update_operation(comment.author, to_string(comment.permlink)));
+                push_virtual_operation(
+                        comment_payout_update_operation<0, 17, 0>(comment.author, to_string(comment.permlink)));
 
                 const auto &vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
                 auto vote_itr = vote_idx.lower_bound(comment.id);
@@ -1719,8 +1696,7 @@ namespace steemit {
                     }
                 }
                 return claimed_reward;
-            }
-            FC_CAPTURE_AND_RETHROW((comment))
+            } FC_CAPTURE_AND_RETHROW((comment))
         }
 
         void database::process_comment_cashout() {
@@ -1737,8 +1713,8 @@ namespace steemit {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector <reward_fund_context> funds;
-            vector <share_type> steem_awarded;
+            vector<reward_fund_context> funds;
+            vector<share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
@@ -1822,7 +1798,7 @@ namespace steemit {
                     modify(get<reward_fund_object, by_id>(reward_fund_object::id_type(i)),
                            [&](reward_fund_object &rfo) {
                                rfo.recent_claims = funds[i].recent_claims;
-                               rfo.reward_balance -= funds[i].steem_awarded;
+                               rfo.reward_balance.amount -= funds[i].steem_awarded;
                            });
                 }
             }
@@ -1873,12 +1849,12 @@ namespace steemit {
                 new_steem = content_reward + vesting_reward + witness_reward;
 
                 modify(props, [&](dynamic_global_property_object &p) {
-                    p.total_vesting_fund_steem += asset(vesting_reward, STEEM_SYMBOL);
+                    p.total_vesting_fund_steem += asset<0, 17, 0>(vesting_reward, STEEM_SYMBOL_NAME);
                     if (!has_hardfork(STEEMIT_HARDFORK_0_17__86)) {
-                        p.total_reward_fund_steem += asset(content_reward, STEEM_SYMBOL);
+                        p.total_reward_fund_steem += asset<0, 17, 0>(content_reward, STEEM_SYMBOL_NAME);
                     }
-                    p.current_supply += asset(new_steem, STEEM_SYMBOL);
-                    p.virtual_supply += asset(new_steem, STEEM_SYMBOL);
+                    p.current_supply += asset<0, 17, 0>(new_steem, STEEM_SYMBOL_NAME);
+                    p.virtual_supply += asset<0, 17, 0>(new_steem, STEEM_SYMBOL_NAME);
 
                 });
 
@@ -1886,7 +1862,7 @@ namespace steemit {
                     a.current_supply += new_steem;
                 });
 
-                create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
+                create_vesting(get_account(cwit.owner), asset<0, 17, 0>(witness_reward, STEEM_SYMBOL_NAME));
             } else {
                 auto content_reward = get_content_reward();
                 auto curate_reward = get_curation_reward();
@@ -1928,63 +1904,63 @@ namespace steemit {
                 });
 
                 push_virtual_operation(
-                        fill_transfer_from_savings_operation(itr->from, itr->to, itr->amount, itr->request_id,
-                                                             to_string(itr->memo)));
+                        fill_transfer_from_savings_operation<0, 17, 0>(itr->from, itr->to, itr->amount, itr->request_id,
+                                                                       to_string(itr->memo)));
 
                 remove(*itr);
                 itr = idx.begin();
             }
         }
 
-        asset database::get_liquidity_reward() const {
+        asset<0, 17, 0> database::get_liquidity_reward() const {
             if (has_hardfork(STEEMIT_HARDFORK_0_12__178)) {
-                return asset(0, STEEM_SYMBOL);
+                return asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             }
 
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC == 60 * 60, "this code assumes a 1 hour time interval");
-            asset percent(
+            asset<0, 17, 0> percent(
                     protocol::calc_percent_reward_per_hour<STEEMIT_LIQUIDITY_APR_PERCENT>(props.virtual_supply.amount),
-                    STEEM_SYMBOL);
+                    STEEM_SYMBOL_NAME);
             return std::max(percent, STEEMIT_MIN_LIQUIDITY_REWARD);
         }
 
-        asset database::get_content_reward() const {
+        asset<0, 17, 0> database::get_content_reward() const {
             const auto &props = get_dynamic_global_properties();
-            auto reward = asset(255, STEEM_SYMBOL);
+            auto reward = asset<0, 17, 0>(255, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
-                        props.virtual_supply.amount), STEEM_SYMBOL);
+                asset<0, 17, 0> percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(
+                        props.virtual_supply.amount), STEEM_SYMBOL_NAME);
                 reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
             }
 
             return reward;
         }
 
-        asset database::get_curation_reward() const {
+        asset<0, 17, 0> database::get_curation_reward() const {
             const auto &props = get_dynamic_global_properties();
-            auto reward = asset(85, STEEM_SYMBOL);
+            auto reward = asset<0, 17, 0>(85, STEEM_SYMBOL_NAME);
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
-                        props.virtual_supply.amount), STEEM_SYMBOL);
+                asset<0, 17, 0> percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(
+                        props.virtual_supply.amount), STEEM_SYMBOL_NAME);
                 reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
             }
 
             return reward;
         }
 
-        asset database::get_producer_reward() {
+        asset<0, 17, 0> database::get_producer_reward() {
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
-            asset percent(
+            asset<0, 17, 0> percent(
                     protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount),
-                    STEEM_SYMBOL);
+                    STEEM_SYMBOL_NAME);
 
             const auto &witness_account = get_account(props.current_witness);
 
-            asset pay;
+            asset<0, 17, 0> pay;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
@@ -2005,22 +1981,22 @@ namespace steemit {
 
         }
 
-        asset database::get_pow_reward() const {
+        asset<0, 17, 0> database::get_pow_reward() const {
             const auto &props = get_dynamic_global_properties();
 
 #ifndef STEEMIT_BUILD_TESTNET
             /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
             if (props.num_pow_witnesses < STEEMIT_MAX_WITNESSES &&
                 props.head_block_number < STEEMIT_START_VESTING_BLOCK) {
-                return asset(0, STEEM_SYMBOL);
+                return asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             }
 #endif
 
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             //            static_assert(STEEMIT_MAX_WITNESSES ==
             //                          21, "this code assumes 21 per round");
-            asset percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.virtual_supply.amount),
-                          STEEM_SYMBOL);
+            asset<0, 17, 0> percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.virtual_supply.amount),
+                                    STEEM_SYMBOL_NAME);
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 return std::max(percent, STEEMIT_MIN_POW_REWARD);
@@ -2029,20 +2005,20 @@ namespace steemit {
             }
         }
 
-        asset database::get_payout_extension_cost(const comment_object &input_comment,
-                                                  const fc::time_point_sec &input_time) const {
+        asset<0, 17, 0> database::get_payout_extension_cost(const comment_object &input_comment,
+                                                            const fc::time_point_sec &input_time) const {
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() > STEEMIT_CASHOUT_WINDOW_SECONDS / 7,
                       "Extension time should be equal or greater than a day");
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() < STEEMIT_CASHOUT_WINDOW_SECONDS,
                       "Extension time should be less or equal than a week");
 
-            return {((input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
-                     (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL)};
+            return {(input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
+                    (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL_NAME};
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
-                                                           const asset &input_cost) const {
-            FC_ASSERT(input_cost.symbol == SBD_SYMBOL, "Extension payment should be in SBD");
+                                                           const asset<0, 17, 0> &input_cost) const {
+            FC_ASSERT(input_cost.symbol == SBD_SYMBOL_NAME, "Extension payment should be in SBD");
             FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY > 0,
                       "Extension payment should cover more than a day");
             return fc::time_point::now() + fc::seconds(
@@ -2076,7 +2052,7 @@ namespace steemit {
                         obj.weight = 0;
                     });
 
-                    push_virtual_operation(liquidity_reward_operation(get(itr->owner).name, reward));
+                    push_virtual_operation(liquidity_reward_operation<0, 17, 0>(get(itr->owner).name, reward));
                 }
             }
         }
@@ -2097,12 +2073,12 @@ namespace steemit {
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
             share_type used_rewards = 0;
 
-            for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr) {
+            for (const auto &itr : reward_idx) {
                 // reward is a per block reward and the percents are 16-bit. This should never overflow
-                auto r = (reward * itr->percent_content_rewards) / STEEMIT_100_PERCENT;
+                auto r = (reward * itr.percent_content_rewards) / STEEMIT_100_PERCENT;
 
-                modify(*itr, [&](reward_fund_object &rfo) {
-                    rfo.reward_balance += asset(r, STEEM_SYMBOL);
+                modify(itr, [&](reward_fund_object &rfo) {
+                    rfo.reward_balance += asset<0, 17, 0>(r, STEEM_SYMBOL_NAME);
                 });
 
                 used_rewards += r;
@@ -2124,8 +2100,8 @@ namespace steemit {
                 return;
             }
 
-            asset net_sbd(0, SBD_SYMBOL);
-            asset net_steem(0, STEEM_SYMBOL);
+            asset<0, 17, 0> net_sbd(0, SBD_SYMBOL_NAME);
+            asset<0, 17, 0> net_steem(0, STEEM_SYMBOL_NAME);
 
             while (itr != request_by_date.end() && itr->conversion_date <= now) {
                 const auto &user = get_account(itr->owner);
@@ -2136,8 +2112,8 @@ namespace steemit {
                 net_sbd += itr->amount;
                 net_steem += amount_to_issue;
 
-                push_virtual_operation(
-                        fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
+                push_virtual_operation(fill_convert_request_operation<0, 17, 0>(user.name, itr->request_id, itr->amount,
+                                                                                amount_to_issue));
 
                 remove(*itr);
                 itr = request_by_date.begin();
@@ -2160,11 +2136,11 @@ namespace steemit {
             });
         }
 
-        asset database::to_sbd(const asset &steem) const {
+        asset<0, 17, 0> database::to_sbd(const asset<0, 17, 0> &steem) const {
             return utilities::to_sbd(get_feed_history().current_median_history, steem);
         }
 
-        asset database::to_steem(const asset &sbd) const {
+        asset<0, 17, 0> database::to_steem(const asset<0, 17, 0> &sbd) const {
             return utilities::to_steem(get_feed_history().current_median_history, sbd);
         }
 
@@ -2270,73 +2246,103 @@ namespace steemit {
         }
 
         void database::initialize_evaluators() {
-            _my->_evaluator_registry.register_evaluator<vote_evaluator>();
-            _my->_evaluator_registry.register_evaluator<comment_evaluator>();
-            _my->_evaluator_registry.register_evaluator<comment_options_evaluator>();
-            _my->_evaluator_registry.register_evaluator<delete_comment_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
-            _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
-            _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
+            _my->_evaluator_registry.register_evaluator<vote_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<comment_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<comment_options_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<delete_comment_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_create_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_update_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<witness_update_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator<0, 16, 0>>();
             _my->_evaluator_registry.register_evaluator<custom_evaluator>();
             _my->_evaluator_registry.register_evaluator<custom_binary_evaluator>();
             _my->_evaluator_registry.register_evaluator<custom_json_evaluator>();
-            _my->_evaluator_registry.register_evaluator<pow_evaluator>();
-            _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
-            _my->_evaluator_registry.register_evaluator<report_over_production_evaluator>();
-            _my->_evaluator_registry.register_evaluator<feed_publish_evaluator>();
-            _my->_evaluator_registry.register_evaluator<convert_evaluator>();
-            _my->_evaluator_registry.register_evaluator<limit_order_create_evaluator>();
-            _my->_evaluator_registry.register_evaluator<limit_order_create2_evaluator>();
-            _my->_evaluator_registry.register_evaluator<limit_order_cancel_evaluator>();
-            _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator>();
-            _my->_evaluator_registry.register_evaluator<prove_authority_evaluator>();
-            _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
-            _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_transfer_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_approve_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator>();
-            _my->_evaluator_registry.register_evaluator<escrow_release_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_to_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_from_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<cancel_transfer_from_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
-            _my->_evaluator_registry.register_evaluator<reset_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
-            _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_create_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_issue_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_reserve_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_update_bitasset_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_update_feed_producers_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_fund_fee_pool_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_global_settle_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_settle_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_force_settle_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_publish_feeds_evaluator>();
-            _my->_evaluator_registry.register_evaluator<asset_claim_fees_evaluator>();
-            _my->_evaluator_registry.register_evaluator<call_order_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<account_whitelist_evaluator>();
-            _my->_evaluator_registry.register_evaluator<override_transfer_evaluator>();
-            _my->_evaluator_registry.register_evaluator<proposal_create_evaluator>();
-            _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
-            _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator>();
-            _my->_evaluator_registry.register_evaluator<bid_collateral_evaluator>();
-        }
-
-        void database::set_custom_operation_interpreter(const std::string &id,
-                                                        std::shared_ptr<custom_operation_interpreter> registry) {
-            bool inserted = _custom_operation_interpreters.emplace(id, registry).second;
-            // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
-            FC_ASSERT(inserted);
+            _my->_evaluator_registry.register_evaluator<pow_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<pow2_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<report_over_production_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<feed_publish_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<convert_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<limit_order_create_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<limit_order_create2_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<limit_order_cancel_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<prove_authority_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<recover_account_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_transfer_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_approve_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_release_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_to_savings_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_from_savings_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<cancel_transfer_from_savings_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<reset_account_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator<0, 16, 0>>();
+            _my->_evaluator_registry.register_evaluator<vote_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<comment_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<comment_options_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<delete_comment_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_create_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_update_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<witness_update_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<pow_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<pow2_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<report_over_production_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<feed_publish_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<convert_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<limit_order_create_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<limit_order_create2_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<limit_order_cancel_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<prove_authority_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<recover_account_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_transfer_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_approve_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<escrow_release_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_to_savings_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<transfer_from_savings_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<cancel_transfer_from_savings_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<reset_account_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_create_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_issue_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_reserve_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_update_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_update_bitasset_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_update_feed_producers_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_fund_fee_pool_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_global_settle_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_settle_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_force_settle_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_publish_feeds_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<asset_claim_fees_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<call_order_update_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<account_whitelist_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<override_transfer_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<proposal_create_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<proposal_update_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<bid_collateral_evaluator<0, 17, 0>>();
+            _my->_evaluator_registry.register_evaluator<comment_payout_extension_evaluator<0, 17, 0>>();
         }
 
         std::shared_ptr<custom_operation_interpreter> database::get_custom_json_evaluator(const std::string &id) {
@@ -2517,9 +2523,9 @@ namespace steemit {
                     a.issuer = STEEMIT_NULL_ACCOUNT;
                     a.market_issued = false;
                     a.options.core_exchange_rate.base.amount = 1;
-                    a.options.core_exchange_rate.base.symbol = STEEM_SYMBOL;
+                    a.options.core_exchange_rate.base.symbol = STEEM_SYMBOL_NAME;
                     a.options.core_exchange_rate.quote.amount = 1;
-                    a.options.core_exchange_rate.quote.symbol = STEEM_SYMBOL;
+                    a.options.core_exchange_rate.quote.symbol = STEEM_SYMBOL_NAME;
                 });
 
                 create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
@@ -2536,9 +2542,9 @@ namespace steemit {
                     a.issuer = STEEMIT_NULL_ACCOUNT;
                     a.market_issued = false;
                     a.options.core_exchange_rate.base.amount = 1;
-                    a.options.core_exchange_rate.base.symbol = SBD_SYMBOL;
+                    a.options.core_exchange_rate.base.symbol = SBD_SYMBOL_NAME;
                     a.options.core_exchange_rate.quote.amount = 1;
-                    a.options.core_exchange_rate.quote.symbol = STEEM_SYMBOL;
+                    a.options.core_exchange_rate.quote.symbol = STEEM_SYMBOL_NAME;
                 });
 
                 create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
@@ -2552,7 +2558,7 @@ namespace steemit {
                         a.memo_key = init_public_key;
                     });
 
-                    adjust_balance(account, asset(i ? 0 : init_supply, STEEM_SYMBOL));
+                    adjust_balance(account, asset<0, 17, 0>(i ? 0 : init_supply, STEEM_SYMBOL_NAME));
 
                     create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = STEEMIT_INIT_MINER_NAME + (i ? fc::to_string(i) : std::string());
@@ -2578,7 +2584,7 @@ namespace steemit {
                     p.time = STEEMIT_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128::max_value();
                     p.participation_count = 128;
-                    p.current_supply = asset(init_supply, STEEM_SYMBOL);
+                    p.current_supply = asset<0, 17, 0>(init_supply, STEEM_SYMBOL_NAME);
                     p.virtual_supply = p.current_supply;
                     p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
                 });
@@ -2598,8 +2604,7 @@ namespace steemit {
                 create<witness_schedule_object>([&](witness_schedule_object &wso) {
                     wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
                 });
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
 
@@ -2633,8 +2638,7 @@ namespace steemit {
          STEEMIT_TRY_NOTIFY( changed_objects, changed_ids )
         }
         */
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
 
         }
 
@@ -2709,8 +2713,7 @@ namespace steemit {
                     _last_free_gb_printed = free_gb;
                 }
 
-            }
-            FC_CAPTURE_AND_RETHROW((next_block))
+            } FC_CAPTURE_AND_RETHROW((next_block))
         }
 
         void database::_apply_block(const signed_block &next_block) {
@@ -2872,11 +2875,11 @@ namespace steemit {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector <price> feeds;
+                vector<price<0, 17, 0>> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
-                    if (has_hardfork(STEEMIT_HARDFORK_0_17__220) {
+                    if (has_hardfork(STEEMIT_HARDFORK_0_17__220)) {
                         if (now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE && !wit.sbd_exchange_rate.is_null()) {
                             feeds.push_back(wit.sbd_exchange_rate);
                         }
@@ -2903,7 +2906,7 @@ namespace steemit {
                         }
 
                         if (fho.price_history.size()) {
-                            std::deque<price> copy;
+                            std::deque<price<0, 17, 0>> copy;
                             for (auto i : fho.price_history) {
                                 copy.push_back(i);
                             }
@@ -2918,8 +2921,9 @@ namespace steemit {
 #endif
                             if (has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
                                 const auto &gpo = get_dynamic_global_properties();
-                                price min_price(asset(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL),
-                                                gpo.current_supply); // This price limits SBD to 10% market cap
+                                price<0, 17, 0> min_price(
+                                        asset<0, 17, 0>(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL_NAME),
+                                        gpo.current_supply); // This price limits SBD to 10% market cap
 
                                 if (min_price > fho.current_median_history) {
                                     fho.current_median_history = min_price;
@@ -2932,8 +2936,7 @@ namespace steemit {
                         }
                     });
                 }
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::apply_transaction(const signed_transaction &trx, uint32_t skip) {
@@ -2974,14 +2977,14 @@ namespace steemit {
 
                     try {
                         trx.verify_authority(chain_id, get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH);
-                    } catch (protocol::tx_missing_active_auth &e) {
+                    } catch (protocol::exceptions::transaction::tx_missing_active_auth<> &e) {
                         if (get_shared_db_merkle().find(head_block_num() + 1) == get_shared_db_merkle().end()) {
                             throw e;
                         }
                     }
                 }
                 flat_set<account_name_type> required;
-                vector <authority> other;
+                vector<authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -3044,13 +3047,11 @@ namespace steemit {
                     try {
                         apply_operation(op);
                         ++_current_op_in_trx;
-                    }
-                    FC_CAPTURE_AND_RETHROW((op));
+                    } FC_CAPTURE_AND_RETHROW((op));
                 }
                 _current_trx_id = transaction_id_type();
 
-            }
-            FC_CAPTURE_AND_RETHROW((trx))
+            } FC_CAPTURE_AND_RETHROW((trx))
         }
 
         void database::apply_operation(const operation &op) {
@@ -3085,8 +3086,7 @@ namespace steemit {
                 }
 
                 return witness;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::create_block_summary(const signed_block &next_block) {
@@ -3095,8 +3095,7 @@ namespace steemit {
                 modify(get<block_summary_object>(sid), [&](block_summary_object &p) {
                     p.block_id = next_block.id();
                 });
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_global_dynamic_data(const signed_block &b) {
@@ -3117,7 +3116,7 @@ namespace steemit {
                                 if (has_hardfork(STEEMIT_HARDFORK_0_14__278)) {
                                     if (head_block_num() - w.last_confirmed_block_num > STEEMIT_BLOCKS_PER_DAY) {
                                         w.signing_key = public_key_type();
-                                        push_virtual_operation(shutdown_witness_operation(w.owner));
+                                        push_virtual_operation(shutdown_witness_operation<0, 17, 0>(w.owner));
                                     }
                                 }
                             });
@@ -3178,23 +3177,24 @@ namespace steemit {
 
                 if (!(get_node_properties().skip_flags & skip_undo_history_check)) {
                     STEEMIT_ASSERT(_dgp.head_block_number - _dgp.last_irreversible_block_num < STEEMIT_MAX_UNDO_HISTORY,
-                                   undo_database_exception,
+                                   exceptions::chain::undo_database::basic<>,
                                    "The database does not have enough undo history to support a blockchain with so many missed blocks. "
                                            "Please add a checkpoint if you would like to continue applying blocks beyond this point.",
                                    ("last_irreversible_block_num", _dgp.last_irreversible_block_num)("head",
                                                                                                      _dgp.head_block_number)(
                                            "max_undo", STEEMIT_MAX_UNDO_HISTORY));
                 }
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_virtual_supply() {
             try {
                 modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
                     dgp.virtual_supply = dgp.current_supply +
-                                         (get_feed_history().current_median_history.is_null() ? asset(0, STEEM_SYMBOL) :
-                                          dgp.current_sbd_supply * get_feed_history().current_median_history);
+                                         (get_feed_history().current_median_history.is_null() ? asset<0, 17, 0>(0,
+                                                                                                                STEEM_SYMBOL_NAME)
+                                                                                              : dgp.current_sbd_supply *
+                                                                                                get_feed_history().current_median_history);
 
                     auto median_price = get_feed_history().current_median_history;
 
@@ -3214,8 +3214,7 @@ namespace steemit {
                         }
                     }
                 });
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
@@ -3227,8 +3226,7 @@ namespace steemit {
                     _wit.last_aslot = new_block_aslot;
                     _wit.last_confirmed_block_num = new_block.block_num();
                 });
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::update_last_irreversible_block() {
@@ -3290,7 +3288,7 @@ namespace steemit {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr <fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block,
                                       "Current fork in the fork database does not contain the last_irreversible_block");
@@ -3303,8 +3301,7 @@ namespace steemit {
                 }
 
                 _fork_db.set_max_size(dpo.head_block_number - dpo.last_irreversible_block_num + 1);
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
 
@@ -3312,8 +3309,8 @@ namespace steemit {
             auto order_id = new_order_object.id;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
-                const asset_object &sell_asset = get_asset(new_order_object.amount_for_sale().symbol_name());
-                const asset_object &receive_asset = get_asset(new_order_object.amount_to_receive().symbol_name());
+                const asset_object &sell_asset = get_asset(new_order_object.amount_for_sale().symbol);
+                const asset_object &receive_asset = get_asset(new_order_object.amount_to_receive().symbol);
 
                 // Possible optimization: We only need to check calls if both are true:
                 //  - The new order is at the front of the book
@@ -3364,8 +3361,8 @@ namespace steemit {
             return find<limit_order_object>(order_id) == nullptr;
         }
 
-        asset database::match(const call_order_object &call, const force_settlement_object &settle,
-                              const price &match_price, asset max_settlement) {
+        asset<0, 17, 0> database::match(const call_order_object &call, const force_settlement_object &settle,
+                                        const price<0, 17, 0> &match_price, const asset<0, 17, 0> &max_settlement) {
             try {
                 FC_ASSERT(call.get_debt().symbol == settle.balance.symbol);
                 FC_ASSERT(call.debt > 0 && call.collateral > 0 && settle.balance.amount > 0);
@@ -3373,10 +3370,10 @@ namespace steemit {
                 const auto &settle_for_sale = std::min(settle.balance, max_settlement);
                 auto call_debt = call.get_debt();
 
-                asset call_receives = std::min(settle_for_sale, call_debt);
-                asset call_pays = call_receives * match_price;
-                asset settle_pays = call_receives;
-                const asset &settle_receives = call_pays;
+                asset<0, 17, 0> call_receives = std::min(settle_for_sale, call_debt);
+                asset<0, 17, 0> call_pays = call_receives * match_price;
+                asset<0, 17, 0> settle_pays = call_receives;
+                const asset<0, 17, 0> &settle_receives = call_pays;
 
                 /**
                  *  If the least collateralized call position lacks sufficient
@@ -3385,7 +3382,7 @@ namespace steemit {
                  *  can trigger a black swan.  So now we must cancel the forced settlement
                  *  object.
                  */
-                STEEMIT_ASSERT(call_pays < call.get_collateral(), black_swan_exception, "");
+                STEEMIT_ASSERT(call_pays < call.get_collateral(), exceptions::chain::black_swan<>, "");
 
                 assert(settle_pays == settle_for_sale || call_receives == call.get_debt());
 
@@ -3393,8 +3390,7 @@ namespace steemit {
                 fill_order(settle, settle_pays, settle_receives);
 
                 return call_receives;
-            }
-            FC_CAPTURE_AND_RETHROW((call)(settle)(match_price)(max_settlement))
+            } FC_CAPTURE_AND_RETHROW((call)(settle)(match_price)(max_settlement))
         }
 
         /**
@@ -3408,7 +3404,7 @@ namespace steemit {
          *  3 - both were filled
          */
         int database::match(const limit_order_object &new_order, const limit_order_object &old_order,
-                            const price &match_price) {
+                            const price<0, 17, 0> &match_price) {
             assert(new_order.sell_price.quote.symbol == old_order.sell_price.base.symbol);
             assert(new_order.sell_price.base.symbol == old_order.sell_price.quote.symbol);
             assert(new_order.for_sale > 0 && old_order.for_sale > 0);
@@ -3418,7 +3414,7 @@ namespace steemit {
             auto new_order_for_sale = new_order.amount_for_sale();
             auto old_order_for_sale = old_order.amount_for_sale();
 
-            asset new_order_pays, new_order_receives, old_order_pays, old_order_receives;
+            asset<0, 17, 0> new_order_pays, new_order_receives, old_order_pays, old_order_receives;
 
             if (new_order_for_sale <= old_order_for_sale * match_price) {
                 old_order_receives = new_order_for_sale;
@@ -3427,7 +3423,7 @@ namespace steemit {
                 //This line once read: assert( old_order_for_sale < new_order_for_sale * match_price );
                 //This assert is not always true -- see trade_amount_equals_zero in operation_tests.cpp
                 //Although new_order_for_sale is greater than old_order_for_sale * match_price, old_order_for_sale == new_order_for_sale * match_price
-                //Removing the assert seems to be safe -- apparently no asset is created or destroyed.
+                //Removing the assert seems to be safe -- apparently no asset<0, 17, 0> is created or destroyed.
                 new_order_receives = old_order_for_sale;
                 old_order_receives = old_order_for_sale * match_price;
             }
@@ -3437,14 +3433,14 @@ namespace steemit {
 
             assert(new_order_pays == new_order.amount_for_sale() || old_order_pays == old_order.amount_for_sale());
 
-            if (old_order_receives.symbol == STEEM_SYMBOL || old_order_receives.symbol == SBD_SYMBOL) {
+            if (old_order_receives.symbol == STEEM_SYMBOL_NAME || old_order_receives.symbol == SBD_SYMBOL_NAME) {
                 fc::microseconds age = head_block_time() - old_order.created;
 
                 if (!has_hardfork(STEEMIT_HARDFORK_0_12__178) &&
                     ((age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork(STEEMIT_HARDFORK_0_10__149)) ||
                      (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 &&
                       has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
-                    if (old_order_receives.symbol == STEEM_SYMBOL) {
+                    if (old_order_receives.symbol == STEEM_SYMBOL_NAME) {
                         adjust_liquidity_reward(get_account(old_order.seller), old_order_receives, false);
                         adjust_liquidity_reward(get_account(new_order.seller), -old_order_receives, false);
                     } else {
@@ -3454,9 +3450,9 @@ namespace steemit {
                 }
             }
 
-            push_virtual_operation(
-                    fill_order_operation(new_order.seller, new_order.order_id, new_order_pays, old_order.seller,
-                                         old_order.order_id, old_order_pays));
+            push_virtual_operation(fill_order_operation<0, 17, 0>(new_order.seller, new_order.order_id, new_order_pays,
+                                                                  old_order.seller, old_order.order_id,
+                                                                  old_order_pays));
 
             int result = 0;
             result |= fill_order(new_order, new_order_pays, new_order_receives);
@@ -3466,7 +3462,8 @@ namespace steemit {
         }
 
 
-        void database::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sbd) {
+        void database::adjust_liquidity_reward(const account_object &owner, const asset<0, 17, 0> &volume,
+                                               bool is_sbd) {
             const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
             auto itr = ridx.find(owner.id);
             if (itr != ridx.end()) {
@@ -3501,13 +3498,14 @@ namespace steemit {
             }
         }
 
-        bool database::fill_order(const limit_order_object &order, const asset &pays, const asset &receives) {
+        bool database::fill_order(const limit_order_object &order, const asset<0, 17, 0> &pays,
+                                  const asset<0, 17, 0> &receives) {
             try {
                 FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
                 FC_ASSERT(pays.symbol != receives.symbol);
 
                 const account_object &seller = get_account(order.seller);
-                const asset_object &recv_asset = get_asset(receives.symbol_name());
+                const asset_object &recv_asset = get_asset(receives.symbol);
 
                 auto issuer_fees = pay_market_fees(recv_asset, receives);
                 pay_order(seller, receives - issuer_fees, pays);
@@ -3533,18 +3531,18 @@ namespace steemit {
                     return false;
                 }
 
-            }
-            FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
+            } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
-        bool database::fill_order(const call_order_object &order, const asset &pays, const asset &receives) {
+        bool database::fill_order(const call_order_object &order, const asset<0, 17, 0> &pays,
+                                  const asset<0, 17, 0> &receives) {
             try {
                 //idump((pays)(receives)(order));
                 FC_ASSERT(order.get_debt().symbol == receives.symbol);
                 FC_ASSERT(order.get_collateral().symbol == pays.symbol);
                 FC_ASSERT(order.get_collateral() >= pays);
 
-                optional <asset> collateral_freed;
+                optional<asset<0, 17, 0>> collateral_freed;
                 modify(order, [&](call_order_object &o) {
                     o.debt -= receives.amount;
                     o.collateral -= pays.amount;
@@ -3553,7 +3551,7 @@ namespace steemit {
                         o.collateral = 0;
                     }
                 });
-                const asset_object &mia = get_asset(receives.symbol_name());
+                const asset_object &mia = get_asset(receives.symbol);
                 assert(mia.is_market_issued());
 
                 const asset_dynamic_data_object &mia_ddo = get_asset_dynamic_data(mia.asset_name);
@@ -3564,7 +3562,7 @@ namespace steemit {
                 });
 
                 const account_object &borrower = get_account(order.borrower);
-                if (collateral_freed || pays.symbol == STEEM_SYMBOL) {
+                if (collateral_freed || pays.symbol == STEEM_SYMBOL_NAME) {
                     const account_statistics_object &borrower_statistics = get_account_statistics(borrower.name);
                     if (collateral_freed) {
                         adjust_balance(borrower, *collateral_freed);
@@ -3574,7 +3572,7 @@ namespace steemit {
                         if (collateral_freed && collateral_freed->amount > 0) {
                             b.total_core_in_orders -= collateral_freed->amount;
                         }
-                        if (pays.symbol == STEEM_SYMBOL) {
+                        if (pays.symbol == STEEM_SYMBOL_NAME) {
                             b.total_core_in_orders -= pays.amount;
                         }
 
@@ -3583,23 +3581,25 @@ namespace steemit {
                 }
 
                 assert(pays.symbol != receives.symbol);
-                push_virtual_operation(fill_call_order_operation{order.order_id, order.borrower, pays, receives,
-                                                                 asset(0, pays.symbol)});
+                push_virtual_operation(
+                        fill_call_order_operation<0, 17, 0>(order.order_id, order.borrower, pays, receives,
+                                                            asset<0, 17, 0>(0, pays.symbol)));
+
 
                 if (collateral_freed) {
                     remove(order);
                 }
 
                 return collateral_freed.valid();
-            }
-            FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
+            } FC_CAPTURE_AND_RETHROW((order)(pays)(receives))
         }
 
-        bool database::fill_order(const force_settlement_object &settle, const asset &pays, const asset &receives) {
+        bool database::fill_order(const force_settlement_object &settle, const asset<0, 17, 0> &pays,
+                                  const asset<0, 17, 0> &receives) {
             try {
                 bool filled = false;
 
-                auto issuer_fees = pay_market_fees(get_asset(receives.symbol_name()), receives);
+                auto issuer_fees = pay_market_fees(get_asset(receives.symbol), receives);
 
                 if (pays < settle.balance) {
                     modify(settle, [&pays](force_settlement_object &s) {
@@ -3613,8 +3613,8 @@ namespace steemit {
 
                 FC_ASSERT(pays.symbol != receives.symbol);
                 push_virtual_operation(
-                        fill_settlement_order_operation{settle.settlement_id, settle.owner, pays, receives,
-                                                        issuer_fees});
+                        fill_settlement_order_operation<0, 17, 0>(settle.settlement_id, settle.owner, pays, receives,
+                                                                  issuer_fees));
 
                 if (filled) {
                     remove(settle);
@@ -3648,7 +3648,7 @@ namespace steemit {
                 const auto &limit_price_index = get_index<limit_order_index>().indices().get<by_price>();
 
                 // looking for limit orders selling the most USD for the least CORE
-                auto max_price = price::max(mia.asset_name, bitasset.options.short_backing_asset);
+                auto max_price = price<0, 17, 0>::max(mia.asset_name, bitasset.options.short_backing_asset);
                 // stop when limit orders are selling too little USD for too much CORE
                 auto min_price = bitasset.current_feed.max_short_squeeze_price();
 
@@ -3661,8 +3661,8 @@ namespace steemit {
                     return false;
                 }
 
-                auto call_min = price::min(bitasset.options.short_backing_asset, mia.asset_name);
-                auto call_max = price::max(bitasset.options.short_backing_asset, mia.asset_name);
+                auto call_min = price<0, 17, 0>::min(bitasset.options.short_backing_asset, mia.asset_name);
+                auto call_max = price<0, 17, 0>::max(bitasset.options.short_backing_asset, mia.asset_name);
                 auto call_itr = call_price_index.lower_bound(call_min);
                 auto call_end = call_price_index.upper_bound(call_max);
 
@@ -3671,8 +3671,8 @@ namespace steemit {
 
                 while (!check_for_blackswan(mia, enable_black_swan) && call_itr != call_end) {
                     bool filled_call = false;
-                    price match_price;
-                    asset usd_for_sale;
+                    price<0, 17, 0> match_price;
+                    asset<0, 17, 0> usd_for_sale;
                     if (limit_itr != limit_end) {
                         assert(limit_itr != limit_price_index.end());
                         match_price = limit_itr->sell_price;
@@ -3706,7 +3706,7 @@ namespace steemit {
                         return true;
                     }
 
-                    asset call_pays, call_receives, order_pays, order_receives;
+                    asset<0, 17, 0> call_pays, call_receives, order_pays, order_receives;
                     if (usd_to_buy >= usd_for_sale) {  // fill order
                         call_receives = usd_for_sale;
                         order_receives = usd_for_sale * match_price;
@@ -3734,20 +3734,18 @@ namespace steemit {
 
                     auto old_limit_itr = filled_limit ? limit_itr++ : limit_itr;
                     fill_order(*old_limit_itr, order_pays, order_receives);
-                    push_virtual_operation(
-                            fill_order_operation{limit_itr->seller, limit_itr->order_id, limit_itr->amount_for_sale(),
-                                                 old_limit_itr->seller, old_limit_itr->order_id,
-                                                 old_limit_itr->amount_for_sale()});
-
-
+                    push_virtual_operation(fill_order_operation<0, 17, 0>(limit_itr->seller, limit_itr->order_id,
+                                                                          limit_itr->amount_for_sale(),
+                                                                          old_limit_itr->seller,
+                                                                          old_limit_itr->order_id,
+                                                                          old_limit_itr->amount_for_sale()));
                 } // whlie call_itr != call_end
 
                 return margin_called;
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::globally_settle_asset(const asset_object &mia, const price &settlement_price) {
+        void database::globally_settle_asset(const asset_object &mia, const price<0, 17, 0> &settlement_price) {
             try {
                 /*
                 elog( "BLACK SWAN!" );
@@ -3759,7 +3757,7 @@ namespace steemit {
                 FC_ASSERT(!bitasset.has_settlement(), "black swan already occurred, it should not happen again");
 
                 const asset_object &backing_asset = get_asset(bitasset.options.short_backing_asset);
-                asset collateral_gathered = backing_asset.amount(0);
+                asset<0, 17, 0> collateral_gathered = backing_asset.amount(0);
 
                 const asset_dynamic_data_object &mia_dyn = get_asset_dynamic_data(mia.asset_name);
                 auto original_mia_supply = mia_dyn.current_supply;
@@ -3768,9 +3766,9 @@ namespace steemit {
 
                 // cancel all call orders and accumulate it into collateral_gathered
                 auto call_itr = call_price_index.lower_bound(
-                        price::min(bitasset.options.short_backing_asset, mia.asset_name));
+                        price<0, 17, 0>::min(bitasset.options.short_backing_asset, mia.asset_name));
                 auto call_end = call_price_index.upper_bound(
-                        price::max(bitasset.options.short_backing_asset, mia.asset_name));
+                        price<0, 17, 0>::max(bitasset.options.short_backing_asset, mia.asset_name));
                 while (call_itr != call_end) {
                     auto pays = call_itr->get_debt() * settlement_price;
 
@@ -3798,21 +3796,22 @@ namespace steemit {
                     obj.current_supply = original_mia_supply;
                 });
 
-            }
-            FC_CAPTURE_AND_RETHROW((mia)(settlement_price))
+            } FC_CAPTURE_AND_RETHROW((mia)(settlement_price))
         }
 
-        void database::pay_order(const account_object &receiver, const asset &receives, const asset &pays) {
+        void database::pay_order(const account_object &receiver, const asset<0, 17, 0> &receives,
+                                 const asset<0, 17, 0> &pays) {
             modify(get_account_statistics(receiver.name), [&](account_statistics_object &b) {
-                if (pays.symbol == STEEM_SYMBOL) {
+                if (pays.symbol == STEEM_SYMBOL_NAME) {
                     b.total_core_in_orders -= pays.amount;
                 }
             });
             adjust_balance(receiver, receives);
         }
 
-        asset database::calculate_market_fee(const asset_object &trade_asset, const asset &trade_amount) {
-            assert(trade_asset.asset_name == trade_amount.symbol_name());
+        asset<0, 17, 0> database::calculate_market_fee(const asset_object &trade_asset,
+                                                       const asset<0, 17, 0> &trade_amount) {
+            assert(trade_asset.asset_name == trade_amount.symbol);
 
             if (!trade_asset.charges_market_fees()) {
                 return trade_asset.amount(0);
@@ -3824,7 +3823,7 @@ namespace steemit {
             fc::uint128 a(trade_amount.amount.value);
             a *= trade_asset.options.market_fee_percent;
             a /= STEEMIT_100_PERCENT;
-            asset percent_fee = trade_asset.amount(a.to_uint64());
+            asset<0, 17, 0> percent_fee = trade_asset.amount(a.to_uint64());
 
             if (percent_fee.amount > trade_asset.options.max_market_fee) {
                 percent_fee.amount = trade_asset.options.max_market_fee;
@@ -3833,7 +3832,7 @@ namespace steemit {
             return percent_fee;
         }
 
-        asset database::pay_market_fees(const asset_object &recv_asset, const asset &receives) {
+        asset<0, 17, 0> database::pay_market_fees(const asset_object &recv_asset, const asset<0, 17, 0> &receives) {
             auto issuer_fees = calculate_market_fee(recv_asset, receives);
             assert(issuer_fees <= receives);
 
@@ -3854,7 +3853,7 @@ namespace steemit {
                 auto refunded = order.amount_for_sale();
 
                 modify(get_account_statistics(order.seller), [&](account_statistics_object &obj) {
-                    if (refunded.symbol == STEEM_SYMBOL) {
+                    if (refunded.symbol == STEEM_SYMBOL_NAME) {
                         obj.total_core_in_orders -= refunded.amount;
                     }
                 });
@@ -3862,7 +3861,7 @@ namespace steemit {
                 adjust_balance(get_account(order.seller), order.deferred_fee);
 
                 if (create_virtual_op) {
-                    limit_order_cancel_operation vop;
+                    limit_order_cancel_operation<0, 17, 0> vop;
                     vop.order_id = order.order_id;
                     vop.owner = order.seller;
                     push_virtual_operation(vop);
@@ -3879,11 +3878,12 @@ namespace steemit {
             adjust_balance(get_account(order.owner), order.balance);
 
             if (create_virtual_op) {
-                asset_settle_cancel_operation vop;
+                asset_settle_cancel_operation<0, 17, 0> vop;
                 vop.settlement = order.settlement_id;
                 vop.account = order.owner;
                 vop.amount = order.balance;
                 push_virtual_operation(vop);
+
             }
             remove(order);
         }
@@ -3912,7 +3912,7 @@ namespace steemit {
                     modify(b, [this](asset_bitasset_data_object &a) {
                         a.update_median_feeds(head_block_time());
                     });
-                    check_call_orders(get_asset(b.current_feed.settlement_price.base.symbol_name()));
+                    check_call_orders(get_asset(b.current_feed.settlement_price.base.symbol));
                 }
                 if (!b.current_feed.core_exchange_rate.is_null() &&
                     a.options.core_exchange_rate != b.current_feed.core_exchange_rate) {
@@ -3943,17 +3943,17 @@ namespace steemit {
             const auto &limit_price_index = get_index<limit_order_index>().indices().get<by_price>();
 
             // looking for limit orders selling the most USD for the least CORE
-            auto highest_possible_bid = price::max(mia.asset_name, bitasset.options.short_backing_asset);
+            auto highest_possible_bid = price<0, 17, 0>::max(mia.asset_name, bitasset.options.short_backing_asset);
             // stop when limit orders are selling too little USD for too much CORE
-            auto lowest_possible_bid = price::min(mia.asset_name, bitasset.options.short_backing_asset);
+            auto lowest_possible_bid = price<0, 17, 0>::min(mia.asset_name, bitasset.options.short_backing_asset);
 
             assert(highest_possible_bid.base.symbol == lowest_possible_bid.base.symbol);
             // NOTE limit_price_index is sorted from greatest to least
             auto limit_itr = limit_price_index.lower_bound(highest_possible_bid);
             auto limit_end = limit_price_index.upper_bound(lowest_possible_bid);
 
-            auto call_min = price::min(bitasset.options.short_backing_asset, mia.asset_name);
-            auto call_max = price::max(bitasset.options.short_backing_asset, mia.asset_name);
+            auto call_min = price<0, 17, 0>::min(bitasset.options.short_backing_asset, mia.asset_name);
+            auto call_max = price<0, 17, 0>::max(bitasset.options.short_backing_asset, mia.asset_name);
             auto call_itr = call_price_index.lower_bound(call_min);
             auto call_end = call_price_index.upper_bound(call_max);
 
@@ -3961,7 +3961,7 @@ namespace steemit {
                 return false;
             }  // no call orders
 
-            price highest = settle_price;
+            price<0, 17, 0> highest = settle_price;
             if (limit_itr != limit_end) {
                 assert(settle_price.base.symbol == limit_itr->sell_price.base.symbol);
                 highest = std::max(limit_itr->sell_price, settle_price);
@@ -4014,7 +4014,8 @@ namespace steemit {
                     a.delegated_vesting_shares -= itr->vesting_shares;
                 });
 
-                push_virtual_operation(return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
+                push_virtual_operation(
+                        return_vesting_delegation_operation<0, 17, 0>(itr->delegator, itr->vesting_shares));
 
                 remove(*itr);
                 itr = delegations_by_exp.begin();
@@ -4028,7 +4029,7 @@ namespace steemit {
                     //Cancel expired limit orders
                     auto &limit_index = get_index<limit_order_index>().indices().get<by_expiration>();
                     while (!limit_index.empty() && limit_index.begin()->expiration <= head_block_time()) {
-                        limit_order_cancel_operation canceler;
+                        limit_order_cancel_operation<0, 17, 0> canceler;
                         const limit_order_object &order = *limit_index.begin();
                         canceler.owner = order.seller;
                         canceler.order_id = order.order_id;
@@ -4040,8 +4041,8 @@ namespace steemit {
                 //Process expired force settlement orders
                 auto &settlement_index = get_index<force_settlement_index>().indices().get<by_expiration>();
                 if (!settlement_index.empty()) {
-                    asset_name_type current_asset = settlement_index.begin()->balance.symbol_name();
-                    asset max_settlement_volume;
+                    asset_name_type current_asset = settlement_index.begin()->balance.symbol;
+                    asset<0, 17, 0> max_settlement_volume;
                     bool extra_dump = false;
 
                     auto next_asset = [&current_asset, &settlement_index, &extra_dump] {
@@ -4053,9 +4054,9 @@ namespace steemit {
                             return false;
                         }
                         if (extra_dump) {
-                            ilog("next_asset returning true, bound is ${b}", ("b", *bound));
+                            ilog("next_asset<0, 17, 0> returning true, bound is ${b}", ("b", *bound));
                         }
-                        current_asset = bound->balance.symbol_name();
+                        current_asset = bound->balance.symbol;
                         return true;
                     };
 
@@ -4067,7 +4068,7 @@ namespace steemit {
                         ++count;
                         const force_settlement_object &order = *itr;
                         auto order_id = order.settlement_id;
-                        current_asset = order.balance.symbol_name();
+                        current_asset = order.balance.symbol;
                         const asset_object &mia_object = get_asset(current_asset);
                         const asset_bitasset_data_object &mia = get_asset_bitasset_data(mia_object.asset_name);
 
@@ -4075,7 +4076,7 @@ namespace steemit {
 
                         if (extra_dump) {
                             wlog("clear_expired_orders() dumping extra data for iteration ${c}", ("c", count));
-                            ilog("head_block_num is ${hb} current_asset is ${a}",
+                            ilog("head_block_num is ${hb} current_asset<0, 17, 0> is ${a}",
                                  ("hb", head_block_num())("a", current_asset));
                         }
 
@@ -4102,7 +4103,7 @@ namespace steemit {
                             cancel_order(order);
                             continue;
                         }
-                        if (max_settlement_volume.symbol_name() != current_asset) {
+                        if (max_settlement_volume.symbol != current_asset) {
                             max_settlement_volume = mia_object.amount(mia.max_force_settlement_volume(
                                     get_asset_dynamic_data(mia_object.asset_name).current_supply));
                         }
@@ -4128,19 +4129,19 @@ namespace steemit {
                                            STEEMIT_100_PERCENT).to_uint64();
                         assert(receives <= order.balance * mia.current_feed.settlement_price);
 
-                        price settlement_price = pays / receives;
+                        price<0, 17, 0> settlement_price = pays / receives;
 
                         auto &call_index = get_index<call_order_index>().indices().get<by_collateral>();
-                        asset settled = mia_object.amount(mia.force_settled_volume);
+                        asset<0, 17, 0> settled = mia_object.amount(mia.force_settled_volume);
                         // Match against the least collateralized short until the settlement is finished or we reach max settlements
                         while (settled < max_settlement_volume &&
                                find<force_settlement_object, by_account>(boost::make_tuple(order.owner, order_id))) {
-                            auto itr = call_index.lower_bound(boost::make_tuple(price::min(
+                            auto itr = call_index.lower_bound(boost::make_tuple(price<0, 17, 0>::min(
                                     get_asset_bitasset_data(mia_object.asset_name).options.short_backing_asset,
                                     mia_object.asset_name)));
-                            // There should always be a call order, since asset exists!
+                            // There should always be a call order, since asset<0, 17, 0> exists!
                             assert(itr != call_index.end() && itr->debt_type() == mia_object.asset_name);
-                            asset max_settlement = max_settlement_volume - settled;
+                            asset<0, 17, 0> max_settlement = max_settlement_volume - settled;
 
                             if (order.balance.amount == 0) {
                                 wlog("0 settlement detected");
@@ -4149,7 +4150,7 @@ namespace steemit {
                             }
                             try {
                                 settled += match(*itr, order, settlement_price, max_settlement);
-                            } catch (const black_swan_exception &e) {
+                            } catch (const exceptions::chain::black_swan<> &e) {
                                 wlog("black swan detected: ${e}", ("e", e.to_detail_string()));
                                 cancel_order(order);
                                 break;
@@ -4173,34 +4174,34 @@ namespace steemit {
             }
         }
 
-        string database::to_pretty_string(const asset &a) const {
-            return get_asset(a.symbol_name()).amount_to_pretty_string(a.amount);
+        string database::to_pretty_string(const asset<0, 17, 0> &a) const {
+            return get_asset(a.symbol).amount_to_pretty_string(a.amount);
         }
 
-        void database::adjust_balance(const account_object &a, const asset &delta) {
+        void database::adjust_balance(const account_object &a, const asset<0, 17, 0> &delta) {
             try {
                 if (delta.amount == 0) {
                     return;
                 }
 
                 auto &index = get_index<account_balance_index>().indices().get<by_account_asset>();
-                auto itr = index.find(boost::make_tuple(a.name, delta.symbol_name()));
+                auto itr = index.find(boost::make_tuple(a.name, delta.symbol));
                 if (itr == index.end()) {
                     FC_ASSERT(delta.amount > 0,
                               "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                              ("a", get_account(a.name).name)("b", to_pretty_string(asset(0, delta.symbol)))("r",
-                                                                                                             to_pretty_string(
-                                                                                                                     -delta)));
+                              ("a", get_account(a.name).name)("b", to_pretty_string(asset<0, 17, 0>(0, delta.symbol)))(
+                                      "r", to_pretty_string(-delta)));
 
                     create<account_balance_object>([&](account_balance_object &b) {
                         b.owner = a.name;
-                        b.asset_name = delta.symbol_name();
+                        b.asset_name = delta.symbol;
 
-                        if (delta.symbol == SBD_SYMBOL) {
+                        if (delta.symbol == SBD_SYMBOL_NAME) {
                             adjust_sbd_balance(a, b);
                         }
 
                         b.adjust_balance(delta);
+
                     });
                 } else {
                     if (delta.amount < 0) {
@@ -4212,7 +4213,7 @@ namespace steemit {
                     }
 
                     modify(*itr, [&](account_balance_object &b) {
-                        if (delta.symbol == SBD_SYMBOL) {
+                        if (delta.symbol == SBD_SYMBOL_NAME) {
                             adjust_sbd_balance(a, b);
                         }
 
@@ -4222,14 +4223,13 @@ namespace steemit {
 
                 //TODO Backward compatibility only
                 modify<account_object>(get_account(a.name), [&](account_object &acnt) {
-                    if (delta.symbol == SBD_SYMBOL) {
+                    if (delta.symbol == SBD_SYMBOL_NAME) {
                         acnt.sbd_balance += delta;
-                    } else if (delta.symbol == STEEM_SYMBOL) {
+                    } else if (delta.symbol == STEEM_SYMBOL_NAME) {
                         acnt.balance += delta;
                     }
                 });
-            }
-            FC_CAPTURE_AND_RETHROW((a)(delta))
+            } FC_CAPTURE_AND_RETHROW((a)(delta))
         }
 
         void database::adjust_sbd_balance(const account_object &a, account_balance_object &b) {
@@ -4248,7 +4248,7 @@ namespace steemit {
                         auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
                         interest *= get_dynamic_global_properties().sbd_interest_rate;
                         interest /= STEEMIT_100_PERCENT;
-                        asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+                        asset<0, 17, 0> interest_paid(interest.to_uint64(), SBD_SYMBOL_NAME);
                         b.balance += interest_paid.amount;
 
                         //TODO Backward compatibility only
@@ -4257,7 +4257,7 @@ namespace steemit {
                         acnt.sbd_seconds = 0;
                         acnt.sbd_last_interest_payment = head_block_time();
 
-                        push_virtual_operation(interest_operation(a.name, interest_paid));
+                        push_virtual_operation(interest_operation<0, 17, 0>(a.name, interest_paid));
 
                         modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
                             props.current_sbd_supply += interest_paid;
@@ -4273,51 +4273,46 @@ namespace steemit {
             }
         }
 
-        void database::adjust_savings_balance(const account_object &a, const asset &delta) {
+        void database::adjust_savings_balance(const account_object &a, const asset<0, 17, 0> &delta) {
             modify(a, [&](account_object &acnt) {
-                switch (delta.symbol) {
-                    case STEEM_SYMBOL:
-                        acnt.savings_balance += delta;
-                        break;
-                    case SBD_SYMBOL:
-                        if (a.savings_sbd_seconds_last_update != head_block_time()) {
-                            acnt.savings_sbd_seconds += fc::uint128_t(a.savings_sbd_balance.amount.value) *
-                                                        (head_block_time() -
-                                                         a.savings_sbd_seconds_last_update).to_seconds();
-                            acnt.savings_sbd_seconds_last_update = head_block_time();
+                if (delta.symbol == STEEM_SYMBOL_NAME) {
+                    acnt.savings_balance += delta;
+                } else if (delta.symbol == SBD_SYMBOL_NAME) {
+                    if (a.savings_sbd_seconds_last_update != head_block_time()) {
+                        acnt.savings_sbd_seconds += fc::uint128_t(a.savings_sbd_balance.amount.value) *
+                                                    (head_block_time() -
+                                                     a.savings_sbd_seconds_last_update).to_seconds();
+                        acnt.savings_sbd_seconds_last_update = head_block_time();
 
-                            if (acnt.savings_sbd_seconds > 0 && (acnt.savings_sbd_seconds_last_update -
-                                                                 acnt.savings_sbd_last_interest_payment).to_seconds() >
-                                                                STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                                auto interest = acnt.savings_sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
-                                interest *= get_dynamic_global_properties().sbd_interest_rate;
-                                interest /= STEEMIT_100_PERCENT;
-                                asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                                acnt.savings_sbd_balance += interest_paid;
-                                acnt.savings_sbd_seconds = 0;
-                                acnt.savings_sbd_last_interest_payment = head_block_time();
+                        if (acnt.savings_sbd_seconds > 0 && (acnt.savings_sbd_seconds_last_update -
+                                                             acnt.savings_sbd_last_interest_payment).to_seconds() >
+                                                            STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
+                            auto interest = acnt.savings_sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+                            interest *= get_dynamic_global_properties().sbd_interest_rate;
+                            interest /= STEEMIT_100_PERCENT;
+                            asset<0, 17, 0> interest_paid(interest.to_uint64(), SBD_SYMBOL_NAME);
+                            acnt.savings_sbd_balance += interest_paid;
+                            acnt.savings_sbd_seconds = 0;
+                            acnt.savings_sbd_last_interest_payment = head_block_time();
 
-                                push_virtual_operation(interest_operation(a.name, interest_paid));
+                            push_virtual_operation(interest_operation<0, 17, 0>(a.name, interest_paid));
 
-                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                                    props.current_sbd_supply += interest_paid;
-                                    props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                                });
+                            modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
+                                props.current_sbd_supply += interest_paid;
+                                props.virtual_supply += interest_paid * get_feed_history().current_median_history;
+                            });
 
-                                modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &a) {
-                                    a.current_supply += interest_paid.amount;
-                                });
-                            }
+                            modify(get_asset_dynamic_data(SBD_SYMBOL_NAME), [&](asset_dynamic_data_object &a) {
+                                a.current_supply += interest_paid.amount;
+                            });
                         }
-                        acnt.savings_sbd_balance += delta;
-                        break;
-                    default:
-                        FC_ASSERT(!"invalid symbol");
+                    }
+                    acnt.savings_sbd_balance += delta;
                 }
             });
         }
 
-        void database::adjust_supply(const asset &delta, bool adjust_vesting) {
+        void database::adjust_supply(const asset<0, 17, 0> &delta, bool adjust_vesting) {
 
             const auto &props = get_dynamic_global_properties();
             if (props.head_block_number < STEEMIT_BLOCKS_PER_DAY * 7) {
@@ -4325,13 +4320,14 @@ namespace steemit {
             }
 
             modify(props, [&](dynamic_global_property_object &props) {
-                if (delta.symbol == STEEM_SYMBOL) {
-                    asset new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, STEEM_SYMBOL);
+                if (delta.symbol == STEEM_SYMBOL_NAME) {
+                    asset<0, 17, 0> new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0,
+                                                STEEM_SYMBOL_NAME);
                     props.current_supply += delta + new_vesting;
                     props.virtual_supply += delta + new_vesting;
                     props.total_vesting_fund_steem += new_vesting;
                     assert(props.current_supply.amount.value >= 0);
-                } else if (delta.symbol == SBD_SYMBOL) {
+                } else if (delta.symbol == SBD_SYMBOL_NAME) {
                     props.current_sbd_supply += delta;
                     props.virtual_supply =
                             props.current_sbd_supply * get_feed_history().current_median_history + props.current_supply;
@@ -4339,21 +4335,21 @@ namespace steemit {
                 }
             });
 
-            modify(get_asset_dynamic_data(delta.symbol_name()), [delta](asset_dynamic_data_object &a) {
+            modify(get_asset_dynamic_data(delta.symbol), [delta](asset_dynamic_data_object &a) {
                 a.current_supply += delta.amount;
             });
         }
 
-        asset database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
+        asset<0, 17, 0> database::get_balance(const account_object &a, const asset_name_type &asset_name) const {
             try {
                 const account_balance_object &b = get<account_balance_object, by_account_asset>(
                         boost::make_tuple(a.name, asset_name));
                 return {b.balance, b.asset_name};
-            }
-            FC_CAPTURE_AND_RETHROW((asset_name))
+            } FC_CAPTURE_AND_RETHROW((asset_name))
         }
 
-        asset database::get_savings_balance(const account_object &a, const asset_name_type &asset_name) const {
+        asset<0, 17, 0> database::get_savings_balance(const account_object &a,
+                                                      const asset_name_type &asset_name) const {
             if (asset_name == STEEM_SYMBOL_NAME) {
                 return a.savings_balance;
             } else if (asset_name == SBD_SYMBOL_NAME) {
@@ -4426,6 +4422,9 @@ namespace steemit {
             FC_ASSERT(_hardfork_versions[hardforks.last_hardfork] <= STEEMIT_BLOCKCHAIN_VERSION,
                       "Blockchain version is older than last applied hardfork");
             FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
+
+            steemit::version::state::instance().current_version = protocol::hardfork_version(0,
+                                                                                             hardforks.last_hardfork);
         }
 
         void database::reset_virtual_schedule_time() {
@@ -4455,7 +4454,7 @@ namespace steemit {
                         if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
                             apply_hardfork(hardforks.last_hardfork + 1);
                         } else {
-                            throw unknown_hardfork_exception();
+                            throw exceptions::chain::unknown_hardfork<>();
                         }
                     }
                 } else {
@@ -4465,8 +4464,7 @@ namespace steemit {
                         apply_hardfork(hardforks.last_hardfork + 1);
                     }
                 }
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         bool database::has_hardfork(uint32_t hardfork) const {
@@ -4497,21 +4495,23 @@ namespace steemit {
                 elog("HARDFORK ${hf} at block ${b}", ("hf", hardfork)("b", head_block_num()));
             }
 
+            steemit::version::state::instance().current_version = protocol::hardfork_version(0, hardfork);
+
             switch (hardfork) {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
@@ -4648,9 +4648,9 @@ namespace steemit {
                     modify(get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME),
                            [&](reward_fund_object &rfo) {
                                rfo.percent_content_rewards = STEEMIT_POST_REWARD_FUND_PERCENT;
-                               rfo.reward_balance = asset(
+                               rfo.reward_balance = asset<0, 17, 0>(
                                        (reward_steem.amount.value * rfo.percent_content_rewards) / STEEMIT_100_PERCENT,
-                                       STEEM_SYMBOL);
+                                       STEEM_SYMBOL_NAME);
                                reward_steem -= rfo.reward_balance;
 
                            });
@@ -4662,7 +4662,7 @@ namespace steemit {
                            });
 
                     modify(gpo, [&](dynamic_global_property_object &g) {
-                        g.total_reward_fund_steem = asset(0, STEEM_SYMBOL);
+                        g.total_reward_fund_steem = asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
                         g.total_reward_shares2 = 0;
 
                     });
@@ -4746,7 +4746,7 @@ namespace steemit {
                           "Hardfork processing failed sanity check...");
             });
 
-            push_virtual_operation(hardfork_operation(hardfork), true);
+            push_virtual_operation(hardfork_operation<0, 17, 0>(hardfork), true);
         }
 
         void database::retally_liquidity_weight() {
@@ -4764,9 +4764,9 @@ namespace steemit {
         void database::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
-                asset total_supply = asset(0, STEEM_SYMBOL);
-                asset total_sbd = asset(0, SBD_SYMBOL);
-                asset total_vesting = asset(0, VESTS_SYMBOL);
+                asset<0, 17, 0> total_supply(0, STEEM_SYMBOL_NAME);
+                asset<0, 17, 0> total_sbd(0, SBD_SYMBOL_NAME);
+                asset<0, 17, 0> total_vesting(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
                 auto gpo = get_dynamic_global_properties();
@@ -4778,9 +4778,9 @@ namespace steemit {
                 }
 
                 for (const auto &itr : account_idx) {
-                    total_supply += get_balance(itr.name, STEEM_SYMBOL_NAME).amount;
+                    total_supply += get_balance(itr.name, STEEM_SYMBOL_NAME);
                     total_supply += itr.savings_balance;
-                    total_sbd += get_balance(itr.name, SBD_SYMBOL_NAME).amount;
+                    total_sbd += get_balance(itr.name, SBD_SYMBOL_NAME);
                     total_sbd += itr.savings_sbd_balance;
                     total_vesting += itr.vesting_shares;
                     total_vsf_votes += (itr.proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr.witness_vote_weight() : (
@@ -4791,9 +4791,9 @@ namespace steemit {
                 const auto &convert_request_idx = get_index<convert_request_index>().indices();
 
                 for (const auto &itr : convert_request_idx) {
-                    if (itr.amount.symbol == STEEM_SYMBOL) {
+                    if (itr.amount.symbol == STEEM_SYMBOL_NAME) {
                         total_supply += itr.amount;
-                    } else if (itr.amount.symbol == SBD_SYMBOL) {
+                    } else if (itr.amount.symbol == SBD_SYMBOL_NAME) {
                         total_sbd += itr.amount;
                     } else {
                         FC_ASSERT(false, "Encountered illegal symbol in convert_request_object");
@@ -4803,10 +4803,10 @@ namespace steemit {
                 const auto &limit_order_idx = get_index<limit_order_index>().indices();
 
                 for (const auto &itr : limit_order_idx) {
-                    if (itr.sell_price.base.symbol == STEEM_SYMBOL) {
-                        total_supply += asset(itr.for_sale, STEEM_SYMBOL);
-                    } else if (itr.sell_price.base.symbol == SBD_SYMBOL) {
-                        total_sbd += asset(itr.for_sale, SBD_SYMBOL);
+                    if (itr.sell_price.base.symbol == STEEM_SYMBOL_NAME) {
+                        total_supply += asset<0, 17, 0>(itr.for_sale, STEEM_SYMBOL_NAME);
+                    } else if (itr.sell_price.base.symbol == SBD_SYMBOL_NAME) {
+                        total_sbd += asset<0, 17, 0>(itr.for_sale, SBD_SYMBOL_NAME);
                     }
                 }
 
@@ -4816,9 +4816,9 @@ namespace steemit {
                     total_supply += itr.steem_balance;
                     total_sbd += itr.sbd_balance;
 
-                    if (itr.pending_fee.symbol == STEEM_SYMBOL) {
+                    if (itr.pending_fee.symbol == STEEM_SYMBOL_NAME) {
                         total_supply += itr.pending_fee;
-                    } else if (itr.pending_fee.symbol == SBD_SYMBOL) {
+                    } else if (itr.pending_fee.symbol == SBD_SYMBOL_NAME) {
                         total_sbd += itr.pending_fee;
                     } else {
                         FC_ASSERT(false, "found escrow pending fee that is not SBD or STEEM");
@@ -4828,9 +4828,9 @@ namespace steemit {
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
 
                 for (const auto &itr : savings_withdraw_idx) {
-                    if (itr.amount.symbol == STEEM_SYMBOL) {
+                    if (itr.amount.symbol == STEEM_SYMBOL_NAME) {
                         total_supply += itr.amount;
-                    } else if (itr.amount.symbol == SBD_SYMBOL) {
+                    } else if (itr.amount.symbol == SBD_SYMBOL_NAME) {
                         total_sbd += itr.amount;
                     } else {
                         FC_ASSERT(false, "found savings withdraw that is not SBD or STEEM");
@@ -4876,8 +4876,7 @@ namespace steemit {
                             "get_feed_history().current_median_history", get_feed_history().current_median_history)(
                             "gpo.current_supply", gpo.current_supply)("gpo.virtual_supply", gpo.virtual_supply));
                 }
-            }
-            FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
+            } FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
         }
 
         void database::perform_vesting_share_split(uint32_t magnitude) {
@@ -4893,8 +4892,8 @@ namespace steemit {
                         a.vesting_shares.amount *= magnitude;
                         a.withdrawn *= magnitude;
                         a.to_withdraw *= magnitude;
-                        a.vesting_withdraw_rate = asset(a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16,
-                                                        VESTS_SYMBOL);
+                        a.vesting_withdraw_rate = asset<0, 17, 0>(
+                                a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF16, VESTS_SYMBOL);
                         if (a.vesting_withdraw_rate.amount == 0) {
                             a.vesting_withdraw_rate.amount = 1;
                         }
@@ -4932,8 +4931,7 @@ namespace steemit {
                     ++cat_itr;
                 }
 
-            }
-            FC_CAPTURE_AND_RETHROW()
+            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::retally_comment_children() {
@@ -5064,8 +5062,8 @@ namespace steemit {
                     const collateral_bid_object &pseudo_bid = create<collateral_bid_object>(
                             [&](collateral_bid_object &bid) {
                                 bid.bidder = bitasset.issuer;
-                                bid.inv_swan_price = asset(0, bad.options.short_backing_asset) /
-                                                     asset(bdd.current_supply, bitasset.asset_name);
+                                bid.inv_swan_price = asset<0, 17, 0>(0, bad.options.short_backing_asset) /
+                                                     asset<0, 17, 0>(bdd.current_supply, bitasset.asset_name);
                             });
                     execute_bid(pseudo_bid, bdd.current_supply, bad.settlement_fund, bad.current_feed);
                 } else {
@@ -5073,8 +5071,7 @@ namespace steemit {
                 }
 
                 _cancel_bids_and_revive_mpa(bitasset, bad);
-            }
-            FC_CAPTURE_AND_RETHROW((bitasset))
+            } FC_CAPTURE_AND_RETHROW((bitasset))
         }
 
         void database::_cancel_bids_and_revive_mpa(const asset_object &bitasset,
@@ -5086,11 +5083,9 @@ namespace steemit {
 
                 // cancel remaining bids
                 const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
-                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name,
-                                                                 protocol::price::max(bad.options.short_backing_asset,
-                                                                                      bitasset.asset_name),
-                                                                 collateral_bid_object::id_type()));
-                while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol_name() == bitasset.asset_name) {
+                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name, protocol::price<0, 17, 0>::max(
+                        bad.options.short_backing_asset, bitasset.asset_name), collateral_bid_object::id_type()));
+                while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol == bitasset.asset_name) {
                     const collateral_bid_object &bid = *itr;
                     ++itr;
                     cancel_bid(bid);
@@ -5098,21 +5093,20 @@ namespace steemit {
 
                 // revive
                 modify(bad, [&](asset_bitasset_data_object &obj) {
-                    obj.settlement_price = price();
+                    obj.settlement_price = price<0, 17, 0>();
                     obj.settlement_fund = 0;
                 });
-            }
-            FC_CAPTURE_AND_RETHROW((bitasset))
+            } FC_CAPTURE_AND_RETHROW((bitasset))
         }
 
         void database::cancel_bid(const collateral_bid_object &bid, bool create_virtual_op) {
             adjust_balance(get_account(bid.bidder), bid.inv_swan_price.base);
 
             if (create_virtual_op) {
-                bid_collateral_operation vop;
+                bid_collateral_operation<0, 17, 0> vop;
                 vop.bidder = bid.bidder;
                 vop.additional_collateral = bid.inv_swan_price.base;
-                vop.debt_covered = asset(0, bid.inv_swan_price.quote.symbol_name());
+                vop.debt_covered = asset<0, 17, 0>(0, bid.inv_swan_price.quote.symbol);
                 push_virtual_operation(vop);
             }
             remove(bid);
@@ -5123,24 +5117,24 @@ namespace steemit {
                 return;
             }
 
-            asset_name_type to_revive_id = (asset(0, bad.options.short_backing_asset) *
-                                            bad.settlement_price).symbol_name();
+            asset_name_type to_revive_id = (asset<0, 17, 0>(0, bad.options.short_backing_asset) *
+                                            bad.settlement_price).symbol;
             const asset_object &to_revive = get_asset(to_revive_id);
             const asset_dynamic_data_object &bdd = get_asset_dynamic_data(to_revive.asset_name);
 
             const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
             const auto start = bid_idx.lower_bound(
-                    boost::make_tuple(to_revive_id, price::max(bad.options.short_backing_asset, to_revive_id),
+                    boost::make_tuple(to_revive_id, price<0, 17, 0>::max(bad.options.short_backing_asset, to_revive_id),
                                       collateral_bid_object::id_type()));
 
             share_type covered = 0;
             auto itr = start;
-            while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol_name() == to_revive_id) {
+            while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol == to_revive_id) {
                 const collateral_bid_object &bid = *itr;
-                asset total_collateral = bid.inv_swan_price.quote * bad.settlement_price;
+                asset<0, 17, 0> total_collateral = bid.inv_swan_price.quote * bad.settlement_price;
                 total_collateral += bid.inv_swan_price.base;
-                price call_price = price::call_price(bid.inv_swan_price.quote, total_collateral,
-                                                     bad.current_feed.maintenance_collateral_ratio);
+                price<0, 17, 0> call_price = price<0, 17, 0>::call_price(bid.inv_swan_price.quote, total_collateral,
+                                                                         bad.current_feed.maintenance_collateral_ratio);
                 if (~call_price >= bad.current_feed.settlement_price) {
                     break;
                 }
@@ -5177,27 +5171,35 @@ namespace steemit {
         }
 
         void database::execute_bid(const collateral_bid_object &bid, share_type debt_covered,
-                                   share_type collateral_from_fund, const price_feed &current_feed) {
+                                   share_type collateral_from_fund, const price_feed<0, 17, 0> &current_feed) {
             const call_order_object &call_obj = create<call_order_object>([&](call_order_object &call) {
                 call.borrower = bid.bidder;
                 call.collateral = bid.inv_swan_price.base.amount + collateral_from_fund;
                 call.debt = debt_covered;
-                call.call_price = price::call_price(asset(debt_covered, bid.inv_swan_price.quote.symbol_name()),
-                                                    asset(call.collateral, bid.inv_swan_price.base.symbol_name()),
-                                                    current_feed.maintenance_collateral_ratio);
+                call.call_price = price<0, 17, 0>::call_price(
+                        asset<0, 17, 0>(debt_covered, bid.inv_swan_price.quote.symbol),
+                        asset<0, 17, 0>(call.collateral, bid.inv_swan_price.base.symbol),
+                        current_feed.maintenance_collateral_ratio);
             });
 
-            if (bid.inv_swan_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
+            if (bid.inv_swan_price.base.symbol == STEEM_SYMBOL_NAME) {
                 modify(get_account_statistics(bid.bidder), [&](account_statistics_object &stats) {
                     stats.total_core_in_orders += call_obj.collateral;
                 });
             }
 
-            push_virtual_operation(
-                    execute_bid_operation(bid.bidder, asset(call_obj.collateral, bid.inv_swan_price.base.symbol_name()),
-                                          asset(debt_covered, bid.inv_swan_price.quote.symbol_name())));
+            push_virtual_operation(execute_bid_operation<0, 17, 0>(bid.bidder, asset<0, 17, 0>(call_obj.collateral,
+                                                                                               bid.inv_swan_price.base.symbol),
+                                                                   asset<0, 17, 0>(debt_covered,
+                                                                                   bid.inv_swan_price.quote.symbol)));
 
             remove(bid);
+        }
+
+        void database::set_custom_operation_interpreter(const std::string &id,
+                                                        std::shared_ptr<custom_operation_interpreter> registry) {
+            // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
+            FC_ASSERT(_custom_operation_interpreters.emplace(id, registry).second);
         }
     }
 } //steemit::chain

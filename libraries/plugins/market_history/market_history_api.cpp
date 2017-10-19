@@ -1,6 +1,6 @@
 #include <steemit/market_history/market_history_api.hpp>
 
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 #include <steemit/application/application.hpp>
 
@@ -30,47 +30,17 @@ namespace steemit {
                         return double(a.value) / std::pow(10, p);
                     };
 
-                    market_trade operator()(const fill_order_operation &o) const {
-                        market_trade trade;
+                    template<typename T>
+                    market_trade operator()(const T &o) const {return {};}
 
-                        if (assets[0]->asset_name == o.open_pays.symbol_name()) {
-                            trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
-                            trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
-                        } else {
-                            trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
-                            trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
-                        }
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    market_trade operator()(const fill_order_operation<Major, Hardfork, Release> &o) const;
 
-                        return trade;
-                    }
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    market_trade operator()(const fill_call_order_operation<Major, Hardfork, Release> &o) const;
 
-                    market_trade operator()(const fill_call_order_operation &o) const {
-                        market_trade trade;
-
-                        if (assets[0]->asset_name == o.receives.symbol_name()) {
-                            trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
-                            trade.value = price_to_real(o.receives.amount, assets[0]->precision);
-                        } else {
-                            trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
-                            trade.value = price_to_real(o.pays.amount, assets[0]->precision);
-                        }
-
-                        return trade;
-                    }
-
-                    market_trade operator()(const fill_settlement_order_operation &o) const {
-                        market_trade trade;
-
-                        if (assets[0]->asset_name == o.receives.symbol_name()) {
-                            trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
-                            trade.value = price_to_real(o.receives.amount, assets[0]->precision);
-                        } else {
-                            trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
-                            trade.value = price_to_real(o.pays.amount, assets[0]->precision);
-                        }
-
-                        return trade;
-                    }
+                    template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+                    market_trade operator()(const fill_settlement_order_operation<Major, Hardfork, Release> &o) const;
                 };
 
                 market_ticker get_ticker(const string &base, const string &quote) const;
@@ -136,11 +106,102 @@ namespace steemit {
 
                 boost::signals2::scoped_connection _block_applied_connection;
 
-                map<pair<asset_symbol_type, asset_symbol_type>,
+                map<pair<asset_name_type, asset_name_type>,
                         std::function<void(const variant &)>> _market_subscriptions;
 
                 steemit::application::application &app;
             };
+
+            template<>
+            market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_order_operation<0, 16, 0> &o) const {
+            market_trade trade;
+
+            if (assets[0]->asset_name == o.open_pays.symbol_name()) {
+            trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
+            trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
+        } else {
+        trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
+        trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
+    }
+
+    return trade;
+}
+
+template<>
+market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_order_operation<0, 17, 0> &o) const {
+market_trade trade;
+
+if (assets[0]->asset_name == o.open_pays.symbol_name()) {
+trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
+} else {
+trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
+}
+
+return trade;
+}
+
+template<>
+market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_call_order_operation<0, 16, 0> &o) const{
+market_trade trade;
+
+if (assets[0]->asset_name == o.receives.symbol_name()) {
+trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+} else {
+trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+}
+
+return trade;
+}
+
+template<>
+market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_call_order_operation<0, 17, 0> &o) const {
+market_trade trade;
+
+if (assets[0]->asset_name == o.receives.symbol_name()) {
+trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+} else {
+trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+}
+
+return trade;
+}
+
+template<>
+market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_settlement_order_operation<0, 16, 0> &o) const {
+
+market_trade trade;
+
+if (assets[0]->asset_name == o.receives.symbol_name()) {
+trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+} else {
+trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+}
+
+return trade;
+}
+
+template<>
+market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_settlement_order_operation<0, 17, 0> &o) const {
+market_trade trade;
+
+if (assets[0]->asset_name == o.receives.symbol_name()) {
+trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+} else {
+trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+}
+
+return trade;
+}
 
             //////////////////////////////////////////////////////////////////////
             //                                                                  //
@@ -191,8 +252,7 @@ namespace steemit {
                     std::swap(a, b);
                 }
                 FC_ASSERT(a != b);
-                _market_subscriptions[std::make_pair(asset::from_string(a).symbol,
-                                                     asset::from_string(b).symbol)] = callback;
+                _market_subscriptions[std::make_pair(a, b)] = callback;
             }
 
             void market_history_api_impl::unsubscribe_from_market(string a, string b) {
@@ -200,17 +260,14 @@ namespace steemit {
                     std::swap(a, b);
                 }
                 FC_ASSERT(a != b);
-                _market_subscriptions.erase(std::make_pair(asset::from_string(a).symbol, asset::from_string(b).symbol));
+                _market_subscriptions.erase(std::make_pair(a, b));
             }
 
-            vector<optional<asset_object>> market_history_api_impl::lookup_asset_symbols(
-                    const vector<asset_name_type> &asset_symbols) const {
-                const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<
-                        by_asset_name>();
+            vector<optional<asset_object>> market_history_api_impl::lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const {
+                const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<by_asset_name>();
                 vector<optional<asset_object>> result;
                 std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                               [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<
-                                       asset_object> {
+                               [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<asset_object> {
                                    auto itr = assets_by_symbol.find(symbol);
                                    return itr == assets_by_symbol.end() ? optional<asset_object>() : *itr;
                                });
@@ -306,12 +363,12 @@ namespace steemit {
                 auto orders = get_limit_orders(assets[0]->asset_name, assets[1]->asset_name, limit);
 
 
-                std::function<double(const asset &, int)> asset_to_real = [&](const asset &a, int p) -> double {
+                std::function<double(const asset<0, 17, 0> &, int)> asset_to_real = [&](const asset<0, 17, 0> &a, int p) -> double {
                     return double(a.amount.value) / std::pow(10, p);
                 };
 
-                std::function<double(const price &)> price_to_real = [&](const price &p) -> double {
-                    if (p.base.symbol_name() == base_id) {
+                std::function<double(const price<0, 17, 0> &)> price_to_real = [&](const price<0, 17, 0> &p) -> double {
+                    if (p.base.symbol == base_id) {
                         return asset_to_real(p.base, assets[0]->precision) /
                                asset_to_real(p.quote, assets[1]->precision);
                     }
@@ -321,7 +378,7 @@ namespace steemit {
                 };
 
                 for (const auto &o : orders) {
-                    if (o.sell_price.base.symbol_name() == base_id) {
+                    if (o.sell_price.base.symbol == base_id) {
                         order ord;
                         ord.price = price_to_real(o.sell_price);
                         ord.quote = asset_to_real(share_type(
@@ -360,8 +417,7 @@ namespace steemit {
                 if (base_id > quote_id) {
                     std::swap(base_id, quote_id);
                 }
-                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<
-                        by_key>();
+                const auto &history_idx = app.chain_database()->get_index<order_history_index>().indices().get<by_key>();
                 history_key hkey;
                 hkey.base = base_id;
                 hkey.quote = quote_id;
@@ -472,20 +528,20 @@ namespace steemit {
 
                 vector<limit_order_object> result;
 
-                asset_symbol_type a_symbol = protocol::asset::from_string(a).symbol;
-                asset_symbol_type b_symbol = protocol::asset::from_string(b).symbol;
+                asset_name_type a_symbol = a;
+                asset_name_type b_symbol = b;
 
                 uint32_t count = 0;
-                auto limit_itr = limit_price_idx.lower_bound(price::max(a_symbol, b_symbol));
-                auto limit_end = limit_price_idx.upper_bound(price::min(a_symbol, b_symbol));
+                auto limit_itr = limit_price_idx.lower_bound(price<0, 17, 0>::max(a_symbol, b_symbol));
+                auto limit_end = limit_price_idx.upper_bound(price<0, 17, 0>::min(a_symbol, b_symbol));
                 while (limit_itr != limit_end && count < limit) {
                     result.push_back(*limit_itr);
                     ++limit_itr;
                     ++count;
                 }
                 count = 0;
-                limit_itr = limit_price_idx.lower_bound(price::max(b_symbol, a_symbol));
-                limit_end = limit_price_idx.upper_bound(price::min(b_symbol, a_symbol));
+                limit_itr = limit_price_idx.lower_bound(price<0, 17, 0>::max(b_symbol, a_symbol));
+                limit_end = limit_price_idx.upper_bound(price<0, 17, 0>::min(b_symbol, a_symbol));
                 while (limit_itr != limit_end && count < limit) {
                     result.push_back(*limit_itr);
                     ++limit_itr;
@@ -498,9 +554,7 @@ namespace steemit {
             vector<call_order_object> market_history_api_impl::get_call_orders(const string &a, uint32_t limit) const {
                 const auto &call_index = app.chain_database()->get_index<call_order_index>().indices().get<by_price>();
                 const asset_object &mia = app.chain_database()->get_asset(a);
-                price index_price = price::min(
-                        app.chain_database()->get_asset_bitasset_data(mia.asset_name).options.short_backing_asset,
-                        mia.asset_name);
+                price<0, 17, 0> index_price = price<0, 17, 0>::min(app.chain_database()->get_asset_bitasset_data(mia.asset_name).options.short_backing_asset, mia.asset_name);
 
                 return vector<call_order_object>(call_index.lower_bound(index_price.min()),
                                                  call_index.lower_bound(index_price.max()));
@@ -542,9 +596,9 @@ namespace steemit {
                     const asset_object &back = app.chain_database()->get_asset(bad.options.short_backing_asset);
                     const auto &idx = app.chain_database()->get_index<collateral_bid_index>();
                     const auto &aidx = idx.indices().get<by_price>();
-                    auto start = aidx.lower_bound(boost::make_tuple(asset, price::max(back.asset_name, asset),
+                    auto start = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::max(back.asset_name, asset),
                                                                     collateral_bid_object::id_type()));
-                    auto end = aidx.lower_bound(boost::make_tuple(asset, price::min(back.asset_name, asset),
+                    auto end = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::min(back.asset_name, asset),
                                                                   collateral_bid_object::id_type(
                                                                           STEEMIT_MAX_INSTANCE_ID)));
                     vector<collateral_bid_object> result;
@@ -603,7 +657,7 @@ namespace steemit {
                     result.emplace_back(*itr);
 
                     auto assets = lookup_asset_symbols(
-                            {itr->sell_price.base.symbol_name(), itr->sell_price.quote.symbol_name()});
+                            {itr->sell_price.base.symbol, itr->sell_price.quote.symbol});
                     FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
                     FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
 
@@ -612,7 +666,7 @@ namespace steemit {
                         return double(a.value) / std::pow(10, p);
                     };
 
-                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
+                    if (itr->sell_price.base.symbol == STEEM_SYMBOL_NAME) {
                         result.back().real_price =
                                 price_to_real((~result.back().sell_price).base.amount, assets[0]->precision) /
                                 price_to_real((~result.back().sell_price).quote.amount, assets[1]->precision);

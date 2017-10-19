@@ -261,7 +261,7 @@ FC_REFLECT_ENUM(steemit::chain::object_type,
                 (collateral_bid_object_type)
 )
 
-FC_REFLECT_TYPENAME(steemit::chain::shared_string)
-FC_REFLECT_TYPENAME(steemit::chain::buffer_type)
+FC_REFLECT_TYPENAME((steemit::chain::shared_string))
+FC_REFLECT_TYPENAME((steemit::chain::buffer_type))
 
 FC_REFLECT_ENUM(steemit::chain::bandwidth_type, (post)(forum)(market)(old_forum)(old_market))

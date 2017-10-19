@@ -25,7 +25,7 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::plugin::block_info::block_info,
+FC_REFLECT((steemit::plugin::block_info::block_info),
         (block_id)
                 (block_size)
                 (average_block_size)
@@ -34,7 +34,7 @@ FC_REFLECT(steemit::plugin::block_info::block_info,
                 (num_pow_witnesses)
 )
 
-FC_REFLECT(steemit::plugin::block_info::block_with_info,
+FC_REFLECT((steemit::plugin::block_info::block_with_info),
         (block)
                 (info)
 )

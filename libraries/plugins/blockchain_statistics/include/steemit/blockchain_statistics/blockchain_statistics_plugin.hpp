@@ -34,7 +34,9 @@ namespace steemit {
             bucket_object_type = (BLOCKCHAIN_STATISTICS_SPACE_ID << 8)
         };
 
-
+        namespace detail {
+            class blockchain_statistics_plugin_impl;
+        }
 
         class blockchain_statistics_plugin : public steemit::application::plugin {
         public:
@@ -46,9 +48,8 @@ namespace steemit {
                 return BLOCKCHAIN_STATISTICS_PLUGIN_NAME;
             }
 
-            virtual void plugin_set_program_options(
-                    boost::program_options::options_description &cli,
-                    boost::program_options::options_description &cfg) override;
+            virtual void plugin_set_program_options(boost::program_options::options_description &cli,
+                                                    boost::program_options::options_description &cfg) override;
 
             virtual void plugin_initialize(const boost::program_options::variables_map &options) override;
 
@@ -61,11 +62,10 @@ namespace steemit {
         private:
             struct blockchain_statistics_plugin_impl;
 
-            std::unique_ptr<blockchain_statistics_plugin_impl> _my;
+            std::unique_ptr<detail::blockchain_statistics_plugin_impl> _my;
         };
 
-        struct bucket_object
-                : public object<bucket_object_type, bucket_object> {
+        struct bucket_object : public object<bucket_object_type, bucket_object> {
             template<typename Constructor, typename Allocator>
             bucket_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
@@ -124,68 +124,25 @@ namespace steemit {
 
         struct by_id;
         struct by_bucket;
-        typedef multi_index_container<
-                bucket_object,
-                indexed_by<
-                        ordered_unique<tag<by_id>, member<bucket_object, bucket_id_type, &bucket_object::id>>,
+        typedef multi_index_container<bucket_object,
+                indexed_by<ordered_unique<tag<by_id>, member<bucket_object, bucket_id_type, &bucket_object::id>>,
                         ordered_unique<tag<by_bucket>,
-                                composite_key<bucket_object,
-                                        member<bucket_object, uint32_t, &bucket_object::seconds>,
-                                        member<bucket_object, fc::time_point_sec, &bucket_object::open>
-                                >
-                        >
-                >, allocator<bucket_object>
-        > bucket_index;
+                                composite_key<bucket_object, member<bucket_object, uint32_t, &bucket_object::seconds>,
+                                        member<bucket_object, fc::time_point_sec, &bucket_object::open> > > >,
+                allocator<bucket_object> > bucket_index;
 
     }
 } // steemit::blockchain_statistics
 
-FC_REFLECT(steemit::blockchain_statistics::bucket_object,
-        (id)
-                (open)
-                (seconds)
-                (blocks)
-                (bandwidth)
-                (operations)
-                (transactions)
-                (transfers)
-                (steem_transferred)
-                (sbd_transferred)
-                (sbd_paid_as_interest)
-                (paid_accounts_created)
-                (mined_accounts_created)
-                (root_comments)
-                (root_comment_edits)
-                (root_comments_deleted)
-                (replies)
-                (reply_edits)
-                (replies_deleted)
-                (new_root_votes)
-                (changed_root_votes)
-                (new_reply_votes)
-                (changed_reply_votes)
-                (payouts)
-                (sbd_paid_to_authors)
-                (vests_paid_to_authors)
-                (vests_paid_to_curators)
-                (liquidity_rewards_paid)
-                (transfers_to_vesting)
-                (steem_vested)
-                (new_vesting_withdrawal_requests)
-                (modified_vesting_withdrawal_requests)
-                (vesting_withdraw_rate_delta)
-                (vesting_withdrawals_processed)
-                (finished_vesting_withdrawals)
-                (vests_withdrawn)
-                (vests_transferred)
-                (sbd_conversion_requests_created)
-                (sbd_to_be_converted)
-                (sbd_conversion_requests_filled)
-                (steem_converted)
-                (limit_orders_created)
-                (limit_orders_filled)
-                (limit_orders_cancelled)
-                (total_pow)
-                (estimated_hashpower)
-)
+FC_REFLECT((steemit::blockchain_statistics::bucket_object),
+           (id)(open)(seconds)(blocks)(bandwidth)(operations)(transactions)(transfers)(steem_transferred)(
+                   sbd_transferred)(sbd_paid_as_interest)(paid_accounts_created)(mined_accounts_created)(root_comments)(
+                   root_comment_edits)(root_comments_deleted)(replies)(reply_edits)(replies_deleted)(new_root_votes)(
+                   changed_root_votes)(new_reply_votes)(changed_reply_votes)(payouts)(sbd_paid_to_authors)(
+                   vests_paid_to_authors)(vests_paid_to_curators)(liquidity_rewards_paid)(transfers_to_vesting)(
+                   steem_vested)(new_vesting_withdrawal_requests)(modified_vesting_withdrawal_requests)(
+                   vesting_withdraw_rate_delta)(vesting_withdrawals_processed)(finished_vesting_withdrawals)(
+                   vests_withdrawn)(vests_transferred)(sbd_conversion_requests_created)(sbd_to_be_converted)(
+                   sbd_conversion_requests_filled)(steem_converted)(limit_orders_created)(limit_orders_filled)(
+                   limit_orders_cancelled)(total_pow)(estimated_hashpower))
 CHAINBASE_SET_INDEX_TYPE(steemit::blockchain_statistics::bucket_object, steemit::blockchain_statistics::bucket_index)

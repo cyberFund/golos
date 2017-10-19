@@ -55,7 +55,8 @@ namespace steemit {
             return true;
         }
 
-        void asset_create_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_create_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(is_valid_symbol(asset_name));
             common_options.validate();
             if (common_options.issuer_permissions &
@@ -73,14 +74,16 @@ namespace steemit {
             FC_ASSERT(precision <= 12);
         }
 
-        void asset_update_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_update_operation<Major, Hardfork, Release>::validate() const {
             if (new_issuer) {
                 FC_ASSERT(issuer != *new_issuer);
             }
             new_options.validate();
         }
 
-        void asset_publish_feed_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_publish_feed_operation<Major, Hardfork, Release>::validate() const {
             feed.validate();
 
             // maybe some of these could be moved to feed.validate()
@@ -98,39 +101,47 @@ namespace steemit {
             FC_ASSERT(feed.is_for(asset_name));
         }
 
-        void asset_reserve_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_reserve_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(amount_to_reserve.amount.value <=
                       STEEMIT_MAX_SHARE_SUPPLY);
             FC_ASSERT(amount_to_reserve.amount.value > 0);
         }
 
-        void asset_issue_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_issue_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(asset_to_issue.amount.value <= STEEMIT_MAX_SHARE_SUPPLY);
             FC_ASSERT(asset_to_issue.amount.value > 0);
-            FC_ASSERT(asset_to_issue.symbol != STEEM_SYMBOL);
+            FC_ASSERT(asset_to_issue.symbol_name() != STEEM_SYMBOL_NAME);
         }
 
-        void asset_fund_fee_pool_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_fund_fee_pool_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(amount > 0);
         }
 
-        void asset_settle_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_settle_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(amount.amount >= 0);
         }
 
-        void asset_force_settle_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_force_settle_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(amount.amount >= 0);
         }
 
-        void asset_update_bitasset_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_update_bitasset_operation<Major, Hardfork, Release>::validate() const {
             new_options.validate();
         }
 
-        void asset_update_feed_producers_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_update_feed_producers_operation<Major, Hardfork, Release>::validate() const {
         }
 
-        void asset_global_settle_operation::validate() const {
-            FC_ASSERT(asset_to_settle == asset(0, settle_price.base.symbol).symbol_name());
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_global_settle_operation<Major, Hardfork, Release>::validate() const {
+            FC_ASSERT(asset_to_settle == settle_price.base.symbol_name());
         }
 
         void bitasset_options::validate() const {
@@ -139,7 +150,8 @@ namespace steemit {
             FC_ASSERT(maximum_force_settlement_volume <= STEEMIT_100_PERCENT);
         }
 
-        void asset_options::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_options<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(max_supply > 0);
             FC_ASSERT(max_supply <= STEEMIT_MAX_SHARE_SUPPLY);
             FC_ASSERT(market_fee_percent <= STEEMIT_100_PERCENT);
@@ -153,8 +165,8 @@ namespace steemit {
             FC_ASSERT((flags & (witness_fed_asset | committee_fed_asset)) !=
                       (witness_fed_asset | committee_fed_asset));
             core_exchange_rate.validate();
-            FC_ASSERT(core_exchange_rate.base.symbol == STEEM_SYMBOL ||
-                      core_exchange_rate.quote.symbol == STEEM_SYMBOL);
+            FC_ASSERT(core_exchange_rate.base.symbol_name() == STEEM_SYMBOL_NAME ||
+                      core_exchange_rate.quote.symbol_name() == STEEM_SYMBOL_NAME);
 
             if (!whitelist_authorities.empty() ||
                 !blacklist_authorities.empty()) {
@@ -170,8 +182,11 @@ namespace steemit {
             }
         }
 
-        void asset_claim_fees_operation::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void asset_claim_fees_operation<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(amount_to_claim.amount > 0);
         }
     }
 } // namespace steemit::chain
+
+#include <steemit/protocol/operations/asset_operations.tpp>

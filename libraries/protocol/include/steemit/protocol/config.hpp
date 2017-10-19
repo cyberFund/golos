@@ -28,11 +28,11 @@
 #define STEEMIT_COLLATERAL_RATIO_DENOM                 1000
 #define STEEMIT_MIN_COLLATERAL_RATIO                   1001  ///< lower than this could result in divide by 0
 #define STEEMIT_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
-#define GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
-#define GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
+#define STEEMIT_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
+#define STEEMIT_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
 ///@}
 
-#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
+#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< GESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
 #define STEEM_SYMBOL_NAME ("GOLOS")
 #define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< Test Backed Dollars with 3 digits of precision
@@ -141,8 +141,8 @@
 
 #define STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY   10
 
-#define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
-#define STEEMIT_MINING_REWARD_PRE_HF16          asset( 1000, STEEM_SYMBOL )
+#define STEEMIT_MINING_REWARD                   steemit::protocol::asset<0, 17, 0>(666, STEEM_SYMBOL_NAME)
+#define STEEMIT_MINING_REWARD_PRE_HF16          steemit::protocol::asset<0, 17, 0>(1000, STEEM_SYMBOL_NAME)
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
@@ -150,16 +150,16 @@
 #define STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC (fc::seconds(60)) // 1 minute required on books to receive volume
 #define STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC     (60*60)
 #define STEEMIT_LIQUIDITY_REWARD_BLOCKS         (STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_MIN_LIQUIDITY_REWARD            (asset( 1000*STEEMIT_LIQUIDITY_REWARD_BLOCKS, STEEM_SYMBOL )) // Minumum reward to be paid out to liquidity providers
-#define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
-#define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
+#define STEEMIT_MIN_LIQUIDITY_REWARD            steemit::protocol::asset<0, 17, 0>(1000*STEEMIT_LIQUIDITY_REWARD_BLOCKS, STEEM_SYMBOL_NAME) // Minumum reward to be paid out to liquidity providers
+#define STEEMIT_MIN_CONTENT_REWARD              steemit::protocol::asset<0, 17, 0>(1500, STEEM_SYMBOL_NAME)
+#define STEEMIT_MIN_CURATE_REWARD               steemit::protocol::asset<0, 17, 0>(500, STEEM_SYMBOL_NAME)
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
 #define STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16    STEEMIT_MINING_REWARD_PRE_HF16
 #define STEEMIT_MIN_POW_REWARD                  STEEMIT_MINING_REWARD
 #define STEEMIT_MIN_POW_REWARD_PRE_HF16         STEEMIT_MINING_REWARD_PRE_HF16
 
-#define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
-#define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
+#define STEEMIT_ACTIVE_CHALLENGE_FEE            steemit::protocol::asset<0, 17, 0>(2000, STEEM_SYMBOL_NAME)
+#define STEEMIT_OWNER_CHALLENGE_FEE             steemit::protocol::asset<0, 17, 0>(30000, STEEM_SYMBOL_NAME)
 #define STEEMIT_ACTIVE_CHALLENGE_COOLDOWN       fc::days(1)
 #define STEEMIT_OWNER_CHALLENGE_COOLDOWN        fc::days(1)
 
@@ -207,7 +207,7 @@
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
 
-#define STEEMIT_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
+#define STEEMIT_MIN_PAYOUT_SBD                  steemit::protocol::asset<0, 17, 0>(20,SBD_SYMBOL_NAME)
 
 #define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
 #define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
@@ -286,8 +286,8 @@
 #define STEEMIT_COLLATERAL_RATIO_DENOM                 1000
 #define STEEMIT_MIN_COLLATERAL_RATIO                   1001  ///< lower than this could result in divide by 0
 #define STEEMIT_MAX_COLLATERAL_RATIO                   32000 ///< higher than this is unnecessary and may exceed int16 storage
-#define GRAPHENE_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
-#define GRAPHENE_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
+#define STEEMIT_DEFAULT_MAINTENANCE_COLLATERAL_RATIO   1750 ///< Call when collateral only pays off 175% the debt
+#define STEEMIT_DEFAULT_MAX_SHORT_SQUEEZE_RATIO        1500 ///< Stop calling when collateral only pays off 150% of the debt
 ///@}
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
@@ -384,7 +384,7 @@
 #define STEEMIT_MAX_COMMENT_DEPTH               0xffff // 64k
 #define STEEMIT_SOFT_MAX_COMMENT_DEPTH          0xff // 255
 
-#define STEEMIT_MAX_RESERVE_RATIO   (20000)
+#define STEEMIT_MAX_RESERVE_RATIO               (20000)
 
 #define STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER 30
 #define STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO    5
@@ -392,8 +392,8 @@
 
 #define STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY   10
 
-#define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
-#define STEEMIT_MINING_REWARD_PRE_HF16          asset( 1000, STEEM_SYMBOL )
+#define STEEMIT_MINING_REWARD                   steemit::protocol::asset<0, 17, 0>(666, STEEM_SYMBOL_NAME)
+#define STEEMIT_MINING_REWARD_PRE_HF16          steemit::protocol::asset<0, 17, 0>(1000, STEEM_SYMBOL_NAME)
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
@@ -401,16 +401,16 @@
 #define STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC (fc::seconds(60)) // 1 minute required on books to receive volume
 #define STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC     (60*60)
 #define STEEMIT_LIQUIDITY_REWARD_BLOCKS         (STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_MIN_LIQUIDITY_REWARD            (asset( 1000*STEEMIT_LIQUIDITY_REWARD_BLOCKS, STEEM_SYMBOL )) // Minumum reward to be paid out to liquidity providers
-#define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
-#define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
+#define STEEMIT_MIN_LIQUIDITY_REWARD            steemit::protocol::asset<0, 17, 0>(1000*STEEMIT_LIQUIDITY_REWARD_BLOCKS, STEEM_SYMBOL_NAME) // Minumum reward to be paid out to liquidity providers
+#define STEEMIT_MIN_CONTENT_REWARD              steemit::protocol::asset<0, 17, 0>(1500, STEEM_SYMBOL_NAME)
+#define STEEMIT_MIN_CURATE_REWARD               steemit::protocol::asset<0, 17, 0>(500, STEEM_SYMBOL_NAME)
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16   STEEMIT_MINING_REWARD_PRE_HF16
+#define STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16    STEEMIT_MINING_REWARD_PRE_HF16
 #define STEEMIT_MIN_POW_REWARD                  STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_POW_REWARD_PRE_HF16        STEEMIT_MINING_REWARD_PRE_HF16
+#define STEEMIT_MIN_POW_REWARD_PRE_HF16         STEEMIT_MINING_REWARD_PRE_HF16
 
-#define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
-#define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
+#define STEEMIT_ACTIVE_CHALLENGE_FEE            steemit::protocol::asset<0, 17, 0>(2000, STEEM_SYMBOL_NAME)
+#define STEEMIT_OWNER_CHALLENGE_FEE             steemit::protocol::asset<0, 17, 0>(30000, STEEM_SYMBOL_NAME)
 #define STEEMIT_ACTIVE_CHALLENGE_COOLDOWN       fc::days(1)
 #define STEEMIT_OWNER_CHALLENGE_COOLDOWN        fc::days(1)
 
@@ -455,7 +455,7 @@
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
 
-#define STEEMIT_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
+#define STEEMIT_MIN_PAYOUT_SBD                  steemit::protocol::asset<0, 17, 0>(20,SBD_SYMBOL_NAME)
 
 #define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
 #define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
@@ -484,7 +484,7 @@
 #define STEEMIT_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define STEEMIT_MAX_FEED_AGE                    (fc::days(7))
 #define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/3) /// protects the network from conversions before price has been established
-#define STEEMIT_CONVERSION_DELAY_PRE_HF16      (fc::days(7))
+#define STEEMIT_CONVERSION_DELAY_PRE_HF16       (fc::days(7))
 #define STEEMIT_CONVERSION_DELAY                (fc::hours(STEEMIT_FEED_HISTORY_WINDOW)) //3.5 day conversion
 
 #define STEEMIT_MIN_UNDO_HISTORY                10

@@ -10,8 +10,9 @@ namespace steemit {
         /**
         *  @ingroup operations
         */
-        struct account_create_operation : public base_operation {
-            asset fee;
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct account_create_operation : public base_operation<Major, Hardfork, Release> {
+            asset <Major, Hardfork, Release> fee;
             account_name_type creator;
             account_name_type new_account_name;
             authority owner;
@@ -22,7 +23,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -30,10 +31,11 @@ namespace steemit {
         /**
          *  @ingroup operations
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_create_with_delegation_operation
-                : public base_operation {
-            asset fee;
-            asset delegation;
+                : public base_operation<Major, Hardfork, Release> {
+            asset <Major, Hardfork, Release> fee;
+            asset <Major, Hardfork, Release> delegation;
             account_name_type creator;
             account_name_type new_account_name;
             authority owner;
@@ -46,7 +48,7 @@ namespace steemit {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -58,23 +60,24 @@ namespace steemit {
         * This operation is used to update an existing account. It can be used to update the authorities, or adjust the options on the account.
         * See @ref account_object::options_type for the options which may be updated.
         */
-        struct account_update_operation : public base_operation {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct account_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
-            optional<authority> owner;
-            optional<authority> active;
-            optional<authority> posting;
+            optional <authority> owner;
+            optional <authority> active;
+            optional <authority> posting;
             public_key_type memo_key;
             string json_metadata;
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
                 if (owner) {
                     a.insert(account);
                 }
             }
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 if (!owner) {
                     a.insert(account);
                 }
@@ -100,20 +103,18 @@ namespace steemit {
          * This operation requires authorizing_account's signature, but not account_to_list's. The fee is paid by
          * authorizing_account.
          */
-        struct account_whitelist_operation : public base_operation {
-            struct fee_parameters_type {
-                share_type fee = 300000;
-            };
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        struct account_whitelist_operation : public base_operation<Major, Hardfork, Release> {
             enum account_listing {
                 no_listing = 0x0, ///< No opinion is specified about this account
                 white_listed = 0x1, ///< This account is whitelisted, but not blacklisted
                 black_listed = 0x2, ///< This account is blacklisted, but not whitelisted
-                white_and_black_listed = white_listed |
-                                         black_listed ///< This account is both whitelisted and blacklisted
+                white_and_black_listed =
+                white_listed | black_listed ///< This account is both whitelisted and blacklisted
             };
 
             /// Paid by authorizing_account
-            asset fee;
+            asset <Major, Hardfork, Release> fee;
             /// The account which is specifying an opinion of another account
             account_name_type authorizing_account;
             /// The account being opined about
@@ -127,47 +128,32 @@ namespace steemit {
                 return authorizing_account;
             }
 
-            void validate() const {
-                FC_ASSERT(fee.amount >= 0);
-                FC_ASSERT(new_listing < 0x4);
-            }
+            void validate() const;
         };
     }
 }
 
-FC_REFLECT(steemit::protocol::account_create_operation,
-        (fee)
-                (creator)
-                (new_account_name)
-                (owner)
-                (active)
-                (posting)
-                (memo_key)
-                (json_metadata))
+FC_REFLECT((steemit::protocol::account_create_operation<0, 16, 0>),
+           (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
+FC_REFLECT((steemit::protocol::account_create_operation<0, 17, 0>),
+           (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
 
-FC_REFLECT(steemit::protocol::account_create_with_delegation_operation,
-        (fee)
-                (delegation)
-                (creator)
-                (new_account_name)
-                (owner)
-                (active)
-                (posting)
-                (memo_key)
-                (json_metadata)
-                (extensions))
+FC_REFLECT((steemit::protocol::account_create_with_delegation_operation<0, 17, 0>),
+           (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions))
 
-FC_REFLECT(steemit::protocol::account_update_operation,
-        (account)
-                (owner)
-                (active)
-                (posting)
-                (memo_key)
-                (json_metadata))
+FC_REFLECT((steemit::protocol::account_update_operation<0, 16, 0>),
+           (account)(owner)(active)(posting)(memo_key)(json_metadata))
+FC_REFLECT((steemit::protocol::account_update_operation<0, 17, 0>),
+           (account)(owner)(active)(posting)(memo_key)(json_metadata))
 
-FC_REFLECT(steemit::protocol::account_whitelist_operation::fee_parameters_type, (fee))
-FC_REFLECT_ENUM(steemit::protocol::account_whitelist_operation::account_listing,
-        (no_listing)(white_listed)(black_listed)(white_and_black_listed));
-FC_REFLECT(steemit::protocol::account_whitelist_operation, (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
+FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 16, 0>))
+                        ::account_listing, (no_listing)(white_listed)(black_listed)(white_and_black_listed));
+FC_REFLECT_ENUM(BOOST_IDENTITY_TYPE((steemit::protocol::account_whitelist_operation<0, 17, 0>))
+                        ::account_listing, (no_listing)(white_listed)(black_listed)(white_and_black_listed));
+
+FC_REFLECT((steemit::protocol::account_whitelist_operation<0, 16, 0>),
+           (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
+FC_REFLECT((steemit::protocol::account_whitelist_operation<0, 17, 0>),
+           (fee)(authorizing_account)(account_to_list)(new_listing)(extensions))
 
 #endif //GOLOS_ACCOUNT_OPERATIONS_HPP

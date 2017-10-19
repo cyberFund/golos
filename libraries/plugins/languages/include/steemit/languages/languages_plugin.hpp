@@ -3,7 +3,7 @@
 #include <steemit/application/plugin.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -367,7 +367,7 @@ namespace steemit {
 
             language_name_type language;
             fc::uint128_t total_children_rshares2;
-            asset total_payout = asset(0, SBD_SYMBOL);
+            asset<0, 17, 0> total_payout = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             int32_t net_votes = 0;
             uint32_t top_posts = 0;
             uint32_t comments = 0;
@@ -472,7 +472,7 @@ namespace steemit {
             id_type id;
             account_object::id_type author;
             language_name_type language;
-            asset total_rewards = asset(0, SBD_SYMBOL);
+            asset<0, 17, 0> total_rewards = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             uint32_t total_posts = 0;
         };
 
@@ -511,16 +511,16 @@ namespace steemit {
                                         &author_language_stats_object::author>,
                                 member<author_language_stats_object, language_name_type,
                                         &author_language_stats_object::language>,
-                                member<author_language_stats_object, asset,
+                                member<author_language_stats_object, asset<0, 17, 0>,
                                         &author_language_stats_object::total_rewards> >,
-                        composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset>>>,
+                        composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset<0, 17, 0>>>>,
                 ordered_unique<tag<by_tag_rewards_author>, composite_key<author_language_stats_object,
                         member<author_language_stats_object, language_name_type,
                                 &author_language_stats_object::language>,
-                        member<author_language_stats_object, asset, &author_language_stats_object::total_rewards>,
+                        member<author_language_stats_object, asset<0, 17, 0>, &author_language_stats_object::total_rewards>,
                         member<author_language_stats_object, account_object::id_type,
                                 &author_language_stats_object::author> >,
-                        composite_key_compare<less<language_name_type>, greater<asset>,
+                        composite_key_compare<less<language_name_type>, greater<asset<0, 17, 0>>,
                                 less<account_object::id_type>>> > > author_language_stats_index;
 
 
@@ -584,23 +584,23 @@ namespace steemit {
     }
 } //steemit::language
 
-FC_REFLECT(steemit::languages::comment_metadata, (language));
+FC_REFLECT((steemit::languages::comment_metadata), (language));
 
 FC_API(steemit::languages::language_api, (get_languages));
 
-FC_REFLECT(steemit::languages::language_object,
+FC_REFLECT((steemit::languages::language_object),
            (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(
                    children_rshares2)(author)(parent)(comment))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_object, steemit::languages::language_index)
 
-FC_REFLECT(steemit::languages::language_stats_object,
+FC_REFLECT((steemit::languages::language_stats_object),
            (id)(language)(total_children_rshares2)(total_payout)(net_votes)(top_posts)(comments));
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::language_stats_object, steemit::languages::language_stats_index)
 
-FC_REFLECT(steemit::languages::peer_stats_object,
+FC_REFLECT((steemit::languages::peer_stats_object),
            (id)(voter)(peer)(direct_positive_votes)(direct_votes)(indirect_positive_votes)(indirect_votes)(rank));
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::peer_stats_object, steemit::languages::peer_stats_index)
 
-FC_REFLECT(steemit::languages::author_language_stats_object, (id)(author)(language)(total_posts)(total_rewards))
+FC_REFLECT((steemit::languages::author_language_stats_object), (id)(author)(language)(total_posts)(total_rewards))
 CHAINBASE_SET_INDEX_TYPE(steemit::languages::author_language_stats_object,
                          steemit::languages::author_language_stats_index)

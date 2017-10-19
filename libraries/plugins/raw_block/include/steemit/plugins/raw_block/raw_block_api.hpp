@@ -48,11 +48,11 @@ namespace steemit {
     }
 }
 
-FC_REFLECT(steemit::plugin::raw_block::get_raw_block_args,
+FC_REFLECT((steemit::plugin::raw_block::get_raw_block_args),
         (block_num)
 )
 
-FC_REFLECT(steemit::plugin::raw_block::get_raw_block_result,
+FC_REFLECT((steemit::plugin::raw_block::get_raw_block_result),
         (block_id)
                 (previous)
                 (timestamp)

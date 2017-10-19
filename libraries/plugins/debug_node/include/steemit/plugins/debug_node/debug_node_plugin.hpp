@@ -10,7 +10,9 @@
 
 namespace steemit {
     namespace protocol {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct chain_properties;
+
         struct pow2;
         struct signed_block;
     }

@@ -129,9 +129,6 @@ extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
 #define ACTORS(names) BOOST_PP_SEQ_FOR_EACH(ACTORS_IMPL, ~, names) \
    validate_database();
 
-#define ASSET(s) \
-   asset::from_string( s )
-
 namespace steemit {
     namespace chain {
 
@@ -191,13 +188,13 @@ namespace steemit {
              */
             void generate_blocks(fc::time_point_sec timestamp, bool miss_intermediate_blocks = true);
 
-            void force_global_settle(const asset_object &what, const price &p);
+            void force_global_settle(const asset_object &what, const price<0, 17, 0> &p);
 
-            void force_settle(const account_name_type &who, asset what) {
+            void force_settle(const account_name_type &who, const asset<0, 17, 0> &what) {
                 return force_settle(db.get_account(who), what);
             }
 
-            void force_settle(const account_object &who, asset what);
+            void force_settle(const account_object &who, const asset<0, 17, 0> &what);
 
             void update_feed_producers(const asset_name_type &mia, flat_set<account_name_type> producers) {
                 update_feed_producers(db.get_asset(mia), producers);
@@ -205,32 +202,36 @@ namespace steemit {
 
             void update_feed_producers(const asset_object &mia, flat_set<account_name_type> producers);
 
-            void publish_feed(const asset_name_type &mia, const account_name_type &by, const price_feed &f) {
+            void publish_feed(const asset_name_type &mia, const account_name_type &by, const price_feed<0, 17, 0> &f) {
                 publish_feed(db.get_asset(mia), db.get_account(by), f);
             }
 
-            void publish_feed(const asset_object &mia, const account_object &by, const price_feed &f);
+            void publish_feed(const asset_object &mia, const account_object &by, const price_feed<0, 17, 0> &f);
 
-            const limit_order_object *create_sell_order(account_name_type user, const asset &amount, const asset &recv);
+            const limit_order_object *create_sell_order(account_name_type user, const asset<0, 17, 0> &amount,
+                                                        const asset<0, 17, 0> &recv);
 
-            const limit_order_object *create_sell_order(const account_object &user, const asset &amount,
-                                                        const asset &recv);
+            const limit_order_object *create_sell_order(const account_object &user, const asset<0, 17, 0> &amount,
+                                                        const asset<0, 17, 0> &recv);
 
-            asset cancel_limit_order(const limit_order_object &order);
+            asset<0, 17, 0> cancel_limit_order(const limit_order_object &order);
 
-            const call_order_object *borrow(const account_name_type &who, asset what, asset collateral) {
+            const call_order_object *borrow(const account_name_type &who, const asset<0, 17, 0> &what,
+                                            asset<0, 17, 0> collateral) {
                 return borrow(db.get_account(who), std::move(what), std::move(collateral));
             }
 
-            const call_order_object *borrow(const account_object &who, asset what, asset collateral);
+            const call_order_object *borrow(const account_object &who, const asset<0, 17, 0> &what,
+                                            asset<0, 17, 0> collateral);
 
-            void cover(const account_name_type &who, asset what, asset collateral_freed) {
+            void cover(const account_name_type &who, const asset<0, 17, 0> &what, const asset<0, 17, 0> &collateral_freed) {
                 cover(db.get_account(who), std::move(what), std::move(collateral_freed));
             }
 
-            void cover(const account_object &who, asset what, asset collateral_freed);
+            void cover(const account_object &who, const asset<0, 17, 0> &what, const asset<0, 17, 0> &collateral_freed);
 
-            void bid_collateral(const account_object &who, const asset &to_bid, const asset &to_cover);
+            void bid_collateral(const account_object &who, const asset<0, 17, 0> &to_bid,
+                                const asset<0, 17, 0> &to_cover);
 
             const asset_object &get_asset(const asset_name_type &symbol) const;
 
@@ -250,9 +251,9 @@ namespace steemit {
             const asset_object &create_user_issued_asset(const asset_name_type &name, const account_object &issuer,
                                                          uint16_t flags);
 
-            void issue_uia(const account_object &recipient, asset amount);
+            void issue_uia(const account_object &recipient, const asset<0, 17, 0> &amount);
 
-            void issue_uia(account_name_type recipient_id, asset amount);
+            void issue_uia(account_name_type recipient_id, const asset<0, 17, 0> &amount);
 
             const account_object &account_create(const string &name, const string &creator,
                                                  const private_key_type &creator_key, const share_type &fee,
@@ -271,23 +272,23 @@ namespace steemit {
 
             void fund(const string &account_name, const share_type &amount = 500000);
 
-            void fund(const string &account_name, const asset &amount);
+            void fund(const string &account_name, const asset<0, 17, 0> &amount);
 
-            void transfer(const string &from, const string &to, const asset &steem);
+            void transfer(const string &from, const string &to, const asset<0, 17, 0> &steem);
 
-            void convert(const string &account_name, const asset &amount);
+            void convert(const string &account_name, const asset<0, 17, 0> &amount);
 
             void vest(const string &from, const share_type &amount);
 
-            void vest(const string &account, const asset &amount);
+            void vest(const string &account, const asset<0, 17, 0> &amount);
 
             void proxy(const string &account, const string &proxy);
 
-            void set_price_feed(const price &new_price);
+            void set_price_feed(const price<0, 17, 0> &new_price);
 
             void print_market(const string &syma, const string &symb) const;
 
-            string pretty(const asset &a) const;
+            string pretty(const asset<0, 17, 0> &a) const;
 
             void print_limit_order(const limit_order_object &cur) const;
 

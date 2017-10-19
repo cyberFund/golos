@@ -3,7 +3,7 @@
 #include <steemit/application/plugin.hpp>
 
 #include <steemit/chain/database.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -74,7 +74,8 @@ namespace steemit {
          */
         class tag_object : public object<tag_object_type, tag_object> {
         public:
-            template<typename Constructor, typename Allocator> tag_object(Constructor &&c, allocator<Allocator> a) {
+            template<typename Constructor, typename Allocator>
+            tag_object(Constructor &&c, allocator<Allocator> a) {
                 c(*this);
             }
 
@@ -112,7 +113,8 @@ namespace steemit {
 
         typedef object_id<tag_object> tag_id_type;
 
-        template<typename T, typename C = std::less<T>> class comparable_index {
+        template<typename T, typename C = std::less<T>>
+        class comparable_index {
         public:
             typedef T value_type;
 
@@ -361,7 +363,8 @@ namespace steemit {
          */
         class tag_stats_object : public object<tag_stats_object_type, tag_stats_object> {
         public:
-            template<typename Constructor, typename Allocator> tag_stats_object(Constructor &&c, allocator<Allocator>) {
+            template<typename Constructor, typename Allocator>
+            tag_stats_object(Constructor &&c, allocator<Allocator>) {
                 c(*this);
             }
 
@@ -372,7 +375,7 @@ namespace steemit {
 
             tag_name_type tag;
             fc::uint128_t total_children_rshares2;
-            asset total_payout = asset(0, SBD_SYMBOL);
+            asset<0, 17, 0> total_payout = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             int32_t net_votes = 0;
             uint32_t top_posts = 0;
             uint32_t comments = 0;
@@ -491,7 +494,7 @@ namespace steemit {
             id_type id;
             account_object::id_type author;
             tag_name_type tag;
-            asset total_rewards = asset(0, SBD_SYMBOL);
+            asset<0, 17, 0> total_rewards = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             uint32_t total_posts = 0;
         };
 
@@ -519,13 +522,16 @@ namespace steemit {
                 ordered_unique<tag<by_author_tag_rewards>, composite_key<author_tag_stats_object,
                         member<author_tag_stats_object, account_object::id_type, &author_tag_stats_object::author>,
                         member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
-                        member<author_tag_stats_object, asset, &author_tag_stats_object::total_rewards> >,
-                        composite_key_compare<less<account_object::id_type>, less<tag_name_type>, greater<asset>>>,
-                ordered_unique<tag<by_tag_rewards_author>, composite_key<author_tag_stats_object,
-                        member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
-                        member<author_tag_stats_object, asset, &author_tag_stats_object::total_rewards>,
-                        member<author_tag_stats_object, account_object::id_type, &author_tag_stats_object::author> >,
-                        composite_key_compare<less<tag_name_type>, greater<asset>,
+                        member<author_tag_stats_object, asset<0, 17, 0>, &author_tag_stats_object::total_rewards> >,
+                        composite_key_compare<less<account_object::id_type>, less<tag_name_type>,
+                                greater<asset<0, 17, 0>>>>, ordered_unique<tag<by_tag_rewards_author>,
+                        composite_key<author_tag_stats_object,
+                                member<author_tag_stats_object, tag_name_type, &author_tag_stats_object::tag>,
+                                member<author_tag_stats_object, asset<0, 17, 0>,
+                                        &author_tag_stats_object::total_rewards>,
+                                member<author_tag_stats_object, account_object::id_type,
+                                        &author_tag_stats_object::author> >,
+                        composite_key_compare<less<tag_name_type>, greater<asset<0, 17, 0>>,
                                 less<account_object::id_type>>> > > author_tag_stats_index;
 
         /**
@@ -591,21 +597,21 @@ namespace steemit {
 
 FC_API(steemit::tags::tag_api, (get_tags));
 
-FC_REFLECT(steemit::tags::tag_object,
+FC_REFLECT((steemit::tags::tag_object),
            (id)(name)(created)(active)(cashout)(net_rshares)(net_votes)(hot)(trending)(promoted_balance)(children)(
                    children_rshares2)(author)(parent)(comment))
 
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::tag_object, steemit::tags::tag_index)
 
-FC_REFLECT(steemit::tags::tag_stats_object,
+FC_REFLECT((steemit::tags::tag_stats_object),
            (id)(tag)(total_children_rshares2)(total_payout)(net_votes)(top_posts)(comments));
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::tag_stats_object, steemit::tags::tag_stats_index)
 
-FC_REFLECT(steemit::tags::peer_stats_object,
+FC_REFLECT((steemit::tags::peer_stats_object),
            (id)(voter)(peer)(direct_positive_votes)(direct_votes)(indirect_positive_votes)(indirect_votes)(rank));
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::peer_stats_object, steemit::tags::peer_stats_index)
 
-FC_REFLECT(steemit::tags::comment_metadata, (tags));
+FC_REFLECT((steemit::tags::comment_metadata), (tags));
 
-FC_REFLECT(steemit::tags::author_tag_stats_object, (id)(author)(tag)(total_posts)(total_rewards))
+FC_REFLECT((steemit::tags::author_tag_stats_object), (id)(author)(tag)(total_posts)(total_rewards))
 CHAINBASE_SET_INDEX_TYPE(steemit::tags::author_tag_stats_object, steemit::tags::author_tag_stats_index)

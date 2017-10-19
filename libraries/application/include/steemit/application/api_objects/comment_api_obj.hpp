@@ -1,14 +1,14 @@
 #ifndef GOLOS_COMMENT_API_OBJ_H
 #define GOLOS_COMMENT_API_OBJ_H
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/block_summary_object.hpp>
-#include <steemit/chain/comment_object.hpp>
-#include <steemit/chain/global_property_object.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
-#include <steemit/chain/witness_objects.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/block_summary_object.hpp>
+#include <steemit/chain/objects/comment_object.hpp>
+#include <steemit/chain/objects/global_property_object.hpp>
+#include <steemit/chain/objects/history_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/transaction_object.hpp>
+#include <steemit/chain/objects/witness_objects.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 
 
@@ -92,8 +92,8 @@ namespace steemit {
 
             uint16_t reward_weight;
 
-            asset total_payout_value;
-            asset curator_payout_value;
+            asset<0, 17, 0> total_payout_value;
+            asset<0, 17, 0> curator_payout_value;
 
             share_type author_rewards;
 
@@ -101,7 +101,7 @@ namespace steemit {
 
             comment_object::id_type root_comment;
 
-            asset max_accepted_payout;
+            asset<0, 17, 0> max_accepted_payout;
             uint16_t percent_steem_dollars;
             bool allow_replies;
             bool allow_votes;
@@ -113,7 +113,7 @@ namespace steemit {
      }
 }
 
-FC_REFLECT(steemit::application::comment_api_obj,
+FC_REFLECT((steemit::application::comment_api_obj),
         (id)(author)(permlink)
                 (category)(parent_author)(parent_permlink)
                 (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)

@@ -3,10 +3,10 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/asset_object.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/history_object.hpp>
+#include <steemit/chain/objects/account_object.hpp>
+#include <steemit/chain/objects/asset_object.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
+#include <steemit/chain/objects/history_object.hpp>
 #include <steemit/account_history/account_history_plugin.hpp>
 
 #include <fc/crypto/digest.hpp>
@@ -206,16 +206,16 @@ namespace steemit {
             }
 
             for (const limit_order_object &o : input_db.get_index<limit_order_index>().indices()) {
-                asset for_sale = o.amount_for_sale();
-                if (for_sale.symbol == STEEM_SYMBOL) {
+                asset<0, 17, 0> for_sale = o.amount_for_sale();
+                if (for_sale.symbol_name() == STEEM_SYMBOL_NAME) {
                     core_in_orders += for_sale.amount;
                 }
                 total_balances[for_sale.symbol_name()] += for_sale.amount;
                 total_balances[STEEM_SYMBOL_NAME] += o.deferred_fee;
             }
             for (const call_order_object &o : input_db.get_index<call_order_index>().indices()) {
-                asset col = o.get_collateral();
-                if (col.symbol == STEEM_SYMBOL) {
+                asset<0, 17, 0> col = o.get_collateral();
+                if (col.symbol_name() == STEEM_SYMBOL_NAME) {
                     core_in_orders += col.amount;
                 }
                 total_balances[col.symbol_name()] += col.amount;
@@ -232,7 +232,7 @@ namespace steemit {
                 total_balances[asset_obj.asset_name] += dasset_obj.confidential_supply.value;
             }
             //            for (const vesting_balance_object &vbo : input_db.get_index<vesting_balance_index>().indices()) {
-            //                total_balances[vbo.balance.symbol] += vbo.balance.amount;
+            //                total_balances[vbo.balance.symbol_name()] += vbo.balance.amount;
             //            }
             //            for (const fba_accumulator_object &fba : input_db.get_index < simple_index < fba_accumulator_object > >
             //                                                     ()) {
@@ -262,7 +262,7 @@ namespace steemit {
 
             const std::shared_ptr<steemit::account_history::account_history_plugin> pin = app.get_plugin<
                     steemit::account_history::account_history_plugin>("account_history");
-            if (pin->tracked_accounts().size() == 0) {
+            if (pin->tracked_accounts().empty()) {
                 /*
                 vector< pair< account_name_type, address > > tuples_from_db;
                 const auto& primary_account_idx = db.get_index<account_index>().indices().get<by_id>();
@@ -352,11 +352,11 @@ namespace steemit {
             BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() < STEEMIT_BLOCK_INTERVAL);
         }
 
-        void database_fixture::force_global_settle(const asset_object &what, const price &p) {
+        void database_fixture::force_global_settle(const asset_object &what, const price<0, 17, 0> &p) {
             try {
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
-                asset_global_settle_operation sop;
+                asset_global_settle_operation<0, 17, 0> sop;
                 sop.issuer = what.issuer;
                 sop.asset_to_settle = what.asset_name;
                 sop.settle_price = p;
@@ -368,11 +368,11 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((what)(p))
         }
 
-        void database_fixture::force_settle(const account_object &who, asset what) {
+        void database_fixture::force_settle(const account_object &who, const asset<0, 17, 0> &what) {
             try {
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
-                asset_settle_operation sop;
+                asset_settle_operation<0, 17, 0> sop;
                 sop.account = who.name;
                 sop.amount = what;
                 trx.operations.push_back(sop);
@@ -383,11 +383,12 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((who)(what))
         }
 
-        const call_order_object *database_fixture::borrow(const account_object &who, asset what, asset collateral) {
+        const call_order_object *database_fixture::borrow(const account_object &who, const asset<0, 17, 0> &what,
+                                                          asset<0, 17, 0> collateral) {
             try {
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
-                call_order_update_operation update;
+                call_order_update_operation<0, 17, 0> update;
                 update.funding_account = who.name;
                 update.delta_collateral = collateral;
                 update.delta_debt = what;
@@ -408,17 +409,19 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((who.name)(what)(collateral))
         }
 
-        const limit_order_object *database_fixture::create_sell_order(account_name_type user, const asset &amount,
-                                                                      const asset &recv) {
+        const limit_order_object *database_fixture::create_sell_order(account_name_type user,
+                                                                      const asset<0, 17, 0> &amount,
+                                                                      const asset<0, 17, 0> &recv) {
             auto r = create_sell_order(db.get_account(user), amount, recv);
             verify_asset_supplies(db);
             return r;
         }
 
-        const limit_order_object *database_fixture::create_sell_order(const account_object &user, const asset &amount,
-                                                                      const asset &recv) {
+        const limit_order_object *database_fixture::create_sell_order(const account_object &user,
+                                                                      const asset<0, 17, 0> &amount,
+                                                                      const asset<0, 17, 0> &recv) {
             //wdump((amount)(recv));
-            limit_order_create_operation buy_order;
+            limit_order_create_operation<0, 17, 0> buy_order;
             buy_order.owner = user.name;
             buy_order.amount_to_sell = amount;
             buy_order.min_to_receive = recv;
@@ -431,8 +434,8 @@ namespace steemit {
             return db.find<limit_order_object>(buy_order.order_id);
         }
 
-        asset database_fixture::cancel_limit_order(const limit_order_object &order) {
-            limit_order_cancel_operation cancel_order;
+        asset<0, 17, 0> database_fixture::cancel_limit_order(const limit_order_object &order) {
+            limit_order_cancel_operation<0, 17, 0> cancel_order;
             cancel_order.owner = order.seller;
             cancel_order.order_id = order.order_id;
             trx.operations.push_back(cancel_order);
@@ -463,7 +466,7 @@ namespace steemit {
                                                               uint16_t flags /* = charge_market_fee */
         ) {
             try {
-                asset_create_operation creator;
+                asset_create_operation<0, 17, 0> creator;
                 creator.issuer = issuer;
                 creator.asset_name = name;
                 creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
@@ -474,14 +477,15 @@ namespace steemit {
                 }
                 creator.common_options.issuer_permissions = flags;
                 creator.common_options.flags = flags & ~global_settle;
-                creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+                creator.common_options.core_exchange_rate = price<0, 17, 0>(
+                        {asset<0, 17, 0>(1, asset_symbol_type(1)), asset<0, 17, 0>(1)});
                 creator.bitasset_opts = bitasset_options();
                 trx.operations.push_back(std::move(creator));
                 trx.validate();
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
 
-                return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+                return db.get_asset(creator.asset_name);
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
@@ -491,7 +495,7 @@ namespace steemit {
                                                                        uint16_t flags /* = charge_market_fee */
         ) {
             try {
-                asset_create_operation creator;
+                asset_create_operation<0, 17, 0> creator;
                 creator.issuer = issuer;
                 creator.asset_name = name;
                 creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
@@ -502,7 +506,8 @@ namespace steemit {
                 if (issuer == STEEMIT_WITNESS_ACCOUNT) {
                     creator.common_options.flags |= witness_fed_asset;
                 }
-                creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+                creator.common_options.core_exchange_rate = price<0, 17, 0>(
+                        {asset<0, 17, 0>(1, asset_symbol_type(1)), asset<0, 17, 0>(1)});
                 creator.bitasset_opts = bitasset_options();
                 creator.is_prediction_market = true;
                 trx.operations.push_back(std::move(creator));
@@ -510,17 +515,18 @@ namespace steemit {
                 db.push_transaction(trx, ~0);
                 trx.operations.clear();
 
-                return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+                return db.get_asset(creator.asset_name);
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
         const asset_object &database_fixture::create_user_issued_asset(const string &name) {
-            asset_create_operation creator;
+            asset_create_operation<0, 17, 0> creator;
             creator.issuer = account_name_type();
             creator.asset_name = name;
             creator.common_options.max_supply = 0;
             creator.precision = 2;
-            creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+            creator.common_options.core_exchange_rate = price<0, 17, 0>(
+                    {asset<0, 17, 0>(1, asset_symbol_type(1)), asset<0, 17, 0>(1)});
             creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
             creator.common_options.flags = charge_market_fee;
             creator.common_options.issuer_permissions = charge_market_fee;
@@ -528,17 +534,18 @@ namespace steemit {
             trx.validate();
             db.push_transaction(trx, ~0);
             trx.operations.clear();
-            return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+            return db.get_asset(creator.asset_name);
         }
 
         const asset_object &database_fixture::create_user_issued_asset(const asset_name_type &name,
                                                                        const account_object &issuer, uint16_t flags) {
-            asset_create_operation creator;
+            asset_create_operation<0, 17, 0> creator;
             creator.issuer = issuer.name;
             creator.asset_name = name;
             creator.common_options.max_supply = 0;
             creator.precision = 2;
-            creator.common_options.core_exchange_rate = price({asset(1, asset_symbol_type(1)), asset(1)});
+            creator.common_options.core_exchange_rate = price<0, 17, 0>(
+                    {asset<0, 17, 0>(1, asset_symbol_type(1)), asset<0, 17, 0>(1)});
             creator.common_options.max_supply = STEEMIT_MAX_SHARE_SUPPLY;
             creator.common_options.flags = flags;
             creator.common_options.issuer_permissions = flags;
@@ -549,12 +556,12 @@ namespace steemit {
             db.push_transaction(trx, ~0);
             trx.operations.clear();
 
-            return db.get<asset_object>(asset::from_string(creator.asset_name).symbol);
+            return db.get_asset(creator.asset_name);
         }
 
-        void database_fixture::issue_uia(const account_object &recipient, asset amount) {
+        void database_fixture::issue_uia(const account_object &recipient, const asset<0, 17, 0> &amount) {
             BOOST_TEST_MESSAGE("Issuing UIA");
-            asset_issue_operation op;
+            asset_issue_operation<0, 17, 0> op;
             op.issuer = db.get_asset(amount.symbol_name()).issuer;
             op.asset_to_issue = amount;
             op.issue_to_account = recipient.name;
@@ -563,15 +570,16 @@ namespace steemit {
             trx.operations.clear();
         }
 
-        void database_fixture::issue_uia(account_name_type recipient_id, asset amount) {
+        void database_fixture::issue_uia(account_name_type recipient_id, const asset<0, 17, 0> &amount) {
             issue_uia(db.get_account(recipient_id), amount);
         }
 
-        void database_fixture::cover(const account_object &who, asset what, asset collateral) {
+        void database_fixture::cover(const account_object &who, const asset<0, 17, 0> &what,
+                                     const asset<0, 17, 0> &collateral) {
             try {
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
-                call_order_update_operation update;
+                call_order_update_operation<0, 17, 0> update;
                 update.funding_account = who.name;
                 update.delta_collateral = -collateral;
                 update.delta_debt = -what;
@@ -585,11 +593,12 @@ namespace steemit {
         }
 
 
-        void database_fixture::bid_collateral(const account_object &who, const asset &to_bid, const asset &to_cover) {
+        void database_fixture::bid_collateral(const account_object &who, const asset<0, 17, 0> &to_bid,
+                                              const asset<0, 17, 0> &to_cover) {
             try {
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
-                bid_collateral_operation bid;
+                bid_collateral_operation<0, 17, 0> bid;
                 bid.bidder = who.name;
                 bid.additional_collateral = to_bid;
                 bid.debt_covered = to_cover;
@@ -605,7 +614,7 @@ namespace steemit {
             try {
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
                 trx.operations.clear();
-                asset_update_feed_producers_operation op;
+                asset_update_feed_producers_operation<0, 17, 0> op;
                 op.asset_to_update = mia.asset_name;
                 op.issuer = mia.issuer;
                 op.new_feed_producers = std::move(producers);
@@ -618,11 +627,12 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((mia)(producers))
         }
 
-        void database_fixture::publish_feed(const asset_object &mia, const account_object &by, const price_feed &f) {
+        void database_fixture::publish_feed(const asset_object &mia, const account_object &by,
+                                            const price_feed<0, 17, 0> &f) {
             trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
             trx.operations.clear();
 
-            asset_publish_feed_operation op;
+            asset_publish_feed_operation<0, 17, 0> op;
             op.publisher = by.name;
             op.asset_name = mia.asset_name;
             op.feed = f;
@@ -643,7 +653,7 @@ namespace steemit {
                                                                const public_key_type &post_key,
                                                                const string &json_metadata) {
             try {
-                account_create_operation op;
+                account_create_operation<0, 17, 0> op;
                 op.new_account_name = name;
                 op.creator = creator;
                 op.fee = fee;
@@ -682,11 +692,11 @@ namespace steemit {
                                                                const string &url, const public_key_type &signing_key,
                                                                const share_type &fee) {
             try {
-                witness_update_operation op;
+                witness_update_operation<0, 17, 0> op;
                 op.owner = owner;
                 op.url = url;
                 op.block_signing_key = signing_key;
-                op.fee = asset(fee, STEEM_SYMBOL);
+                op.fee = asset<0, 17, 0>(fee, STEEM_SYMBOL_NAME);
 
                 trx.operations.push_back(op);
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -707,24 +717,25 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::fund(const string &account_name, const asset &amount) {
+        void database_fixture::fund(const string &account_name, const asset<0, 17, 0> &amount) {
             try {
                 db_plugin->debug_update([=](database &db) {
                     db.adjust_balance(db.get_account(account_name), amount);
 
                     db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &gpo) {
-                        if (amount.symbol == STEEM_SYMBOL) {
+                        if (amount.symbol_name() == STEEM_SYMBOL_NAME) {
                             gpo.current_supply += amount;
-                        } else if (amount.symbol == SBD_SYMBOL) {
+                        } else if (amount.symbol_name() == SBD_SYMBOL_NAME) {
                             gpo.current_sbd_supply += amount;
                         }
                     });
 
-                    if (amount.symbol == SBD_SYMBOL) {
+                    if (amount.symbol_name() == SBD_SYMBOL_NAME) {
                         const auto &median_feed = db.get_feed_history();
                         if (median_feed.current_median_history.is_null()) {
                             db.modify(median_feed, [&](feed_history_object &f) {
-                                f.current_median_history = price(asset(1, SBD_SYMBOL), asset(1, STEEM_SYMBOL));
+                                f.current_median_history = price<0, 17, 0>(asset<0, 17, 0>(1, SBD_SYMBOL_NAME),
+                                                                           asset<0, 17, 0>(1, STEEM_SYMBOL));
                             });
                         }
                     }
@@ -734,16 +745,16 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::convert(const string &account_name, const asset &amount) {
+        void database_fixture::convert(const string &account_name, const asset<0, 17, 0> &amount) {
             try {
                 const account_object &account = db.get_account(account_name);
 
-                if (amount.symbol == STEEM_SYMBOL) {
+                if (amount.symbol_name() == STEEM_SYMBOL_NAME) {
                     db.adjust_balance(account, -amount);
                     db.adjust_balance(account, db.to_sbd(amount));
                     db.adjust_supply(-amount);
                     db.adjust_supply(db.to_sbd(amount));
-                } else if (amount.symbol == SBD_SYMBOL) {
+                } else if (amount.symbol_name() == SBD_SYMBOL_NAME) {
                     db.adjust_balance(account, -amount);
                     db.adjust_balance(account, db.to_steem(amount));
                     db.adjust_supply(-amount);
@@ -752,9 +763,9 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::transfer(const string &from, const string &to, const asset &amount) {
+        void database_fixture::transfer(const string &from, const string &to, const asset<0, 17, 0> &amount) {
             try {
-                transfer_operation op;
+                transfer_operation<0, 17, 0> op;
                 op.from = from;
                 op.to = to;
                 op.amount = amount;
@@ -769,10 +780,10 @@ namespace steemit {
 
         void database_fixture::vest(const string &from, const share_type &amount) {
             try {
-                transfer_to_vesting_operation op;
+                transfer_to_vesting_operation<0, 17, 0> op;
                 op.from = from;
                 op.to = "";
-                op.amount = asset(amount, STEEM_SYMBOL);
+                op.amount = asset<0, 17, 0>(amount, STEEM_SYMBOL_NAME);
 
                 trx.operations.push_back(op);
                 trx.set_expiration(db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
@@ -782,8 +793,8 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((from)(amount))
         }
 
-        void database_fixture::vest(const string &account, const asset &amount) {
-            if (amount.symbol != STEEM_SYMBOL) {
+        void database_fixture::vest(const string &account, const asset<0, 17, 0> &amount) {
+            if (amount.symbol_name() != STEEM_SYMBOL_NAME) {
                 return;
             }
 
@@ -800,7 +811,7 @@ namespace steemit {
 
         void database_fixture::proxy(const string &account, const string &proxy) {
             try {
-                account_witness_proxy_operation op;
+                account_witness_proxy_operation<0, 17, 0> op;
                 op.account = account;
                 op.proxy = proxy;
                 trx.operations.push_back(op);
@@ -809,10 +820,10 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((account)(proxy))
         }
 
-        void database_fixture::set_price_feed(const price &new_price) {
+        void database_fixture::set_price_feed(const price<0, 17, 0> &new_price) {
             try {
                 for (int i = 1; i < 8; i++) {
-                    feed_publish_operation op;
+                    feed_publish_operation<0, 17, 0> op;
                     op.publisher = STEEMIT_INIT_MINER_NAME + fc::to_string(i);
                     op.exchange_rate = new_price;
                     trx.operations.push_back(op);
@@ -860,7 +871,7 @@ namespace steemit {
             }
         }
 
-        string database_fixture::pretty(const asset &a) const {
+        string database_fixture::pretty(const asset<0, 17, 0> &a) const {
             std::stringstream ss;
             ss << a.amount.value << " ";
             ss << db.get_asset(a.symbol_name()).asset_name.operator std::string();
@@ -967,6 +978,5 @@ namespace steemit {
             }
 
         } // steemit::chain::test
-
     }
 } // steemit::chain

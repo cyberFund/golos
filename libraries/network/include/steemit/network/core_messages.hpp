@@ -1,29 +1,7 @@
-/*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #pragma once
 
 #include <steemit/network/config.hpp>
+
 #include <steemit/protocol/block.hpp>
 
 #include <fc/crypto/ripemd160.hpp>
@@ -445,22 +423,22 @@ FC_REFLECT_ENUM(steemit::network::core_message_type_enum,
                 (get_current_connections_reply_message_type)
                 (core_message_type_last))
 
-FC_REFLECT(steemit::network::trx_message, (trx))
-FC_REFLECT(steemit::network::block_message, (block)(block_id))
+FC_REFLECT((steemit::network::trx_message), (trx))
+FC_REFLECT((steemit::network::block_message), (block)(block_id))
 
-FC_REFLECT(steemit::network::item_id, (item_type)
+FC_REFLECT((steemit::network::item_id), (item_type)
         (item_hash))
-FC_REFLECT(steemit::network::item_ids_inventory_message, (item_type)
+FC_REFLECT((steemit::network::item_ids_inventory_message), (item_type)
         (item_hashes_available))
-FC_REFLECT(steemit::network::blockchain_item_ids_inventory_message, (total_remaining_item_count)
+FC_REFLECT((steemit::network::blockchain_item_ids_inventory_message), (total_remaining_item_count)
         (item_type)
         (item_hashes_available))
-FC_REFLECT(steemit::network::fetch_blockchain_item_ids_message, (item_type)
+FC_REFLECT((steemit::network::fetch_blockchain_item_ids_message), (item_type)
         (blockchain_synopsis))
-FC_REFLECT(steemit::network::fetch_items_message, (item_type)
+FC_REFLECT((steemit::network::fetch_items_message), (item_type)
         (items_to_fetch))
-FC_REFLECT(steemit::network::item_not_available_message, (requested_item))
-FC_REFLECT(steemit::network::hello_message, (user_agent)
+FC_REFLECT((steemit::network::item_not_available_message), (requested_item))
+FC_REFLECT((steemit::network::hello_message), (user_agent)
         (core_protocol_version)
         (inbound_address)
         (inbound_port)
@@ -469,7 +447,7 @@ FC_REFLECT(steemit::network::hello_message, (user_agent)
         (signed_shared_secret)
         (user_data))
 
-FC_REFLECT_EMPTY(steemit::network::connection_accepted_message)
+FC_REFLECT_EMPTY((steemit::network::connection_accepted_message))
 FC_REFLECT_ENUM(steemit::network::rejection_reason_code, (unspecified)
         (different_chain)
         (already_connected)
@@ -478,20 +456,20 @@ FC_REFLECT_ENUM(steemit::network::rejection_reason_code, (unspecified)
         (blocked)
         (invalid_hello_message)
         (client_too_old))
-FC_REFLECT(steemit::network::connection_rejected_message, (user_agent)
+FC_REFLECT((steemit::network::connection_rejected_message), (user_agent)
         (core_protocol_version)
         (remote_endpoint)
         (reason_code)
         (reason_string))
-FC_REFLECT_EMPTY(steemit::network::address_request_message)
-FC_REFLECT(steemit::network::address_info, (remote_endpoint)
+FC_REFLECT_EMPTY((steemit::network::address_request_message))
+FC_REFLECT((steemit::network::address_info), (remote_endpoint)
         (last_seen_time)
         (latency)
         (node_id)
         (direction)
         (firewalled))
-FC_REFLECT(steemit::network::address_message, (addresses))
-FC_REFLECT(steemit::network::closing_connection_message, (reason_for_closing)
+FC_REFLECT((steemit::network::address_message), (addresses))
+FC_REFLECT((steemit::network::closing_connection_message), (reason_for_closing)
         (closing_due_to_error)
         (error))
 FC_REFLECT_ENUM(steemit::network::peer_connection_direction, (unknown)
@@ -501,17 +479,17 @@ FC_REFLECT_ENUM(steemit::network::firewalled_state, (unknown)
         (firewalled)
         (not_firewalled))
 
-FC_REFLECT(steemit::network::current_time_request_message, (request_sent_time))
-FC_REFLECT(steemit::network::current_time_reply_message, (request_sent_time)
+FC_REFLECT((steemit::network::current_time_request_message), (request_sent_time))
+FC_REFLECT((steemit::network::current_time_reply_message), (request_sent_time)
         (request_received_time)
         (reply_transmitted_time))
 FC_REFLECT_ENUM(steemit::network::firewall_check_result, (unable_to_check)
         (unable_to_connect)
         (connection_successful))
-FC_REFLECT(steemit::network::check_firewall_message, (node_id)(endpoint_to_check))
-FC_REFLECT(steemit::network::check_firewall_reply_message, (node_id)(endpoint_checked)(result))
-FC_REFLECT_EMPTY(steemit::network::get_current_connections_request_message)
-FC_REFLECT(steemit::network::current_connection_data, (connection_duration)
+FC_REFLECT((steemit::network::check_firewall_message), (node_id)(endpoint_to_check))
+FC_REFLECT((steemit::network::check_firewall_reply_message), (node_id)(endpoint_checked)(result))
+FC_REFLECT_EMPTY((steemit::network::get_current_connections_request_message))
+FC_REFLECT((steemit::network::current_connection_data), (connection_duration)
         (remote_endpoint)
         (node_id)
         (clock_offset)
@@ -519,7 +497,7 @@ FC_REFLECT(steemit::network::current_connection_data, (connection_duration)
         (connection_direction)
         (firewalled)
         (user_data))
-FC_REFLECT(steemit::network::get_current_connections_reply_message, (upload_rate_one_minute)
+FC_REFLECT((steemit::network::get_current_connections_reply_message), (upload_rate_one_minute)
         (download_rate_one_minute)
         (upload_rate_fifteen_minutes)
         (download_rate_fifteen_minutes)

@@ -263,7 +263,7 @@ namespace steemit {
                                         _chain_db->reindex(_data_dir /
                                                            "blockchain", _shared_dir, _shared_file_size);
                                     }
-                                    catch (chain::block_log_exception &) {
+                                    catch (chain::exceptions::chain::block_log<> &) {
                                         wlog("Error opening block log. Having to resync from network...");
                                         _chain_db->open(_data_dir /
                                                         "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, _shared_file_size, chainbase::database::read_write);
@@ -434,14 +434,14 @@ namespace steemit {
                                 }
 
                                 return result;
-                            } catch (const steemit::chain::unlinkable_block_exception &e) {
+                            } catch (const chain::exceptions::chain::unlinkable_block<> &e) {
                                 // translate to a graphene::network exception
                                 fc_elog(fc::logger::get("sync"),
                                         "Error when pushing block, current head block is ${head}:\n${e}",
                                         ("e", e.to_detail_string())
                                                 ("head", _chain_db->head_block_num()));
                                 elog("Error when pushing block:\n${e}", ("e", e.to_detail_string()));
-                                FC_THROW_EXCEPTION(network::unlinkable_block_exception, "Error when pushing block:\n${e}", ("e", e.to_detail_string()));
+                                FC_THROW_EXCEPTION(network::exceptions::unlinkable_block<>, "Error when pushing block:\n${e}", ("e", e.to_detail_string()));
                             } catch (const fc::exception &e) {
                                 fc_elog(fc::logger::get("sync"),
                                         "Error when pushing block, current head block is ${head}:\n${e}",
@@ -516,7 +516,7 @@ namespace steemit {
                                 }
                             }
                             if (!found_a_block_in_synopsis)
-                                FC_THROW_EXCEPTION(network::peer_is_on_an_unreachable_fork, "Unable to provide a list of blocks starting at any of the blocks in peer's synopsis");
+                                FC_THROW_EXCEPTION(network::exceptions::peer_is_on_an_unreachable_fork<>, "Unable to provide a list of blocks starting at any of the blocks in peer's synopsis");
                         }
                         for (uint32_t num = block_header::num_from_id(last_known_block_id);
                              num <= _chain_db->head_block_num() &&
@@ -690,7 +690,7 @@ namespace steemit {
                                             "(our chains diverge after block #${non_fork_high_block_num} but only undoable to block #${low_block_num})",
                                             ("low_block_num", low_block_num)
                                                     ("non_fork_high_block_num", non_fork_high_block_num));
-                                    FC_THROW_EXCEPTION(network::block_older_than_undo_history, "Peer is are on a fork I'm unable to switch to");
+                                    FC_THROW_EXCEPTION(network::exceptions::block_older_than_undo_history<>, "Peer is are on a fork I'm unable to switch to");
                                 }
                             }
                         } else {

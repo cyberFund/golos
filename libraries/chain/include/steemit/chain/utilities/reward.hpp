@@ -1,7 +1,7 @@
 #pragma once
 
 #include <steemit/chain/utilities/asset.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <steemit/chain/objects/steem_objects.hpp>
 
 #include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/config.hpp>
@@ -14,20 +14,15 @@
 namespace steemit {
     namespace chain {
         namespace utilities {
-
-            using steemit::protocol::asset;
-            using steemit::protocol::price;
-            using steemit::protocol::share_type;
-
             using fc::uint128_t;
 
             struct comment_reward_context {
-                share_type rshares;
+                protocol::share_type rshares;
                 uint16_t reward_weight = 0;
-                asset max_sbd;
+                protocol::asset<0, 17, 0> max_sbd;
                 uint128_t total_reward_shares2;
-                asset total_reward_fund_steem;
-                price current_steem_price;
+                protocol::asset<0, 17, 0> total_reward_fund_steem;
+                protocol::price<0, 17, 0> current_steem_price;
             };
 
             uint64_t get_rshare_reward(const comment_reward_context &ctx);
@@ -44,12 +39,12 @@ namespace steemit {
 
             uint128_t calculate_claims(const uint128_t &rshares, const reward_fund_object &rf);
 
-            inline bool is_comment_payout_dust(const price &p, uint64_t steem_payout) {
-                return to_sbd(p, asset(steem_payout, STEEM_SYMBOL)) < STEEMIT_MIN_PAYOUT_SBD;
+            inline bool is_comment_payout_dust(const protocol::price<0, 17, 0> &p, uint64_t steem_payout) {
+                return to_sbd(p, protocol::asset<0, 17, 0>(steem_payout, STEEM_SYMBOL_NAME)) < STEEMIT_MIN_PAYOUT_SBD;
             }
         }
     }
 }
 
-FC_REFLECT(steemit::chain::utilities::comment_reward_context,
+FC_REFLECT((steemit::chain::utilities::comment_reward_context),
            (rshares)(reward_weight)(max_sbd)(total_reward_shares2)(total_reward_fund_steem)(current_steem_price))
