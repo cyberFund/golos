@@ -741,7 +741,7 @@ namespace steemit {
 
                     this->db.template create<witness_vote_object>([&](witness_vote_object &v) {
                         v.witness = witness.id;
-                        v.account = voter.id;
+                        v.account = voter.name;
                         v.created = this->db.head_block_time();
                     });
 
@@ -755,7 +755,7 @@ namespace steemit {
 
                     this->db.template create<witness_vote_object>([&](witness_vote_object &v) {
                         v.witness = witness.id;
-                        v.account = voter.id;
+                        v.account = voter.name;
                         v.created = this->db.head_block_time();
                     });
                     this->db.modify(witness, [&](witness_object &w) {
