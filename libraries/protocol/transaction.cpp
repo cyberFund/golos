@@ -27,7 +27,7 @@ namespace steemit {
         }
 
         void transaction::validate() const {
-            FC_ASSERT(operations.size() > 0, "A transaction must have at least one operation", ("trx", *this));
+            FC_ASSERT(!operations.empty(), "A transaction must have at least one operation", ("trx", *this));
             for (const auto &op : operations) {
                 operation_validate(op);
             }
@@ -60,7 +60,7 @@ namespace steemit {
         }
 
         void transaction::set_reference_block(const block_id_type &reference_block) {
-            ref_block_num = fc::endian_reverse_u32(reference_block._hash[0]);
+            ref_block_num = static_cast<uint16_t>(fc::endian_reverse_u32(reference_block._hash[0]));
             ref_block_prefix = reference_block._hash[1];
         }
 

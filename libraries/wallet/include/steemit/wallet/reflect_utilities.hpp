@@ -15,7 +15,6 @@ namespace steemit {
         namespace impl {
 
             std::string clean_name(const std::string &name) {
-                std::string result;
                 const static std::string prefix = "steemit::protocol::";
                 const static std::string suffix = "_operation";
                 // graphene::chain::.*_operation
@@ -24,22 +23,19 @@ namespace steemit {
                         (name.substr(name.size() - suffix.size() - name.find('>') + name.find('<') - 1,
                                      suffix.size()) == suffix)) {
 
-                        return name.substr(prefix.size(), name.size() - prefix.size() - suffix.size() - name.find('>') +
-                                                          name.find('<'));
+                        return name.substr(prefix.size(), name.size() - prefix.size() - suffix.size() - name.find('>') + name.find('<'));
                     }
                 } else if ((name.size() >= prefix.size() + suffix.size()) &&
                            (name.substr(0, prefix.size()) == prefix) &&
                            (name.substr(name.size() - suffix.size(), suffix.size()) == suffix)) {
 
-                    result = name.substr(prefix.size(), name.size() - prefix.size() - suffix.size());
-
-                    return result;
+                    return name.substr(prefix.size(), name.size() - prefix.size() - suffix.size());
                 }
 
                 // If this line spams the console, please don't just comment it out.
                 // Instead, add code above to deal specifically with the names that are causing the spam.
-                wlog("don't know how to clean name: ${name}, suffix: ${suffix}", ("name", name)("suffix", name.substr(
-                        name.size() - suffix.size() - name.find('>') + name.find('<') - 1, suffix.size())));
+                wlog("don't know how to clean name: ${name}, suffix: ${suffix}", ("name", name)("suffix", name.find('<') != std::string::npos && name.find('>') != std::string::npos ? name.substr(
+                        name.size() - suffix.size() - name.find('>') + name.find('<') - 1, suffix.size()) : name.substr(name.size() - suffix.size(), suffix.size())));
                 return name;
             }
 
