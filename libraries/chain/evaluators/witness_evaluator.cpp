@@ -138,7 +138,7 @@ namespace steemit {
                 } else {
 
                     this->db.template create<witness_vote_object>([&](witness_vote_object &v) {
-                        v.witness = witness.name;
+                        v.witness = witness.owner;
                         v.account = voter.name;
                         v.created = this->db.head_block_time();
                     });
