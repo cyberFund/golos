@@ -398,9 +398,9 @@ namespace steemit {
                         results.back().reputation = _follow_api->get_account_reputations(itr->name, 1)[0].reputation;
                     }
 
-                    auto vitr = vidx.lower_bound(boost::make_tuple(itr->id, witness_object::id_type()));
-                    while (vitr != vidx.end() && vitr->account == itr->id) {
-                        results.back().witness_votes.insert(_db.get(vitr->witness).owner);
+                    auto vitr = vidx.lower_bound(boost::make_tuple(itr->name, account_name_type()));
+                    while (vitr != vidx.end() && vitr->account == itr->name) {
+                        results.back().witness_votes.insert(_db.get_witness(vitr->witness).owner);
                         ++vitr;
                     }
                 }
