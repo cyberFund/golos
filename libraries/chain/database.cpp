@@ -1233,10 +1233,10 @@ namespace steemit {
         }
 
         void database::adjust_witness_votes(const account_object &a, share_type delta) {
-            const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.name, witness_object::id_type()));
+            const auto &vidx = get_index<witness_vote_index>().indices().get<by_created_time>();
+            auto itr = vidx.lower_bound(boost::make_tuple(a.name, fc::time_point_sec::min()));
             while (itr != vidx.end() && itr->account == a.name) {
-                adjust_witness_vote(get(itr->witness), delta);
+                adjust_witness_vote(get_witness(itr->witness), delta);
                 ++itr;
             }
         }
@@ -1271,9 +1271,9 @@ namespace steemit {
         }
 
         void database::clear_expired_witness_votes() {
-            const auto &vidx = get_index<witness_vote_index>().indices().get<by_created>();
+            const auto &vidx = get_index<witness_vote_index>().indices().get<by_created_time>();
             auto itr = vidx.lower_bound(fc::time_point_sec::maximum());
-            while (itr != vidx.end() && head_block_time() - itr->created < STEEMIT_MAX_WITNESS_VOTE_AGE_SECONDS) {
+            while (itr != vidx.end() && head_block_time() - itr->created < STEEMIT_MAX_WITNESS_VOTE_AGE) {
                 const auto &current = *itr;
                 ++itr;
 
@@ -1285,7 +1285,7 @@ namespace steemit {
 
                 remove(current);
 
-                push_virtual_operation(witness_vote_expire_operation(current.owner, current.witness, current.created));
+                push_virtual_operation(expire_witness_vote_operation(current.owner, current.witness, current.created));
             }
         }
 

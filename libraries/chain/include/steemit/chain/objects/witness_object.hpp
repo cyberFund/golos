@@ -186,7 +186,7 @@ namespace steemit {
 
         struct by_account_witness;
         struct by_witness_account;
-        struct by_created;
+        struct by_created_time;
 
         typedef multi_index_container<witness_vote_object, indexed_by<ordered_unique<tag<by_id>,
                 member<witness_vote_object, witness_vote_object::id_type, &witness_vote_object::id>>,
@@ -198,7 +198,7 @@ namespace steemit {
                         member<witness_vote_object, account_name_type, &witness_vote_object::witness>,
                         member<witness_vote_object, account_name_type, &witness_vote_object::account> >,
                         composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
-                ordered_non_unique<tag<by_created>,
+                ordered_non_unique<tag<by_created_time>,
                         member<witness_vote_object, fc::time_point_sec, &witness_vote_object::created>>>,
                 allocator<witness_vote_object> > witness_vote_index;
 
