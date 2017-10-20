@@ -14,7 +14,9 @@ namespace steemit {
             expire_witness_vote_operation() {
             }
 
-            expire_witness_vote_operation(const account_name_type &a) : owner(a) {
+            expire_witness_vote_operation(const account_name_type &account, const account_name_type &wname,
+                                          const fc::time_point_sec &created) : owner(account), witness(wname),
+                    creation_time(created) {
             }
 
             account_name_type owner;
