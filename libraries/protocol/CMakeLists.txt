@@ -39,6 +39,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/types.hpp
      include/steemit/protocol/operations/witness_operations.hpp
      include/steemit/protocol/operations/witness_operations.tpp
+     include/steemit/protocol/operations/witness_virtual_operations.hpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES

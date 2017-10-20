@@ -1,5 +1,7 @@
 #include <steemit/chain/evaluators/witness_evaluator.hpp>
 
+#include <steemit/chain/objects/witness_object.hpp>
+
 namespace steemit {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -28,7 +30,7 @@ namespace steemit {
                 this->db.modify(*wit_itr, [&](witness_object &w) {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
-                    w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
+                    w.props = {protocol::asset<0, 17, 0>(o.props.account_creation_fee.amount,
                                                o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
                                o.props.sbd_interest_rate};
                 });
@@ -38,7 +40,7 @@ namespace steemit {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
                     w.created = this->db.head_block_time();
-                    w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
+                    w.props = {protocol::asset<0, 17, 0>(o.props.account_creation_fee.amount,
                                                o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
                                o.props.sbd_interest_rate};
                 });
@@ -110,7 +112,7 @@ namespace steemit {
 
             const auto &by_account_witness_idx = this->db.template get_index<witness_vote_index>().indices().
                     template get<by_account_witness>();
-            auto itr = by_account_witness_idx.find(boost::make_tuple(voter.id, witness.id));
+            auto itr = by_account_witness_idx.find(boost::make_tuple(voter.name, witness.owner));
 
             if (itr == by_account_witness_idx.end()) {
                 FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
@@ -120,7 +122,7 @@ namespace steemit {
                               "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
 
                     this->db.template create<witness_vote_object>([&](witness_vote_object &v) {
-                        v.witness = witness.id;
+                        v.witness = witness.owner;
                         v.account = voter.name;
                         v.created = this->db.head_block_time();
                     });

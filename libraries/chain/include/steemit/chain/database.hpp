@@ -441,6 +441,8 @@ namespace steemit {
             /** this updates the vote of a single witness as a result of a vote being added or removed*/
             void adjust_witness_vote(const witness_object &obj, share_type delta);
 
+            void clear_expired_witness_votes();
+
             /** clears all vote records for a particular account but does not update the
              * witness vote totals.  Vote totals should be updated first via a call to
              * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )

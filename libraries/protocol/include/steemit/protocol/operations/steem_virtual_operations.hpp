@@ -116,17 +116,6 @@ namespace steemit {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct shutdown_witness_operation : public virtual_operation<Major, Hardfork, Release> {
-            shutdown_witness_operation() {
-            }
-
-            shutdown_witness_operation(const string &o) : owner(o) {
-            }
-
-            account_name_type owner;
-        };
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_transfer_from_savings_operation
                 : public virtual_operation<Major, Hardfork, Release> {
             fill_transfer_from_savings_operation() {
@@ -221,9 +210,6 @@ FC_REFLECT((steemit::protocol::interest_operation<0, 17, 0>), (owner)(interest))
 
 FC_REFLECT((steemit::protocol::fill_vesting_withdraw_operation<0, 16, 0>), (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT((steemit::protocol::fill_vesting_withdraw_operation<0, 17, 0>), (from_account)(to_account)(withdrawn)(deposited))
-
-FC_REFLECT((steemit::protocol::shutdown_witness_operation<0, 16, 0>), (owner))
-FC_REFLECT((steemit::protocol::shutdown_witness_operation<0, 17, 0>), (owner))
 
 FC_REFLECT((steemit::protocol::fill_transfer_from_savings_operation<0, 16, 0>), (from)(to)(amount)(request_id)(memo))
 FC_REFLECT((steemit::protocol::fill_transfer_from_savings_operation<0, 17, 0>), (from)(to)(amount)(request_id)(memo))

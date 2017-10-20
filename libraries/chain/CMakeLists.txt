@@ -45,7 +45,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/chain/evaluators/transfer_evaluator.tpp
      include/steemit/chain/transaction_evaluation_state.hpp
      include/steemit/chain/objects/transaction_object.hpp
-     include/steemit/chain/objects/witness_objects.hpp
+     include/steemit/chain/objects/witness_object.hpp
      include/steemit/chain/witness_schedule.hpp
      include/steemit/chain/evaluators/witness_evaluator.hpp
      include/steemit/chain/evaluators/witness_evaluator.tpp

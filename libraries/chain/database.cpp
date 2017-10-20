@@ -1234,8 +1234,8 @@ namespace steemit {
 
         void database::adjust_witness_votes(const account_object &a, share_type delta) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
-            while (itr != vidx.end() && itr->account == a.id) {
+            auto itr = vidx.lower_bound(boost::make_tuple(a.name, witness_object::id_type()));
+            while (itr != vidx.end() && itr->account == a.name) {
                 adjust_witness_vote(get(itr->witness), delta);
                 ++itr;
             }
@@ -1270,10 +1270,29 @@ namespace steemit {
             });
         }
 
+        void database::clear_expired_witness_votes() {
+            const auto &vidx = get_index<witness_vote_index>().indices().get<by_created>();
+            auto itr = vidx.lower_bound(fc::time_point_sec::maximum());
+            while (itr != vidx.end() && head_block_time() - itr->created < STEEMIT_MAX_WITNESS_VOTE_AGE_SECONDS) {
+                const auto &current = *itr;
+                ++itr;
+
+                if (has_hardfork(STEEMIT_HARDFORK_0_6__104)) { // TODO: this check can be removed after hard fork
+                    modify(get_account(current.acccount), [&](account_object &acc) {
+                        acc.witnesses_voted_for--;
+                    });
+                }
+
+                remove(current);
+
+                push_virtual_operation(witness_vote_expire_operation(current.owner, current.witness, current.created));
+            }
+        }
+
         void database::clear_witness_votes(const account_object &a) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
-            while (itr != vidx.end() && itr->account == a.id) {
+            auto itr = vidx.lower_bound(boost::make_tuple(a.name, witness_object::id_type()));
+            while (itr != vidx.end() && itr->account == a.name) {
                 const auto &current = *itr;
                 ++itr;
                 remove(current);
@@ -2796,6 +2815,7 @@ namespace steemit {
                 clear_expired_proposals();
                 clear_expired_orders();
                 clear_expired_delegations();
+                clear_expired_witness_votes();
                 update_expired_feeds();
                 update_witness_schedule(*this);
 

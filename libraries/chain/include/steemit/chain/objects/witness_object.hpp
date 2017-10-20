@@ -125,7 +125,7 @@ namespace steemit {
 
             id_type id;
 
-            witness_object::id_type witness;
+            account_name_type witness;
             account_name_type account;
 
             fc::time_point_sec created;
@@ -192,15 +192,14 @@ namespace steemit {
                 member<witness_vote_object, witness_vote_object::id_type, &witness_vote_object::id>>,
                 ordered_unique<tag<by_account_witness>, composite_key<witness_vote_object,
                         member<witness_vote_object, account_name_type, &witness_vote_object::account>,
-                        member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness> >,
+                        member<witness_vote_object, account_name_type, &witness_vote_object::witness> >,
                         composite_key_compare<std::less<account_name_type>, std::less<witness_object::id_type>>>,
                 ordered_unique<tag<by_witness_account>, composite_key<witness_vote_object,
-                        member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness>,
+                        member<witness_vote_object, account_name_type, &witness_vote_object::witness>,
                         member<witness_vote_object, account_name_type, &witness_vote_object::account> >,
-                        composite_key_compare<std::less<witness_object::id_type>, std::less<account_name_type>>>,
-                ordered_non_unique<tag<by_created>, composite_key<witness_vote_object,
-                        member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness>,
-                        member<witness_vote_object, fc::time_point_sec, &witness_vote_object::created>>> >,
+                        composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
+                ordered_non_unique<tag<by_created>,
+                        member<witness_vote_object, fc::time_point_sec, &witness_vote_object::created>>>,
                 allocator<witness_vote_object> > witness_vote_index;
 
         typedef multi_index_container<witness_schedule_object, indexed_by<ordered_unique<tag<by_id>,
