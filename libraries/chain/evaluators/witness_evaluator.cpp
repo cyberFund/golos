@@ -2,6 +2,8 @@
 
 #include <steemit/chain/objects/witness_object.hpp>
 
+#include <steemit/chain/database.hpp>
+
 namespace steemit {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>

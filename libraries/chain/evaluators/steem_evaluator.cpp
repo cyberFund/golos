@@ -4,6 +4,7 @@
 #include <steemit/chain/custom_operation_interpreter.hpp>
 #include <steemit/chain/objects/steem_objects.hpp>
 #include <steemit/chain/objects/block_summary_object.hpp>
+
 #include <steemit/chain/utilities/reward.hpp>
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
