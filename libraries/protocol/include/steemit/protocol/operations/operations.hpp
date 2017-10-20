@@ -9,6 +9,7 @@
 #include <steemit/protocol/operations/steem_operations.hpp>
 #include <steemit/protocol/operations/steem_virtual_operations.hpp>
 #include <steemit/protocol/operations/asset_virtual_operations.hpp>
+#include <steemit/protocol/operations/witness_virtual_operations.hpp>
 #include <steemit/protocol/operations/account_operations.hpp>
 #include <steemit/protocol/operations/transfer_operations.hpp>
 #include <steemit/protocol/operations/proposal_operations.hpp>
@@ -154,22 +155,38 @@ namespace steemit {
                 bid_collateral_operation<0, 17, 0>,
 
                 /// virtual operations below this point
-                fill_convert_request_operation<0, 16, 0>, author_reward_operation<0, 16, 0>,
-                curation_reward_operation<0, 16, 0>, comment_reward_operation<0, 16, 0>,
-                liquidity_reward_operation<0, 16, 0>, interest_operation<0, 16, 0>,
-                fill_vesting_withdraw_operation<0, 16, 0>, fill_order_operation<0, 16, 0>,
-                shutdown_witness_operation<0, 16, 0>, fill_transfer_from_savings_operation<0, 16, 0>,
-                hardfork_operation<0, 16, 0>, comment_payout_update_operation<0, 16, 0>,
+                fill_convert_request_operation<0, 16, 0>,
+                author_reward_operation<0, 16, 0>,
+                curation_reward_operation<0, 16, 0>,
+                comment_reward_operation<0, 16, 0>,
+                liquidity_reward_operation<0, 16, 0>,
+                interest_operation<0, 16, 0>,
+                fill_vesting_withdraw_operation<0, 16, 0>,
+                fill_order_operation<0, 16, 0>,
+                shutdown_witness_operation<0, 16, 0>,
+                fill_transfer_from_savings_operation<0, 16, 0>,
+                hardfork_operation<0, 16, 0>,
+                comment_payout_update_operation<0, 16, 0>,
 
-                fill_convert_request_operation<0, 17, 0>, author_reward_operation<0, 17, 0>,
-                curation_reward_operation<0, 17, 0>, comment_reward_operation<0, 17, 0>,
-                liquidity_reward_operation<0, 17, 0>, interest_operation<0, 17, 0>,
-                fill_vesting_withdraw_operation<0, 17, 0>, fill_order_operation<0, 17, 0>,
-                shutdown_witness_operation<0, 17, 0>, fill_transfer_from_savings_operation<0, 17, 0>,
-                hardfork_operation<0, 17, 0>, comment_payout_update_operation<0, 17, 0>,
-                return_vesting_delegation_operation<0, 17, 0>, asset_settle_cancel_operation<0, 17, 0>,
-                fill_call_order_operation<0, 17, 0>, fill_settlement_order_operation<0, 17, 0>,
-                execute_bid_operation<0, 17, 0> > operation;
+                fill_convert_request_operation<0, 17, 0>,
+                author_reward_operation<0, 17, 0>,
+                curation_reward_operation<0, 17, 0>,
+                comment_reward_operation<0, 17, 0>,
+                liquidity_reward_operation<0, 17, 0>,
+                interest_operation<0, 17, 0>,
+                fill_vesting_withdraw_operation<0, 17, 0>,
+                fill_order_operation<0, 17, 0>,
+                shutdown_witness_operation<0, 17, 0>,
+                fill_transfer_from_savings_operation<0, 17, 0>,
+                hardfork_operation<0, 17, 0>,
+                comment_payout_update_operation<0, 17, 0>,
+                return_vesting_delegation_operation<0, 17, 0>,
+                asset_settle_cancel_operation<0, 17, 0>,
+                fill_call_order_operation<0, 17, 0>,
+                fill_settlement_order_operation<0, 17, 0>,
+                execute_bid_operation<0, 17, 0>,
+                expire_witness_vote_operation<0, 17, 0>
+                > operation;
 
         /*void operation_get_required_authorities( const operation& op,
                                                  flat_set<string>& active,
