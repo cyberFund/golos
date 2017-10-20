@@ -193,7 +193,7 @@ namespace steemit {
                 ordered_unique<tag<by_account_witness>, composite_key<witness_vote_object,
                         member<witness_vote_object, account_name_type, &witness_vote_object::account>,
                         member<witness_vote_object, account_name_type, &witness_vote_object::witness> >,
-                        composite_key_compare<std::less<account_name_type>, std::less<witness_object::id_type>>>,
+                        composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
                 ordered_unique<tag<by_witness_account>, composite_key<witness_vote_object,
                         member<witness_vote_object, account_name_type, &witness_vote_object::witness>,
                         member<witness_vote_object, account_name_type, &witness_vote_object::account> >,
