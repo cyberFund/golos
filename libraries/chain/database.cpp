@@ -2811,7 +2811,11 @@ namespace steemit {
                 update_last_irreversible_block();
 
                 create_block_summary(next_block);
-                clear_expired_transactions();
+
+                if (has_hardfork(STEEMIT_HARDFORK_17__111)) {
+                    clear_expired_transactions();
+                }
+
                 clear_expired_proposals();
                 clear_expired_orders();
                 clear_expired_delegations();
