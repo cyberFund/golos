@@ -47,6 +47,8 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/chain/objects/transaction_object.hpp
      include/steemit/chain/objects/witness_objects.hpp
      include/steemit/chain/witness_schedule.hpp
+     include/steemit/chain/evaluators/witness_evaluator.hpp
+     include/steemit/chain/evaluators/witness_evaluator.tpp
 
      include/steemit/chain/utilities/asset.hpp
      include/steemit/chain/utilities/reward.hpp
@@ -71,6 +73,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      evaluators/transfer_evaluator.cpp
      objects/proposal_object.cpp
      witness_schedule.cpp
+     evaluators/witness_evaluator.cpp
 
      utilities/reward.cpp
      )

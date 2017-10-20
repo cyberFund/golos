@@ -37,6 +37,8 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/steemit/protocol/operations/transfer_operations.tpp
      include/steemit/protocol/transaction.hpp
      include/steemit/protocol/types.hpp
+     include/steemit/protocol/operations/witness_operations.hpp
+     include/steemit/protocol/operations/witness_operations.tpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -59,6 +61,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      transaction.cpp
      operations/transfer_operations.cpp
      types.cpp
+     operations/witness_operations.cpp
      )
 
 if(BUILD_SHARED_LIBRARIES)

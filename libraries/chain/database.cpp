@@ -9,10 +9,7 @@
 #include <steemit/chain/evaluator_registry.hpp>
 #include <steemit/chain/objects/history_object.hpp>
 #include <steemit/chain/objects/market_object.hpp>
-#include <steemit/chain/evaluators/account_evaluator.hpp>
-#include <steemit/chain/evaluators/market_evaluator.hpp>
 #include <steemit/chain/objects/proposal_object.hpp>
-#include <steemit/chain/evaluators/steem_evaluator.hpp>
 #include <steemit/chain/objects/steem_objects.hpp>
 #include <steemit/chain/objects/transaction_object.hpp>
 #include <steemit/chain/shared_db_merkle.hpp>
@@ -30,11 +27,16 @@
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
 
+#include <steemit/chain/evaluators/account_evaluator.hpp>
+#include <steemit/chain/evaluators/market_evaluator.hpp>
 #include <steemit/chain/evaluators/asset_evaluator.hpp>
 #include <steemit/chain/evaluators/custom_evaluator.hpp>
 #include <steemit/chain/evaluators/transfer_evaluator.hpp>
 #include <steemit/chain/evaluators/proposal_evaluator.hpp>
 #include <steemit/chain/evaluators/escrow_evaluator.hpp>
+#include <steemit/chain/evaluators/witness_evaluator.hpp>
+#include <steemit/chain/evaluators/steem_evaluator.hpp>
+
 #include <steemit/version/version_state.hpp>
 
 namespace steemit {

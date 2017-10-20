@@ -200,7 +200,7 @@ namespace steemit {
                         composite_key_compare<std::less<witness_object::id_type>, std::less<account_name_type>>>,
                 ordered_non_unique<tag<by_created>, composite_key<witness_vote_object,
                         member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness>,
-                        member<witness_object, fc::time_point_sec, &witness_vote_object::created>>> >, // indexed_by
+                        member<witness_vote_object, fc::time_point_sec, &witness_vote_object::created>>> >,
                 allocator<witness_vote_object> > witness_vote_index;
 
         typedef multi_index_container<witness_schedule_object, indexed_by<ordered_unique<tag<by_id>,

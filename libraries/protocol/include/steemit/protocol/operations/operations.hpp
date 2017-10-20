@@ -12,6 +12,7 @@
 #include <steemit/protocol/operations/account_operations.hpp>
 #include <steemit/protocol/operations/transfer_operations.hpp>
 #include <steemit/protocol/operations/proposal_operations.hpp>
+#include <steemit/protocol/operations/witness_operations.hpp>
 
 namespace steemit {
     namespace protocol {
