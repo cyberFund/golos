@@ -5830,7 +5830,7 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
             const auto &witness_idx = db.get_index<witness_vote_index>().indices().get<by_account_witness>();
             auto witness_itr = witness_idx.find(
-                    boost::make_tuple(db.get_account("alice").owner, db.get_witness("alice").owner));
+                    boost::make_tuple(db.get_account("alice").name, db.get_witness("alice").owner));
             BOOST_REQUIRE(witness_itr == witness_idx.end());
 
             tx.clear();
