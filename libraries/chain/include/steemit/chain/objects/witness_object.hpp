@@ -41,7 +41,7 @@ namespace steemit {
 
             /** the account that has authority over this witness */
             account_name_type owner;
-            time_point_sec created;
+            fc::time_point_sec created;
             shared_string url;
             uint32_t total_missed = 0;
             uint64_t last_aslot = 0;
@@ -62,7 +62,7 @@ namespace steemit {
 
             chain_properties<0, 17, 0> props;
             price<0, 17, 0> sbd_exchange_rate;
-            time_point_sec last_sbd_exchange_update;
+            fc::time_point_sec last_sbd_exchange_update;
 
 
             /**
@@ -109,7 +109,7 @@ namespace steemit {
             version running_version;
 
             hardfork_version hardfork_version_vote;
-            time_point_sec hardfork_time_vote = STEEMIT_GENESIS_TIME;
+            fc::time_point_sec hardfork_time_vote = STEEMIT_GENESIS_TIME;
         };
 
 
@@ -125,8 +125,10 @@ namespace steemit {
 
             id_type id;
 
-            witness_object::id_type witness;
-            account_object::id_type account;
+            account_name_type witness;
+            account_name_type account;
+
+            fc::time_point_sec created;
         };
 
         class witness_schedule_object : public object<witness_schedule_object_type, witness_schedule_object> {
@@ -184,17 +186,20 @@ namespace steemit {
 
         struct by_account_witness;
         struct by_witness_account;
+        struct by_created_time;
+
         typedef multi_index_container<witness_vote_object, indexed_by<ordered_unique<tag<by_id>,
                 member<witness_vote_object, witness_vote_object::id_type, &witness_vote_object::id>>,
                 ordered_unique<tag<by_account_witness>, composite_key<witness_vote_object,
-                        member<witness_vote_object, account_object::id_type, &witness_vote_object::account>,
-                        member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness> >,
-                        composite_key_compare<std::less<account_object::id_type>, std::less<witness_object::id_type>>>,
+                        member<witness_vote_object, account_name_type, &witness_vote_object::account>,
+                        member<witness_vote_object, account_name_type, &witness_vote_object::witness> >,
+                        composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
                 ordered_unique<tag<by_witness_account>, composite_key<witness_vote_object,
-                        member<witness_vote_object, witness_object::id_type, &witness_vote_object::witness>,
-                        member<witness_vote_object, account_object::id_type, &witness_vote_object::account> >,
-                        composite_key_compare<std::less<witness_object::id_type>,
-                                std::less<account_object::id_type>>> >, // indexed_by
+                        member<witness_vote_object, account_name_type, &witness_vote_object::witness>,
+                        member<witness_vote_object, account_name_type, &witness_vote_object::account> >,
+                        composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
+                ordered_non_unique<tag<by_created_time>,
+                        member<witness_vote_object, fc::time_point_sec, &witness_vote_object::created>>>,
                 allocator<witness_vote_object> > witness_vote_index;
 
         typedef multi_index_container<witness_schedule_object, indexed_by<ordered_unique<tag<by_id>,
@@ -213,7 +218,7 @@ FC_REFLECT((steemit::chain::witness_object),
                    hardfork_time_vote))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::witness_object, steemit::chain::witness_index)
 
-FC_REFLECT((steemit::chain::witness_vote_object), (id)(witness)(account))
+FC_REFLECT((steemit::chain::witness_vote_object), (id)(witness)(account)(created))
 CHAINBASE_SET_INDEX_TYPE(steemit::chain::witness_vote_object, steemit::chain::witness_vote_index)
 
 FC_REFLECT((steemit::chain::witness_schedule_object),

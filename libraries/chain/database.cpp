@@ -9,10 +9,7 @@
 #include <steemit/chain/evaluator_registry.hpp>
 #include <steemit/chain/objects/history_object.hpp>
 #include <steemit/chain/objects/market_object.hpp>
-#include <steemit/chain/evaluators/account_evaluator.hpp>
-#include <steemit/chain/evaluators/market_evaluator.hpp>
 #include <steemit/chain/objects/proposal_object.hpp>
-#include <steemit/chain/evaluators/steem_evaluator.hpp>
 #include <steemit/chain/objects/steem_objects.hpp>
 #include <steemit/chain/objects/transaction_object.hpp>
 #include <steemit/chain/shared_db_merkle.hpp>
@@ -30,11 +27,16 @@
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
 
+#include <steemit/chain/evaluators/account_evaluator.hpp>
+#include <steemit/chain/evaluators/market_evaluator.hpp>
 #include <steemit/chain/evaluators/asset_evaluator.hpp>
 #include <steemit/chain/evaluators/custom_evaluator.hpp>
 #include <steemit/chain/evaluators/transfer_evaluator.hpp>
 #include <steemit/chain/evaluators/proposal_evaluator.hpp>
 #include <steemit/chain/evaluators/escrow_evaluator.hpp>
+#include <steemit/chain/evaluators/witness_evaluator.hpp>
+#include <steemit/chain/evaluators/steem_evaluator.hpp>
+
 #include <steemit/version/version_state.hpp>
 
 namespace steemit {
@@ -1232,9 +1234,9 @@ namespace steemit {
 
         void database::adjust_witness_votes(const account_object &a, share_type delta) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
-            while (itr != vidx.end() && itr->account == a.id) {
-                adjust_witness_vote(get(itr->witness), delta);
+            auto itr = vidx.lower_bound(boost::make_tuple(a.name, account_name_type()));
+            while (itr != vidx.end() && itr->account == a.name) {
+                adjust_witness_vote(get_witness(itr->witness), delta);
                 ++itr;
             }
         }
@@ -1268,10 +1270,29 @@ namespace steemit {
             });
         }
 
+        void database::clear_expired_witness_votes() {
+            const auto &vidx = get_index<witness_vote_index>().indices().get<by_created_time>();
+            auto itr = vidx.lower_bound(fc::time_point_sec::maximum());
+            while (itr != vidx.end() && head_block_time() - itr->created < STEEMIT_MAX_WITNESS_VOTE_AGE) {
+                const auto &current = *itr;
+                ++itr;
+
+                if (has_hardfork(STEEMIT_HARDFORK_0_6__104)) { // TODO: this check can be removed after hard fork
+                    modify(get_account(current.account), [&](account_object &acc) {
+                        acc.witnesses_voted_for--;
+                    });
+                }
+
+                remove(current);
+
+                push_virtual_operation(expire_witness_vote_operation<0, 17 ,0>(current.account, current.witness, current.created));
+            }
+        }
+
         void database::clear_witness_votes(const account_object &a) {
             const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-            auto itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
-            while (itr != vidx.end() && itr->account == a.id) {
+            auto itr = vidx.lower_bound(boost::make_tuple(a.name, account_name_type()));
+            while (itr != vidx.end() && itr->account == a.name) {
                 const auto &current = *itr;
                 ++itr;
                 remove(current);
@@ -2790,10 +2811,15 @@ namespace steemit {
                 update_last_irreversible_block();
 
                 create_block_summary(next_block);
-                clear_expired_transactions();
+
+                if (has_hardfork(STEEMIT_HARDFORK_0_17__111)) {
+                    clear_expired_transactions();
+                }
+
                 clear_expired_proposals();
                 clear_expired_orders();
                 clear_expired_delegations();
+                clear_expired_witness_votes();
                 update_expired_feeds();
                 update_witness_schedule(*this);
 
@@ -4991,9 +5017,9 @@ namespace steemit {
                 const auto &a = itr;
 
                 const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-                auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
-                while (wit_itr != vidx.end() && wit_itr->account == a.id) {
-                    adjust_witness_vote(get(wit_itr->witness), a.witness_vote_weight());
+                auto wit_itr = vidx.lower_bound(boost::make_tuple(a.name, account_name_type()));
+                while (wit_itr != vidx.end() && wit_itr->account == a.name) {
+                    adjust_witness_vote(get_witness(wit_itr->witness), a.witness_vote_weight());
                     ++wit_itr;
                 }
             }
@@ -5007,8 +5033,8 @@ namespace steemit {
                 uint16_t witnesses_voted_for = 0;
                 if (force || (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT)) {
                     const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-                    auto wit_itr = vidx.lower_bound(boost::make_tuple(a.id, witness_object::id_type()));
-                    while (wit_itr != vidx.end() && wit_itr->account == a.id) {
+                    auto wit_itr = vidx.lower_bound(boost::make_tuple(a.name, account_name_type()));
+                    while (wit_itr != vidx.end() && wit_itr->account == a.name) {
                         ++witnesses_voted_for;
                         ++wit_itr;
                     }

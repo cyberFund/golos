@@ -8,7 +8,7 @@
 #include <steemit/chain/objects/history_object.hpp>
 #include <steemit/chain/objects/steem_objects.hpp>
 #include <steemit/chain/objects/transaction_object.hpp>
-#include <steemit/chain/objects/witness_objects.hpp>
+#include <steemit/chain/objects/witness_object.hpp>
 #include <steemit/protocol/operations/steem_operations.hpp>
 
 

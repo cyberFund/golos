@@ -15,15 +15,6 @@ namespace steemit {
         template struct set_withdraw_vesting_route_operation<0, 16, 0>;
         template struct set_withdraw_vesting_route_operation<0, 17, 0>;
 
-        template struct witness_update_operation<0, 16, 0>;
-        template struct witness_update_operation<0, 17, 0>;
-
-        template struct account_witness_vote_operation<0, 16, 0>;
-        template struct account_witness_vote_operation<0, 17, 0>;
-
-        template struct account_witness_proxy_operation<0, 16, 0>;
-        template struct account_witness_proxy_operation<0, 17, 0>;
-
         template struct feed_publish_operation<0, 16, 0>;
         template struct feed_publish_operation<0, 17, 0>;
 

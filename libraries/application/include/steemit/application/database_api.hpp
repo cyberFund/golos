@@ -98,6 +98,12 @@ namespace steemit {
 
             std::vector<account_name_type> get_miner_queue() const;
 
+            /**
+            *  This API is a short-cut for returning all of the state required for a particular URL
+            *  with a single query.
+            */
+            state get_state(std::string path) const;
+
             /////////////////////////////
             // Blocks and transactions //
             /////////////////////////////
@@ -586,6 +592,7 @@ FC_API(steemit::application::database_api,
                 (get_hardfork_version)
                 (get_next_scheduled_hardfork)
                 (get_reward_fund)
+                (get_state)
 
                 // Accounts
                 (get_accounts)

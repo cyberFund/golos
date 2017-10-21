@@ -9,9 +9,11 @@
 #include <steemit/protocol/operations/steem_operations.hpp>
 #include <steemit/protocol/operations/steem_virtual_operations.hpp>
 #include <steemit/protocol/operations/asset_virtual_operations.hpp>
+#include <steemit/protocol/operations/witness_virtual_operations.hpp>
 #include <steemit/protocol/operations/account_operations.hpp>
 #include <steemit/protocol/operations/transfer_operations.hpp>
 #include <steemit/protocol/operations/proposal_operations.hpp>
+#include <steemit/protocol/operations/witness_operations.hpp>
 
 namespace steemit {
     namespace protocol {
@@ -182,7 +184,8 @@ namespace steemit {
                 asset_settle_cancel_operation<0, 17, 0>,
                 fill_call_order_operation<0, 17, 0>,
                 fill_settlement_order_operation<0, 17, 0>,
-                execute_bid_operation<0, 17, 0>
+                execute_bid_operation<0, 17, 0>,
+                expire_witness_vote_operation<0, 17, 0>
                 > operation;
 
         /*void operation_get_required_authorities( const operation& op,
