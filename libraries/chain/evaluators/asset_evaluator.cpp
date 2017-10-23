@@ -101,6 +101,8 @@ namespace steemit {
                         a.market_issued = true;
                     }
                 });
+
+                this->db.adjust_balance(this->db.get_account(op.issuer), -this->db.get_name_cost(op.asset_name));
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
