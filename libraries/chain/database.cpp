@@ -2047,6 +2047,10 @@ namespace steemit {
                      STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
         }
 
+        asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
+            return {30 / std::pow((name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH - 1), (STEEMIT_MIN_ASSET_SYMBOL_LENGTH - 1)) + STEEMIT_MIN_ASSET_SYMBOL_LENGTH, STEEM_SYMBOL_NAME};
+        }
+
         void database::pay_liquidity_reward() {
 #ifdef STEEMIT_BUILD_TESTNET
             if (!liquidity_rewards_enabled) {

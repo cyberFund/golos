@@ -27,6 +27,7 @@
 #include <vector>
 #include <deque>
 #include <cstdint>
+#include <boost/serialization/strong_typedef.hpp>
 
 namespace steemit {
 

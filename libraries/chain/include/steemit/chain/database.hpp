@@ -512,6 +512,8 @@ namespace steemit {
             time_point_sec get_payout_extension_time(const comment_object &input_comment,
                                                      const asset<0, 17, 0> &input_cost) const;
 
+            asset<0, 17, 0> get_name_cost(const fc::fixed_string<> &name) const;
+
             void pay_liquidity_reward();
 
             /**
