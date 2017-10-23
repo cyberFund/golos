@@ -510,17 +510,7 @@ namespace steemit {
             time_point_sec get_payout_extension_time(const comment_object &input_comment,
                                                      const asset<0, 17, 0> &input_cost) const;
 
-            template<typename NameType>
-            asset<0, 17, 0> get_name_cost(const NameType &name) const {
-                return {0, STEEM_SYMBOL_NAME};
-            };
-
-            template<>
-            asset<0, 17, 0> get_name_cost<asset_name_type>(const asset_name_type &name) const;
-
-            template<>
-            asset<0, 17, 0> get_name_cost<account_name_type>(const asset_name_type &name) const;
-
+            asset<0, 17, 0> get_name_cost(const fc::fixed_string<> &name) const;
 
             void pay_liquidity_reward();
 

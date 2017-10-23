@@ -93,8 +93,8 @@ namespace steemit {
 
         typedef fc::ecc::private_key private_key_type;
         typedef fc::sha256 chain_id_type;
-        BOOST_STRONG_TYPEDEF(fc::fixed_string<>, account_name_type);
-        BOOST_STRONG_TYPEDEF(fc::fixed_string<>, asset_name_type);
+        typedef fc::fixed_string<> account_name_type;
+        typedef fc::fixed_string<> asset_name_type;
 
         struct string_less {
             bool operator()(const std::string &a, const std::string &b) const {
