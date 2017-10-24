@@ -494,7 +494,9 @@ namespace steemit {
 
             asset<0, 17, 0> get_content_reward() const;
 
-            asset<0, 17, 0> get_producer_reward();
+            asset<0, 17, 0> get_producer_reward() const;
+
+            void pay_witness();
 
             asset<0, 17, 0> get_curation_reward() const;
 
