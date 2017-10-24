@@ -1888,6 +1888,9 @@ namespace steemit {
                 auto content_reward = get_content_reward();
                 auto curate_reward = get_curation_reward();
                 auto witness_pay = get_producer_reward();
+
+                pay_witness();
+
                 auto vesting_reward = content_reward + curate_reward + witness_pay;
 
                 content_reward = content_reward + curate_reward;
@@ -1972,7 +1975,7 @@ namespace steemit {
             return reward;
         }
 
-        asset<0, 17, 0> database::get_producer_reward() {
+        asset<0, 17, 0> database::get_producer_reward() const {
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval");
             asset<0, 17, 0> percent(
@@ -1989,17 +1992,21 @@ namespace steemit {
                 pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF16);
             }
 
-            /// pay witness in vesting shares
+            return pay;
+
+        }
+
+        void database::pay_witness() {
+            const auto &props = get_dynamic_global_properties();
+            const auto &witness_account = get_account(props.current_witness);
+
             if (props.head_block_number >= STEEMIT_START_MINER_VOTING_BLOCK ||
                 (witness_account.vesting_shares.amount.value == 0)) {
                 // const auto& witness_obj = get_witness( props.current_witness );
-                create_vesting(witness_account, pay);
+                create_vesting(witness_account, get_producer_reward());
             } else {
-                adjust_balance(witness_account, pay);
+                adjust_balance(witness_account, get_producer_reward());
             }
-
-            return pay;
-
         }
 
         asset<0, 17, 0> database::get_pow_reward() const {
@@ -2048,7 +2055,9 @@ namespace steemit {
         }
 
         asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
-            return {30 / std::pow((name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH - 1), (STEEMIT_MIN_ASSET_SYMBOL_LENGTH - 1)) + STEEMIT_MIN_ASSET_SYMBOL_LENGTH, STEEM_SYMBOL_NAME};
+            return name.size() >= STEEMIT_MIN_ASSET_SYMBOL_LENGTH && name.size() < STEEMIT_MAX_ASSET_SYMBOL_LENGTH / 2
+                   ? asset<0, 17, 0>(get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY * 90 /
+                      std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME) : asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
         }
 
         void database::pay_liquidity_reward() {
@@ -2910,11 +2919,13 @@ namespace steemit {
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
                     if (has_hardfork(STEEMIT_HARDFORK_0_17__220)) {
-                        if (now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE && !wit.sbd_exchange_rate.is_null()) {
+                        if (now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE &&
+                            !wit.sbd_exchange_rate.is_null()) {
                             feeds.push_back(wit.sbd_exchange_rate);
                         }
                     } else {
-                        if (wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE && !wit.sbd_exchange_rate.is_null()) {
+                        if (wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE &&
+                            !wit.sbd_exchange_rate.is_null()) {
                             feeds.push_back(wit.sbd_exchange_rate);
                         }
                     }
@@ -4531,17 +4542,17 @@ namespace steemit {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                    {
-                        custom_operation test_op;
-                        string op_msg = "Testnet: Hardfork applied";
-                        test_op.data = vector<char>(op_msg.begin(), op_msg.end());
-                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                        operation op = test_op;   // we need the operation object to live to the end of this scope
-                        operation_notification note(op);
-                        notify_pre_apply_operation(note);
-                        notify_post_apply_operation(note);
-                    }
-                    break;
+                {
+                    custom_operation test_op;
+                    string op_msg = "Testnet: Hardfork applied";
+                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                    operation op = test_op;   // we need the operation object to live to the end of this scope
+                    operation_notification note(op);
+                    notify_pre_apply_operation(note);
+                    notify_post_apply_operation(note);
+                }
+                break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
