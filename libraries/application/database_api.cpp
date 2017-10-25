@@ -2359,6 +2359,10 @@ namespace steemit {
             });
         }
 
+        asset<0, 17, 0> database_api::get_name_cost(std::string name) const {
+            return my->_db.get_name_cost(name);
+        }
+
         //////////////////////////////////////////////////////////////////////
         //                                                                  //
         // Proposed transactions                                            //

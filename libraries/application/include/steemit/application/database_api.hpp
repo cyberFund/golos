@@ -152,6 +152,8 @@ namespace steemit {
 
             reward_fund_object get_reward_fund(string name) const;
 
+            asset<0, 17, 0> get_name_cost(std::string name) const;
+
             //////////////
             // Accounts //
             //////////////
@@ -586,6 +588,7 @@ FC_API(steemit::application::database_api,
                 (get_hardfork_version)
                 (get_next_scheduled_hardfork)
                 (get_reward_fund)
+                (get_name_cost)
 
                 // Accounts
                 (get_accounts)
