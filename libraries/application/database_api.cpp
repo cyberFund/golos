@@ -2352,7 +2352,7 @@ namespace steemit {
 
         reward_fund_object database_api::get_reward_fund(string name) const {
             return my->_db.with_read_lock([&]() {
-                auto fund = my->_db.find<reward_fund_object, by_name>(name);
+                reward_fund_object *fund = my->_db.find<reward_fund_object, by_name>(name);
                 FC_ASSERT(fund != nullptr, "Invalid reward fund name");
 
                 return *fund;
