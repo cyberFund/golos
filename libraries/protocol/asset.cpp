@@ -263,7 +263,7 @@ namespace steemit {
                 auto space_pos = s.find(' ');
                 auto dot_pos = s.find('.');
 
-                asset result;
+                asset<Major, Hardfork, Release> result;
 
                 if (space_pos == std::string::npos && dot_pos == std::string::npos &&
                     std::find_if(from.begin(), from.end(), [&](const std::string::value_type &c) -> bool {
