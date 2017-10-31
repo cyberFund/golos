@@ -57,16 +57,12 @@ namespace steemit {
             const auto &from_account = this->db.template get_account(o.from);
             const auto &to_account = o.to.size() ? this->db.template get_account(o.to) : from_account;
 
-            FC_ASSERT(this->db.template get_balance(from_account, STEEM_SYMBOL_NAME) >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                o.amount.symbol_name()),
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+
+            FC_ASSERT(this->db.template get_balance(from_account, STEEM_SYMBOL_NAME) >= required_amount,
                       "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
-            this->db.template adjust_balance(from_account,
-                                             -typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                                        o.amount.symbol_name()));
-            this->db.template create_vesting(to_account,
-                                             typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                                       o.amount.symbol_name()));
+            this->db.template adjust_balance(from_account, -required_amount);
+            this->db.template create_vesting(to_account, required_amount);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -74,16 +70,14 @@ namespace steemit {
                 const transfer_to_savings_operation<Major, Hardfork, Release> &o) {
             const auto &from = this->db.template get_account(o.from);
             const auto &to = this->db.template get_account(o.to);
-            FC_ASSERT(this->db.template get_balance(from, o.amount.symbol_name()) >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                o.amount.symbol_name()),
+
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+
+            FC_ASSERT(this->db.template get_balance(from, o.amount.symbol_name()) >= required_amount,
                       "Account does not have sufficient funds to transfer to savings.");
 
-            this->db.template adjust_balance(from,
-                                             -typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                                        o.amount.symbol_name()));
-            this->db.template adjust_savings_balance(to, typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(
-                    o.amount.amount, o.amount.symbol_name()));
+            this->db.template adjust_balance(from, -required_amount);
+            this->db.template adjust_savings_balance(to, required_amount);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -95,16 +89,14 @@ namespace steemit {
             FC_ASSERT(from.savings_withdraw_requests < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT,
                       "Account has reached limit for pending withdraw requests.");
 
-            FC_ASSERT(this->db.template get_savings_balance(from, o.amount.symbol_name()) >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                o.amount.symbol_name()));
-            this->db.template adjust_savings_balance(from, -typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(
-                    o.amount.amount, o.amount.symbol_name()));
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+
+            FC_ASSERT(this->db.template get_savings_balance(from, o.amount.symbol_name()) >= required_amount);
+            this->db.template adjust_savings_balance(from, -required_amount);
             this->db.template create<savings_withdraw_object>([&](savings_withdraw_object &s) {
                 s.from = o.from;
                 s.to = o.to;
-                s.amount = typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                     o.amount.symbol_name());
+                s.amount = required_amount;
 #ifndef STEEMIT_BUILD_LOW_MEMORY
                 from_string(s.memo, o.memo);
 #endif
@@ -150,13 +142,10 @@ namespace steemit {
                 FC_ASSERT(this->db.template get_balance(from_account, asset_type).amount >= o.amount.amount, "",
                           ("total_transfer", o.amount)("balance",
                                                        this->db.template get_balance(from_account, asset_type).amount));
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
 
-                this->db.template adjust_balance(this->db.template get_account(o.from),
-                                                 -typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(
-                                                         o.amount.amount, o.amount.symbol_name()));
-                this->db.template adjust_balance(this->db.template get_account(o.to),
-                                                 typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(
-                                                         o.amount.amount, o.amount.symbol_name()));
+                this->db.template adjust_balance(this->db.template get_account(o.from), -required_amount);
+                this->db.template adjust_balance(this->db.template get_account(o.to), required_amount);
             } FC_CAPTURE_AND_RETHROW((o))
         }
     }
