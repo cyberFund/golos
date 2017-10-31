@@ -42,17 +42,13 @@ namespace steemit {
                 });
             }
 
-            FC_ASSERT(this->db.template get_balance(from_account, o.amount.symbol_name()) >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                o.amount.symbol_name()),
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+
+            FC_ASSERT(this->db.template get_balance(from_account, o.amount.symbol_name()) >= required_amount,
                       "Account does not have sufficient funds for transfer.");
 
-            this->db.template adjust_balance(from_account,
-                                             -typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                                        o.amount.symbol_name()));
-            this->db.template adjust_balance(to_account,
-                                             typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount.amount,
-                                                                                                       o.amount.symbol_name()));
+            this->db.template adjust_balance(from_account, -required_amount);
+            this->db.template adjust_balance(to_account, required_amount);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
