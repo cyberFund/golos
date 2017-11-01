@@ -214,13 +214,19 @@ namespace steemit {
             FC_ASSERT(this->decimals < 15, "Precision should be less than 15");
 
             asset_symbol_type result = uint64_t(this->decimals);
-            std::string symbol_string = this->symbol;
+            char *sy = (char *) &result;
+            std::string symbol_string = fc::trim(this->symbol);
             std::size_t symbol_size = symbol_string.size();
 
             if (symbol_size > 0) {
                 FC_ASSERT(this->symbol.size() <= 6,
                           "Asset symbol type can only present symbols with length less or equal than 6");
-                memcpy(&result + 1, symbol_string.c_str(), symbol_size);
+
+                FC_ASSERT(std::find_if(symbol_string.begin(), symbol_string.end(), [&](const char &c) -> bool {
+                    return std::isdigit(c);
+                }) == symbol_string.end());
+
+                memcpy(sy + 1, symbol_string.c_str(), symbol_size);
             }
 
             return result;
@@ -340,7 +346,8 @@ namespace steemit {
                 }
 
                 return ~(asset<Major, Hardfork, Release>(cp.numerator().convert_to<int64_t>(), debt.symbol_name()) /
-                         asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(), collateral.symbol_name()));
+                         asset<Major, Hardfork, Release>(cp.denominator().convert_to<int64_t>(),
+                                                         collateral.symbol_name()));
             } FC_CAPTURE_AND_RETHROW((debt)(collateral)(collateral_ratio))
         }
 
