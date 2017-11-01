@@ -211,16 +211,16 @@ namespace steemit {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset_symbol_type asset<Major, Hardfork, Release,
                 type_traits::static_range<Hardfork >= 17>>::symbol_type_value() const {
-            asset_symbol_type result;
-
             FC_ASSERT(this->decimals < 15, "Precision should be less than 15");
 
-            memcpy(&result, &this->decimals, sizeof(this->decimals));
+            asset_symbol_type result = uint64_t(this->decimals);
+            std::string symbol_string = this->symbol;
+            std::size_t symbol_size = symbol_string.size();
 
-            if (this->symbol.size() > 0) {
+            if (symbol_size > 0) {
                 FC_ASSERT(this->symbol.size() <= 6,
                           "Asset symbol type can only present symbols with length less or equal than 6");
-                memcpy(&result + 1, this->symbol.operator std::string().c_str(), this->symbol.size());
+                memcpy(&result + 1, symbol_string.c_str(), symbol_size);
             }
 
             return result;
