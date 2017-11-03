@@ -1,6 +1,6 @@
-#include <steemit/network/core_messages.hpp>
+#include <golos/network/core_messages.hpp>
 
-namespace steemit {
+namespace golos {
     namespace network {
 
         const core_message_type_enum trx_message::type = core_message_type_enum::trx_message_type;
@@ -24,5 +24,5 @@ namespace steemit {
         const core_message_type_enum get_current_connections_reply_message::type = core_message_type_enum::get_current_connections_reply_message_type;
 
     }
-} // graphene::network
+} // golos::network
 

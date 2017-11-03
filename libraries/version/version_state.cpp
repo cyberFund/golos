@@ -1,6 +1,6 @@
-#include <steemit/version/version_state.hpp>
+#include <golos/version/version_state.hpp>
 
-namespace steemit {
+namespace golos {
     namespace version {
 
     }

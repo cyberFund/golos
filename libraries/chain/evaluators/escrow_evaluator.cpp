@@ -1,11 +1,11 @@
-#include <steemit/chain/database.hpp>
+#include <golos/chain/database.hpp>
 
-#include <steemit/chain/evaluators/escrow_evaluator.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
+#include <golos/chain/evaluators/escrow_evaluator.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
 
-#include <steemit/protocol/asset.hpp>
+#include <golos/protocol/asset.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void escrow_transfer_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
@@ -188,4 +188,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/chain/evaluators/escrow_evaluator.tpp>
+#include <golos/chain/evaluators/escrow_evaluator.tpp>

@@ -1,12 +1,12 @@
-#include <steemit/chain/evaluators/transfer_evaluator.hpp>
+#include <golos/chain/evaluators/transfer_evaluator.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/asset_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/asset_object.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/database_exceptions.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void transfer_evaluator<Major, Hardfork, Release>::do_apply(
@@ -151,4 +151,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/chain/evaluators/transfer_evaluator.tpp>
+#include <golos/chain/evaluators/transfer_evaluator.tpp>

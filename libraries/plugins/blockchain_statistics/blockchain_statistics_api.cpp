@@ -1,10 +1,10 @@
-#include <steemit/blockchain_statistics/blockchain_statistics_api.hpp>
+#include <golos/blockchain_statistics/blockchain_statistics_api.hpp>
 
-namespace steemit {
+namespace golos {
     namespace blockchain_statistics {
 
             struct blockchain_statistics_api::blockchain_statistics_api_impl {
-                blockchain_statistics_api_impl(steemit::application::application &app)
+                blockchain_statistics_api_impl(golos::application::application &app)
                         : _app(app) {
                 }
 
@@ -14,7 +14,7 @@ namespace steemit {
 
                 statistics get_lifetime_stats() const;
 
-                steemit::application::application &_app;
+                golos::application::application &_app;
             };
 
             statistics blockchain_statistics_api::blockchain_statistics_api_impl::get_stats_for_time(fc::time_point_sec open, uint32_t interval) const {
@@ -63,7 +63,7 @@ namespace steemit {
             }
 
 
-        blockchain_statistics_api::blockchain_statistics_api(const steemit::application::api_context &ctx):my(new blockchain_statistics_api_impl(ctx.app)){ 
+        blockchain_statistics_api::blockchain_statistics_api(const golos::application::api_context &ctx):my(new blockchain_statistics_api_impl(ctx.app)){
         }
 
         void blockchain_statistics_api::on_api_startup() {
@@ -151,4 +151,4 @@ namespace steemit {
         }
 
     }
-} // steemit::blockchain_statistics
+} // golos::blockchain_statistics

@@ -1,15 +1,15 @@
-#include <steemit/application/impacted.hpp>
+#include <golos/application/impacted.hpp>
 
-#include <steemit/application/discussion_query.hpp>
-#include <steemit/application/api_objects/comment_api_obj.hpp>
+#include <golos/application/discussion_query.hpp>
+#include <golos/application/api_objects/comment_api_object.hpp>
 
-#include <steemit/protocol/config.hpp>
+#include <golos/protocol/config.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/version/hardfork.hpp>
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/comment_object.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/version/hardfork.hpp>
+#include <golos/chain/operation_notification.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/comment_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
@@ -21,12 +21,12 @@
 
 #include "include/steemit/tags/tags_plugin.hpp"
 
-namespace steemit {
+namespace golos {
     namespace tags {
 
         namespace detail {
 
-            using namespace steemit::protocol;
+            using namespace golos::protocol;
 
             class tags_plugin_impl {
             public:
@@ -35,7 +35,7 @@ namespace steemit {
 
                 virtual ~tags_plugin_impl();
 
-                steemit::chain::database &database() {
+                golos::chain::database &database() {
                     return _self.database();
                 }
 
@@ -460,9 +460,9 @@ namespace steemit {
 
         }
 
-        bool tags_plugin::filter(const steemit::application::discussion_query &query,
-                                 const steemit::application::comment_api_obj &c,
-                                 const std::function<bool(const steemit::application::comment_api_obj &)> &condition) {
+        bool tags_plugin::filter(const golos::application::discussion_query &query,
+                                 const golos::application::comment_api_object &c,
+                                 const std::function<bool(const golos::application::comment_api_object &)> &condition) {
             if (!query.select_authors.empty()) {
                 if (query.select_authors.find(c.author) == query.select_authors.end()) {
                     return true;
@@ -506,6 +506,6 @@ namespace steemit {
 
         }
     }
-} /// steemit::tags
+} /// golos::tags
 
-STEEMIT_DEFINE_PLUGIN(tags, steemit::tags::tags_plugin)
+STEEMIT_DEFINE_PLUGIN(tags, golos::tags::tags_plugin)

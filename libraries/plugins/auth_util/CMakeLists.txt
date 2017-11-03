@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/plugins/auth_util/*.hpp")
+file(GLOB HEADERS "include/golos/plugins/auth_util/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_auth_util SHARED

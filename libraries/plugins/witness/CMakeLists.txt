@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/witness/*.hpp")
+file(GLOB HEADERS "include/golos/witness/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_witness SHARED

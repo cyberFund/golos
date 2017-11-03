@@ -1,9 +1,9 @@
-#include <steemit/protocol/operations/custom_operations.hpp>
+#include <golos/protocol/operations/custom_operations.hpp>
 
 #include <fc/utf8.hpp>
 #include <fc/io/json.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
         void custom_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed

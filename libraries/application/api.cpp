@@ -1,15 +1,15 @@
 #include <cctype>
 
-#include <steemit/application/api.hpp>
+#include <golos/application/api.hpp>
 
-#include <graphene/utilities/key_conversion.hpp>
-#include <graphene/utilities/git_revision.hpp>
+#include <golos/utilities/key_conversion.hpp>
+#include <golos/utilities/git_revision.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/time.hpp>
 #include <fc/git_revision.hpp>
 
-namespace steemit {
+namespace golos {
     namespace application {
 
         login_api::login_api(const api_context &ctx)
@@ -266,7 +266,7 @@ namespace steemit {
             return _app.p2p_node()->set_advanced_node_parameters(params);
         }
 
-        asset_api::asset_api(steemit::chain::database &db) : _db(db) {
+        asset_api::asset_api(golos::chain::database &db) : _db(db) {
 
         }
 
@@ -343,4 +343,4 @@ namespace steemit {
             return result;
         }
     }
-} // steemit::application
+} // golos::application

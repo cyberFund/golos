@@ -1,8 +1,8 @@
-#include <steemit/chain/database.hpp>
+#include <golos/chain/database.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         share_type cut_fee(share_type a, uint16_t p) {
             if (a == 0 || p == 0) {

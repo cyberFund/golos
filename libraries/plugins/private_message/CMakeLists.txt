@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/private_message/*.hpp")
+file(GLOB HEADERS "include/golos/private_message/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_private_message SHARED

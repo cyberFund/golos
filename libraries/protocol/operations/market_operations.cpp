@@ -1,8 +1,8 @@
-#include <steemit/protocol/operations/market_operations.hpp>
+#include <golos/protocol/operations/market_operations.hpp>
 
 #include <fc/utf8.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
 
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before
@@ -63,4 +63,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/protocol/operations/market_operations.tpp>
+#include <golos/protocol/operations/market_operations.tpp>

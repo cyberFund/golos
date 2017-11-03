@@ -36,18 +36,18 @@
 #include <fc/thread/scoped_lock.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-#include <graphene/utilities/git_revision.hpp>
-#include <graphene/utilities/key_conversion.hpp>
-#include <graphene/utilities/words.hpp>
+#include <golos/utilities/git_revision.hpp>
+#include <golos/utilities/key_conversion.hpp>
+#include <golos/utilities/words.hpp>
 
-#include <steemit/application/api.hpp>
-#include <steemit/follow/follow_operations.hpp>
-#include <steemit/private_message/private_message_operations.hpp>
-#include <steemit/wallet/wallet.hpp>
-#include <steemit/wallet/api_documentation.hpp>
-#include <steemit/wallet/reflect_utilities.hpp>
+#include <golos/application/api.hpp>
+#include <golos/follow/follow_operations.hpp>
+#include <golos/private_message/private_message_operations.hpp>
+#include <golos/wallet/wallet.hpp>
+#include <golos/wallet/api_documentation.hpp>
+#include <golos/wallet/reflect_utilities.hpp>
 
-#include <steemit/account_by_key/account_by_key_api.hpp>
+#include <golos/account_by_key/account_by_key_api.hpp>
 
 #ifndef WIN32
 
@@ -55,7 +55,7 @@
 
 #define BRAIN_KEY_WORD_COUNT 16
 
-namespace steemit {
+namespace golos {
     namespace wallet {
 
         namespace detail {
@@ -475,7 +475,7 @@ namespace steemit {
                     fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
                     if (!optional_private_key)
                         FC_THROW("Invalid private key");
-                    steemit::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
+                    golos::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
 
                     _keys[wif_pub_key] = wif_key;
                     return true;
@@ -543,7 +543,7 @@ namespace steemit {
                     for (int key_index = 0;; ++key_index) {
                         fc::ecc::private_key derived_private_key = derive_private_key(key_to_wif(parent_key),
                                                                                       key_index);
-                        steemit::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
+                        golos::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
                         if (_keys.find(derived_public_key) == _keys.end()) {
                             if (number_of_consecutive_unused_keys) {
                                 ++number_of_consecutive_unused_keys;
@@ -574,9 +574,9 @@ namespace steemit {
                         fc::ecc::private_key memo_privkey = derive_private_key(key_to_wif(active_privkey),
                                                                                memo_key_index);
 
-                        steemit::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
-                        steemit::chain::public_key_type active_pubkey = active_privkey.get_public_key();
-                        steemit::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
+                        golos::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
+                        golos::chain::public_key_type active_pubkey = active_privkey.get_public_key();
+                        golos::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
 
                         account_create_operation<0, 17, 0> account_create_op;
 
@@ -1181,11 +1181,11 @@ namespace steemit {
             };
         }
     }
-} // steemit::wallet::detail
+} // golos::wallet::detail
 
 
 
-namespace steemit {
+namespace golos {
     namespace wallet {
 
         wallet_api::wallet_api(const wallet_data &initial_data, fc::api<login_api> rapi) : my(
@@ -3071,4 +3071,4 @@ namespace steemit {
             return sign_transaction(tx, broadcast);
         }
     }
-} // steemit::wallet
+} // golos::wallet

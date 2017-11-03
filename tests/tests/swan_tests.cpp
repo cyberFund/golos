@@ -1,25 +1,25 @@
 #include <boost/test/unit_test.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/database_exceptions.hpp>
 
-#include <steemit/version/hardfork.hpp>
+#include <golos/version/hardfork.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/asset_object.hpp>
-#include <steemit/chain/objects/market_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/asset_object.hpp>
+#include <golos/chain/objects/market_object.hpp>
 
-#include <steemit/application/database_api.hpp>
+#include <golos/application/database_api.hpp>
 
 #include <fc/crypto/digest.hpp>
-#include <steemit/market_history/market_history_api.hpp>
+#include <golos/market_history/market_history_api.hpp>
 
 #include "../common/database_fixture.hpp"
 
-using namespace steemit::chain;
-using namespace steemit::chain::test;
+using namespace golos::chain;
+using namespace golos::chain::test;
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
         struct swan_fixture : database_fixture {

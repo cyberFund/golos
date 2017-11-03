@@ -1,14 +1,14 @@
-#include <steemit/snapshot/snapshot_plugin.hpp>
-#include <steemit/snapshot/snapshot_state.hpp>
+#include <golos/snapshot/snapshot_plugin.hpp>
+#include <golos/snapshot/snapshot_state.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/operation_notification.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/operation_notification.hpp>
 
-#include <steemit/account_by_key/account_by_key_plugin.hpp>
+#include <golos/account_by_key/account_by_key_plugin.hpp>
 
 #include <boost/iostreams/device/mapped_file.hpp>
 
-namespace steemit {
+namespace golos {
     namespace plugin {
         namespace snapshot {
             namespace detail {
@@ -19,7 +19,7 @@ namespace steemit {
 
                     }
 
-                    steemit::chain::database &database() {
+                    golos::chain::database &database() {
                         return self.database();
                     }
 
@@ -102,7 +102,7 @@ namespace steemit {
                 }
             }
 
-            snapshot_plugin::snapshot_plugin(steemit::application::application *app)
+            snapshot_plugin::snapshot_plugin(golos::application::application *app)
                     : plugin(app),
                       application(app),
                       impl(new detail::snapshot_plugin_impl(*this)) {
@@ -214,8 +214,8 @@ namespace steemit {
 }
 
 /**
- * The STEEMIT_DEFINE_PLUGIN() macro will define a steemit::plugin::create_hello_api_plugin()
+ * The STEEMIT_DEFINE_PLUGIN() macro will define a golos::plugin::create_hello_api_plugin()
  * factory method which is expected by the manifest.
  */
 
-STEEMIT_DEFINE_PLUGIN(snapshot, steemit::plugin::snapshot::snapshot_plugin)
+STEEMIT_DEFINE_PLUGIN(snapshot, golos::plugin::snapshot::snapshot_plugin)

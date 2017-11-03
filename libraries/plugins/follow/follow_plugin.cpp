@@ -1,32 +1,32 @@
-#include <steemit/follow/follow_api.hpp>
-#include <steemit/follow/follow_objects.hpp>
-#include <steemit/follow/follow_operations.hpp>
-#include <steemit/follow/follow_evaluators.hpp>
+#include <golos/follow/follow_api.hpp>
+#include <golos/follow/follow_objects.hpp>
+#include <golos/follow/follow_operations.hpp>
+#include <golos/follow/follow_evaluators.hpp>
 
-#include <steemit/application/impacted.hpp>
+#include <golos/application/impacted.hpp>
 
-#include <steemit/protocol/config.hpp>
+#include <golos/protocol/config.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/generic_custom_operation_interpreter.hpp>
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/comment_object.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/generic_custom_operation_interpreter.hpp>
+#include <golos/chain/operation_notification.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/comment_object.hpp>
 
-#include <graphene/schema/schema.hpp>
-#include <graphene/schema/schema_impl.hpp>
+#include <golos/schema/schema.hpp>
+#include <golos/schema/schema_impl.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
 
 #include <memory>
 
-namespace steemit {
+namespace golos {
     namespace follow {
 
         namespace detail {
 
-            using namespace steemit::protocol;
+            using namespace golos::protocol;
 
             class follow_plugin_impl {
             public:
@@ -35,7 +35,7 @@ namespace steemit {
 
                 void plugin_initialize();
 
-                steemit::chain::database &database() {
+                golos::chain::database &database() {
                     return _self.database();
                 }
 
@@ -44,12 +44,12 @@ namespace steemit {
                 void post_operation(const operation_notification &op_obj);
 
                 follow_plugin &_self;
-                std::shared_ptr<generic_custom_operation_interpreter<steemit::follow::follow_plugin_operation>> _custom_operation_interpreter;
+                std::shared_ptr<generic_custom_operation_interpreter<golos::follow::follow_plugin_operation>> _custom_operation_interpreter;
             };
 
             void follow_plugin_impl::plugin_initialize() {
                 // Each plugin needs its own evaluator registry.
-                _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<steemit::follow::follow_plugin_operation>>(database());
+                _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<golos::follow::follow_plugin_operation>>(database());
 
                 // Add each operation evaluator to the registry
                 _custom_operation_interpreter->register_evaluator<follow_evaluator>(&_self);
@@ -386,8 +386,8 @@ namespace steemit {
         }
 
     }
-} // steemit::follow
+} // golos::follow
 
-STEEMIT_DEFINE_PLUGIN(follow, steemit::follow::follow_plugin)
+STEEMIT_DEFINE_PLUGIN(follow, golos::follow::follow_plugin)
 
-//DEFINE_OPERATION_TYPE( steemit::follow::follow_plugin_operation )
+//DEFINE_OPERATION_TYPE( golos::follow::follow_plugin_operation )

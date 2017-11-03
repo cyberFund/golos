@@ -1,10 +1,10 @@
 #include <string>
 
-#include <steemit/protocol/operations/asset_operations.hpp>
+#include <golos/protocol/operations/asset_operations.hpp>
 
 #include <fc/exception/exception.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
 
 /**
@@ -187,6 +187,6 @@ namespace steemit {
             FC_ASSERT(amount_to_claim.amount > 0);
         }
     }
-} // namespace steemit::chain
+} // namespace golos::chain
 
-#include <steemit/protocol/operations/asset_operations.tpp>
+#include <golos/protocol/operations/asset_operations.tpp>

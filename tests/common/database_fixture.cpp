@@ -1,24 +1,24 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/program_options.hpp>
 
-#include <graphene/utilities/tempdir.hpp>
+#include <golos/utilities/tempdir.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/asset_object.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
-#include <steemit/chain/objects/history_object.hpp>
-#include <steemit/account_history/account_history_plugin.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/asset_object.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/history_object.hpp>
+#include <golos/account_history/account_history_plugin.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>
 
 #include "database_fixture.hpp"
 
-//using namespace steemit::chain::test;
+//using namespace golos::chain::test;
 
 uint32_t STEEMIT_TESTING_GENESIS_TIMESTAMP = 1431700000;
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
         using std::cout;
@@ -38,8 +38,8 @@ namespace steemit {
                                   << std::endl;
                     }
                 }
-                auto ahplugin = app.register_plugin<steemit::account_history::account_history_plugin>();
-                db_plugin = app.register_plugin<steemit::plugin::debug_node::debug_node_plugin>();
+                auto ahplugin = app.register_plugin<golos::account_history::account_history_plugin>();
+                db_plugin = app.register_plugin<golos::plugin::debug_node::debug_node_plugin>();
                 init_account_pub_key = init_account_priv_key.get_public_key();
 
                 boost::program_options::variables_map options;
@@ -134,7 +134,7 @@ namespace steemit {
                 _chain_dir = fc::current_path() / "test_blockchain";
                 FC_ASSERT(fc::exists(_chain_dir), "Requires blockchain to test on in ./test_blockchain");
 
-                auto ahplugin = app.register_plugin<steemit::account_history::account_history_plugin>();
+                auto ahplugin = app.register_plugin<golos::account_history::account_history_plugin>();
                 ahplugin->plugin_initialize(boost::program_options::variables_map());
 
                 db.open(_chain_dir, _chain_dir);
@@ -260,8 +260,8 @@ namespace steemit {
                 return;
             }
 
-            const std::shared_ptr<steemit::account_history::account_history_plugin> pin = app.get_plugin<
-                    steemit::account_history::account_history_plugin>("account_history");
+            const std::shared_ptr<golos::account_history::account_history_plugin> pin = app.get_plugin<
+                    golos::account_history::account_history_plugin>("account_history");
             if (pin->tracked_accounts().empty()) {
                 /*
                 vector< pair< account_name_type, address > > tuples_from_db;
@@ -291,10 +291,10 @@ namespace steemit {
                 vector< pair< account_name_type, address > > tuples_from_index;
                 tuples_from_index.reserve( tuples_from_db.size() );
                 const auto& key_account_idx =
-                   db.get_index<steemit::account_history::key_account_index>()
-                   .indices().get<steemit::account_history::by_key>();
+                   db.get_index<golos::account_history::key_account_index>()
+                   .indices().get<golos::account_history::by_key>();
 
-                for( const steemit::account_history::key_account_object& key_account : key_account_idx )
+                for( const golos::account_history::key_account_object& key_account : key_account_idx )
                 {
                    address addr = key_account.key;
                    for( const account_name_type& account_id : key_account.account_ids )
@@ -953,7 +953,7 @@ namespace steemit {
 
             while (itr != acc_hist_idx.begin() && ops.size() < num_ops) {
                 itr--;
-                ops.push_back(fc::raw::unpack<steemit::chain::operation>(db.get(itr->op).serialized_op));
+                ops.push_back(fc::raw::unpack<golos::chain::operation>(db.get(itr->op).serialized_op));
             }
 
             return ops;
@@ -977,6 +977,6 @@ namespace steemit {
                 } FC_CAPTURE_AND_RETHROW((tx))
             }
 
-        } // steemit::chain::test
+        } // golos::chain::test
     }
-} // steemit::chain
+} // golos::chain

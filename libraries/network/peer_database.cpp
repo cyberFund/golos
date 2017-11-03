@@ -30,10 +30,10 @@
 #include <fc/io/raw.hpp>
 #include <fc/io/json.hpp>
 
-#include <steemit/network/peer_database.hpp>
+#include <golos/network/peer_database.hpp>
 
 
-namespace steemit {
+namespace golos {
     namespace network {
         namespace detail {
             using namespace boost::multi_index;
@@ -258,4 +258,4 @@ namespace steemit {
         }
 
     }
-} // end namespace steemit::network
+} // end namespace golos::network

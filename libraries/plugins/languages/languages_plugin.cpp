@@ -1,15 +1,15 @@
-#include <steemit/application/impacted.hpp>
+#include <golos/application/impacted.hpp>
 
-#include <steemit/application/discussion_query.hpp>
-#include <steemit/application/api_objects/comment_api_obj.hpp>
+#include <golos/application/discussion_query.hpp>
+#include <golos/application/api_objects/comment_api_object.hpp>
 
-#include <steemit/protocol/config.hpp>
+#include <golos/protocol/config.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/version/hardfork.hpp>
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/comment_object.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/version/hardfork.hpp>
+#include <golos/chain/operation_notification.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/comment_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
@@ -20,9 +20,9 @@
 #include <boost/algorithm/string.hpp>
 
 
-#include <steemit/languages/languages_plugin.hpp>
+#include <golos/languages/languages_plugin.hpp>
 
-namespace steemit {
+namespace golos {
     namespace languages {
 
         std::string get_language(const comment_object &c) {
@@ -41,7 +41,7 @@ namespace steemit {
         }
 
 
-        std::string get_language(const steemit::application::comment_api_obj &c) {
+        std::string get_language(const golos::application::comment_api_object &c) {
             comment_metadata meta;
             std::string language("");
             if (!c.json_metadata.empty()) {
@@ -59,7 +59,7 @@ namespace steemit {
 
         namespace detail {
 
-            using namespace steemit::protocol;
+            using namespace golos::protocol;
 
             class languages_plugin_impl final {
             public:
@@ -72,7 +72,7 @@ namespace steemit {
                     return *this;
                 }
 
-                steemit::chain::database &database() {
+                golos::chain::database &database() {
                     return _self.database();
                 }
 
@@ -93,7 +93,7 @@ namespace steemit {
                 typedef void result_type;
 
                 languages_plugin_impl &languages_plugin;
-                steemit::chain::database &_db;
+                golos::chain::database &_db;
 
                 void remove_stats(const language_object &tag, const language_stats_object &stats) const {
                     _db.modify(stats, [&](language_stats_object &s) {
@@ -434,9 +434,9 @@ namespace steemit {
 
         }
 
-        bool languages_plugin::filter(const steemit::application::discussion_query &query,
-                                      const steemit::application::comment_api_obj &c, const std::function<
-                bool(const steemit::application::comment_api_obj &)> &condition) {
+        bool languages_plugin::filter(const golos::application::discussion_query &query,
+                                      const golos::application::comment_api_object &c, const std::function<
+                bool(const golos::application::comment_api_object &)> &condition) {
             std::string language = get_language(c);
 
             if (query.filter_languages.size()) {
@@ -483,15 +483,15 @@ namespace steemit {
         }
 
         struct language_api::impl {
-            impl(steemit::application::application &app) : app(app) {
+            impl(golos::application::application &app) : app(app) {
             }
 
             ~impl() = default;
 
-            steemit::application::application &app;
+            golos::application::application &app;
         };
 
-        language_api::language_api(const steemit::application::api_context &ctx) : pimpl(new impl(ctx.app)) {
+        language_api::language_api(const golos::application::api_context &ctx) : pimpl(new impl(ctx.app)) {
         }
 
         void language_api::on_api_startup() {
@@ -512,6 +512,6 @@ namespace steemit {
 
 
     }
-} /// steemit::tags
+} /// golos::tags
 
-STEEMIT_DEFINE_PLUGIN(languages, steemit::languages::languages_plugin)
+STEEMIT_DEFINE_PLUGIN(languages, golos::languages::languages_plugin)

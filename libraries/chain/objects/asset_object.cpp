@@ -1,11 +1,11 @@
-#include <steemit/chain/objects/asset_object.hpp>
-#include <steemit/chain/database.hpp>
+#include <golos/chain/objects/asset_object.hpp>
+#include <golos/chain/database.hpp>
 
 #include <fc/uint128.hpp>
 
 #include <cmath>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         share_type asset_bitasset_data_object::max_force_settlement_volume(share_type current_supply) const {
             if (options.maximum_force_settlement_volume == 0) {

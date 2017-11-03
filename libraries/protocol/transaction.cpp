@@ -1,10 +1,10 @@
-#include <steemit/protocol/transaction.hpp>
-#include <steemit/protocol/exceptions.hpp>
+#include <golos/protocol/transaction.hpp>
+#include <golos/protocol/exceptions.hpp>
 
 #include <fc/bitutil.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
 
         digest_type signed_transaction::merkle_digest() const {
@@ -33,21 +33,21 @@ namespace steemit {
             }
         }
 
-        steemit::protocol::transaction_id_type steemit::protocol::transaction::id() const {
+        golos::protocol::transaction_id_type golos::protocol::transaction::id() const {
             auto h = digest();
             transaction_id_type result;
             memcpy(result._hash, h._hash, std::min(sizeof(result), sizeof(h)));
             return result;
         }
 
-        const signature_type &steemit::protocol::signed_transaction::sign(const private_key_type &key,
+        const signature_type &golos::protocol::signed_transaction::sign(const private_key_type &key,
                                                                           const chain_id_type &chain_id) {
             digest_type h = sig_digest(chain_id);
             signatures.push_back(key.sign_compact(h));
             return signatures.back();
         }
 
-        signature_type steemit::protocol::signed_transaction::sign(const private_key_type &key,
+        signature_type golos::protocol::signed_transaction::sign(const private_key_type &key,
                                                                    const chain_id_type &chain_id) const {
             digest_type::encoder enc;
             fc::raw::pack(enc, chain_id);
@@ -269,4 +269,4 @@ namespace steemit {
             return enc.result();
         }
     }
-} // steemit::protocol
+} // golos::protocol

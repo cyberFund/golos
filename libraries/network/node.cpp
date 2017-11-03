@@ -38,9 +38,9 @@
 #include <fc/network/ip.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-#include <steemit/network/node.hpp>
-#include <steemit/network/peer_connection.hpp>
-#include <steemit/network/exceptions.hpp>
+#include <golos/network/node.hpp>
+#include <golos/network/peer_connection.hpp>
+#include <golos/network/exceptions.hpp>
 
 #include <fc/git_revision.hpp>
 
@@ -80,7 +80,7 @@
 #define testnetlog(...) do {} while (0)
 #endif
 
-namespace steemit {
+namespace golos {
     namespace network {
 
         namespace detail {
@@ -219,12 +219,12 @@ namespace steemit {
         }
     }
 } // end namespace network::detail
-FC_REFLECT((steemit::network::detail::node_configuration), (listen_endpoint)
+FC_REFLECT((golos::network::detail::node_configuration), (listen_endpoint)
         (accept_incoming_connections)
         (wait_if_endpoint_is_busy)
         (private_key));
 
-namespace steemit {
+namespace golos {
     namespace network {
         namespace detail {
 
@@ -2006,7 +2006,7 @@ namespace steemit {
                     originating_peer->last_known_fork_block_number = user_data["last_known_fork_block_number"].as<uint32_t>();
                 }
                 if (user_data.contains("chain_id")) {
-                    originating_peer->chain_id = user_data["chain_id"].as<steemit::protocol::chain_id_type>();
+                    originating_peer->chain_id = user_data["chain_id"].as<golos::protocol::chain_id_type>();
                 }
             }
 
@@ -5460,4 +5460,4 @@ namespace steemit {
         } // end namespace detail
 
     }
-} // end namespace steemit::network
+} // end namespace golos::network

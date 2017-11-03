@@ -1,24 +1,24 @@
-#include <steemit/protocol/operations/steem_operations.hpp>
+#include <golos/protocol/operations/steem_operations.hpp>
 
-#include <steemit/chain/objects/block_summary_object.hpp>
-#include <steemit/chain/compound.hpp>
-#include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/db_with.hpp>
-#include <steemit/chain/evaluator_registry.hpp>
-#include <steemit/chain/objects/history_object.hpp>
-#include <steemit/chain/objects/market_object.hpp>
-#include <steemit/chain/objects/proposal_object.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
-#include <steemit/chain/objects/transaction_object.hpp>
-#include <steemit/chain/shared_db_merkle.hpp>
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/witness_schedule.hpp>
+#include <golos/chain/objects/block_summary_object.hpp>
+#include <golos/chain/compound.hpp>
+#include <golos/chain/custom_operation_interpreter.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/database_exceptions.hpp>
+#include <golos/chain/db_with.hpp>
+#include <golos/chain/evaluator_registry.hpp>
+#include <golos/chain/objects/history_object.hpp>
+#include <golos/chain/objects/market_object.hpp>
+#include <golos/chain/objects/proposal_object.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/transaction_object.hpp>
+#include <golos/chain/shared_db_merkle.hpp>
+#include <golos/chain/operation_notification.hpp>
+#include <golos/chain/witness_schedule.hpp>
 
-#include <steemit/chain/utilities/asset.hpp>
-#include <steemit/chain/utilities/reward.hpp>
-#include <steemit/chain/utilities/uint256.hpp>
+#include <golos/chain/utilities/asset.hpp>
+#include <golos/chain/utilities/reward.hpp>
+#include <golos/chain/utilities/uint256.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -27,19 +27,19 @@
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
 
-#include <steemit/chain/evaluators/account_evaluator.hpp>
-#include <steemit/chain/evaluators/market_evaluator.hpp>
-#include <steemit/chain/evaluators/asset_evaluator.hpp>
-#include <steemit/chain/evaluators/custom_evaluator.hpp>
-#include <steemit/chain/evaluators/transfer_evaluator.hpp>
-#include <steemit/chain/evaluators/proposal_evaluator.hpp>
-#include <steemit/chain/evaluators/escrow_evaluator.hpp>
-#include <steemit/chain/evaluators/witness_evaluator.hpp>
-#include <steemit/chain/evaluators/steem_evaluator.hpp>
+#include <golos/chain/evaluators/account_evaluator.hpp>
+#include <golos/chain/evaluators/market_evaluator.hpp>
+#include <golos/chain/evaluators/asset_evaluator.hpp>
+#include <golos/chain/evaluators/custom_evaluator.hpp>
+#include <golos/chain/evaluators/transfer_evaluator.hpp>
+#include <golos/chain/evaluators/proposal_evaluator.hpp>
+#include <golos/chain/evaluators/escrow_evaluator.hpp>
+#include <golos/chain/evaluators/witness_evaluator.hpp>
+#include <golos/chain/evaluators/steem_evaluator.hpp>
 
-#include <steemit/version/version_state.hpp>
+#include <golos/version/version_state.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
         struct object_schema_repr {
@@ -61,11 +61,11 @@ namespace steemit {
     }
 }
 
-FC_REFLECT((steemit::chain::object_schema_repr), (space_type)(type))
-FC_REFLECT((steemit::chain::operation_schema_repr), (id)(type))
-FC_REFLECT((steemit::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT((golos::chain::object_schema_repr), (space_type)(type))
+FC_REFLECT((golos::chain::operation_schema_repr), (id)(type))
+FC_REFLECT((golos::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
         using boost::container::flat_set;
@@ -2473,7 +2473,7 @@ namespace steemit {
         schema_list.back()->get_name( ds.custom_operation_types.back().type );
         }
 
-        graphene::get_database::add_dependent_schemas( schema_list );
+        golos::get_database::add_dependent_schemas( schema_list );
         std::sort( schema_list.begin(), schema_list.end(),
         []( const std::shared_ptr< abstract_schema >& a,
           const std::shared_ptr< abstract_schema >& b )
@@ -2652,7 +2652,7 @@ namespace steemit {
 
         void database::notify_changed_objects() {
             try {
-                /*vector< steemit::chainbase::generic_id > ids;
+                /*vector< golos::chainbase::generic_id > ids;
         get_changed_ids( ids );
         STEEMIT_TRY_NOTIFY( changed_objects, ids )*/
                 /*
@@ -4464,7 +4464,7 @@ namespace steemit {
                       "Blockchain version is older than last applied hardfork");
             FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
 
-            steemit::version::state::instance().current_version = protocol::hardfork_version(0,
+            golos::version::state::instance().current_version = protocol::hardfork_version(0,
                                                                                              hardforks.last_hardfork);
         }
 
@@ -4536,7 +4536,7 @@ namespace steemit {
                 elog("HARDFORK ${hf} at block ${b}", ("hf", hardfork)("b", head_block_num()));
             }
 
-            steemit::version::state::instance().current_version = protocol::hardfork_version(0, hardfork);
+            golos::version::state::instance().current_version = protocol::hardfork_version(0, hardfork);
 
             switch (hardfork) {
                 case STEEMIT_HARDFORK_0_1:
@@ -5243,4 +5243,4 @@ namespace steemit {
             FC_ASSERT(_custom_operation_interpreters.emplace(id, registry).second);
         }
     }
-} //steemit::chain
+} //golos::chain

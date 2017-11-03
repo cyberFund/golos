@@ -1,12 +1,12 @@
 set(CURRENT_TARGET market_history)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-        include/steemit/market_history/bucket_object.hpp
-        include/steemit/market_history/key_interface.hpp
-        include/steemit/market_history/market_history_api.hpp
-        include/steemit/market_history/market_history_object_types.hpp
-        include/steemit/market_history/market_history_plugin.hpp
-        include/steemit/market_history/order_history_object.hpp
+     include/golos/market_history/bucket_object.hpp
+     include/golos/market_history/key_interface.hpp
+     include/golos/market_history/market_history_api.hpp
+     include/golos/market_history/market_history_object_types.hpp
+     include/golos/market_history/market_history_plugin.hpp
+     include/golos/market_history/order_history_object.hpp
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES

@@ -1,4 +1,4 @@
-#include <steemit/protocol/asset.hpp>
+#include <golos/protocol/asset.hpp>
 
 /*
 
@@ -10,7 +10,7 @@ index : field
    7  : \0
 */
 
-namespace steemit {
+namespace golos {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
@@ -416,6 +416,6 @@ namespace steemit {
                                                   p10<12>::v, p10<13>::v, p10<14>::v, p10<15>::v, p10<16>::v,
                                                   p10<17>::v, p10<18>::v};
     }
-} // steemit::protocol
+} // golos::protocol
 
-#include <steemit/protocol/asset.tpp>
+#include <golos/protocol/asset.tpp>

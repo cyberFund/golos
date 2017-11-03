@@ -1,8 +1,8 @@
-#include <steemit/protocol/operations/operations.hpp>
+#include <golos/protocol/operations/operations.hpp>
 
-#include <steemit/protocol/operations/operation_utilities_impl.hpp>
+#include <golos/protocol/operations/operation_utilities_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
 
         struct is_market_op_visitor {
@@ -66,18 +66,18 @@ namespace steemit {
             return op.visit(is_vop_visitor());
         }
     }
-} // steemit::protocol
+} // golos::protocol
 
 namespace fc {
 
-    void to_variant(const steemit::protocol::operation &var, fc::variant &vo) {
+    void to_variant(const golos::protocol::operation &var, fc::variant &vo) {
         var.visit(from_operation<versioned_from_operation_policy>(vo));
     }
 
-    void from_variant(const fc::variant &var, steemit::protocol::operation &vo) {
+    void from_variant(const fc::variant &var, golos::protocol::operation &vo) {
         std::map<string, uint32_t> name_map;
-        for (unsigned int i = 0; i < steemit::protocol::operation::count(); ++i) {
-            steemit::protocol::operation tmp;
+        for (unsigned int i = 0; i < golos::protocol::operation::count(); ++i) {
+            golos::protocol::operation tmp;
             tmp.set_which(i);
             string n;
             tmp.visit(get_operation_name(n));
@@ -93,18 +93,18 @@ namespace fc {
         } else {
             std::string operation_name;
 
-            if (steemit::version::state::instance().current_version.hardfork() <= 16) {
+            if (golos::version::state::instance().current_version.hardfork() <= 16) {
                 operation_name = (boost::format(ar[0].as_string().append("_operation<%1%, %2%, %3%>")) % 0 % 16 %
                                   0).str();
             } else {
                 std::stringstream major_stream;
-                major_stream << std::dec << std::to_string(steemit::version::state::instance().current_version.major());
+                major_stream << std::dec << std::to_string(golos::version::state::instance().current_version.major());
 
                 std::stringstream hardfork_stream;
-                hardfork_stream << std::dec << std::to_string(steemit::version::state::instance().current_version.hardfork());
+                hardfork_stream << std::dec << std::to_string(golos::version::state::instance().current_version.hardfork());
 
                 std::stringstream release_stream;
-                release_stream << std::dec << std::to_string(steemit::version::state::instance().current_version.release());
+                release_stream << std::dec << std::to_string(golos::version::state::instance().current_version.release());
 
                 operation_name = (boost::format(ar[0].as_string().append("_operation<%1%, %2%, %3%>")) %
                                   major_stream.str() % hardfork_stream.str() % release_stream.str()).str();
@@ -119,17 +119,17 @@ namespace fc {
     }
 }
 
-namespace steemit {
+namespace golos {
     namespace protocol {
         void operation_validate(const operation &op) {
-            op.visit(steemit::protocol::operation_validate_visitor());
+            op.visit(golos::protocol::operation_validate_visitor());
         }
 
         void operation_get_required_authorities(const operation &op, flat_set<protocol::account_name_type> &active,
                                                 flat_set<protocol::account_name_type> &owner,
                                                 flat_set<protocol::account_name_type> &posting,
                                                 std::vector<authority> &other) {
-            op.visit(steemit::protocol::operation_get_required_auth_visitor(active, owner, posting, other));
+            op.visit(golos::protocol::operation_get_required_auth_visitor(active, owner, posting, other));
         }
     }
 }

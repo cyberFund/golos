@@ -2,23 +2,23 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/comment_object.hpp>
-#include <steemit/protocol/operations/steem_operations.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/comment_object.hpp>
+#include <golos/protocol/operations/steem_operations.hpp>
 
-#include <steemit/market_history/market_history_plugin.hpp>
+#include <golos/market_history/market_history_plugin.hpp>
 
 #include "../common/database_fixture.hpp"
 
-using namespace steemit::chain;
-using namespace steemit::protocol;
+using namespace golos::chain;
+using namespace golos::protocol;
 
 typedef asset<0, 17, 0> latest_asset;
 
 BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
 
     BOOST_AUTO_TEST_CASE(mh_test) {
-        using namespace steemit::market_history;
+        using namespace golos::market_history;
 
         try {
             auto mh_plugin = app.register_plugin<market_history_plugin>();
@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_SUITE(market_history, clean_database_fixture)
             generate_blocks(db.get_comment("alice", std::string("test")).cashout_time);
 
             const auto &bucket_idx = db.get_index<bucket_index>().indices().get<by_key>();
-            const auto &order_hist_idx = db.get_index<order_history_index>().indices().get<steemit::chain::by_id>();
+            const auto &order_hist_idx = db.get_index<order_history_index>().indices().get<golos::chain::by_id>();
 
             BOOST_REQUIRE(bucket_idx.begin() == bucket_idx.end());
             BOOST_REQUIRE(order_hist_idx.begin() == order_hist_idx.end());

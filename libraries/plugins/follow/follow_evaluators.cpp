@@ -1,11 +1,11 @@
-#include <steemit/follow/follow_operations.hpp>
-#include <steemit/follow/follow_objects.hpp>
-#include <steemit/follow/follow_evaluators.hpp>
+#include <golos/follow/follow_operations.hpp>
+#include <golos/follow/follow_objects.hpp>
+#include <golos/follow/follow_evaluators.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/comment_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/comment_object.hpp>
 
-namespace steemit {
+namespace golos {
     namespace follow {
 
         void follow_evaluator::do_apply(const follow_operation &o) {
@@ -193,4 +193,4 @@ namespace steemit {
         }
 
     }
-} // steemit::follow
+} // golos::follow

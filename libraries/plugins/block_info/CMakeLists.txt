@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/plugins/block_info/*.hpp")
+file(GLOB HEADERS "include/golos/plugins/block_info/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_block_info SHARED

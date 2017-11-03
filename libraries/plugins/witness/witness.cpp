@@ -1,15 +1,15 @@
-#include <steemit/witness/witness.hpp>
+#include <golos/witness/witness.hpp>
 
-#include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
+#include <golos/chain/database_exceptions.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
 
-#include <graphene/utilities/key_conversion.hpp>
+#include <golos/utilities/key_conversion.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/time.hpp>
 
-void new_chain_banner(const steemit::chain::database &db) {
+void new_chain_banner(const golos::chain::database &db) {
     std::cerr << "\n"
             "********************************\n"
             "*                              *\n"
@@ -22,7 +22,7 @@ void new_chain_banner(const steemit::chain::database &db) {
     return;
 }
 
-namespace steemit {
+namespace golos {
     namespace witness_plugin {
 
         void witness_plugin::plugin_set_program_options(
@@ -73,7 +73,7 @@ namespace steemit {
                     const std::vector<std::string> miner_to_wif_pair_strings = options["miner"].as<
                             std::vector<std::string>>();
                     for (auto p : miner_to_wif_pair_strings) {
-                        auto m = steemit::application::dejsonify<pair<std::string, std::string>>(p);
+                        auto m = golos::application::dejsonify<pair<std::string, std::string>>(p);
                         idump((m));
 
                         fc::optional<fc::ecc::private_key> private_key = graphene::utilities::wif_to_key(m.second);
@@ -289,7 +289,7 @@ namespace steemit {
             auto itr = witness_by_name.find(scheduled_witness);
 
             fc::time_point_sec scheduled_time = db.get_slot_time(slot);
-            steemit::protocol::public_key_type scheduled_key = itr->signing_key;
+            golos::protocol::public_key_type scheduled_key = itr->signing_key;
             auto private_key_itr = _private_keys.find(scheduled_key);
 
             if (private_key_itr == _private_keys.end()) {
@@ -345,7 +345,7 @@ namespace steemit {
         * and how long it will take to broadcast the work. In other words, we assume 0.5s broadcast times
         * and therefore do not even attempt work that cannot be delivered on time.
         */
-        void witness_plugin::on_applied_block(const steemit::protocol::signed_block &b) {
+        void witness_plugin::on_applied_block(const golos::protocol::signed_block &b) {
             try {
                 if (!_mining_threads || _miners.size() == 0) {
                     return;
@@ -404,7 +404,7 @@ namespace steemit {
         }
 
         void witness_plugin::start_mining(const fc::ecc::public_key &pub, const fc::ecc::private_key &pk,
-                                          const std::string &miner, const steemit::protocol::signed_block &b) {
+                                          const std::string &miner, const golos::protocol::signed_block &b) {
             static uint64_t seed = fc::time_point::now().time_since_epoch().count();
             static uint64_t start = fc::city_hash64((const char *) &seed, sizeof(seed));
             chain::database &db = database();
@@ -465,7 +465,7 @@ namespace steemit {
                                     try {
                                         database().push_transaction(trx);
                                         ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                        p2p_node().broadcast(steemit::network::trx_message(trx));
+                                        p2p_node().broadcast(golos::network::trx_message(trx));
                                     } catch (const fc::exception &e) {
                                         wdump((e.to_detail_string()));
                                     }
@@ -514,7 +514,7 @@ namespace steemit {
                                     try {
                                         database().push_transaction(trx);
                                         ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                        p2p_node().broadcast(steemit::network::trx_message(trx));
+                                        p2p_node().broadcast(golos::network::trx_message(trx));
                                     } catch (const fc::exception &e) {
                                         wdump((e.to_detail_string()));
                                     }
@@ -562,7 +562,7 @@ namespace steemit {
                                     try {
                                         database().push_transaction(trx);
                                         ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                        p2p_node().broadcast(steemit::network::trx_message(trx));
+                                        p2p_node().broadcast(golos::network::trx_message(trx));
                                     } catch (const fc::exception &e) {
                                         wdump((e.to_detail_string()));
                                     }
@@ -578,4 +578,4 @@ namespace steemit {
     }
 }
 
-STEEMIT_DEFINE_PLUGIN(witness, steemit::witness_plugin::witness_plugin)
+STEEMIT_DEFINE_PLUGIN(witness, golos::witness_plugin::witness_plugin)

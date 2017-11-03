@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include <steemit/application/plugin.hpp>
+#include <golos/application/plugin.hpp>
 
-namespace steemit {
+namespace golos {
     namespace application {
 
         plugin::plugin(application *app) : _app(app) {
@@ -59,4 +59,4 @@ namespace steemit {
         }
 
     }
-} // steemit::application
+} // golos::application

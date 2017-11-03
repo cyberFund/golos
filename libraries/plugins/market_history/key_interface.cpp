@@ -1,6 +1,6 @@
-#include <steemit/market_history/key_interface.hpp>
+#include <golos/market_history/key_interface.hpp>
 
-namespace steemit {
+namespace golos {
     namespace market_history {
         key_interface::key_interface() {
 

@@ -1,12 +1,12 @@
-#include <steemit/protocol/operations/proposal_operations.hpp>
-#include <steemit/protocol/operations/operations.hpp>
-#include <steemit/protocol/types.hpp>
+#include <golos/protocol/operations/proposal_operations.hpp>
+#include <golos/protocol/operations/operations.hpp>
+#include <golos/protocol/types.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/time.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void proposal_create_operation<Major, Hardfork, Release>::validate() const {
@@ -83,6 +83,6 @@ namespace steemit {
             }
         }
     }
-} // graphene::chain
+} // golos::chain
 
-#include <steemit/protocol/operations/proposal_operations.tpp>
+#include <golos/protocol/operations/proposal_operations.tpp>

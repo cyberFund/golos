@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/plugins/debug_node/*.hpp")
+file(GLOB HEADERS "include/golos/plugins/debug_node/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_debug_node SHARED
@@ -23,4 +23,4 @@ install(TARGETS golos_debug_node
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${HEADERS} DESTINATION "include/steemit/plugins/debug_node")
+install(FILES ${HEADERS} DESTINATION "include/golos/plugins/debug_node")

@@ -1,16 +1,16 @@
-#include <steemit/application/api_context.hpp>
-#include <steemit/application/application.hpp>
-#include <steemit/application/database_api.hpp>
+#include <golos/application/api_context.hpp>
+#include <golos/application/application.hpp>
+#include <golos/application/database_api.hpp>
 
-#include <steemit/follow/follow_api.hpp>
-#include <steemit/market_history/market_history_plugin.hpp>
+#include <golos/follow/follow_api.hpp>
+#include <golos/market_history/market_history_plugin.hpp>
 
-#include <steemit/chain/utilities/reward.hpp>
+#include <golos/chain/utilities/reward.hpp>
 
-#include <steemit/protocol/get_config.hpp>
+#include <golos/protocol/get_config.hpp>
 
-#include <steemit/languages/languages_plugin.hpp>
-#include <steemit/tags/tags_plugin.hpp>
+#include <golos/languages/languages_plugin.hpp>
+#include <golos/tags/tags_plugin.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -22,13 +22,13 @@
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
-namespace steemit {
+namespace golos {
     namespace application {
         class database_api_impl;
 
         class database_api_impl : public std::enable_shared_from_this<database_api_impl> {
         public:
-            database_api_impl(const steemit::application::api_context &ctx);
+            database_api_impl(const golos::application::api_context &ctx);
 
             ~database_api_impl();
 
@@ -137,8 +137,8 @@ namespace steemit {
             std::function<void(const fc::variant &)> _pending_trx_callback;
             std::function<void(const fc::variant &)> _block_applied_callback;
 
-            steemit::chain::database &_db;
-            std::shared_ptr<steemit::follow::follow_api> _follow_api;
+            golos::chain::database &_db;
+            std::shared_ptr<golos::follow::follow_api> _follow_api;
 
             boost::signals2::scoped_connection _block_applied_connection;
 
@@ -228,19 +228,19 @@ namespace steemit {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        database_api::database_api(const steemit::application::api_context &ctx) : my(new database_api_impl(ctx)) {
+        database_api::database_api(const golos::application::api_context &ctx) : my(new database_api_impl(ctx)) {
         }
 
         database_api::~database_api() {
         }
 
-        database_api_impl::database_api_impl(const steemit::application::api_context &ctx) : _db(
+        database_api_impl::database_api_impl(const golos::application::api_context &ctx) : _db(
                 *ctx.app.chain_database()) {
             wlog("creating database api ${x}", ("x", int64_t(this)));
 
             try {
                 ctx.app.get_plugin<follow::follow_plugin>(FOLLOW_PLUGIN_NAME);
-                _follow_api = std::make_shared<steemit::follow::follow_api>(ctx);
+                _follow_api = std::make_shared<golos::follow::follow_api>(ctx);
             } catch (const fc::assert_exception &e) {
                 ilog("Follow Plugin not loaded");
             }
@@ -319,7 +319,7 @@ namespace steemit {
         }
 
         fc::variant_object database_api_impl::get_config() const {
-            return steemit::protocol::get_config();
+            return golos::protocol::get_config();
         }
 
         dynamic_global_property_object database_api::get_dynamic_global_properties() const {
@@ -1055,11 +1055,11 @@ namespace steemit {
             if (props.total_reward_shares2 > 0) {
                 uint128_t vshares;
                 if (my->_db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                    vshares = steemit::chain::utilities::calculate_claims(
+                    vshares = golos::chain::utilities::calculate_claims(
                             d.net_rshares.value > 0 ? d.net_rshares.value : 0,
                             my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)));
                 } else {
-                    vshares = steemit::chain::utilities::calculate_claims(
+                    vshares = golos::chain::utilities::calculate_claims(
                             d.net_rshares.value > 0 ? d.net_rshares.value : 0);
                 }
 
@@ -1097,7 +1097,7 @@ namespace steemit {
         }
 
         void database_api::set_url(discussion &d) const {
-            const comment_api_obj root(my->_db.get<comment_object, by_id>(d.root_comment));
+            const comment_api_object root(my->_db.get<comment_object, by_id>(d.root_comment));
             d.url = "/" + root.category + "/@" + root.author + "/" + root.permlink;
             d.root_title = root.title;
             if (root.id != d.id) {
@@ -1288,9 +1288,9 @@ namespace steemit {
                                                                                          const Index &tidx,
                                                                                          StartItr tidx_itr,
                                                                                          const std::function<
-                                                                                                 bool(const comment_api_obj &c)> &filter,
+                                                                                                 bool(const comment_api_object &c)> &filter,
                                                                                          const std::function<
-                                                                                                 bool(const comment_api_obj &c)> &exit,
+                                                                                                 bool(const comment_api_object &c)> &exit,
                                                                                          const std::function<
                                                                                                  bool(const Object &)> &tag_exit,
                                                                                          bool ignore_parent) const {
@@ -1390,9 +1390,9 @@ namespace steemit {
                         tags::tag_object, tags::tag_index, tags::by_parent_trending, tags::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(tags::tags_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.net_rshares <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const tags::tag_object &) -> bool {
                             return false;
@@ -1403,9 +1403,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_trending, languages::by_comment>(
                         query.select_languages, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.net_rshares <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &) -> bool {
                             return false;
@@ -1428,9 +1428,9 @@ namespace steemit {
                         tags::tag_object, tags::tag_index, tags::by_parent_promoted, tags::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(tags::tags_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.net_rshares <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const tags::tag_object &t) {
                             return false;
@@ -1441,9 +1441,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_promoted, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.net_rshares <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &t) {
                             return false;
@@ -1465,9 +1465,9 @@ namespace steemit {
                         tags::tag_object, tags::tag_index, tags::by_reward_fund_net_rshares, tags::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(tags::tags_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.net_rshares <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const tags::tag_object &t) {
                             return false;
@@ -1478,9 +1478,9 @@ namespace steemit {
                         languages::language_index, languages::by_reward_fund_net_rshares, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.net_rshares <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &t) {
                             return false;
@@ -1502,9 +1502,9 @@ namespace steemit {
                         tags::tag_object, tags::tag_index, tags::by_parent_promoted, tags::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(tags::tags_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.children_rshares2 <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const tags::tag_object &) -> bool {
                             return false;
@@ -1516,9 +1516,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_promoted, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return c.children_rshares2 <= 0;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &) -> bool {
                             return false;
@@ -1544,10 +1544,10 @@ namespace steemit {
                                                                                                               tags::tags_plugin::filter,
                                                                                                               query,
                                                                                                               std::placeholders::_1,
-                                                                                                              [&](const comment_api_obj &c) -> bool {
+                                                                                                              [&](const comment_api_object &c) -> bool {
                                                                                                                   return false;
                                                                                                               }),
-                                                                                                      [&](const comment_api_obj &c) -> bool {
+                                                                                                      [&](const comment_api_object &c) -> bool {
                                                                                                           return false;
                                                                                                       },
                                                                                                       [&](const tags::tag_object &) -> bool {
@@ -1560,9 +1560,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_created, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return false;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &) -> bool {
                             return false;
@@ -1587,10 +1587,10 @@ namespace steemit {
                                                                                                              tags::tags_plugin::filter,
                                                                                                              query,
                                                                                                              std::placeholders::_1,
-                                                                                                             [&](const comment_api_obj &c) -> bool {
+                                                                                                             [&](const comment_api_object &c) -> bool {
                                                                                                                  return false;
                                                                                                              }),
-                                                                                                     [&](const comment_api_obj &c) -> bool {
+                                                                                                     [&](const comment_api_object &c) -> bool {
                                                                                                          return false;
                                                                                                      },
                                                                                                      [&](const tags::tag_object &) -> bool {
@@ -1603,9 +1603,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_active, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return false;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &) -> bool {
                             return false;
@@ -1627,11 +1627,11 @@ namespace steemit {
                         tags::tag_index, tags::by_cashout, tags::by_comment>(query.select_tags, query, parent,
                                                                              std::bind(tags::tags_plugin::filter, query,
                                                                                        std::placeholders::_1,
-                                                                                       [&](const comment_api_obj &c) -> bool {
+                                                                                       [&](const comment_api_object &c) -> bool {
                                                                                            return c.children_rshares2 <=
                                                                                                   0;
                                                                                        }),
-                                                                             [&](const comment_api_obj &c) -> bool {
+                                                                             [&](const comment_api_object &c) -> bool {
                                                                                  return false;
                                                                              }, [&](const tags::tag_object &) -> bool {
                             return false;
@@ -1645,11 +1645,11 @@ namespace steemit {
                                                                                                          languages::languages_plugin::filter,
                                                                                                          query,
                                                                                                          std::placeholders::_1,
-                                                                                                         [&](const comment_api_obj &c) -> bool {
+                                                                                                         [&](const comment_api_object &c) -> bool {
                                                                                                              return c.children_rshares2 <=
                                                                                                                     0;
                                                                                                          }),
-                                                                                                 [&](const comment_api_obj &c) -> bool {
+                                                                                                 [&](const comment_api_object &c) -> bool {
                                                                                                      return false;
                                                                                                  },
                                                                                                  [&](const languages::language_object &) -> bool {
@@ -1673,11 +1673,11 @@ namespace steemit {
                         tags::tag_index, tags::by_net_rshares, tags::by_comment>(query.select_tags, query, parent,
                                                                                  std::bind(tags::tags_plugin::filter,
                                                                                            query, std::placeholders::_1,
-                                                                                           [&](const comment_api_obj &c) -> bool {
+                                                                                           [&](const comment_api_object &c) -> bool {
                                                                                                return c.children_rshares2 <=
                                                                                                       0;
                                                                                            }),
-                                                                                 [&](const comment_api_obj &c) -> bool {
+                                                                                 [&](const comment_api_object &c) -> bool {
                                                                                      return false;
                                                                                  },
                                                                                  [&](const tags::tag_object &) -> bool {
@@ -1692,11 +1692,11 @@ namespace steemit {
                                                                                                              languages::languages_plugin::filter,
                                                                                                              query,
                                                                                                              std::placeholders::_1,
-                                                                                                             [&](const comment_api_obj &c) -> bool {
+                                                                                                             [&](const comment_api_object &c) -> bool {
                                                                                                                  return c.children_rshares2 <=
                                                                                                                         0;
                                                                                                              }),
-                                                                                                     [&](const comment_api_obj &c) -> bool {
+                                                                                                     [&](const comment_api_object &c) -> bool {
                                                                                                          return false;
                                                                                                      },
                                                                                                      [&](const languages::language_object &) -> bool {
@@ -1718,9 +1718,9 @@ namespace steemit {
                         tags::tag_object, tags::tag_index, tags::by_parent_net_votes, tags::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(tags::tags_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return false;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const tags::tag_object &) -> bool {
                             return false;
@@ -1731,9 +1731,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_net_votes, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return false;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &) -> bool {
                             return false;
@@ -1755,9 +1755,9 @@ namespace steemit {
                         select<tags::tag_object, tags::tag_index, tags::by_parent_children, tags::by_comment>(
                                 query.select_tags, query, parent,
                                 std::bind(tags::tags_plugin::filter, query, std::placeholders::_1,
-                                          [&](const comment_api_obj &c) -> bool {
+                                          [&](const comment_api_object &c) -> bool {
                                               return false;
-                                          }), [&](const comment_api_obj &c) -> bool {
+                                          }), [&](const comment_api_object &c) -> bool {
                                     return false;
                                 }, [&](const tags::tag_object &) -> bool {
                                     return false;
@@ -1768,9 +1768,9 @@ namespace steemit {
                         languages::language_index, languages::by_parent_children, languages::by_comment>(
                         query.select_tags, query, parent,
                         std::bind(languages::languages_plugin::filter, query, std::placeholders::_1,
-                                  [&](const comment_api_obj &c) -> bool {
+                                  [&](const comment_api_object &c) -> bool {
                                       return false;
-                                  }), [&](const comment_api_obj &c) -> bool {
+                                  }), [&](const comment_api_object &c) -> bool {
                             return false;
                         }, [&](const languages::language_object &) -> bool {
                             return false;
@@ -1792,10 +1792,10 @@ namespace steemit {
                         tags::tag_index, tags::by_parent_hot, tags::by_comment>(query.select_tags, query, parent,
                                                                                 std::bind(tags::tags_plugin::filter,
                                                                                           query, std::placeholders::_1,
-                                                                                          [&](const comment_api_obj &c) -> bool {
+                                                                                          [&](const comment_api_object &c) -> bool {
                                                                                               return c.net_rshares <= 0;
                                                                                           }),
-                                                                                [&](const comment_api_obj &c) -> bool {
+                                                                                [&](const comment_api_object &c) -> bool {
                                                                                     return false;
                                                                                 },
                                                                                 [&](const tags::tag_object &) -> bool {
@@ -1811,11 +1811,11 @@ namespace steemit {
                                                                                                             languages::languages_plugin::filter,
                                                                                                             query,
                                                                                                             std::placeholders::_1,
-                                                                                                            [&](const comment_api_obj &c) -> bool {
+                                                                                                            [&](const comment_api_object &c) -> bool {
                                                                                                                 return c.net_rshares <=
                                                                                                                        0;
                                                                                                             }),
-                                                                                                    [&](const comment_api_obj &c) -> bool {
+                                                                                                    [&](const comment_api_object &c) -> bool {
                                                                                                         return false;
                                                                                                     },
                                                                                                     [&](const languages::language_object &) -> bool {
@@ -2313,9 +2313,9 @@ namespace steemit {
                                                                                 const discussion_query &query,
                                                                                 comment_object::id_type parent,
                                                                                 const std::function<
-                                                                                        bool(const comment_api_obj &)> &filter,
+                                                                                        bool(const comment_api_object &)> &filter,
                                                                                 const std::function<
-                                                                                        bool(const comment_api_obj &)> &exit,
+                                                                                        bool(const comment_api_object &)> &exit,
                                                                                 const std::function<
                                                                                         bool(const Object &)> &exit2,
                                                                                 Args... args) const {
@@ -2781,4 +2781,4 @@ namespace steemit {
             });
         }
     }
-} // steemit::application
+} // golos::application

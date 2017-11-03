@@ -1,9 +1,9 @@
-#include <steemit/account_by_key/account_by_key_plugin.hpp>
+#include <golos/account_by_key/account_by_key_plugin.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/operation_notification.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/operation_notification.hpp>
 
-namespace steemit {
+namespace golos {
     namespace account_by_key {
 
         namespace detail {
@@ -14,7 +14,7 @@ namespace steemit {
                         : self(_plugin) {
                 }
 
-                steemit::chain::database &database() {
+                golos::chain::database &database() {
                     return self.database();
                 }
 
@@ -189,7 +189,7 @@ namespace steemit {
 
         } // detail
 
-        account_by_key_plugin::account_by_key_plugin(steemit::application::application *app)
+        account_by_key_plugin::account_by_key_plugin(golos::application::application *app)
                 : plugin(app),
                   my(new detail::account_by_key_plugin_impl(*this)) {
         }
@@ -266,6 +266,6 @@ namespace steemit {
             my->cached_keys.clear();
         }
     }
-} // steemit::account_by_key
+} // golos::account_by_key
 
-STEEMIT_DEFINE_PLUGIN(account_by_key, steemit::account_by_key::account_by_key_plugin)
+STEEMIT_DEFINE_PLUGIN(account_by_key, golos::account_by_key::account_by_key_plugin)

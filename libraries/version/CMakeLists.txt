@@ -1,8 +1,8 @@
 set(CURRENT_TARGET version)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-     include/steemit/${CURRENT_TARGET}/version.hpp
-     include/steemit/${CURRENT_TARGET}/version_state.hpp
+     include/golos/${CURRENT_TARGET}/version.hpp
+     include/golos/${CURRENT_TARGET}/version_state.hpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -42,4 +42,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/golos/${CURRENT_TARGET}")

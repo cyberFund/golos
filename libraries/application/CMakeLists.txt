@@ -1,18 +1,18 @@
 set(CURRENT_TARGET application)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-        include/steemit/application/api.hpp
-        include/steemit/application/api_access.hpp
-        include/steemit/application/api_context.hpp
-        include/steemit/application/application.hpp
-        include/steemit/application/applied_operation.hpp
-        include/steemit/application/database_api.hpp
-        include/steemit/application/discussion_query.hpp
-        include/steemit/application/impacted.hpp
-        include/steemit/application/plugin.hpp
-        include/steemit/application/state.hpp
-        include/steemit/application/steem_api_objects.hpp
-        include/steemit/application/api_objects/comment_api_obj.hpp
+     include/golos/application/api.hpp
+     include/golos/application/api_access.hpp
+     include/golos/application/api_context.hpp
+     include/golos/application/application.hpp
+     include/golos/application/applied_operation.hpp
+     include/golos/application/database_api.hpp
+     include/golos/application/discussion_query.hpp
+     include/golos/application/impacted.hpp
+     include/golos/application/plugin.hpp
+     include/golos/application/state.hpp
+     include/golos/application/api_objects/steem_api_objects.hpp
+     include/golos/application/api_objects/comment_api_object.hpp
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -54,4 +54,4 @@ install(TARGETS
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/golos/${CURRENT_TARGET}")

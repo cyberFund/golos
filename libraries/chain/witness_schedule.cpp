@@ -1,11 +1,11 @@
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/objects/witness_object.hpp>
-#include <steemit/chain/witness_schedule.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/objects/witness_object.hpp>
+#include <golos/chain/witness_schedule.hpp>
 
-#include <steemit/protocol/config.hpp>
+#include <golos/protocol/config.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         void reset_virtual_schedule_time(database &db) {
             const witness_schedule_object &wso = db.get_witness_schedule_object();

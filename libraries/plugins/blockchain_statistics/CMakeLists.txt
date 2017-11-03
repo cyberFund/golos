@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/blockchain_statistics/*.hpp")
+file(GLOB HEADERS "include/golos/blockchain_statistics/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_blockchain_statistics SHARED

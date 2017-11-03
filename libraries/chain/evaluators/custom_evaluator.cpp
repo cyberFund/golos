@@ -1,9 +1,9 @@
-#include <steemit/chain/evaluators/custom_evaluator.hpp>
-#include <steemit/chain/custom_operation_interpreter.hpp>
+#include <golos/chain/evaluators/custom_evaluator.hpp>
+#include <golos/chain/custom_operation_interpreter.hpp>
 
-#include <steemit/chain/database.hpp>
+#include <golos/chain/database.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         void custom_evaluator::do_apply(const operation_type &o) {
         }

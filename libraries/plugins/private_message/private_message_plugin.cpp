@@ -1,12 +1,12 @@
-#include <steemit/private_message/private_message_evaluators.hpp>
+#include <golos/private_message/private_message_evaluators.hpp>
 
-#include <steemit/application/impacted.hpp>
+#include <golos/application/impacted.hpp>
 
-#include <steemit/chain/generic_custom_operation_interpreter.hpp>
+#include <golos/chain/generic_custom_operation_interpreter.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace private_message {
 
         namespace detail {
@@ -17,19 +17,19 @@ namespace steemit {
 
                 virtual ~private_message_plugin_impl();
 
-                steemit::chain::database &database() {
+                golos::chain::database &database() {
                     return _self.database();
                 }
 
                 private_message_plugin &_self;
                 std::shared_ptr<generic_custom_operation_interpreter<
-                        steemit::private_message::private_message_plugin_operation>> _custom_operation_interpreter;
+                        golos::private_message::private_message_plugin_operation>> _custom_operation_interpreter;
                 flat_map<string, string> _tracked_accounts;
             };
 
             private_message_plugin_impl::private_message_plugin_impl(private_message_plugin &_plugin) : _self(_plugin) {
                 _custom_operation_interpreter = std::make_shared<generic_custom_operation_interpreter<
-                        steemit::private_message::private_message_plugin_operation>>(database());
+                        golos::private_message::private_message_plugin_operation>>(database());
 
                 _custom_operation_interpreter->register_evaluator<private_message_evaluator>(&_self);
 
@@ -141,4 +141,4 @@ namespace steemit {
     }
 }
 
-STEEMIT_DEFINE_PLUGIN(private_message, steemit::private_message::private_message_plugin)
+STEEMIT_DEFINE_PLUGIN(private_message, golos::private_message::private_message_plugin)

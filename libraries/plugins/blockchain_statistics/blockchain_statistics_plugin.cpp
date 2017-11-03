@@ -1,18 +1,18 @@
-#include <steemit/blockchain_statistics/blockchain_statistics_api.hpp>
+#include <golos/blockchain_statistics/blockchain_statistics_api.hpp>
 
-#include <steemit/application/impacted.hpp>
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/comment_object.hpp>
-#include <steemit/chain/objects/history_object.hpp>
+#include <golos/application/impacted.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/comment_object.hpp>
+#include <golos/chain/objects/history_object.hpp>
 
-#include <steemit/chain/operation_notification.hpp>
+#include <golos/chain/operation_notification.hpp>
 
-namespace steemit {
+namespace golos {
     namespace blockchain_statistics {
 
         namespace detail {
 
-            using namespace steemit::protocol;
+            using namespace golos::protocol;
 
             class blockchain_statistics_plugin_impl {
             public:
@@ -480,6 +480,6 @@ namespace steemit {
         }
 
     }
-} // steemit::blockchain_statistics
+} // golos::blockchain_statistics
 
-STEEMIT_DEFINE_PLUGIN(blockchain_statistics, steemit::blockchain_statistics::blockchain_statistics_plugin);
+STEEMIT_DEFINE_PLUGIN(blockchain_statistics, golos::blockchain_statistics::blockchain_statistics_plugin);

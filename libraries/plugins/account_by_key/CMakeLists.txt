@@ -1,9 +1,9 @@
 set(CURRENT_TARGET account_by_key)
 
 list(APPEND CURRENT_TARGET_HEADERS
-        include/steemit/account_by_key/account_by_key_plugin.hpp
-        include/steemit/account_by_key/account_by_key_api.hpp
-        include/steemit/account_by_key/account_by_key_objects.hpp
+     include/golos/account_by_key/account_by_key_plugin.hpp
+     include/golos/account_by_key/account_by_key_api.hpp
+     include/golos/account_by_key/account_by_key_objects.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES

@@ -1,18 +1,18 @@
-#include <steemit/account_history/account_history_plugin.hpp>
+#include <golos/account_history/account_history_plugin.hpp>
 
-#include <steemit/application/impacted.hpp>
+#include <golos/application/impacted.hpp>
 
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/objects/history_object.hpp>
+#include <golos/chain/operation_notification.hpp>
+#include <golos/chain/objects/history_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace account_history {
 
         namespace detail {
 
-            using namespace steemit::protocol;
+            using namespace golos::protocol;
 
             class account_history_plugin_impl {
             public:
@@ -21,7 +21,7 @@ namespace steemit {
 
                 virtual ~account_history_plugin_impl();
 
-                steemit::chain::database &database() {
+                golos::chain::database &database() {
                     return _self.database();
                 }
 
@@ -153,10 +153,10 @@ namespace steemit {
 
             void account_history_plugin_impl::on_operation(const operation_notification &note) {
                 flat_set<account_name_type> impacted;
-                steemit::chain::database &db = database();
+                golos::chain::database &db = database();
 
                 const operation_object *new_obj = nullptr;
-                steemit::application::operation_get_impacted_accounts(note.op, impacted);
+                golos::application::operation_get_impacted_accounts(note.op, impacted);
 
                 for (const auto &item : impacted) {
                     auto itr = _tracked_accounts.lower_bound(item);
@@ -220,4 +220,4 @@ namespace steemit {
     }
 }
 
-STEEMIT_DEFINE_PLUGIN(account_history, steemit::account_history::account_history_plugin)
+STEEMIT_DEFINE_PLUGIN(account_history, golos::account_history::account_history_plugin)

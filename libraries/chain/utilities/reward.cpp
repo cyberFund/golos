@@ -1,7 +1,7 @@
-#include <steemit/chain/utilities/reward.hpp>
-#include <steemit/chain/utilities/uint256.hpp>
+#include <golos/chain/utilities/reward.hpp>
+#include <golos/chain/utilities/uint256.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         namespace utilities {
 

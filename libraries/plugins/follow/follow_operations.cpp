@@ -1,8 +1,8 @@
-#include <steemit/follow/follow_operations.hpp>
+#include <golos/follow/follow_operations.hpp>
 
-#include <steemit/protocol/operations/operation_utilities_impl.hpp>
+#include <golos/protocol/operations/operation_utilities_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace follow {
 
         void follow_operation::validate() const {
@@ -14,19 +14,19 @@ namespace steemit {
         }
 
     }
-} //steemit::follow
+} //golos::follow
 
 namespace fc {
 
-    void to_variant(const steemit::follow::follow_plugin_operation &var, fc::variant &vo) {
+    void to_variant(const golos::follow::follow_plugin_operation &var, fc::variant &vo) {
         var.visit(from_operation<from_operation_policy>(vo));
     }
 
-    void from_variant(const fc::variant &var, steemit::follow::follow_plugin_operation &vo) {
+    void from_variant(const fc::variant &var, golos::follow::follow_plugin_operation &vo) {
         static std::map<string, uint32_t> to_tag = []() {
             std::map<string, uint32_t> name_map;
-            for (int i = 0; i < steemit::follow::follow_plugin_operation::count(); ++i) {
-                steemit::follow::follow_plugin_operation tmp;
+            for (int i = 0; i < golos::follow::follow_plugin_operation::count(); ++i) {
+                golos::follow::follow_plugin_operation tmp;
                 tmp.set_which(i);
                 string n;
                 tmp.visit(get_operation_name(n));
@@ -51,10 +51,10 @@ namespace fc {
     }
 }
 
-namespace steemit {
+namespace golos {
     namespace protocol {
         void operation_validate(const follow::follow_plugin_operation &op) {
-            op.visit(steemit::protocol::operation_validate_visitor());
+            op.visit(golos::protocol::operation_validate_visitor());
         }
 
         void operation_get_required_authorities(const follow::follow_plugin_operation &op,
@@ -62,7 +62,7 @@ namespace steemit {
                                                 flat_set<protocol::account_name_type> &owner,
                                                 flat_set<protocol::account_name_type> &posting,
                                                 std::vector<authority> &other) {
-            op.visit(steemit::protocol::operation_get_required_auth_visitor(active, owner, posting, other));
+            op.visit(golos::protocol::operation_get_required_auth_visitor(active, owner, posting, other));
         }
     }
 }

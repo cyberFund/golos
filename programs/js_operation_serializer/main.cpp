@@ -1,9 +1,9 @@
-#include <steemit/protocol/protocol.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
+#include <golos/protocol/protocol.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-using namespace steemit::chain;
-using namespace steemit::protocol;
+using namespace golos::chain;
+using namespace golos::protocol;
 
 using std::string;
 using std::map;
@@ -34,7 +34,7 @@ namespace detail_ns {
         str = remove_tail_if(str, '_', "t");
         str = remove_tail_if(str, '_', "object");
         str = remove_tail_if(str, '_', "type");
-        str = remove_namespace_if(str, "steemit::chain");
+        str = remove_namespace_if(str, "golos::chain");
         str = remove_namespace_if(str, "chainbase");
         str = remove_namespace_if(str, "std");
         str = remove_namespace_if(str, "fc");
@@ -54,7 +54,7 @@ namespace detail_ns {
 
 
     map<string, size_t> st;
-    steemit::vector<std::function<void()>> serializers;
+    golos::vector<std::function<void()>> serializers;
 
     bool register_serializer(const string &name, std::function<void()> sr) {
         if (st.find(name) == st.end()) {

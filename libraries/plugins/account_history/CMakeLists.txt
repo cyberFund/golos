@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/account_history/*.hpp")
+file(GLOB HEADERS "include/golos/account_history/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_account_history SHARED

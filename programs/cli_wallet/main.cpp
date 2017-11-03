@@ -12,10 +12,10 @@
 #include <fc/rpc/websocket_api.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-#include <graphene/utilities/key_conversion.hpp>
+#include <golos/utilities/key_conversion.hpp>
 
-#include <steemit/application/api.hpp>
-#include <steemit/wallet/wallet.hpp>
+#include <golos/application/api.hpp>
+#include <golos/wallet/wallet.hpp>
 
 #include <fc/interprocess/signals.hpp>
 #include <boost/algorithm/string.hpp>
@@ -38,9 +38,9 @@
 
 
 using namespace graphene::utilities;
-using namespace steemit::application;
-using namespace steemit::chain;
-using namespace steemit::wallet;
+using namespace golos::application;
+using namespace golos::chain;
+using namespace golos::wallet;
 using namespace std;
 
 void daemon_mode();

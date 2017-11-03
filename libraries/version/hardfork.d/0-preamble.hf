@@ -9,6 +9,6 @@
 
 #pragma once
 
-#include <steemit/version/version.hpp>
+#include <golos/version/version.hpp>
 
 #define STEEMIT_NUM_HARDFORKS 17

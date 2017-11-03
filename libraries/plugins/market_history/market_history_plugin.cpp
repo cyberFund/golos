@@ -1,8 +1,8 @@
-#include <steemit/market_history/market_history_api.hpp>
+#include <golos/market_history/market_history_api.hpp>
 
-#include <steemit/chain/operation_notification.hpp>
+#include <golos/chain/operation_notification.hpp>
 
-namespace steemit {
+namespace golos {
     namespace market_history {
 
         namespace detail {
@@ -463,6 +463,6 @@ namespace steemit {
             return _my->maximum_history_per_bucket_size;
         }
     }
-} // steemit::market_history
+} // golos::market_history
 
-STEEMIT_DEFINE_PLUGIN(market_history, steemit::market_history::market_history_plugin)
+STEEMIT_DEFINE_PLUGIN(market_history, golos::market_history::market_history_plugin)

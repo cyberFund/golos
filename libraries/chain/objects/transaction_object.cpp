@@ -1,6 +1,6 @@
-#include <steemit/chain/objects/transaction_object.hpp>
+#include <golos/chain/objects/transaction_object.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
         const object *transaction_index::create(const std::function<void(object *)> &constructor, object_id_type) {
@@ -69,4 +69,4 @@ namespace steemit {
         }
 
     }
-} // steemit::chain
+} // golos::chain

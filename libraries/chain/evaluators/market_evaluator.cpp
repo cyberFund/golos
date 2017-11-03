@@ -1,19 +1,19 @@
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/asset_object.hpp>
-#include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/objects/market_object.hpp>
-#include <steemit/chain/evaluators/market_evaluator.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/asset_object.hpp>
+#include <golos/chain/database_exceptions.hpp>
+#include <golos/chain/objects/market_object.hpp>
+#include <golos/chain/evaluators/market_evaluator.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/version/hardfork.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/version/hardfork.hpp>
 
-#include <steemit/protocol/exceptions.hpp>
-#include <steemit/protocol/operations/market_operations.hpp>
+#include <golos/protocol/exceptions.hpp>
+#include <golos/protocol/operations/market_operations.hpp>
 
 #include <fc/uint128.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before
         ///  Issue #56 contains the justificiation for allowing any UTF-8 string to serve as a permlink, content will be grouped by tags
@@ -481,4 +481,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/chain/evaluators/market_evaluator.tpp>
+#include <golos/chain/evaluators/market_evaluator.tpp>

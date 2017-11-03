@@ -1,12 +1,12 @@
-#include <steemit/protocol/authority.hpp>
+#include <golos/protocol/authority.hpp>
 
-#include <steemit/application/impacted.hpp>
+#include <golos/application/impacted.hpp>
 
-namespace steemit {
+namespace golos {
     namespace application {
 
         using namespace fc;
-        using namespace steemit::protocol;
+        using namespace golos::protocol;
 
         // TODO:  Review all of these, especially no-ops
         struct get_impacted_account_visitor {

@@ -26,9 +26,9 @@
 #include <fc/thread/scoped_lock.hpp>
 #include <fc/io/enum_type.hpp>
 
-#include <steemit/network/message_oriented_connection.hpp>
-#include <steemit/network/stcp_socket.hpp>
-#include <steemit/network/config.hpp>
+#include <golos/network/message_oriented_connection.hpp>
+#include <golos/network/stcp_socket.hpp>
+#include <golos/network/config.hpp>
 
 #ifdef DEFAULT_LOGGER
 # undef DEFAULT_LOGGER
@@ -41,7 +41,7 @@
 # define VERIFY_CORRECT_THREAD() do {} while (0)
 #endif
 
-namespace steemit {
+namespace golos {
     namespace network {
         namespace detail {
             class message_oriented_connection_impl {

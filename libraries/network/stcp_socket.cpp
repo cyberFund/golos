@@ -29,9 +29,9 @@
 #include <fc/crypto/aes.hpp>
 #include <fc/network/ip.hpp>
 
-#include <steemit/network/stcp_socket.hpp>
+#include <golos/network/stcp_socket.hpp>
 
-namespace steemit {
+namespace golos {
     namespace network {
 
         stcp_socket::stcp_socket()
@@ -193,5 +193,5 @@ namespace steemit {
 
 
     }
-} // namespace steemit::network
+} // namespace golos::network
 

@@ -1,6 +1,6 @@
-#include <steemit/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
 /*set< string > account_member_index::get_account_members( const account_object& a ) const
@@ -119,4 +119,4 @@ void account_member_index::object_modified( const object& after )
 }*/
 
     }
-} // steemit::chain
+} // golos::chain

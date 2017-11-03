@@ -2,8 +2,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <steemit/chain/objects/steem_objects.hpp>
-#include <steemit/chain/database.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
+#include <golos/chain/database.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/crypto/elliptic.hpp>
@@ -13,9 +13,9 @@
 
 #include <cmath>
 
-using namespace steemit;
-using namespace steemit::chain;
-using namespace steemit::protocol;
+using namespace golos;
+using namespace golos::chain;
+using namespace golos::protocol;
 
 typedef asset<0, 17, 0> latest_asset;
 

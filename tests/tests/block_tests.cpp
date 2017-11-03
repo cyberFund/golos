@@ -2,23 +2,23 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <steemit/protocol/exceptions.hpp>
+#include <golos/protocol/exceptions.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
-#include <steemit/chain/objects/history_object.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/history_object.hpp>
 
-#include <steemit/account_history/account_history_plugin.hpp>
+#include <golos/account_history/account_history_plugin.hpp>
 
-#include <graphene/utilities/tempdir.hpp>
+#include <golos/utilities/tempdir.hpp>
 
 #include <fc/crypto/digest.hpp>
 
 #include "../common/database_fixture.hpp"
 
-using namespace steemit;
-using namespace steemit::chain;
-using namespace steemit::protocol;
+using namespace golos;
+using namespace golos::chain;
+using namespace golos::protocol;
 
 #define TEST_SHARED_MEM_SIZE (1024 * 1024 * 8)
 
@@ -662,8 +662,8 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                                   << std::endl;
                     }
                 }
-                auto ahplugin = app.register_plugin<steemit::account_history::account_history_plugin>();
-                db_plugin = app.register_plugin<steemit::plugin::debug_node::debug_node_plugin>();
+                auto ahplugin = app.register_plugin<golos::account_history::account_history_plugin>();
+                db_plugin = app.register_plugin<golos::plugin::debug_node::debug_node_plugin>();
                 init_account_pub_key = init_account_priv_key.get_public_key();
 
                 boost::program_options::variables_map options;

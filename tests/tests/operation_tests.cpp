@@ -2,13 +2,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <steemit/protocol/exceptions.hpp>
+#include <golos/protocol/exceptions.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/version/hardfork.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/version/hardfork.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
 
-#include <steemit/chain/utilities/reward.hpp>
+#include <golos/chain/utilities/reward.hpp>
 
 #include <fc/crypto/digest.hpp>
 
@@ -18,9 +18,9 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace steemit;
-using namespace steemit::chain;
-using namespace steemit::protocol;
+using namespace golos;
+using namespace golos::chain;
+using namespace golos::protocol;
 using fc::string;
 
 typedef asset<0, 17, 0> latest_asset;

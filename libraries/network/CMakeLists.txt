@@ -1,15 +1,15 @@
 set(CURRENT_TARGET network)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-     include/steemit/network/config.hpp
-     include/steemit/network/core_messages.hpp
-     include/steemit/network/exceptions.hpp
-     include/steemit/network/message.hpp
-     include/steemit/network/message_oriented_connection.hpp
-     include/steemit/network/node.hpp
-     include/steemit/network/peer_connection.hpp
-     include/steemit/network/peer_database.hpp
-     include/steemit/network/stcp_socket.hpp
+     include/golos/network/config.hpp
+     include/golos/network/core_messages.hpp
+     include/golos/network/exceptions.hpp
+     include/golos/network/message.hpp
+     include/golos/network/message_oriented_connection.hpp
+     include/golos/network/node.hpp
+     include/golos/network/peer_connection.hpp
+     include/golos/network/peer_database.hpp
+     include/golos/network/stcp_socket.hpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -59,5 +59,5 @@ install(TARGETS
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/golos/${CURRENT_TARGET}")
 

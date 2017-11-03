@@ -1,7 +1,7 @@
 set(CURRENT_TARGET tags)
 
 list(APPEND CURRENT_TARGET_HEADERS
-        include/steemit/tags/tags_plugin.hpp
+     include/golos/tags/tags_plugin.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES

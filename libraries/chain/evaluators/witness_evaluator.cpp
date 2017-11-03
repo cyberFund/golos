@@ -1,10 +1,10 @@
-#include <steemit/chain/evaluators/witness_evaluator.hpp>
+#include <golos/chain/evaluators/witness_evaluator.hpp>
 
-#include <steemit/chain/objects/witness_object.hpp>
+#include <golos/chain/objects/witness_object.hpp>
 
-#include <steemit/chain/database.hpp>
+#include <golos/chain/database.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void witness_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
@@ -174,4 +174,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/chain/evaluators/witness_evaluator.tpp>
+#include <golos/chain/evaluators/witness_evaluator.tpp>

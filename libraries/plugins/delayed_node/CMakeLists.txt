@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/steemit/delayed_node/*.hpp")
+file(GLOB HEADERS "include/golos/delayed_node/*.hpp")
 
 if(BUILD_SHARED_LIBRARIES)
     add_library(golos_delayed_node SHARED

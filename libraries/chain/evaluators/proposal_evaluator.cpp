@@ -1,11 +1,11 @@
-#include <steemit/chain/evaluators/proposal_evaluator.hpp>
-#include <steemit/chain/objects/proposal_object.hpp>
-#include <steemit/chain/objects/account_object.hpp>
+#include <golos/chain/evaluators/proposal_evaluator.hpp>
+#include <golos/chain/objects/proposal_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
 
 #include <fc/exception/exception.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void proposal_create_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
@@ -161,6 +161,6 @@ namespace steemit {
             } FC_CAPTURE_AND_RETHROW((o))
         }
     }
-} // graphene::chain
+} // golos::chain
 
-#include <steemit/chain/evaluators/proposal_evaluator.tpp>
+#include <golos/chain/evaluators/proposal_evaluator.tpp>

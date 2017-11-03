@@ -1,8 +1,8 @@
-#include <steemit/protocol/operations/steem_operations.hpp>
+#include <golos/protocol/operations/steem_operations.hpp>
 
 #include <fc/io/json.hpp>
 
-namespace steemit {
+namespace golos {
     namespace protocol {
 
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before
@@ -47,7 +47,7 @@ namespace steemit {
         void set_withdraw_vesting_route_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(from_account);
             validate_account_name(to_account);
-            FC_ASSERT(0 <= percent && percent <= STEEMIT_100_PERCENT, "Percent must be valid steemit percent");
+            FC_ASSERT(0 <= percent && percent <= STEEMIT_100_PERCENT, "Percent must be valid golos percent");
         }
 
 
@@ -248,6 +248,6 @@ namespace steemit {
             FC_ASSERT(vesting_shares.amount >= 0, "Delegation cannot be negative");
         }
     }
-} // steemit::protocol
+} // golos::protocol
 
-#include <steemit/protocol/operations/steem_operations.tpp>
+#include <golos/protocol/operations/steem_operations.tpp>

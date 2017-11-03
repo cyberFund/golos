@@ -1,13 +1,13 @@
-#include <steemit/chain/evaluators/account_evaluator.hpp>
+#include <golos/chain/evaluators/account_evaluator.hpp>
 
-#include <steemit/chain/evaluators/steem_evaluator.hpp>
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
-#include <steemit/chain/objects/block_summary_object.hpp>
-#include <steemit/chain/utilities/reward.hpp>
+#include <golos/chain/evaluators/steem_evaluator.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/custom_operation_interpreter.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/block_summary_object.hpp>
+#include <golos/chain/utilities/reward.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void account_create_evaluator<Major, Hardfork, Release>::do_apply(
@@ -353,4 +353,4 @@ namespace steemit {
     }
 }
 
-#include <steemit/chain/evaluators/account_evaluator.tpp>
+#include <golos/chain/evaluators/account_evaluator.tpp>

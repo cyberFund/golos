@@ -1,8 +1,8 @@
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/objects/account_object.hpp>
-#include <steemit/chain/objects/proposal_object.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/objects/account_object.hpp>
+#include <golos/chain/objects/proposal_object.hpp>
 
-namespace steemit {
+namespace golos {
     namespace chain {
 
         bool proposal_object::is_authorized_to_execute(database &db) const {

@@ -4,13 +4,13 @@
 #include <vector>
 #include <atomic>
 
-#include <steemit/chain/steem_object_types.hpp>
+#include <golos/chain/steem_object_types.hpp>
 
 #include <fc/api.hpp>
 #include <fc/uint128.hpp>
 #include <boost/asio/ip/udp.hpp>
 
-using namespace steemit::chain;
+using namespace golos::chain;
 
 class stat_client final {
 public:

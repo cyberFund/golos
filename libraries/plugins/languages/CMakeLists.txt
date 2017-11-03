@@ -1,7 +1,7 @@
 set(CURRENT_TARGET languages)
 
 list(APPEND CURRENT_TARGET_HEADERS
-        include/steemit/languages/languages_plugin.hpp
+     include/golos/languages/languages_plugin.hpp
         )
 
 list(APPEND CURRENT_TARGET_SOURCES

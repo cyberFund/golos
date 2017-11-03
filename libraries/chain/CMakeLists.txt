@@ -1,58 +1,58 @@
 set(CURRENT_TARGET chain)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-     include/steemit/chain/evaluators/account_evaluator.hpp
-     include/steemit/chain/evaluators/account_evaluator.tpp
-     include/steemit/chain/objects/account_object.hpp
-     include/steemit/chain/objects/asset_object.hpp
-     include/steemit/chain/evaluators/asset_evaluator.hpp
-     include/steemit/chain/evaluators/asset_evaluator.tpp
-     include/steemit/chain/block_log.hpp
-     include/steemit/chain/objects/block_summary_object.hpp
-     include/steemit/chain/objects/comment_object.hpp
-     include/steemit/chain/compound.hpp
-     include/steemit/chain/custom_operation_interpreter.hpp
-     include/steemit/chain/evaluators/custom_evaluator.hpp
-     include/steemit/chain/database.hpp
-     include/steemit/chain/database_exceptions.hpp
-     include/steemit/chain/db_with.hpp
-     include/steemit/chain/evaluators/escrow_evaluator.hpp
-     include/steemit/chain/evaluators/escrow_evaluator.tpp
-     include/steemit/chain/evaluator.hpp
-     include/steemit/chain/evaluator_registry.hpp
-     include/steemit/chain/fork_database.hpp
-     include/steemit/chain/generic_custom_operation_interpreter.hpp
-     include/steemit/chain/objects/global_property_object.hpp
-     include/steemit/chain/objects/history_object.hpp
-     include/steemit/chain/objects/hardfork_object.hpp
-     include/steemit/chain/immutable_chain_parameters.hpp
-     include/steemit/chain/evaluators/market_evaluator.hpp
-     include/steemit/chain/evaluators/market_evaluator.tpp
-     include/steemit/chain/objects/market_object.hpp
-     include/steemit/chain/objects/node_property_object.hpp
-     include/steemit/chain/objects/operation_history_object.hpp
-     include/steemit/chain/operation_notification.hpp
-     include/steemit/chain/evaluators/proposal_evaluator.hpp
-     include/steemit/chain/evaluators/proposal_evaluator.tpp
-     include/steemit/chain/objects/proposal_object.hpp
-     include/steemit/chain/shared_authority.hpp
-     include/steemit/chain/shared_db_merkle.hpp
-     include/steemit/chain/evaluators/steem_evaluator.hpp
-     include/steemit/chain/evaluators/steem_evaluator.tpp
-     include/steemit/chain/steem_object_types.hpp
-     include/steemit/chain/objects/steem_objects.hpp
-     include/steemit/chain/evaluators/transfer_evaluator.hpp
-     include/steemit/chain/evaluators/transfer_evaluator.tpp
-     include/steemit/chain/transaction_evaluation_state.hpp
-     include/steemit/chain/objects/transaction_object.hpp
-     include/steemit/chain/objects/witness_object.hpp
-     include/steemit/chain/witness_schedule.hpp
-     include/steemit/chain/evaluators/witness_evaluator.hpp
-     include/steemit/chain/evaluators/witness_evaluator.tpp
+     include/golos/chain/evaluators/account_evaluator.hpp
+     include/golos/chain/evaluators/account_evaluator.tpp
+     include/golos/chain/objects/account_object.hpp
+     include/golos/chain/objects/asset_object.hpp
+     include/golos/chain/evaluators/asset_evaluator.hpp
+     include/golos/chain/evaluators/asset_evaluator.tpp
+     include/golos/chain/block_log.hpp
+     include/golos/chain/objects/block_summary_object.hpp
+     include/golos/chain/objects/comment_object.hpp
+     include/golos/chain/compound.hpp
+     include/golos/chain/custom_operation_interpreter.hpp
+     include/golos/chain/evaluators/custom_evaluator.hpp
+     include/golos/chain/database.hpp
+     include/golos/chain/database_exceptions.hpp
+     include/golos/chain/db_with.hpp
+     include/golos/chain/evaluators/escrow_evaluator.hpp
+     include/golos/chain/evaluators/escrow_evaluator.tpp
+     include/golos/chain/evaluator.hpp
+     include/golos/chain/evaluator_registry.hpp
+     include/golos/chain/fork_database.hpp
+     include/golos/chain/generic_custom_operation_interpreter.hpp
+     include/golos/chain/objects/global_property_object.hpp
+     include/golos/chain/objects/history_object.hpp
+     include/golos/chain/objects/hardfork_object.hpp
+     include/golos/chain/immutable_chain_parameters.hpp
+     include/golos/chain/evaluators/market_evaluator.hpp
+     include/golos/chain/evaluators/market_evaluator.tpp
+     include/golos/chain/objects/market_object.hpp
+     include/golos/chain/objects/node_property_object.hpp
+     include/golos/chain/objects/operation_history_object.hpp
+     include/golos/chain/operation_notification.hpp
+     include/golos/chain/evaluators/proposal_evaluator.hpp
+     include/golos/chain/evaluators/proposal_evaluator.tpp
+     include/golos/chain/objects/proposal_object.hpp
+     include/golos/chain/shared_authority.hpp
+     include/golos/chain/shared_db_merkle.hpp
+     include/golos/chain/evaluators/steem_evaluator.hpp
+     include/golos/chain/evaluators/steem_evaluator.tpp
+     include/golos/chain/steem_object_types.hpp
+     include/golos/chain/objects/steem_objects.hpp
+     include/golos/chain/evaluators/transfer_evaluator.hpp
+     include/golos/chain/evaluators/transfer_evaluator.tpp
+     include/golos/chain/transaction_evaluation_state.hpp
+     include/golos/chain/objects/transaction_object.hpp
+     include/golos/chain/objects/witness_object.hpp
+     include/golos/chain/witness_schedule.hpp
+     include/golos/chain/evaluators/witness_evaluator.hpp
+     include/golos/chain/evaluators/witness_evaluator.tpp
 
-     include/steemit/chain/utilities/asset.hpp
-     include/steemit/chain/utilities/reward.hpp
-     include/steemit/chain/utilities/uint256.hpp
+     include/golos/chain/utilities/asset.hpp
+     include/golos/chain/utilities/reward.hpp
+     include/golos/chain/utilities/uint256.hpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -111,4 +111,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/golos/${CURRENT_TARGET}")

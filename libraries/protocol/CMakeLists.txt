@@ -1,45 +1,45 @@
 set(CURRENT_TARGET protocol)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-     include/steemit/protocol/asset.hpp
-     include/steemit/protocol/asset.tpp
-     include/steemit/protocol/operations/account_operations.hpp
-     include/steemit/protocol/operations/account_operations.tpp
-     include/steemit/protocol/operations/asset_operations.hpp
-     include/steemit/protocol/operations/asset_operations.tpp
-     include/steemit/protocol/operations/asset_virtual_operations.hpp
-     include/steemit/protocol/authority.hpp
-     include/steemit/protocol/base.hpp
-     include/steemit/protocol/block.hpp
-     include/steemit/protocol/block_header.hpp
-     include/steemit/protocol/operations/custom_operations.hpp
-     include/steemit/protocol/operations/comment_operations.hpp
-     include/steemit/protocol/operations/comment_operations.tpp
-     include/steemit/protocol/config.hpp
-     include/steemit/protocol/chain_properties.hpp
-     include/steemit/protocol/operations/escrow_operations.hpp
-     include/steemit/protocol/operations/escrow_operations.tpp
-     include/steemit/protocol/exceptions.hpp
-     include/steemit/protocol/get_config.hpp
-     include/steemit/protocol/operations/market_operations.hpp
-     include/steemit/protocol/operations/market_operations.tpp
-     include/steemit/protocol/operations/market_virtual_operations.hpp
-     include/steemit/protocol/operations/operation_utilities_impl.hpp
-     include/steemit/protocol/operations/operations.hpp
-     include/steemit/protocol/protocol.hpp
-     include/steemit/protocol/operations/proposal_operations.hpp
-     include/steemit/protocol/operations/proposal_operations.tpp
-     include/steemit/protocol/sign_state.hpp
-     include/steemit/protocol/operations/steem_operations.hpp
-     include/steemit/protocol/operations/steem_operations.tpp
-     include/steemit/protocol/operations/steem_virtual_operations.hpp
-     include/steemit/protocol/operations/transfer_operations.hpp
-     include/steemit/protocol/operations/transfer_operations.tpp
-     include/steemit/protocol/transaction.hpp
-     include/steemit/protocol/types.hpp
-     include/steemit/protocol/operations/witness_operations.hpp
-     include/steemit/protocol/operations/witness_operations.tpp
-     include/steemit/protocol/operations/witness_virtual_operations.hpp
+     include/golos/protocol/asset.hpp
+     include/golos/protocol/asset.tpp
+     include/golos/protocol/operations/account_operations.hpp
+     include/golos/protocol/operations/account_operations.tpp
+     include/golos/protocol/operations/asset_operations.hpp
+     include/golos/protocol/operations/asset_operations.tpp
+     include/golos/protocol/operations/asset_virtual_operations.hpp
+     include/golos/protocol/authority.hpp
+     include/golos/protocol/base.hpp
+     include/golos/protocol/block.hpp
+     include/golos/protocol/block_header.hpp
+     include/golos/protocol/operations/custom_operations.hpp
+     include/golos/protocol/operations/comment_operations.hpp
+     include/golos/protocol/operations/comment_operations.tpp
+     include/golos/protocol/config.hpp
+     include/golos/protocol/chain_properties.hpp
+     include/golos/protocol/operations/escrow_operations.hpp
+     include/golos/protocol/operations/escrow_operations.tpp
+     include/golos/protocol/exceptions.hpp
+     include/golos/protocol/get_config.hpp
+     include/golos/protocol/operations/market_operations.hpp
+     include/golos/protocol/operations/market_operations.tpp
+     include/golos/protocol/operations/market_virtual_operations.hpp
+     include/golos/protocol/operations/operation_utilities_impl.hpp
+     include/golos/protocol/operations/operations.hpp
+     include/golos/protocol/protocol.hpp
+     include/golos/protocol/operations/proposal_operations.hpp
+     include/golos/protocol/operations/proposal_operations.tpp
+     include/golos/protocol/sign_state.hpp
+     include/golos/protocol/operations/steem_operations.hpp
+     include/golos/protocol/operations/steem_operations.tpp
+     include/golos/protocol/operations/steem_virtual_operations.hpp
+     include/golos/protocol/operations/transfer_operations.hpp
+     include/golos/protocol/operations/transfer_operations.tpp
+     include/golos/protocol/transaction.hpp
+     include/golos/protocol/types.hpp
+     include/golos/protocol/operations/witness_operations.hpp
+     include/golos/protocol/operations/witness_operations.tpp
+     include/golos/protocol/operations/witness_virtual_operations.hpp
      )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -94,4 +94,4 @@ install(TARGETS
         ARCHIVE DESTINATION lib
         )
 
-install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/steemit/${CURRENT_TARGET}")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/golos/${CURRENT_TARGET}")

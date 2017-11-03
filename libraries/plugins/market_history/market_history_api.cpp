@@ -1,20 +1,20 @@
-#include <steemit/market_history/market_history_api.hpp>
+#include <golos/market_history/market_history_api.hpp>
 
-#include <steemit/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
 
-#include <steemit/application/application.hpp>
+#include <golos/application/application.hpp>
 
 #include <fc/crypto/bigint.hpp>
 #include <fc/bloom_filter.hpp>
 
-namespace steemit {
+namespace golos {
     namespace market_history {
 
         namespace detail {
 
             class market_history_api_impl : public std::enable_shared_from_this<market_history_api_impl> {
             public:
-                market_history_api_impl(steemit::application::application &_app) : app(_app) {
+                market_history_api_impl(golos::application::application &_app) : app(_app) {
                 }
 
                 struct operation_process_fill_order_visitor {
@@ -63,7 +63,7 @@ namespace steemit {
 
                 vector<limit_order_object> get_limit_orders(const string &a, const string &b, uint32_t limit) const;
 
-                std::vector<steemit::application::extended_limit_order> get_limit_orders_by_owner(
+                std::vector<golos::application::extended_limit_order> get_limit_orders_by_owner(
                         const string &owner) const;
 
                 std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
@@ -109,7 +109,7 @@ namespace steemit {
                 map<pair<asset_name_type, asset_name_type>,
                         std::function<void(const variant &)>> _market_subscriptions;
 
-                steemit::application::application &app;
+                golos::application::application &app;
             };
 
             template<>
@@ -237,7 +237,7 @@ return trade;
             void market_history_api_impl::set_block_applied_callback(
                     std::function<void(const variant &block_header)> cb) {
                 _block_applied_callback = cb;
-                _block_applied_connection = steemit::application::connect_signal(app.chain_database()->applied_block,
+                _block_applied_connection = golos::application::connect_signal(app.chain_database()->applied_block,
                                                                                  *this,
                                                                                  &market_history_api_impl::on_applied_block);
             }
@@ -460,7 +460,7 @@ return trade;
                 if (a_name > b_name) {
                     std::swap(a_name, b_name);
                 }
-                const auto &history_idx = db.get_index<steemit::market_history::order_history_index>().indices().get<
+                const auto &history_idx = db.get_index<golos::market_history::order_history_index>().indices().get<
                         by_key>();
                 history_key hkey;
                 hkey.base = a_name;
@@ -648,9 +648,9 @@ return trade;
                 return result;
             }
 
-            std::vector<steemit::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
+            std::vector<golos::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
                     const string &owner) const {
-                std::vector<steemit::application::extended_limit_order> result;
+                std::vector<golos::application::extended_limit_order> result;
                 const auto &idx = app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
                 while (itr != idx.end() && itr->seller == owner) {
@@ -707,7 +707,7 @@ return trade;
 
         } // detail
 
-        market_history_api::market_history_api(const steemit::application::api_context &ctx) {
+        market_history_api::market_history_api(const golos::application::api_context &ctx) {
             my = std::make_shared<detail::market_history_api_impl>(ctx.app);
         }
 
@@ -822,7 +822,7 @@ return trade;
             my->unsubscribe_from_market(a, b);
         }
 
-        std::vector<steemit::application::extended_limit_order> market_history_api::get_limit_orders_by_owner(
+        std::vector<golos::application::extended_limit_order> market_history_api::get_limit_orders_by_owner(
                 const string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_limit_orders_by_owner(owner);
@@ -851,4 +851,4 @@ return trade;
             return my->get_collateral_bids(asset, limit, start, 0);
         }
     }
-} // steemit::market_history
+} // golos::market_history

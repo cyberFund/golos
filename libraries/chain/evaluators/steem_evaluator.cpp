@@ -1,11 +1,11 @@
-#include <steemit/chain/evaluators/steem_evaluator.hpp>
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/objects/steem_objects.hpp>
-#include <steemit/chain/objects/block_summary_object.hpp>
+#include <golos/chain/evaluators/steem_evaluator.hpp>
+#include <golos/chain/database.hpp>
+#include <golos/chain/database_exceptions.hpp>
+#include <golos/chain/custom_operation_interpreter.hpp>
+#include <golos/chain/objects/steem_objects.hpp>
+#include <golos/chain/objects/block_summary_object.hpp>
 
-#include <steemit/chain/utilities/reward.hpp>
+#include <golos/chain/utilities/reward.hpp>
 
 #ifndef STEEMIT_BUILD_LOW_MEMORY
 
@@ -24,7 +24,7 @@ std::string wstring_to_utf8(const std::wstring &str) {
 
 #endif
 
-namespace steemit {
+namespace golos {
     namespace chain {
         using fc::uint128_t;
 
@@ -1607,6 +1607,6 @@ namespace steemit {
             }
         }
     }
-} // steemit::chain
+} // golos::chain
 
-#include <steemit/chain/evaluators/steem_evaluator.tpp>
+#include <golos/chain/evaluators/steem_evaluator.tpp>

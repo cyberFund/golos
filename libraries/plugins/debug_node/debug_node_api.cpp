@@ -1,17 +1,17 @@
 #include <fc/filesystem.hpp>
 #include <fc/variant_object.hpp>
 
-#include <steemit/application/api_context.hpp>
-#include <steemit/application/application.hpp>
+#include <golos/application/api_context.hpp>
+#include <golos/application/application.hpp>
 
-#include <steemit/chain/objects/account_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
 
-#include <graphene/utilities/key_conversion.hpp>
+#include <golos/utilities/key_conversion.hpp>
 
-#include <steemit/plugins/debug_node/debug_node_api.hpp>
-#include <steemit/plugins/debug_node/debug_node_plugin.hpp>
+#include <golos/plugins/debug_node/debug_node_api.hpp>
+#include <golos/plugins/debug_node/debug_node_plugin.hpp>
 
-namespace steemit {
+namespace golos {
     namespace plugin {
         namespace debug_node {
 
@@ -35,7 +35,7 @@ namespace steemit {
 
                 class debug_node_api_impl {
                 public:
-                    debug_node_api_impl(steemit::application::application &_app);
+                    debug_node_api_impl(golos::application::application &_app);
 
                     uint32_t debug_push_blocks(const std::string &src_filename, uint32_t count,
                                                bool skip_validate_invariants);
@@ -76,9 +76,9 @@ namespace steemit {
 
                     void debug_get_dev_key(get_dev_key_result &result, const get_dev_key_args &args);
 
-                    std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> get_plugin();
+                    std::shared_ptr<golos::plugin::debug_node::debug_node_plugin> get_plugin();
 
-                    steemit::application::application &app;
+                    golos::application::application &app;
                     debug_private_key_storage key_storage;
                 };
 
@@ -103,7 +103,7 @@ namespace steemit {
                     return;
                 }
 
-                debug_node_api_impl::debug_node_api_impl(steemit::application::application &_app) : app(_app) {
+                debug_node_api_impl::debug_node_api_impl(golos::application::application &_app) : app(_app) {
 #ifdef STEEMIT_INIT_PRIVATE_KEY
                     fc::ecc::private_key init_key = STEEMIT_INIT_PRIVATE_KEY;
                     key_storage.key_table[ init_key.get_public_key() ] = init_key;
@@ -324,7 +324,7 @@ namespace steemit {
                     //get_plugin()->load_debug_updates( edits );
                 }
 
-                std::shared_ptr<steemit::plugin::debug_node::debug_node_plugin> debug_node_api_impl::get_plugin() {
+                std::shared_ptr<golos::plugin::debug_node::debug_node_plugin> debug_node_api_impl::get_plugin() {
                     return app.get_plugin<debug_node_plugin>("debug_node");
                 }
 
@@ -359,7 +359,7 @@ namespace steemit {
 
             } // detail
 
-            debug_node_api::debug_node_api(const steemit::application::api_context &ctx) {
+            debug_node_api::debug_node_api(const golos::application::api_context &ctx) {
                 my = std::make_shared<detail::debug_node_api_impl>(ctx.app);
             }
 
@@ -463,4 +463,4 @@ namespace steemit {
 
         }
     }
-} // steemit::plugin::debug_node
+} // golos::plugin::debug_node
