@@ -35,13 +35,13 @@ namespace golos {
             void validate() const;
 
             void get_required_active_authorities(flat_set <account_name_type> &a) const {
-                if (amount.symbol_type_value() != VESTS_SYMBOL) {
+                if (amount.symbol_name().size() <= 6 && amount.symbol_type_value() != VESTS_SYMBOL) {
                     a.insert(from);
                 }
             }
 
             void get_required_owner_authorities(flat_set <account_name_type> &a) const {
-                if (amount.symbol_type_value() == VESTS_SYMBOL) {
+                if (amount.symbol_name().size() <= 6 && amount.symbol_type_value() == VESTS_SYMBOL) {
                     a.insert(from);
                 }
             }
