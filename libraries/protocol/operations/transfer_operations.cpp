@@ -22,7 +22,10 @@ namespace golos {
             try {
                 validate_account_name(from);
                 validate_account_name(to);
-                FC_ASSERT(amount.symbol_type_value() != VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
+                if (amount.symbol_name().size() <= 6) {
+                    FC_ASSERT(amount.symbol_type_value() != VESTS_SYMBOL,
+                              "transferring of Golos Power is not allowed.");
+                }
                 FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
                 FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
                 FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
