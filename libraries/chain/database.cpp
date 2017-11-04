@@ -1982,8 +1982,6 @@ namespace golos {
                     protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount),
                     STEEM_SYMBOL_NAME);
 
-            const auto &witness_account = get_account(props.current_witness);
-
             asset<0, 17, 0> pay;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {

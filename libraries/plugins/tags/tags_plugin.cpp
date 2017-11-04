@@ -19,7 +19,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "include/steemit/tags/tags_plugin.hpp"
+#include <golos/tags/tags_plugin.hpp>
 
 namespace golos {
     namespace tags {
