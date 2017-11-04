@@ -282,12 +282,6 @@ return trade;
                 market_ticker result;
                 result.base = base;
                 result.quote = quote;
-                result.latest = 0;
-                result.lowest_ask = 0;
-                result.highest_bid = 0;
-                result.percent_change = 0;
-                result.base_volume = 0;
-                result.quote_volume = 0;
 
                 try {
                     const fc::time_point_sec now = fc::time_point::now();
