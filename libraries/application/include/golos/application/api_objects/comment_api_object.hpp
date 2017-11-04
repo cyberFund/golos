@@ -113,7 +113,7 @@ namespace golos {
      }
 }
 
-FC_REFLECT((golos::application::comment_api_obj),
+FC_REFLECT((golos::application::comment_api_object),
         (id)(author)(permlink)
                 (category)(parent_author)(parent_permlink)
                 (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)

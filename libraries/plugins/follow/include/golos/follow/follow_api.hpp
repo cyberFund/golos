@@ -18,7 +18,7 @@ namespace golos {
         };
 
         struct comment_feed_entry {
-            golos::application::comment_api_obj comment;
+            golos::application::comment_api_object comment;
             std::vector<account_name_type> reblog_by;
             time_point_sec reblog_on;
             uint32_t entry_id = 0;
@@ -33,7 +33,7 @@ namespace golos {
         };
 
         struct comment_blog_entry {
-            golos::application::comment_api_obj comment;
+            golos::application::comment_api_object comment;
             std::string blog;
             time_point_sec reblog_on;
             uint32_t entry_id = 0;

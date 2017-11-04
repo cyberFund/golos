@@ -211,7 +211,7 @@ FC_REFLECT((golos::application::discussion_index),
                    maturing)(best)(hot)(promoted)(cashout))
 FC_REFLECT((golos::application::category_index), (active)(recent)(best))
 FC_REFLECT((golos::application::tag_index), (trending))
-FC_REFLECT_DERIVED((golos::application::discussion), ((golos::application::comment_api_obj)),
+FC_REFLECT_DERIVED((golos::application::discussion), ((golos::application::comment_api_object)),
                    (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(
                            author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(
                            first_reblogged_on))
