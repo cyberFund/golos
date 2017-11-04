@@ -18,7 +18,7 @@
 
 #include <boost/container/flat_set.hpp>
 
-#include "steemit/application/discussion_query.hpp"
+#include <golos/application/discussion_query.hpp"
 
 #include <functional>
 #include <map>
