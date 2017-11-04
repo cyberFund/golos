@@ -73,6 +73,8 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((op))
 
             try {
+                this->db.adjust_balance(this->db.get_account(op.issuer), -this->db.get_name_cost(op.asset_name));
+
                 this->db.template create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
                     a.asset_name = op.asset_name;
                     a.current_supply = 0;
@@ -101,8 +103,6 @@ namespace golos {
                         a.market_issued = true;
                     }
                 });
-
-                this->db.adjust_balance(this->db.get_account(op.issuer), -this->db.get_name_cost(op.asset_name));
             } FC_CAPTURE_AND_RETHROW((op))
         }
 
