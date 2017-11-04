@@ -29,8 +29,34 @@ namespace golos {
             void do_apply(const operation_type &o);
         };
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
         class limit_order_create_evaluator : public evaluator<limit_order_create_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
+        public:
+            typedef protocol::limit_order_create_operation<Major, Hardfork, Release> operation_type;
+
+            limit_order_create_evaluator(database &db) : evaluator<
+                    limit_order_create_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
+
+            }
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_create_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public evaluator<limit_order_create_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
+        public:
+            typedef protocol::limit_order_create_operation<Major, Hardfork, Release> operation_type;
+
+            limit_order_create_evaluator(database &db) : evaluator<
+                    limit_order_create_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
+
+            }
+
+            void do_apply(const operation_type &o);
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_create_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public evaluator<limit_order_create_evaluator<Major, Hardfork, Release>,
                 Major, Hardfork, Release> {
         public:
             typedef protocol::limit_order_create_operation<Major, Hardfork, Release> operation_type;
@@ -49,8 +75,19 @@ namespace golos {
             const asset_object *receive_asset = nullptr;
         };
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
         class limit_order_create2_evaluator : public golos::chain::evaluator<
+                limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
+        public:
+            typedef protocol::limit_order_create2_operation<Major, Hardfork, Release> operation_type;
+
+            limit_order_create2_evaluator(database &db) : golos::chain::evaluator<
+                    limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
+            }
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_create2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public golos::chain::evaluator<
                 limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
         public:
             typedef protocol::limit_order_create2_operation<Major, Hardfork, Release> operation_type;
@@ -69,7 +106,32 @@ namespace golos {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_create2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public golos::chain::evaluator<
+                limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
+        public:
+            typedef protocol::limit_order_create2_operation<Major, Hardfork, Release> operation_type;
+
+            limit_order_create2_evaluator(database &db) : golos::chain::evaluator<
+                    limit_order_create2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
+            }
+
+            void do_apply(const operation_type &o);
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
         class limit_order_cancel_evaluator : public evaluator<limit_order_cancel_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
+        public:
+            typedef protocol::limit_order_cancel_operation<Major, Hardfork, Release> operation_type;
+
+            limit_order_cancel_evaluator(database &db) : evaluator<
+                    limit_order_cancel_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
+
+            }
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_cancel_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public evaluator<limit_order_cancel_evaluator<Major, Hardfork, Release>,
                 Major, Hardfork, Release> {
         public:
             typedef protocol::limit_order_cancel_operation<Major, Hardfork, Release> operation_type;
@@ -83,6 +145,20 @@ namespace golos {
 
         protected:
             const limit_order_object *_order;
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class limit_order_cancel_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public evaluator<limit_order_cancel_evaluator<Major, Hardfork, Release>,
+                Major, Hardfork, Release> {
+        public:
+            typedef protocol::limit_order_cancel_operation<Major, Hardfork, Release> operation_type;
+
+            limit_order_cancel_evaluator(database &db) : evaluator<
+                    limit_order_cancel_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(db) {
+
+            }
+
+            void do_apply(const operation_type &op);
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
