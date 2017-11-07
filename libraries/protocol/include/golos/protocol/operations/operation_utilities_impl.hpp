@@ -54,7 +54,37 @@ namespace fc {
         }
     };
 
+    class get_operation_name_policy_interface {
+
+    };
+
+    class get_operation_name_policy : public get_operation_name_policy_interface {
+
+    };
+
+    class versioned_get_operation_name_policy : public get_operation_name_policy_interface {
+
+    };
+
+    template<typename Policy, typename = typename std::enable_if<
+            std::is_base_of<get_operation_name_policy_interface, Policy>::value>::type>
     class get_operation_name {
+    public:
+        string &name;
+
+        get_operation_name(string &dv) : name(dv) {
+        }
+
+        typedef void result_type;
+
+        template<typename T>
+        void operator()(const T &v) const {
+            name = name_from_type(fc::get_typename<T>::name());
+        }
+    };
+
+    template<>
+    class get_operation_name<versioned_get_operation_name_policy> {
     public:
         string &name;
 

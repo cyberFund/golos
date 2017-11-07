@@ -35,6 +35,5 @@ namespace golos {
             std::unique_ptr<detail::follow_plugin_impl> my;
             uint32_t max_feed_size = 500;
         };
-
     }
 } //golos::follow
