@@ -29,7 +29,7 @@ namespace fc {
                 golos::follow::follow_plugin_operation tmp;
                 tmp.set_which(i);
                 string n;
-                tmp.visit(get_operation_name(n));
+                tmp.visit(get_operation_name<get_operation_name_policy>(n));
                 name_map[n] = i;
             }
             return name_map;
