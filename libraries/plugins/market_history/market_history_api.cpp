@@ -20,8 +20,7 @@ namespace golos {
                 struct operation_process_fill_order_visitor {
                     vector<optional<asset_object>> &assets;
 
-                    operation_process_fill_order_visitor(vector<optional<asset_object>> &input_assets) : assets(
-                            input_assets) {
+                    operation_process_fill_order_visitor(vector<optional<asset_object>> &input_assets) : assets(input_assets) {
                     }
 
                     typedef market_trade result_type;
@@ -425,8 +424,7 @@ return trade;
                 auto itr = history_idx.lower_bound(hkey);
                 vector<market_trade> result;
 
-                while (itr != history_idx.end() && count < limit &&
-                       !(itr->key.base != base_id || itr->key.quote != quote_id || itr->time < stop)) {
+                while (itr != history_idx.end() && count < limit && !(itr->key.base != base_id || itr->key.quote != quote_id || itr->time < stop)) {
                     if (itr->time < start) {
                         market_trade trade = itr->op.visit(operation_process_fill_order_visitor(assets));
 

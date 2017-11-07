@@ -3,7 +3,6 @@
 #include <golos/protocol/config.hpp>
 
 #include <fc/fixed_string.hpp>
-
 #include <fc/container/flat_fwd.hpp>
 #include <fc/io/varint.hpp>
 #include <fc/io/enum_type.hpp>
@@ -27,7 +26,6 @@
 #include <vector>
 #include <deque>
 #include <cstdint>
-#include <boost/serialization/strong_typedef.hpp>
 
 namespace golos {
 

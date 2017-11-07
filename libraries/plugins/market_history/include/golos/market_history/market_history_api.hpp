@@ -62,6 +62,8 @@ namespace golos {
             double price;
             double amount;
             double value;
+            account_name_type side1_account_name;
+            account_name_type side2_account_name;
         };
 
         struct liquidity_balance {
@@ -110,8 +112,7 @@ namespace golos {
              */
             void unsubscribe_from_market(const string &a, const string &b);
 
-            std::vector<golos::application::extended_limit_order> get_limit_orders_by_owner(
-                    const string &owner) const;
+            std::vector<golos::application::extended_limit_order> get_limit_orders_by_owner(const string &owner) const;
 
             std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
 
@@ -233,7 +234,7 @@ FC_REFLECT((golos::market_history::order_book), (asks)(bids)(base)(quote));
 FC_REFLECT((golos::market_history::market_ticker),
            (base)(quote)(latest)(lowest_ask)(highest_bid)(percent_change)(base_volume)(quote_volume));
 FC_REFLECT((golos::market_history::market_volume), (base)(quote)(base_volume)(quote_volume));
-FC_REFLECT((golos::market_history::market_trade), (date)(price)(amount)(value));
+FC_REFLECT((golos::market_history::market_trade), (date)(price)(amount)(value)(side1_account_name)(side2_account_name));
 
 FC_REFLECT((golos::market_history::liquidity_balance), (account)(weight));
 
