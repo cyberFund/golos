@@ -281,13 +281,16 @@ return trade;
                 market_ticker result;
                 result.base = base;
                 result.quote = quote;
+                result.latest = 0;
+                result.lowest_ask = 0;
+                result.highest_bid = 0;
+                result.percent_change = 0;
+                result.base_volume = 0;
+                result.quote_volume = 0;
 
                 try {
                     const fc::time_point_sec now = fc::time_point::now();
-                    const fc::time_point_sec yesterday = app.chain_database()->fetch_block_by_number(1)->timestamp <
-                                                         fc::time_point_sec(now.sec_since_epoch() - 86400)
-                                                         ? fc::time_point_sec(now.sec_since_epoch() - 86400)
-                                                         : app.chain_database()->fetch_block_by_number(1)->timestamp;
+                    const fc::time_point_sec yesterday = fc::time_point_sec(now.sec_since_epoch() - 86400);
                     const auto batch_size = 100;
 
                     vector<market_trade> trades = get_trade_history(base, quote, now, yesterday, batch_size);
@@ -295,7 +298,7 @@ return trade;
                         result.latest = trades[0].price;
 
                         while (!trades.empty()) {
-                            for (const market_trade &t: trades) {
+                            for (const market_trade& t : trades) {
                                 result.base_volume += t.value;
                                 result.quote_volume += t.amount;
                             }
@@ -303,8 +306,7 @@ return trade;
                             trades = get_trade_history(base, quote, trades.back().date, yesterday, batch_size);
                         }
 
-                        const auto last_trade_yesterday = get_trade_history(base, quote, yesterday,
-                                                                            fc::time_point_sec(), 1);
+                        const auto last_trade_yesterday = get_trade_history(base, quote, yesterday, fc::time_point_sec(), 1);
                         if (!last_trade_yesterday.empty()) {
                             const auto price_yesterday = last_trade_yesterday[0].price;
                             result.percent_change = ((result.latest / price_yesterday) - 1) * 100;
