@@ -23,10 +23,10 @@ namespace golos {
             const witness_schedule_object &wso = this->db.get_witness_schedule_object();
 
             asset<0, 17, 0> fee(0, STEEM_SYMBOL_NAME);
-            if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101) &&
-                this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__108)) {
-                fee = asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME) +
-                      this->db.get_name_cost(o.new_account_name);
+            if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
+                fee = asset<0, 17, 0>(
+                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
+                        STEEM_SYMBOL_NAME);
             } else {
                 fee = wso.median_props.account_creation_fee;
             }
@@ -89,14 +89,7 @@ namespace golos {
             });
 
             if (o.fee.amount > 0) {
-                if (this->db.has_hardfork(STEEMIT_HARDFORK_0_17__108)) {
-                    this->db.template create_vesting(new_account,
-                                                     protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()) -
-                                                     this->db.get_name_cost(o.new_account_name));
-                } else {
-                    this->db.template create_vesting(new_account,
-                                                     protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
-                }
+                this->db.template create_vesting(new_account, protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
             }
 
             this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
@@ -128,9 +121,13 @@ namespace golos {
                                                                          creator.delegated_vesting_shares)("required",
                                                                                                            o.delegation));
 
-            auto target_delegation = asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) * props.get_vesting_share_price();
+            auto target_delegation = asset<0, 17, 0>(
+                    wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER *
+                    STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL_NAME) * props.get_vesting_share_price();
 
-            auto current_delegation = asset<0, 17, 0>(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, o.fee.symbol_name()) * props.get_vesting_share_price() + o.delegation;
+            auto current_delegation =
+                    asset<0, 17, 0>(o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, o.fee.symbol_name()) *
+                    props.get_vesting_share_price() + o.delegation;
 
             FC_ASSERT(current_delegation >= target_delegation, "Insufficient Delegation ${f} required, ${p} provided.",
                       ("f", target_delegation)("p", current_delegation)("account_creation_fee",
@@ -146,8 +143,7 @@ namespace golos {
                 fee = wso.median_props.account_creation_fee;
             }
 
-            FC_ASSERT(o.fee >= fee, "Insufficient Fee: ${f} required, ${p} provided.",
-                      ("f", fee)("p", o.fee));
+            FC_ASSERT(o.fee >= fee, "Insufficient Fee: ${f} required, ${p} provided.", ("f", fee)("p", o.fee));
 
             for (auto &a : o.owner.account_auths) {
                 this->db.get_account(a.first);
@@ -254,8 +250,7 @@ namespace golos {
 
 #endif
 
-                if ((this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                     this->db.is_producing())) // TODO: Add HF 15
+                if ((this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing())) // TODO: Add HF 15
                 {
                     for (auto a: o.owner->account_auths) {
                         this->db.get_account(a.first);
@@ -266,16 +261,16 @@ namespace golos {
                 this->db.update_owner_authority(account, *o.owner);
             }
 
-            if (o.active && (this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                             this->db.is_producing())) // TODO: Add HF 15
+            if (o.active &&
+                (this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.active->account_auths) {
                     this->db.get_account(a.first);
                 }
             }
 
-            if (o.posting && (this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
-                              this->db.is_producing())) // TODO: Add HF 15
+            if (o.posting &&
+                (this->db.has_hardfork(STEEMIT_HARDFORK_0_15__465) || this->db.is_producing())) // TODO: Add HF 15
             {
                 for (auto a: o.posting->account_auths) {
                     this->db.get_account(a.first);
@@ -347,8 +342,7 @@ namespace golos {
                         a.blacklisted_accounts.erase(o.account_to_list);
                     }
                 });
-            }
-            FC_CAPTURE_AND_RETHROW((o))
+            } FC_CAPTURE_AND_RETHROW((o))
         }
     }
 }

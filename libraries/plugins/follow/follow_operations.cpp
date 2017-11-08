@@ -42,7 +42,7 @@ namespace fc {
         if (ar[0].is_uint64()) {
             vo.set_which(ar[0].as_uint64());
         } else {
-            std::string operation_name = ar[0].as_string();
+            std::string operation_name = ar[0].as_string().append("_operation");
             auto itr = to_tag.find(operation_name);
             FC_ASSERT(itr != to_tag.end(), "Invalid operation name: ${n}", ("n", ar[0]));
             vo.set_which(to_tag[operation_name]);
