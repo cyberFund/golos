@@ -89,7 +89,8 @@ namespace golos {
             });
 
             if (o.fee.amount > 0) {
-                this->db.template create_vesting(new_account, protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
+                this->db.template create_vesting(new_account,
+                                                 protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
             }
 
             this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
@@ -135,15 +136,8 @@ namespace golos {
                                                                                                                o.fee)(
                               "o.delegation", o.delegation));
 
-            asset<0, 17, 0> fee(0, STEEM_SYMBOL_NAME);
-            if (this->db.has_hardfork(STEEMIT_HARDFORK_0_17__101) &&
-                this->db.has_hardfork(STEEMIT_HARDFORK_0_17__108)) {
-                fee = wso.median_props.account_creation_fee + this->db.get_name_cost(o.new_account_name);
-            } else {
-                fee = wso.median_props.account_creation_fee;
-            }
-
-            FC_ASSERT(o.fee >= fee, "Insufficient Fee: ${f} required, ${p} provided.", ("f", fee)("p", o.fee));
+            FC_ASSERT(o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
+                      ("f", wso.median_props.account_creation_fee)("p", o.fee));
 
             for (auto &a : o.owner.account_auths) {
                 this->db.get_account(a.first);
@@ -210,14 +204,8 @@ namespace golos {
             }
 
             if (o.fee.amount > 0) {
-                if (this->db.has_hardfork(STEEMIT_HARDFORK_0_17__108)) {
-                    this->db.template create_vesting(new_account,
-                                                     protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()) -
-                                                     this->db.get_name_cost(o.new_account_name));
-                } else {
-                    this->db.template create_vesting(new_account,
-                                                     protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
-                }
+                this->db.template create_vesting(new_account,
+                                                 protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
             }
 
             this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
