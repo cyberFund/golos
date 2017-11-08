@@ -42,7 +42,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a,
                                                                                           asset_name_type name)
-                : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, STEEM_SYMBOL) {
+                : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, asset_symbol_type()) {
             string s = fc::trim(name);
 
             this->symbol = uint64_t(3);
@@ -167,14 +167,14 @@ namespace golos {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset() : asset_interface<Major,
-                Hardfork, Release, asset_name_type, share_type>(0, STEEM_SYMBOL_NAME), decimals(3) {
+                Hardfork, Release, asset_name_type, share_type>(0, asset_name_type()), decimals(3) {
 
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a,
                                                                                           asset_symbol_type name)
-                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, STEEM_SYMBOL_NAME),
+                : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, asset_name_type()),
                 decimals(3) {
             auto ta = (const char *) &name;
             FC_ASSERT(ta[7] == 0);
