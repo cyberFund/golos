@@ -277,8 +277,8 @@ namespace golos {
                 } else if (dot_pos != std::string::npos) {
                     FC_ASSERT(space_pos > dot_pos);
 
-                    auto intpart = s.substr(0, dot_pos);
-                    auto fractpart = "1" + s.substr(dot_pos + 1, space_pos - dot_pos - 1);
+                    std::string intpart = s.substr(0, dot_pos);
+                    std::string fractpart = "1" + s.substr(dot_pos + 1, space_pos - dot_pos - 1);
                     result.decimals = static_cast<uint8_t>(fractpart.size() - 1);
 
                     result.amount = fc::to_int64(intpart);
@@ -291,7 +291,7 @@ namespace golos {
                     result.decimals = 0;
                 }
 
-                auto symbol = s.substr(space_pos + 1);
+                std::string symbol = s.substr(space_pos + 1);
 
                 if (symbol.size() > 0) {
                     result.symbol = symbol;
