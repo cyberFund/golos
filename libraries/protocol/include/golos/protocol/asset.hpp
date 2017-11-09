@@ -104,7 +104,7 @@ namespace golos {
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
             friend bool operator<(const asset<Major, Hardfork, Release> &a,
                                   const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
-                FC_ASSERT(a.symbol == b.symbol);
+                FC_ASSERT(a.symbol == b.symbol, "Cannot compare assets with different symbols", ("a.symbol", a.symbol)("b.symbol", b.symbol));
                 return a.amount < b.amount;
             }
 
@@ -218,7 +218,7 @@ namespace golos {
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
             friend bool operator<(const asset<Major, Hardfork, Release> &a,
                                   const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
-                FC_ASSERT(a.symbol == b.symbol);
+                FC_ASSERT(a.symbol == b.symbol, "Cannot compare assets with different symbols", ("a.symbol", a.symbol)("b.symbol", b.symbol));
                 return a.amount < b.amount;
             }
 
