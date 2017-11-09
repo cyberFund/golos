@@ -2038,8 +2038,8 @@ namespace golos {
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() < STEEMIT_CASHOUT_WINDOW_SECONDS,
                       "Extension time should be less or equal than a week");
 
-            return {(input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY /
-                    (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL_NAME};
+            return {(input_time - fc::time_point::now()).to_seconds() /
+                    (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL_NAME} * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY;
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
@@ -2049,7 +2049,7 @@ namespace golos {
                       "Extension payment should cover more than a day");
             return fc::time_point::now() + fc::seconds(
                     ((input_cost.amount.value * 60 * 60 * 24 * input_comment.net_rshares.value) /
-                     STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY));
+                     STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value));
         }
 
         asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
