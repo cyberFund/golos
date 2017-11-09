@@ -293,7 +293,7 @@ namespace golos {
 
                 std::string symbol = s.substr(space_pos + 1);
 
-                if (symbol.size() > 0) {
+                if (!symbol.empty()) {
                     result.symbol = symbol;
                 }
 

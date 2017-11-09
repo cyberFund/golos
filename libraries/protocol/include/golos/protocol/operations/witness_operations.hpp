@@ -31,7 +31,7 @@ namespace golos {
             string url;
             public_key_type block_signing_key;
             chain_properties<Major, Hardfork, Release> props;
-            asset <Major, Hardfork, Release> fee; ///< the fee paid to register a new witness, should be 10x current block production pay
+            asset<Major, Hardfork, Release> fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
             void validate() const;
 

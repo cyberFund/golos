@@ -32,9 +32,8 @@ namespace golos {
                 this->db.modify(*wit_itr, [&](witness_object &w) {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
-                    w.props = {protocol::asset<0, 17, 0>(o.props.account_creation_fee.amount,
-                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
-                               o.props.sbd_interest_rate};
+                    w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name()},
+                               o.props.maximum_block_size, o.props.sbd_interest_rate};
                 });
             } else {
                 this->db.template create<witness_object>([&](witness_object &w) {
@@ -42,9 +41,8 @@ namespace golos {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
                     w.created = this->db.head_block_time();
-                    w.props = {protocol::asset<0, 17, 0>(o.props.account_creation_fee.amount,
-                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
-                               o.props.sbd_interest_rate};
+                    w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name()},
+                               o.props.maximum_block_size, o.props.sbd_interest_rate};
                 });
             }
         }
@@ -58,7 +56,7 @@ namespace golos {
             FC_ASSERT(account.can_vote, "Account has declined the ability to vote and cannot proxy votes.");
 
             /// remove all current votes
-            std::array < share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1 > delta;
+            std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> delta;
             delta[0] = -account.vesting_shares.amount;
             for (int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
                 delta[i + 1] = -account.proxied_vsf_votes[i];
@@ -67,7 +65,7 @@ namespace golos {
 
             if (o.proxy.size()) {
                 const auto &new_proxy = this->db.get_account(o.proxy);
-                flat_set <account_object::id_type> proxy_chain({account.id, new_proxy.id});
+                flat_set<account_object::id_type> proxy_chain({account.id, new_proxy.id});
                 proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
 
                 /// check for proxy loops and fail to update the proxy if it would create a loop
