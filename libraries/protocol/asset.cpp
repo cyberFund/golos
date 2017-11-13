@@ -27,12 +27,6 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset() : asset_interface<Major,
-                Hardfork, Release, asset_symbol_type, share_type>(0, asset_symbol_type()) {
-
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a,
                                                                                           asset_symbol_type id)
                 : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, id) {
@@ -164,12 +158,6 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset() : asset_interface<Major,
-                Hardfork, Release, asset_name_type, share_type>(0, asset_name_type()), decimals(3) {
-
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::asset(share_type a,
                                                                                           asset_symbol_type name)
                 : asset_interface<Major, Hardfork, Release, asset_name_type, share_type>(a, asset_name_type()),
@@ -224,7 +212,7 @@ namespace golos {
                     return std::isdigit(c);
                 }) == symbol_string.end());
 
-                memcpy(sy + 1, symbol_string.c_str(), symbol_size);
+                std::memcpy(sy + 1, symbol_string.c_str(), symbol_size);
             }
 
             return result;
