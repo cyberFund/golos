@@ -49,11 +49,9 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public asset_interface<
                 Major, Hardfork, Release, asset_symbol_type, share_type> {
-            asset();
+            asset(share_type a = 0, asset_symbol_type id = STEEM_SYMBOL);
 
-            asset(share_type a, asset_symbol_type id = STEEM_SYMBOL);
-
-            asset(share_type a, asset_name_type name);
+            asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME);
 
             virtual ~asset() override {
 
@@ -161,11 +159,9 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public asset_interface<
                 Major, Hardfork, Release, asset_name_type, share_type> {
-            asset();
-
             asset(share_type a, asset_symbol_type name);
 
-            asset(share_type a, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
+            asset(share_type a = 0, asset_name_type name = STEEM_SYMBOL_NAME, uint8_t d = 3);
 
             virtual ~asset() override {
 
