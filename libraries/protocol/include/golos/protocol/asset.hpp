@@ -134,7 +134,7 @@ namespace golos {
             friend asset<Major, Hardfork, Release> operator-(const asset<Major, Hardfork, Release> &a,
                                                              const asset<ArgumentMajor, ArgumentHardfork,
                                                                      ArgumentRelease> &b) {
-                FC_ASSERT(a.symbol == b.symbol && a.get_decimals() == b.get_decimals());
+                FC_ASSERT(a.symbol == b.symbol);
                 asset<Major, Hardfork, Release> amount(a.amount - b.amount, a.symbol);
                 amount.set_decimals(a.get_decimals());
                 return amount;
@@ -144,7 +144,7 @@ namespace golos {
             friend asset<Major, Hardfork, Release> operator+(const asset<Major, Hardfork, Release> &a,
                                                              const asset<ArgumentMajor, ArgumentHardfork,
                                                                      ArgumentRelease> &b) {
-                FC_ASSERT(a.symbol == b.symbol && a.get_decimals() == b.get_decimals());
+                FC_ASSERT(a.symbol == b.symbol);
                 asset<Major, Hardfork, Release> amount(a.amount + b.amount, a.symbol);
                 amount.set_decimals(a.get_decimals());
                 return amount;
