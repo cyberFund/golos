@@ -141,7 +141,7 @@ namespace golos {
 
             boost::signals2::scoped_connection _block_applied_connection;
 
-            map <std::pair<asset_symbol_type, asset_symbol_type>, std::function<
+            std::map<std::pair<asset_symbol_type, asset_symbol_type>, std::function<
                     void(const variant &)>> _market_subscriptions;
         };
 
