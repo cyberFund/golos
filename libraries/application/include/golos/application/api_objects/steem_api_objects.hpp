@@ -326,7 +326,7 @@ namespace golos {
 
             feed_history_object::id_type id;
             price<0, 17, 0> current_median_history;
-            deque<price<0, 17, 0>> price_history;
+            std::deque<price<0, 17, 0>> price_history;
         };
 
         struct witness_api_obj {
