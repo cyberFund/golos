@@ -18,6 +18,7 @@
 #include <golos/wallet/wallet.hpp>
 
 #include <fc/interprocess/signals.hpp>
+
 #include <boost/algorithm/string.hpp>
 
 #include <fc/log/console_appender.hpp>
@@ -25,7 +26,8 @@
 #include <fc/log/logger_config.hpp>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/std::string/regex.hpp>
+#include <boost/algorithm/string/regex.hpp>
+
 #include <fc/variant.hpp>
 
 #ifdef WIN32
