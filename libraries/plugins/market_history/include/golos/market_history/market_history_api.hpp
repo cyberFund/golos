@@ -27,8 +27,8 @@ namespace golos {
         }
 
         struct market_ticker {
-            string base;
-            string quote;
+            std::string base;
+            std::string quote;
             double latest;
             double lowest_ask;
             double highest_bid;
@@ -38,8 +38,8 @@ namespace golos {
         };
 
         struct market_volume {
-            string base;
-            string quote;
+            std::string base;
+            std::string quote;
             double base_volume;
             double quote_volume;
         };
@@ -51,8 +51,8 @@ namespace golos {
         };
 
         struct order_book {
-            string base;
-            string quote;
+            std::string base;
+            std::string quote;
             std::vector<order> bids;
             std::vector<order> asks;
         };
@@ -100,23 +100,23 @@ namespace golos {
              * @param a First asset ID
              * @param b Second asset ID
              *
-             * Callback will be passed a variant containing a vector<pair<operation, operation_result>>. The vector will
+             * Callback will be passed a variant containing a std::vector<std::pair<operation, operation_result>>. The vector will
              * contain, in order, the operations which changed the market, and their results.
              */
-            void subscribe_to_market(std::function<void(const variant &)> callback, const string &a, const string &b);
+            void subscribe_to_market(std::function<void(const variant &)> callback, const std::string &a, const std::string &b);
 
             /**
              * @brief Unsubscribe from updates to a given market
              * @param a First asset ID
              * @param b Second asset ID
              */
-            void unsubscribe_from_market(const string &a, const string &b);
+            void unsubscribe_from_market(const std::string &a, const std::string &b);
 
-            std::vector<golos::application::extended_limit_order> get_limit_orders_by_owner(const string &owner) const;
+            std::vector<golos::application::extended_limit_order> get_limit_orders_by_owner(const std::string &owner) const;
 
-            std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
+            std::vector<call_order_object> get_call_orders_by_owner(const std::string &owner) const;
 
-            std::vector<force_settlement_object> get_settle_orders_by_owner(const string &owner) const;
+            std::vector<force_settlement_object> get_settle_orders_by_owner(const std::string &owner) const;
 
             /**
              * @brief Returns the ticker for the market assetA:assetB
@@ -124,7 +124,7 @@ namespace golos {
              * @param b String name of the second asset
              * @return The market ticker for the past 24 hours.
              */
-            market_ticker get_ticker(const string &base, const string &quote) const;
+            market_ticker get_ticker(const std::string &base, const std::string &quote) const;
 
             /**
              * @brief Returns the 24 hour volume for the market assetA:assetB
@@ -132,7 +132,7 @@ namespace golos {
              * @param b String name of the second asset
              * @return The market volume over the past 24 hours
              */
-            market_volume get_volume(const string &base, const string &quote) const;
+            market_volume get_volume(const std::string &base, const std::string &quote) const;
 
             /**
              * @brief Returns the order book for the market base:quote
@@ -141,7 +141,7 @@ namespace golos {
              * @param depth of the order book. Up to depth of each asks and bids, capped at 50. Prioritizes most moderate of each
              * @return Order book of the market
              */
-            order_book get_order_book(const string &base, const string &quote, unsigned limit = 50) const;
+            order_book get_order_book(const std::string &base, const std::string &quote, unsigned limit = 50) const;
 
             /**
              * @brief Returns recent trades for the market assetA:assetB
@@ -153,11 +153,11 @@ namespace golos {
              * @param start Start time as a UNIX timestamp
              * @return Recent transactions in the market
              */
-            std::vector<market_trade> get_trade_history(const string &base, const string &quote,
+            std::vector<market_trade> get_trade_history(const std::string &base, const std::string &quote,
                                                         fc::time_point_sec start, fc::time_point_sec stop,
                                                         unsigned limit = 100) const;
 
-            vector<order_history_object> get_fill_order_history(const string &a, const string &b, uint32_t limit) const;
+            std::vector<order_history_object> get_fill_order_history(const std::string &a, const std::string &b, uint32_t limit) const;
 
             /**
              * @brief Returns the market history for the internal SBD:STEEM market.
@@ -166,7 +166,7 @@ namespace golos {
              * @param end The end time to get market history
              * @return A list of market history buckets.
              */
-            vector<bucket_object> get_market_history(const string &a, const string &b, uint32_t bucket_seconds,
+            std::vector<bucket_object> get_market_history(const std::string &a, const std::string &b, uint32_t bucket_seconds,
                                                      fc::time_point_sec start, fc::time_point_sec end) const;
 
             /**
@@ -181,7 +181,7 @@ namespace golos {
              * @param limit Maximum number of orders to retrieve
              * @return The limit orders, ordered from least price to greatest
              */
-            vector<limit_order_object> get_limit_orders(const string &a, const string &b, uint32_t limit) const;
+            std::vector<limit_order_object> get_limit_orders(const std::string &a, const std::string &b, uint32_t limit) const;
 
             /**
              * @brief Get call orders in a given asset
@@ -189,7 +189,7 @@ namespace golos {
              * @param limit Maximum number of orders to retrieve
              * @return The call orders, ordered from earliest to be called to latest
              */
-            vector<call_order_object> get_call_orders(const string &a, uint32_t limit) const;
+            std::vector<call_order_object> get_call_orders(const std::string &a, uint32_t limit) const;
 
             /**
              * @brief Get forced settlement orders in a given asset
@@ -197,7 +197,7 @@ namespace golos {
              * @param limit Maximum number of orders to retrieve
              * @return The settle orders, ordered from earliest settlement date to latest
              */
-            vector<force_settlement_object> get_settle_orders(const string &a, uint32_t limit) const;
+            std::vector<force_settlement_object> get_settle_orders(const std::string &a, uint32_t limit) const;
 
             /**
              * @brief Get collateral_bid_objects for a given asset
@@ -206,20 +206,20 @@ namespace golos {
              * @param start skip that many results
              * @return The settle orders, ordered from earliest settlement date to latest
              */
-            vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+            std::vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
                                                               uint32_t start) const;
 
             /**
              *  @return all open margin positions for a given account id.
              */
-            vector<call_order_object> get_margin_positions(const string &name) const;
+            std::vector<call_order_object> get_margin_positions(const std::string &name) const;
 
             /**
              * @breif Gets the current liquidity reward queue.
              * @param start_account The account to start the list from, or "" to get the head of the queue
              * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
              */
-            std::vector<liquidity_balance> get_liquidity_queue(const string &start_account,
+            std::vector<liquidity_balance> get_liquidity_queue(const std::string &start_account,
                                                                uint32_t limit = 1000) const;
 
         private:

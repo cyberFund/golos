@@ -28,7 +28,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct witness_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
-            string url;
+            std::string url;
             public_key_type block_signing_key;
             chain_properties<Major, Hardfork, Release> props;
             asset<Major, Hardfork, Release> fee; ///< the fee paid to register a new witness, should be 10x current block production pay

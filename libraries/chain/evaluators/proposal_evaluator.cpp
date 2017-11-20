@@ -23,7 +23,7 @@ namespace golos {
                 {
                     // If we're dealing with the committee authority, make sure this transaction has a sufficient review period.
                     flat_set<account_name_type> auths;
-                    vector<authority> other;
+                    std::vector<authority> other;
                     for (const operation_wrapper &op : o.proposed_operations) {
                         operation_get_required_authorities(op.op, auths, auths, auths, other);
                     }
@@ -65,7 +65,7 @@ namespace golos {
                     //Populate the required approval sets
                     flat_set<account_name_type> required_active;
                     flat_set<account_name_type> required_posting;
-                    vector<authority> other;
+                    std::vector<authority> other;
 
                     // TODO: consider caching values from evaluate?
                     for (auto &op : _proposed_trx.operations) {

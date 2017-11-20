@@ -14,9 +14,9 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/std::string/predicate.hpp>
+#include <boost/algorithm/std::string/classification.hpp>
+#include <boost/algorithm/std::string/split.hpp>
 
 #ifdef WIN32
 # include <signal.h>
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
         std::cerr << "initminer private key: " << initminer_private_key << "\n";
         std::cerr << "chain id: " << std::string(STEEMIT_CHAIN_ID) << "\n";
         std::cerr << "blockchain version: "
-                  << fc::string(STEEMIT_BLOCKCHAIN_VERSION) << "\n";
+                  << std::string(STEEMIT_BLOCKCHAIN_VERSION) << "\n";
         std::cerr << "------------------------------------------------------\n";
 #else
         std::cerr
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
                   << "\n";
         std::cerr << "chain id: " << std::string(STEEMIT_CHAIN_ID) << "\n";
         std::cerr << "blockchain version: "
-                  << fc::string(STEEMIT_BLOCKCHAIN_VERSION) << "\n";
+                  << std::string(STEEMIT_BLOCKCHAIN_VERSION) << "\n";
         std::cerr << "------------------------------------------------------\n";
 #endif
 
@@ -95,12 +95,12 @@ int main(int argc, char **argv) {
 
         if (options.count("version")) {
             std::cout << "steem_blockchain_version: "
-                      << fc::string(STEEMIT_BLOCKCHAIN_VERSION) << "\n";
+                      << std::string(STEEMIT_BLOCKCHAIN_VERSION) << "\n";
             std::cout << "steem_git_revision:       "
-                      << fc::string(graphene::utilities::git_revision_sha)
+                      << std::string(graphene::utilities::git_revision_sha)
                       << "\n";
             std::cout << "fc_git_revision:          "
-                      << fc::string(fc::git_revision_sha) << "\n";
+                      << std::string(fc::git_revision_sha) << "\n";
             return 0;
         }
 
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
             }
 
             std::ofstream out_cfg(config_ini_path.preferred_string());
-            for (const boost::shared_ptr<bpo::option_description> od : cfg_options.options()) {
+            for (const boost::std::shared_ptr<bpo::option_description> od : cfg_options.options()) {
                 if (!od->description().empty()) {
                     out_cfg << "# " << od->description() << "\n";
                 }
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
                         // This is a boolean switch
                         out_cfg << od->long_name() << " = " << "false\n";
                     } else {
-                        // The string is formatted "arg (=<interesting part>)"
+                        // The std::string is formatted "arg (=<interesting part>)"
                         example.erase(0, 6);
                         example.erase(example.length() - 1);
                         out_cfg << od->long_name() << " = " << example << "\n";

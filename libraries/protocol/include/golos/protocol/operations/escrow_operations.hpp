@@ -39,7 +39,7 @@ namespace golos {
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
 
-            string json_meta;
+            std::string json_meta;
 
             void validate() const;
 

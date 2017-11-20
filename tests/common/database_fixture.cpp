@@ -160,11 +160,11 @@ namespace golos {
             } FC_LOG_AND_RETHROW()
         }
 
-        fc::ecc::private_key database_fixture::generate_private_key(string seed) {
+        fc::ecc::private_key database_fixture::generate_private_key(std::string seed) {
             return fc::ecc::private_key::regenerate(fc::sha256::hash(seed));
         }
 
-        string database_fixture::generate_anon_acct_name() {
+        std::string database_fixture::generate_anon_acct_name() {
             // names of the form "anon-acct-x123" ; the "x" is necessary
             //    to workaround issue #46
             return "anon-acct-x" + std::to_string(anon_acct_count++);
@@ -185,8 +185,8 @@ namespace golos {
                     STEEM_SYMBOL_NAME);
             BOOST_CHECK(core_asset_data.fee_pool == 0);
 
-            map<asset_name_type, share_type> total_balances;
-            map<asset_name_type, share_type> total_debts;
+            std::map<asset_name_type, share_type> total_balances;
+            std::map<asset_name_type, share_type> total_debts;
             share_type core_in_orders;
             share_type reported_core_in_orders;
 
@@ -264,7 +264,7 @@ namespace golos {
                     golos::account_history::account_history_plugin>("account_history");
             if (pin->tracked_accounts().empty()) {
                 /*
-                vector< pair< account_name_type, address > > tuples_from_db;
+                std::vector< std::pair< account_name_type, address > > tuples_from_db;
                 const auto& primary_account_idx = db.get_index<account_index>().indices().get<by_id>();
                 flat_set< public_key_type > acct_addresses;
                 acct_addresses.reserve( 2 * GRAPHENE_DEFAULT_MAX_AUTHORITY_MEMBERSHIP + 2 );
@@ -273,12 +273,12 @@ namespace golos {
                 {
                    account_name_type account_id = acct.id;
                    acct_addresses.clear();
-                   for( const pair< account_name_type, weight_type >& auth : acct.owner.account_auths )
+                   for( const std::pair< account_name_type, weight_type >& auth : acct.owner.account_auths )
                    {
                       if( auth.first.type() == key_object_type )
                          acct_addresses.insert(  auth.first );
                    }
-                   for( const pair< object_id_type, weight_type >& auth : acct.active.auths )
+                   for( const std::pair< object_id_type, weight_type >& auth : acct.active.auths )
                    {
                       if( auth.first.type() == key_object_type )
                          acct_addresses.insert( auth.first );
@@ -288,7 +288,7 @@ namespace golos {
                       tuples_from_db.emplace_back( account_id, addr );
                 }
 
-                vector< pair< account_name_type, address > > tuples_from_index;
+                std::vector< std::pair< account_name_type, address > > tuples_from_index;
                 tuples_from_index.reserve( tuples_from_db.size() );
                 const auto& key_account_idx =
                    db.get_index<golos::account_history::key_account_index>()
@@ -453,14 +453,14 @@ namespace golos {
             return *itr;
         }
 
-        const account_object &database_fixture::get_account(const string &name) const {
+        const account_object &database_fixture::get_account(const std::string &name) const {
             const auto &idx = db.get_index<account_index>().indices().get<by_name>();
             const auto itr = idx.find(name);
             assert(itr != idx.end());
             return *itr;
         }
 
-        const asset_object &database_fixture::create_bitasset(const string &name,
+        const asset_object &database_fixture::create_bitasset(const std::string &name,
                                                               account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
                                                               uint16_t market_fee_percent /* = 100 */ /* 1% */,
                                                               uint16_t flags /* = charge_market_fee */
@@ -489,7 +489,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
-        const asset_object &database_fixture::create_prediction_market(const string &name,
+        const asset_object &database_fixture::create_prediction_market(const std::string &name,
                                                                        account_name_type issuer /* = STEEMIT_WITNESS_ACCOUNT */,
                                                                        uint16_t market_fee_percent /* = 100 */ /* 1% */,
                                                                        uint16_t flags /* = charge_market_fee */
@@ -519,7 +519,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((name)(flags))
         }
 
-        const asset_object &database_fixture::create_user_issued_asset(const string &name) {
+        const asset_object &database_fixture::create_user_issued_asset(const std::string &name) {
             asset_create_operation<0, 17, 0> creator;
             creator.issuer = account_name_type();
             creator.asset_name = name;
@@ -647,11 +647,11 @@ namespace golos {
             verify_asset_supplies(db);
         }
 
-        const account_object &database_fixture::account_create(const string &name, const string &creator,
+        const account_object &database_fixture::account_create(const std::string &name, const std::string &creator,
                                                                const private_key_type &creator_key,
                                                                const share_type &fee, const public_key_type &key,
                                                                const public_key_type &post_key,
-                                                               const string &json_metadata) {
+                                                               const std::string &json_metadata) {
             try {
                 account_create_operation<0, 17, 0> op;
                 op.new_account_name = name;
@@ -677,19 +677,19 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((name)(creator))
         }
 
-        const account_object &database_fixture::account_create(const string &name, const public_key_type &key,
+        const account_object &database_fixture::account_create(const std::string &name, const public_key_type &key,
                                                                const public_key_type &post_key) {
             try {
                 return account_create(name, STEEMIT_INIT_MINER_NAME, init_account_priv_key, 100, key, post_key, "");
             } FC_CAPTURE_AND_RETHROW((name));
         }
 
-        const account_object &database_fixture::account_create(const string &name, const public_key_type &key) {
+        const account_object &database_fixture::account_create(const std::string &name, const public_key_type &key) {
             return account_create(name, key, key);
         }
 
-        const witness_object &database_fixture::witness_create(const string &owner, const private_key_type &owner_key,
-                                                               const string &url, const public_key_type &signing_key,
+        const witness_object &database_fixture::witness_create(const std::string &owner, const private_key_type &owner_key,
+                                                               const std::string &url, const public_key_type &signing_key,
                                                                const share_type &fee) {
             try {
                 witness_update_operation<0, 17, 0> op;
@@ -710,14 +710,14 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((owner)(url))
         }
 
-        void database_fixture::fund(const string &account_name, const share_type &amount) {
+        void database_fixture::fund(const std::string &account_name, const share_type &amount) {
             try {
                 transfer(STEEMIT_INIT_MINER_NAME, account_name, amount);
 
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::fund(const string &account_name, const asset<0, 17, 0> &amount) {
+        void database_fixture::fund(const std::string &account_name, const asset<0, 17, 0> &amount) {
             try {
                 db_plugin->debug_update([=](database &db) {
                     db.adjust_balance(db.get_account(account_name), amount);
@@ -745,7 +745,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::convert(const string &account_name, const asset<0, 17, 0> &amount) {
+        void database_fixture::convert(const std::string &account_name, const asset<0, 17, 0> &amount) {
             try {
                 const account_object &account = db.get_account(account_name);
 
@@ -763,7 +763,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((account_name)(amount))
         }
 
-        void database_fixture::transfer(const string &from, const string &to, const asset<0, 17, 0> &amount) {
+        void database_fixture::transfer(const std::string &from, const std::string &to, const asset<0, 17, 0> &amount) {
             try {
                 transfer_operation<0, 17, 0> op;
                 op.from = from;
@@ -778,7 +778,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((from)(to)(amount))
         }
 
-        void database_fixture::vest(const string &from, const share_type &amount) {
+        void database_fixture::vest(const std::string &from, const share_type &amount) {
             try {
                 transfer_to_vesting_operation<0, 17, 0> op;
                 op.from = from;
@@ -793,7 +793,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((from)(amount))
         }
 
-        void database_fixture::vest(const string &account, const asset<0, 17, 0> &amount) {
+        void database_fixture::vest(const std::string &account, const asset<0, 17, 0> &amount) {
             if (amount.symbol_name() != STEEM_SYMBOL_NAME) {
                 return;
             }
@@ -809,7 +809,7 @@ namespace golos {
             }, default_skip);
         }
 
-        void database_fixture::proxy(const string &account, const string &proxy) {
+        void database_fixture::proxy(const std::string &account, const std::string &proxy) {
             try {
                 account_witness_proxy_operation<0, 17, 0> op;
                 op.account = account;
@@ -843,7 +843,7 @@ namespace golos {
 #endif
         }
 
-        void database_fixture::print_market(const string &syma, const string &symb) const {
+        void database_fixture::print_market(const std::string &syma, const std::string &symb) const {
             const auto &limit_idx = db.get_index<limit_order_index>();
             const auto &price_idx = limit_idx.indices().get<by_price>();
 
@@ -854,7 +854,7 @@ namespace golos {
             cerr << std::setw(16) << std::right << "FOR WHAT" << " ";
             cerr << std::setw(10) << std::right << "PRICE (S/W)" << " ";
             cerr << std::setw(10) << std::right << "1/PRICE (W/S)" << "\n";
-            cerr << string(70, '=') << std::endl;
+            cerr << std::string(70, '=') << std::endl;
             auto cur = price_idx.begin();
             while (cur != price_idx.end()) {
                 cerr << std::setw(10) << std::left << db.get_account(cur->seller).name.operator std::string() << " ";
@@ -871,7 +871,7 @@ namespace golos {
             }
         }
 
-        string database_fixture::pretty(const asset<0, 17, 0> &a) const {
+        std::string database_fixture::pretty(const asset<0, 17, 0> &a) const {
             std::stringstream ss;
             ss << a.amount.value << " ";
             ss << db.get_asset(a.symbol_name()).asset_name.operator std::string();
@@ -897,7 +897,7 @@ namespace golos {
             cout << std::setw(16) << std::right << "~CALL PRICE(C/D)" << " ";
             cout << std::setw(16) << std::right << "SWAN(D/C)" << " ";
             cout << std::setw(16) << std::right << "SWAN(C/D)" << "\n";
-            cout << string(70, '=');
+            cout << std::string(70, '=');
 
             for (const call_order_object &o : db.get_index<call_order_index>().indices()) {
                 std::cout << "\n";
@@ -912,7 +912,7 @@ namespace golos {
             std::cout << "\n";
         }
 
-        void database_fixture::print_joint_market(const string &syma, const string &symb) const {
+        void database_fixture::print_joint_market(const std::string &syma, const std::string &symb) const {
             cout << std::fixed;
             cout.precision(5);
 
@@ -921,7 +921,7 @@ namespace golos {
             cout << std::setw(16) << std::right << "FOR SALE" << " ";
             cout << std::setw(16) << std::right << "FOR WHAT" << " ";
             cout << std::setw(16) << std::right << "PRICE (S/W)" << "\n";
-            cout << string(70, '=');
+            cout << std::string(70, '=');
 
             const auto &limit_idx = db.get_index<limit_order_index>();
             const auto &limit_price_idx = limit_idx.indices().get<by_price>();
@@ -946,8 +946,8 @@ namespace golos {
             trx.sign(key, db.get_chain_id());
         }
 
-        vector<operation> database_fixture::get_last_operations(uint32_t num_ops) {
-            vector<operation> ops;
+        std::vector<operation> database_fixture::get_last_operations(uint32_t num_ops) {
+            std::vector<operation> ops;
             const auto &acc_hist_idx = db.get_index<account_history_index>().indices().get<by_id>();
             auto itr = acc_hist_idx.end();
 

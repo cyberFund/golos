@@ -26,8 +26,8 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
 
       uint32_t magnitude = 1000000;
 
-      flat_map< string, share_type > account_vests;
-      flat_map< string, share_type > account_vsf_votes;
+      flat_map< std::string, share_type > account_vests;
+      flat_map< std::string, share_type > account_vsf_votes;
       const auto& acnt_idx = db.get_index< account_index >().indices().get< by_name >();
       auto acnt_itr = acnt_idx.begin();
 
@@ -47,8 +47,8 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
       auto old_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto old_reward_fund = db.get_dynamic_global_properties().total_reward_fund_steem;
 
-      flat_map< std::tuple< account_name_type, string >, share_type > comment_net_rshares;
-      flat_map< std::tuple< account_name_type, string >, share_type > comment_abs_rshares;
+      flat_map< std::tuple< account_name_type, std::string >, share_type > comment_net_rshares;
+      flat_map< std::tuple< account_name_type, std::string >, share_type > comment_abs_rshares;
       flat_map< comment_object::id_type, uint64_t > total_vote_weights;
       flat_map< comment_object::id_type, uint64_t > orig_vote_weight;
       flat_map< comment_object::id_type, uint64_t > expected_reward;

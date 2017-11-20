@@ -24,7 +24,7 @@ namespace golos {
                                                        604800, 2592000
                 };
                 uint32_t _maximum_history_per_bucket_size = 100;
-                flat_set<string> _tracked_accounts;
+                flat_set<std::string> _tracked_accounts;
             };
 
             struct operation_process {
@@ -64,11 +64,11 @@ namespace golos {
                 boost::program_options::options_description &cfg
         ) {
             cli.add_options()
-                    ("account-stats-bucket-size", boost::program_options::value<string>()->default_value("[60,3600,21600,86400,604800,2592000]"),
+                    ("account-stats-bucket-size", boost::program_options::value<std::string>()->default_value("[60,3600,21600,86400,604800,2592000]"),
                             "Track account statistics by grouping orders into buckets of equal size measured in seconds specified as a JSON array of numbers")
                     ("account-stats-history-per-bucket", boost::program_options::value<uint32_t>()->default_value(100),
                             "How far back in time to track history for each bucker size, measured in the number of buckets (default: 100)")
-                    ("account-stats-tracked-accounts", boost::program_options::value<string>()->default_value("[]"),
+                    ("account-stats-tracked-accounts", boost::program_options::value<std::string>()->default_value("[]"),
                             "Which accounts to track the statistics of. Empty list tracks all accounts.");
             cfg.add(cli);
         }

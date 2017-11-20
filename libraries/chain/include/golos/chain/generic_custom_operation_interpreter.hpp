@@ -29,7 +29,7 @@ namespace golos {
                     : evaluator_registry<CustomOperationType>(db) {
             }
 
-            void apply_operations(const vector<CustomOperationType> &custom_operations, const operation &outer_o) {
+            void apply_operations(const std::vector<CustomOperationType> &custom_operations, const operation &outer_o) {
                 auto plugin_session = this->_db.start_undo_session(true);
 
                 flat_set<account_name_type> outer_active;
@@ -83,10 +83,10 @@ namespace golos {
 
             virtual void apply(const protocol::custom_binary_operation &outer_o) override {
                 try {
-                    vector<CustomOperationType> custom_operations;
+                    std::vector<CustomOperationType> custom_operations;
 
                     try {
-                        custom_operations = fc::raw::unpack<vector<CustomOperationType>>(outer_o.data);
+                        custom_operations = fc::raw::unpack<std::vector<CustomOperationType>>(outer_o.data);
                     }
                     catch (fc::exception &) {
                         custom_operations.push_back(fc::raw::unpack<CustomOperationType>(outer_o.data));

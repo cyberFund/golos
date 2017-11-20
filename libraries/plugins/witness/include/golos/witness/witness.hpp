@@ -8,7 +8,6 @@
 namespace golos {
     namespace witness_plugin {
 
-        using std::string;
         using protocol::public_key_type;
         using application::application;
         using golos::protocol::block_id_type;
@@ -66,7 +65,7 @@ namespace golos {
             void on_applied_block(const chain::signed_block &b);
 
             void start_mining(const fc::ecc::public_key &pub, const fc::ecc::private_key &pk,
-                    const string &name, const golos::chain::signed_block &b);
+                    const std::string &name, const golos::chain::signed_block &b);
 
 
             void schedule_production_loop();
@@ -89,8 +88,8 @@ namespace golos {
             std::vector<std::shared_ptr<fc::thread>> _thread_pool;
 
             std::map<public_key_type, fc::ecc::private_key> _private_keys;
-            std::set<string> _witnesses;
-            std::map<string, public_key_type> _miners;
+            std::set<std::string> _witnesses;
+            std::map<std::string, public_key_type> _miners;
             protocol::chain_properties<0, 17, 0> _miner_prop_vote;
             fc::future<void> _block_production_task;
         };

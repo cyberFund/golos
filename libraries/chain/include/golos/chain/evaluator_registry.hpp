@@ -28,7 +28,7 @@ namespace golos {
                 if (u_which >= _op_evaluators.size())
                     assert("No registered evaluator for this operation" &&
                            false);
-                unique_ptr<generic_evaluator<OperationType>> &eval = _op_evaluators[u_which];
+                std::unique_ptr<generic_evaluator<OperationType>> &eval = _op_evaluators[u_which];
                 if (!eval)
                     assert("No registered evaluator for this operation" &&
                            false);

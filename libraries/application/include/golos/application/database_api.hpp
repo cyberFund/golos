@@ -156,7 +156,7 @@ namespace golos {
 
             scheduled_hardfork get_next_scheduled_hardfork() const;
 
-            reward_fund_object get_reward_fund(string name) const;
+            reward_fund_object get_reward_fund(std::string name) const;
 
             asset<0, 17, 0> get_name_cost(std::string name) const;
 
@@ -193,7 +193,7 @@ namespace golos {
              * @param assets names of the assets to get balances of; if empty, get all assets account has a balance in
              * @return Balances of the account
              */
-            vector<asset<0, 17, 0>> get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const;
+            std::vector<asset<0, 17, 0>> get_account_balances(account_name_type name, const flat_set<asset_name_type> &assets) const;
 
             /**
              * @brief Get the total number of accounts registered with the blockchain
@@ -214,9 +214,9 @@ namespace golos {
 
             std::vector<savings_withdraw_api_obj> get_savings_withdraw_to(std::string account) const;
 
-            vector<vesting_delegation_object> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
+            std::vector<vesting_delegation_object> get_vesting_delegations(std::string account, std::string from, uint32_t limit = 100) const;
 
-            vector<vesting_delegation_expiration_object> get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit = 100) const;
+            std::vector<vesting_delegation_expiration_object> get_expiring_vesting_delegations(std::string account, time_point_sec from, uint32_t limit = 100) const;
 
             ///////////////
             // Witnesses //
@@ -271,13 +271,13 @@ namespace golos {
              *
              * This function has semantics identical to @ref get_objects
              */
-            vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
+            std::vector<optional<asset_object>> get_assets(const std::vector<asset_name_type> &asset_symbols) const;
 
-            vector<optional<asset_object>> get_assets_by_issuer(string issuer) const;
+            std::vector<optional<asset_object>> get_assets_by_issuer(std::string issuer) const;
 
-            vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const vector<asset_name_type> &asset_symbols) const;
+            std::vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(const std::vector<asset_name_type> &asset_symbols) const;
 
-            vector<optional<asset_bitasset_data_object>> get_bitassets_data(const vector<asset_name_type> &asset_symbols) const;
+            std::vector<optional<asset_bitasset_data_object>> get_bitassets_data(const std::vector<asset_name_type> &asset_symbols) const;
 
             /**
              * @brief Get assets alphabetically by symbol name
@@ -285,7 +285,7 @@ namespace golos {
              * @param limit Maximum number of assets to fetch (must not exceed 100)
              * @return The assets found
              */
-            vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
+            std::vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
 
             ////////////////////////////
             // Authority / Validation //
@@ -336,7 +336,7 @@ namespace golos {
              * @param author select tags of this author
              * @return vector of top 1000 tags used by an author sorted by most frequently used
              **/
-            std::vector<pair<std::string, uint32_t>> get_tags_used_by_author(const std::string &author) const;
+            std::vector<std::pair<std::string, uint32_t>> get_tags_used_by_author(const std::string &author) const;
 
             /**
              * Used to retrieve the list of first payout discussions sorted by rshares^2 amount
@@ -456,7 +456,7 @@ namespace golos {
              * @return SBD amount required to set payout window duration up to time passed
              */
 
-            asset<0, 17, 0> get_payout_extension_cost(const string &author, const string &permlink, fc::time_point_sec time) const;
+            asset<0, 17, 0> get_payout_extension_cost(const std::string &author, const std::string &permlink, fc::time_point_sec time) const;
 
             /**
              * Used o retrieve comment payout window extension time by cost
@@ -466,7 +466,7 @@ namespace golos {
              * @return deadline time the payout window pretends to be extended for
              */
 
-            fc::time_point_sec get_payout_extension_time(const string &author, const string &permlink, asset<0, 17, 0> cost) const;
+            fc::time_point_sec get_payout_extension_time(const std::string &author, const std::string &permlink, asset<0, 17, 0> cost) const;
 
             ///////////////////////////
             // Proposed transactions //
@@ -475,7 +475,7 @@ namespace golos {
             /**
              *  @return the set of proposed transactions relevant to the specified account id.
              */
-            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
+            std::vector<proposal_object> get_proposed_transactions(account_name_type name) const;
 
             ////////////////////////////
             // Handlers - not exposed //
@@ -523,14 +523,14 @@ namespace golos {
 
             template<typename DatabaseIndex,
                     typename DiscussionIndex
-            > std::vector<discussion> feed(const std::set<string> &select_set,
+            > std::vector<discussion> feed(const std::set<std::string> &select_set,
                     const discussion_query &query,
                     const std::string &start_author,
                     const std::string &start_permlink) const;
 
             template<typename DatabaseIndex,
                     typename DiscussionIndex
-            > std::vector<discussion> blog(const std::set<string> &select_set,
+            > std::vector<discussion> blog(const std::set<std::string> &select_set,
                     const discussion_query &query,
                     const std::string &start_author,
                     const std::string &start_permlink) const;

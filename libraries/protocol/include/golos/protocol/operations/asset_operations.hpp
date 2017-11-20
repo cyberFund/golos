@@ -6,7 +6,7 @@
 namespace golos {
     namespace protocol {
 
-        bool is_valid_symbol(const string &symbol);
+        bool is_valid_symbol(const std::string &symbol);
 
         /**
          * @brief The asset_options struct contains options available on all assets in the network
@@ -54,7 +54,7 @@ namespace golos {
              * data that describes the meaning/purpose of this asset, fee will be charged proportional to
              * size of description.
              */
-            string description;
+            std::string description;
             extensions_type extensions;
 
             /// Perform internal consistency checks.

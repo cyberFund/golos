@@ -54,7 +54,7 @@ namespace golos {
         void operation_get_required_authorities(const follow::follow_plugin_operation &op,
                                                 flat_set <account_name_type> &active,
                                                 flat_set <account_name_type> &owner,
-                                                flat_set <account_name_type> &posting, vector <authority> &other);
+                                                flat_set <account_name_type> &posting, std::vector <authority> &other);
 
     }
 }

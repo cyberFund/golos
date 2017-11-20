@@ -12,8 +12,8 @@ namespace golos {
             account_auths[k] = w;
         }
 
-        vector<public_key_type> authority::get_keys() const {
-            vector<public_key_type> result;
+        std::vector<public_key_type> authority::get_keys() const {
+            std::vector<public_key_type> result;
             result.reserve(key_auths.size());
             for (const auto &k : key_auths) {
                 result.push_back(k.first);
@@ -48,7 +48,7 @@ namespace golos {
         }
 
 
-        bool is_valid_account_name(const string &name) {
+        bool is_valid_account_name(const std::string &name) {
 #if STEEMIT_MIN_ACCOUNT_NAME_LENGTH < 3
 #error This is_valid_account_name implementation implicitly enforces minimum name length of 3.
 #endif
@@ -200,6 +200,5 @@ namespace golos {
                    (a.account_auths == b.account_auths) &&
                    (a.key_auths == b.key_auths);
         }
-
     }
 } // golos::protocol

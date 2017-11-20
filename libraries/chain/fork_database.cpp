@@ -30,7 +30,7 @@ namespace golos {
  * Pushes the block into the fork database and caches it if it doesn't link
  *
  */
-        shared_ptr<fork_item> fork_database::push_block(const signed_block &b) {
+        std::shared_ptr<fork_item> fork_database::push_block(const signed_block &b) {
             auto item = std::make_shared<fork_item>(b);
             try {
                 _push_block(item);
@@ -146,9 +146,9 @@ namespace golos {
             return item_ptr();
         }
 
-        vector<item_ptr> fork_database::fetch_block_by_number(uint32_t num) const {
+        std::vector<item_ptr> fork_database::fetch_block_by_number(uint32_t num) const {
             try {
-                vector<item_ptr> result;
+                std::vector<item_ptr> result;
                 auto itr = _index.get<block_num>().find(num);
                 while (itr != _index.get<block_num>().end()) {
                     if ((*itr)->num == num) {
@@ -163,12 +163,12 @@ namespace golos {
             FC_LOG_AND_RETHROW()
         }
 
-        pair<fork_database::branch_type, fork_database::branch_type>
+        std::pair<fork_database::branch_type, fork_database::branch_type>
         fork_database::fetch_branch_from(block_id_type first, block_id_type second) const {
             try {
-                // This function gets a branch (i.e. vector<fork_item>) leading
+                // This function gets a branch (i.e. std::vector<fork_item>) leading
                 // back to the most recent common ancestor.
-                pair<branch_type, branch_type> result;
+                std::pair<branch_type, branch_type> result;
                 auto first_branch_itr = _index.get<block_id>().find(first);
                 FC_ASSERT(first_branch_itr != _index.get<block_id>().end());
                 auto first_branch = *first_branch_itr;
@@ -207,10 +207,10 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((first)(second))
         }
 
-        shared_ptr<fork_item> fork_database::walk_main_branch_to_num(uint32_t block_num) const {
-            shared_ptr<fork_item> next = head();
+        std::shared_ptr<fork_item> fork_database::walk_main_branch_to_num(uint32_t block_num) const {
+            std::shared_ptr<fork_item> next = head();
             if (block_num > next->num) {
-                return shared_ptr<fork_item>();
+                return std::shared_ptr<fork_item>();
             }
 
             while (next.get() != nullptr && next->num > block_num) {
@@ -219,18 +219,18 @@ namespace golos {
             return next;
         }
 
-        shared_ptr<fork_item> fork_database::fetch_block_on_main_branch_by_number(uint32_t block_num) const {
-            vector<item_ptr> blocks = fetch_block_by_number(block_num);
+        std::shared_ptr<fork_item> fork_database::fetch_block_on_main_branch_by_number(uint32_t block_num) const {
+            std::vector<item_ptr> blocks = fetch_block_by_number(block_num);
             if (blocks.size() == 1) {
                 return blocks[0];
             }
             if (blocks.size() == 0) {
-                return shared_ptr<fork_item>();
+                return std::shared_ptr<fork_item>();
             }
             return walk_main_branch_to_num(block_num);
         }
 
-        void fork_database::set_head(shared_ptr<fork_item> h) {
+        void fork_database::set_head(std::shared_ptr<fork_item> h) {
             _head = h;
         }
 

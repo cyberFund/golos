@@ -22,7 +22,7 @@ namespace golos {
         void login_api::on_api_startup() {
         }
 
-        bool login_api::login(const string &user, const string &password) {
+        bool login_api::login(const std::string &user, const std::string &password) {
             idump((user)(password));
             optional<api_access_info> acc = _ctx.app.get_api_access_info(user);
             if (!acc.valid()) {
@@ -62,7 +62,7 @@ namespace golos {
             return true;
         }
 
-        fc::api_ptr login_api::get_api_by_name(const string &api_name) const {
+        fc::api_ptr login_api::get_api_by_name(const std::string &api_name) const {
             std::shared_ptr<api_session_data> session = _ctx.session.lock();
             FC_ASSERT(session);
 
@@ -81,9 +81,9 @@ namespace golos {
 
         steem_version_info login_api::get_version() {
             return steem_version_info(
-                    fc::string(STEEMIT_BLOCKCHAIN_VERSION),
-                    fc::string(graphene::utilities::git_revision_sha),
-                    fc::string(fc::git_revision_sha));
+                    std::string(STEEMIT_BLOCKCHAIN_VERSION),
+                    std::string(graphene::utilities::git_revision_sha),
+                    std::string(fc::git_revision_sha));
         }
 
         network_broadcast_api::network_broadcast_api(const api_context &a)
@@ -274,13 +274,13 @@ namespace golos {
 
         }
 
-        vector<account_asset_balance> asset_api::get_asset_holders(std::string asset_symbol, uint32_t start, uint32_t limit) const {
+        std::vector<account_asset_balance> asset_api::get_asset_holders(std::string asset_symbol, uint32_t start, uint32_t limit) const {
             FC_ASSERT(limit <= 100);
 
             const auto &bal_idx = _db.get_index<account_balance_index>().indices().get<by_asset_balance>();
             auto range = bal_idx.equal_range(boost::make_tuple(asset_symbol));
 
-            vector<account_asset_balance> result;
+            std::vector<account_asset_balance> result;
 
             uint32_t index = 0;
             for (const account_balance_object &bal : boost::make_iterator_range(range.first, range.second)) {
@@ -318,11 +318,11 @@ namespace golos {
         }
 
         // function to get vector of system assets with holders count.
-        vector<asset_holders> asset_api::get_all_asset_holders() const {
+        std::vector<asset_holders> asset_api::get_all_asset_holders() const {
 
-            vector<asset_holders> result;
+            std::vector<asset_holders> result;
 
-            vector<asset_symbol_type> total_assets;
+            std::vector<asset_symbol_type> total_assets;
             for (const asset_object &asset_obj : _db.get_index<asset_index>().indices()) {
                 const auto &dasset_obj = _db.get_asset_dynamic_data(asset_obj.asset_name);
 

@@ -18,9 +18,9 @@ namespace golos {
                 }
 
                 struct operation_process_fill_order_visitor {
-                    vector<optional<asset_object>> &assets;
+                    std::vector<optional<asset_object>> &assets;
 
-                    operation_process_fill_order_visitor(vector<optional<asset_object>> &input_assets) : assets(input_assets) {
+                    operation_process_fill_order_visitor(std::vector<optional<asset_object>> &input_assets) : assets(input_assets) {
                     }
 
                     typedef market_trade result_type;
@@ -42,49 +42,49 @@ namespace golos {
                     market_trade operator()(const fill_settlement_order_operation<Major, Hardfork, Release> &o) const;
                 };
 
-                market_ticker get_ticker(const string &base, const string &quote) const;
+                market_ticker get_ticker(const std::string &base, const std::string &quote) const;
 
-                market_volume get_volume(const string &base, const string &quote) const;
+                market_volume get_volume(const std::string &base, const std::string &quote) const;
 
-                order_book get_order_book(const string &base, const string &quote, unsigned limit) const;
+                order_book get_order_book(const std::string &base, const std::string &quote, unsigned limit) const;
 
-                vector<market_trade> get_trade_history(const string &base, const string &quote,
+                std::vector<market_trade> get_trade_history(const std::string &base, const std::string &quote,
                                                        fc::time_point_sec start, fc::time_point_sec stop,
                                                        unsigned limit = 100) const;
 
-                vector<order_history_object> get_fill_order_history(const string &a, const string &b,
+                std::vector<order_history_object> get_fill_order_history(const std::string &a, const std::string &b,
                                                                     uint32_t limit) const;
 
-                vector<bucket_object> get_market_history(const string &a, const string &b, uint32_t bucket_seconds,
+                std::vector<bucket_object> get_market_history(const std::string &a, const std::string &b, uint32_t bucket_seconds,
                                                          fc::time_point_sec start, fc::time_point_sec end) const;
 
                 flat_set<uint32_t> get_market_history_buckets() const;
 
-                vector<limit_order_object> get_limit_orders(const string &a, const string &b, uint32_t limit) const;
+                std::vector<limit_order_object> get_limit_orders(const std::string &a, const std::string &b, uint32_t limit) const;
 
                 std::vector<golos::application::extended_limit_order> get_limit_orders_by_owner(
-                        const string &owner) const;
+                        const std::string &owner) const;
 
-                std::vector<call_order_object> get_call_orders_by_owner(const string &owner) const;
+                std::vector<call_order_object> get_call_orders_by_owner(const std::string &owner) const;
 
-                std::vector<force_settlement_object> get_settle_orders_by_owner(const string &owner) const;
+                std::vector<force_settlement_object> get_settle_orders_by_owner(const std::string &owner) const;
 
-                vector<call_order_object> get_call_orders(const string &a, uint32_t limit) const;
+                std::vector<call_order_object> get_call_orders(const std::string &a, uint32_t limit) const;
 
-                vector<force_settlement_object> get_settle_orders(const string &a, uint32_t limit) const;
+                std::vector<force_settlement_object> get_settle_orders(const std::string &a, uint32_t limit) const;
 
-                vector<call_order_object> get_margin_positions(const account_name_type &name) const;
+                std::vector<call_order_object> get_margin_positions(const account_name_type &name) const;
 
-                vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+                std::vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
                                                                   uint32_t start, uint32_t skip) const;
 
-                void subscribe_to_market(std::function<void(const variant &)> callback, string a, string b);
+                void subscribe_to_market(std::function<void(const variant &)> callback, std::string a, std::string b);
 
-                void unsubscribe_from_market(string a, string b);
+                void unsubscribe_from_market(std::string a, std::string b);
 
-                std::vector<liquidity_balance> get_liquidity_queue(const string &start_account, uint32_t limit) const;
+                std::vector<liquidity_balance> get_liquidity_queue(const std::string &start_account, uint32_t limit) const;
 
-                vector<optional<asset_object>> lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const;
+                std::vector<optional<asset_object>> lookup_asset_symbols(const std::vector<asset_name_type> &asset_symbols) const;
 
                 // Subscriptions
                 void set_subscribe_callback(std::function<void(const variant &)> cb, bool clear_filter);
@@ -105,7 +105,7 @@ namespace golos {
 
                 boost::signals2::scoped_connection _block_applied_connection;
 
-                map<pair<asset_name_type, asset_name_type>,
+                std::map<std::pair<asset_name_type, asset_name_type>,
                         std::function<void(const variant &)>> _market_subscriptions;
 
                 golos::application::application &app;
@@ -245,8 +245,8 @@ return trade;
                 set_subscribe_callback(std::function<void(const fc::variant &)>(), true);
             }
 
-            void market_history_api_impl::subscribe_to_market(std::function<void(const variant &)> callback, string a,
-                                                              string b) {
+            void market_history_api_impl::subscribe_to_market(std::function<void(const variant &)> callback, std::string a,
+                                                              std::string b) {
                 if (a > b) {
                     std::swap(a, b);
                 }
@@ -254,7 +254,7 @@ return trade;
                 _market_subscriptions[std::make_pair(a, b)] = callback;
             }
 
-            void market_history_api_impl::unsubscribe_from_market(string a, string b) {
+            void market_history_api_impl::unsubscribe_from_market(std::string a, std::string b) {
                 if (a > b) {
                     std::swap(a, b);
                 }
@@ -262,18 +262,18 @@ return trade;
                 _market_subscriptions.erase(std::make_pair(a, b));
             }
 
-            vector<optional<asset_object>> market_history_api_impl::lookup_asset_symbols(const vector<asset_name_type> &asset_symbols) const {
+            std::vector<optional<asset_object>> market_history_api_impl::lookup_asset_symbols(const std::vector<asset_name_type> &asset_symbols) const {
                 const auto &assets_by_symbol = app.chain_database()->get_index<asset_index>().indices().get<by_asset_name>();
-                vector<optional<asset_object>> result;
+                std::vector<optional<asset_object>> result;
                 std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                               [this, &assets_by_symbol](const vector<asset_name_type>::value_type &symbol) -> optional<asset_object> {
+                               [this, &assets_by_symbol](const std::vector<asset_name_type>::value_type &symbol) -> optional<asset_object> {
                                    auto itr = assets_by_symbol.find(symbol);
                                    return itr == assets_by_symbol.end() ? optional<asset_object>() : *itr;
                                });
                 return result;
             }
 
-            market_ticker market_history_api_impl::get_ticker(const string &base, const string &quote) const {
+            market_ticker market_history_api_impl::get_ticker(const std::string &base, const std::string &quote) const {
                 const auto assets = lookup_asset_symbols({base, quote});
                 FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", base));
                 FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", quote));
@@ -293,7 +293,7 @@ return trade;
                     const fc::time_point_sec yesterday = fc::time_point_sec(now.sec_since_epoch() - 86400);
                     const auto batch_size = 100;
 
-                    vector<market_trade> trades = get_trade_history(base, quote, now, yesterday, batch_size);
+                    std::vector<market_trade> trades = get_trade_history(base, quote, now, yesterday, batch_size);
                     if (!trades.empty()) {
                         result.latest = trades[0].price;
 
@@ -330,7 +330,7 @@ return trade;
                 return result;
             }
 
-            market_volume market_history_api_impl::get_volume(const string &base, const string &quote) const {
+            market_volume market_history_api_impl::get_volume(const std::string &base, const std::string &quote) const {
                 const auto ticker = get_ticker(base, quote);
 
                 market_volume result;
@@ -342,7 +342,7 @@ return trade;
                 return result;
             }
 
-            order_book market_history_api_impl::get_order_book(const string &base, const string &quote,
+            order_book market_history_api_impl::get_order_book(const std::string &base, const std::string &quote,
                                                                unsigned limit) const {
                 FC_ASSERT(limit <= 50);
 
@@ -395,8 +395,8 @@ return trade;
                 return result;
             }
 
-            std::vector<market_trade> market_history_api_impl::get_trade_history(const string &base,
-                                                                                 const string &quote,
+            std::vector<market_trade> market_history_api_impl::get_trade_history(const std::string &base,
+                                                                                 const std::string &quote,
                                                                                  fc::time_point_sec start,
                                                                                  fc::time_point_sec stop,
                                                                                  unsigned limit) const {
@@ -424,7 +424,7 @@ return trade;
 
                 uint32_t count = 0;
                 auto itr = history_idx.lower_bound(hkey);
-                vector<market_trade> result;
+                std::vector<market_trade> result;
 
                 while (itr != history_idx.end() && count < limit && !(itr->key.base != base_id || itr->key.quote != quote_id || itr->time < stop)) {
                     if (itr->time < start) {
@@ -445,8 +445,8 @@ return trade;
                 return result;
             }
 
-            vector<order_history_object> market_history_api_impl::get_fill_order_history(const string &a,
-                                                                                         const string &b,
+            std::vector<order_history_object> market_history_api_impl::get_fill_order_history(const std::string &a,
+                                                                                         const std::string &b,
                                                                                          uint32_t limit) const {
                 FC_ASSERT(app.chain_database());
                 const auto &db = *app.chain_database();
@@ -463,7 +463,7 @@ return trade;
 
                 uint32_t count = 0;
                 auto itr = history_idx.lower_bound(hkey);
-                vector<order_history_object> result;
+                std::vector<order_history_object> result;
                 while (itr != history_idx.end() && count < limit) {
                     if (itr->key.base != a_name || itr->key.quote != b_name) {
                         break;
@@ -476,7 +476,7 @@ return trade;
                 return result;
             }
 
-            vector<bucket_object> market_history_api_impl::get_market_history(const std::string &a,
+            std::vector<bucket_object> market_history_api_impl::get_market_history(const std::string &a,
                                                                               const std::string &b,
                                                                               uint32_t bucket_seconds,
                                                                               fc::time_point_sec start,
@@ -484,7 +484,7 @@ return trade;
                 try {
                     FC_ASSERT(app.chain_database());
                     const auto &db = *app.chain_database();
-                    vector<bucket_object> result;
+                    std::vector<bucket_object> result;
                     result.reserve(200);
 
                     asset_name_type a_name = a, b_name = b;
@@ -515,12 +515,12 @@ return trade;
             /**
              *  @return the limit orders for both sides of the book for the two assets specified up to limit number on each side.
              */
-            vector<limit_order_object> market_history_api_impl::get_limit_orders(const string &a, const string &b,
+            std::vector<limit_order_object> market_history_api_impl::get_limit_orders(const std::string &a, const std::string &b,
                                                                                  uint32_t limit) const {
                 const auto &limit_order_idx = app.chain_database()->get_index<limit_order_index>();
                 const auto &limit_price_idx = limit_order_idx.indices().get<by_price>();
 
-                vector<limit_order_object> result;
+                std::vector<limit_order_object> result;
 
                 asset_name_type a_symbol = a;
                 asset_name_type b_symbol = b;
@@ -545,32 +545,32 @@ return trade;
                 return result;
             }
 
-            vector<call_order_object> market_history_api_impl::get_call_orders(const string &a, uint32_t limit) const {
+            std::vector<call_order_object> market_history_api_impl::get_call_orders(const std::string &a, uint32_t limit) const {
                 const auto &call_index = app.chain_database()->get_index<call_order_index>().indices().get<by_price>();
                 const asset_object &mia = app.chain_database()->get_asset(a);
                 price<0, 17, 0> index_price = price<0, 17, 0>::min(app.chain_database()->get_asset_bitasset_data(mia.asset_name).options.short_backing_asset, mia.asset_name);
 
-                return vector<call_order_object>(call_index.lower_bound(index_price.min()),
+                return std::vector<call_order_object>(call_index.lower_bound(index_price.min()),
                                                  call_index.lower_bound(index_price.max()));
             }
 
-            vector<force_settlement_object> market_history_api_impl::get_settle_orders(const string &a,
+            std::vector<force_settlement_object> market_history_api_impl::get_settle_orders(const std::string &a,
                                                                                        uint32_t limit) const {
                 const auto &settle_index = app.chain_database()->get_index<force_settlement_index>().indices().get<
                         by_expiration>();
                 const asset_object &mia = app.chain_database()->get_asset(a);
-                return vector<force_settlement_object>(settle_index.lower_bound(mia.asset_name),
+                return std::vector<force_settlement_object>(settle_index.lower_bound(mia.asset_name),
                                                        settle_index.upper_bound(mia.asset_name));
             }
 
-            vector<call_order_object> market_history_api_impl::get_margin_positions(
+            std::vector<call_order_object> market_history_api_impl::get_margin_positions(
                     const account_name_type &name) const {
                 try {
                     const auto &idx = app.chain_database()->get_index<call_order_index>();
                     const auto &aidx = idx.indices().get<by_account>();
                     auto start = aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL_NAME));
                     auto end = ++aidx.lower_bound(boost::make_tuple(name, STEEM_SYMBOL_NAME));
-                    vector<call_order_object> result;
+                    std::vector<call_order_object> result;
                     while (start != end) {
                         result.push_back(*start);
                         ++start;
@@ -579,7 +579,7 @@ return trade;
                 } FC_CAPTURE_AND_RETHROW((name))
             }
 
-            vector<collateral_bid_object> market_history_api_impl::get_collateral_bids(const asset_name_type asset,
+            std::vector<collateral_bid_object> market_history_api_impl::get_collateral_bids(const asset_name_type asset,
                                                                                        uint32_t limit, uint32_t start,
                                                                                        uint32_t skip) const {
                 try {
@@ -595,7 +595,7 @@ return trade;
                     auto end = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::min(back.asset_name, asset),
                                                                   collateral_bid_object::id_type(
                                                                           STEEMIT_MAX_INSTANCE_ID)));
-                    vector<collateral_bid_object> result;
+                    std::vector<collateral_bid_object> result;
                     while (skip-- > 0 && start != end) {
                         ++start;
                     }
@@ -607,7 +607,7 @@ return trade;
                 } FC_CAPTURE_AND_RETHROW((asset)(limit)(skip))
             }
 
-            std::vector<liquidity_balance> market_history_api_impl::get_liquidity_queue(const string &start_account,
+            std::vector<liquidity_balance> market_history_api_impl::get_liquidity_queue(const std::string &start_account,
                                                                                         uint32_t limit) const {
                 FC_ASSERT(limit <= 1000);
 
@@ -643,7 +643,7 @@ return trade;
             }
 
             std::vector<golos::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
-                    const string &owner) const {
+                    const std::string &owner) const {
                 std::vector<golos::application::extended_limit_order> result;
                 const auto &idx = app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
@@ -676,7 +676,7 @@ return trade;
             }
 
             std::vector<call_order_object> market_history_api_impl::get_call_orders_by_owner(
-                    const string &owner) const {
+                    const std::string &owner) const {
                 std::vector<call_order_object> result;
                 const auto &idx = app.chain_database()->get_index<call_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
@@ -688,7 +688,7 @@ return trade;
             }
 
             std::vector<force_settlement_object> market_history_api_impl::get_settle_orders_by_owner(
-                    const string &owner) const {
+                    const std::string &owner) const {
                 std::vector<force_settlement_object> result;
                 const auto &idx = app.chain_database()->get_index<force_settlement_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
@@ -708,25 +708,25 @@ return trade;
         void market_history_api::on_api_startup() {
         }
 
-        market_ticker market_history_api::get_ticker(const string &base, const string &quote) const {
+        market_ticker market_history_api::get_ticker(const std::string &base, const std::string &quote) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_ticker(base, quote);
             });
         }
 
-        market_volume market_history_api::get_volume(const string &base, const string &quote) const {
+        market_volume market_history_api::get_volume(const std::string &base, const std::string &quote) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_volume(base, quote);
             });
         }
 
-        order_book market_history_api::get_order_book(const string &base, const string &quote, unsigned limit) const {
+        order_book market_history_api::get_order_book(const std::string &base, const std::string &quote, unsigned limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_order_book(base, quote, limit);
             });
         }
 
-        std::vector<market_trade> market_history_api::get_trade_history(const string &base, const string &quote,
+        std::vector<market_trade> market_history_api::get_trade_history(const std::string &base, const std::string &quote,
                                                                         fc::time_point_sec start,
                                                                         fc::time_point_sec stop, unsigned limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
@@ -734,14 +734,14 @@ return trade;
             });
         }
 
-        vector<order_history_object> market_history_api::get_fill_order_history(const string &a, const string &b,
+        std::vector<order_history_object> market_history_api::get_fill_order_history(const std::string &a, const std::string &b,
                                                                                 uint32_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_fill_order_history(a, b, limit);
             });
         }
 
-        vector<bucket_object> market_history_api::get_market_history(const string &a, const string &b,
+        std::vector<bucket_object> market_history_api::get_market_history(const std::string &a, const std::string &b,
                                                                      uint32_t bucket_seconds, fc::time_point_sec start,
                                                                      fc::time_point_sec end) const {
             return my->app.chain_database()->with_read_lock([&]() {
@@ -756,32 +756,32 @@ return trade;
         }
 
 
-        vector<limit_order_object> market_history_api::get_limit_orders(const string &a, const string &b,
+        std::vector<limit_order_object> market_history_api::get_limit_orders(const std::string &a, const std::string &b,
                                                                         uint32_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_limit_orders(a, b, limit);
             });
         }
 
-        vector<call_order_object> market_history_api::get_call_orders(const string &a, uint32_t limit) const {
+        std::vector<call_order_object> market_history_api::get_call_orders(const std::string &a, uint32_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_call_orders(a, limit);
             });
         }
 
-        vector<call_order_object> market_history_api::get_margin_positions(const string &name) const {
+        std::vector<call_order_object> market_history_api::get_margin_positions(const std::string &name) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_margin_positions(name);
             });
         }
 
-        vector<force_settlement_object> market_history_api::get_settle_orders(const string &a, uint32_t limit) const {
+        std::vector<force_settlement_object> market_history_api::get_settle_orders(const std::string &a, uint32_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_settle_orders(a, limit);
             });
         }
 
-        std::vector<liquidity_balance> market_history_api::get_liquidity_queue(const string &start_account,
+        std::vector<liquidity_balance> market_history_api::get_liquidity_queue(const std::string &start_account,
                                                                                uint32_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_liquidity_queue(start_account, limit);
@@ -812,35 +812,35 @@ return trade;
             });
         }
 
-        void market_history_api::unsubscribe_from_market(const string &a, const string &b) {
+        void market_history_api::unsubscribe_from_market(const std::string &a, const std::string &b) {
             my->unsubscribe_from_market(a, b);
         }
 
         std::vector<golos::application::extended_limit_order> market_history_api::get_limit_orders_by_owner(
-                const string &owner) const {
+                const std::string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_limit_orders_by_owner(owner);
             });
         }
 
-        std::vector<call_order_object> market_history_api::get_call_orders_by_owner(const string &owner) const {
+        std::vector<call_order_object> market_history_api::get_call_orders_by_owner(const std::string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_call_orders_by_owner(owner);
             });
         }
 
-        std::vector<force_settlement_object> market_history_api::get_settle_orders_by_owner(const string &owner) const {
+        std::vector<force_settlement_object> market_history_api::get_settle_orders_by_owner(const std::string &owner) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_settle_orders_by_owner(owner);
             });
         }
 
-        void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, const string &a,
-                                                     const string &b) {
+        void market_history_api::subscribe_to_market(std::function<void(const variant &)> callback, const std::string &a,
+                                                     const std::string &b) {
             my->subscribe_to_market(std::move(callback), a, b);
         }
 
-        vector<collateral_bid_object> market_history_api::get_collateral_bids(const asset_name_type asset,
+        std::vector<collateral_bid_object> market_history_api::get_collateral_bids(const asset_name_type asset,
                                                                               uint32_t limit, uint32_t start) const {
             return my->get_collateral_bids(asset, limit, start, 0);
         }

@@ -14,7 +14,7 @@ namespace golos {
             author_reward_operation() {
             }
 
-            author_reward_operation(const account_name_type &a, const string &p,
+            author_reward_operation(const account_name_type &a, const std::string &p,
                                     const asset <Major, Hardfork, Release> &s,
                                     const asset <Major, Hardfork, Release> &st,
                                     const asset <Major, Hardfork, Release> &v) : author(a), permlink(p), sbd_payout(s),
@@ -22,7 +22,7 @@ namespace golos {
             }
 
             account_name_type author;
-            string permlink;
+            std::string permlink;
             asset <Major, Hardfork, Release> sbd_payout;
             asset <Major, Hardfork, Release> steem_payout;
             asset <Major, Hardfork, Release> vesting_payout;
@@ -33,14 +33,14 @@ namespace golos {
             curation_reward_operation() {
             }
 
-            curation_reward_operation(const string &c, const asset <Major, Hardfork, Release> &r, const string &a,
-                                      const string &p) : curator(c), reward(r), comment_author(a), comment_permlink(p) {
+            curation_reward_operation(const std::string &c, const asset <Major, Hardfork, Release> &r, const std::string &a,
+                                      const std::string &p) : curator(c), reward(r), comment_author(a), comment_permlink(p) {
             }
 
             account_name_type curator;
             asset <Major, Hardfork, Release> reward;
             account_name_type comment_author;
-            string comment_permlink;
+            std::string comment_permlink;
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -48,18 +48,18 @@ namespace golos {
             comment_reward_operation() {
             }
 
-            comment_reward_operation(const account_name_type &a, const string &pl,
+            comment_reward_operation(const account_name_type &a, const std::string &pl,
                                      const asset <Major, Hardfork, Release> &p) : author(a), permlink(pl), payout(p) {
             }
 
             account_name_type author;
-            string permlink;
+            std::string permlink;
             asset <Major, Hardfork, Release> payout;
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct liquidity_reward_operation : public virtual_operation<Major, Hardfork, Release> {
-            liquidity_reward_operation(string o = string(),
+            liquidity_reward_operation(std::string o = std::string(),
                                        asset <Major, Hardfork, Release> p = asset<Major, Hardfork, Release>()) : owner(
                     o), payout(p) {
             }
@@ -70,7 +70,7 @@ namespace golos {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct interest_operation : public virtual_operation<Major, Hardfork, Release> {
-            interest_operation(const string &o = "",
+            interest_operation(const std::string &o = "",
                                const asset <Major, Hardfork, Release> &i = asset<Major, Hardfork, Release>(0,
                                                                                                            SBD_SYMBOL_NAME))
                     : owner(o), interest(i) {
@@ -86,7 +86,7 @@ namespace golos {
             fill_convert_request_operation() {
             }
 
-            fill_convert_request_operation(const string &o, const uint32_t id,
+            fill_convert_request_operation(const std::string &o, const uint32_t id,
                                            const asset <Major, Hardfork, Release> &in,
                                            const asset <Major, Hardfork, Release> &out) : owner(o), requestid(id),
                     amount_in(in), amount_out(out) {
@@ -104,7 +104,7 @@ namespace golos {
             fill_vesting_withdraw_operation() {
             }
 
-            fill_vesting_withdraw_operation(const string &f, const string &t, const asset <Major, Hardfork, Release> &w,
+            fill_vesting_withdraw_operation(const std::string &f, const std::string &t, const asset <Major, Hardfork, Release> &w,
                                             const asset <Major, Hardfork, Release> &d) : from_account(f), to_account(t),
                     withdrawn(w), deposited(d) {
             }
@@ -123,14 +123,14 @@ namespace golos {
 
             fill_transfer_from_savings_operation(const account_name_type &f, const account_name_type &t,
                                                  const asset <Major, Hardfork, Release> &a, const uint32_t r,
-                                                 const string &m) : from(f), to(t), amount(a), request_id(r), memo(m) {
+                                                 const std::string &m) : from(f), to(t), amount(a), request_id(r), memo(m) {
             }
 
             account_name_type from;
             account_name_type to;
             asset <Major, Hardfork, Release> amount;
             uint32_t request_id = 0;
-            string memo;
+            std::string memo;
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -150,11 +150,11 @@ namespace golos {
             comment_payout_update_operation() {
             }
 
-            comment_payout_update_operation(const account_name_type &a, const string &p) : author(a), permlink(p) {
+            comment_payout_update_operation(const account_name_type &a, const std::string &p) : author(a), permlink(p) {
             }
 
             account_name_type author;
-            string permlink;
+            std::string permlink;
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -163,14 +163,14 @@ namespace golos {
             comment_benefactor_reward_operation() {
             }
 
-            comment_benefactor_reward_operation(const account_name_type &b, const account_name_type &a, const string &p,
+            comment_benefactor_reward_operation(const account_name_type &b, const account_name_type &a, const std::string &p,
                                                 const asset <Major, Hardfork, Release> &r) : benefactor(b), author(a),
                     permlink(p), reward(r) {
             }
 
             account_name_type benefactor;
             account_name_type author;
-            string permlink;
+            std::string permlink;
             asset <Major, Hardfork, Release> reward;
         };
 

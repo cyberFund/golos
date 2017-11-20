@@ -31,8 +31,8 @@ namespace golos {
             }
         }
 
-//        set<account_name_type> account_member_index::get_account_members(const value_type &a) const {
-//            set<account_name_type> result;
+//        std::set<account_name_type> account_member_index::get_account_members(const value_type &a) const {
+//            std::set<account_name_type> result;
 //            for (auto auth : a.owner.account_auths) {
 //                result.insert(auth.first);
 //            }
@@ -45,8 +45,8 @@ namespace golos {
 //            return result;
 //        }
 //
-//        set<public_key_type> account_member_index::get_key_members(const value_type &a) const {
-//            set<public_key_type> result;
+//        std::set<public_key_type> account_member_index::get_key_members(const value_type &a) const {
+//            std::set<public_key_type> result;
 //            for (auto auth : a.owner.key_auths) {
 //                result.insert(auth.first);
 //            }
@@ -93,8 +93,8 @@ namespace golos {
 //
 //        void account_member_index::object_modified(const value_type &after) {
 //            {
-//                set<account_name_type> after_account_members = get_account_members(after);
-//                vector<account_name_type> removed;
+//                std::set<account_name_type> after_account_members = get_account_members(after);
+//                std::vector<account_name_type> removed;
 //                removed.reserve(before_account_members.size());
 //                std::set_difference(before_account_members.begin(), before_account_members.end(),
 //                        after_account_members.begin(), after_account_members.end(),
@@ -104,7 +104,7 @@ namespace golos {
 //                    account_to_account_memberships[*itr].erase(after.account);
 //                }
 //
-//                vector<account_name_type> added;
+//                std::vector<account_name_type> added;
 //                added.reserve(after_account_members.size());
 //                std::set_difference(after_account_members.begin(), after_account_members.end(),
 //                        before_account_members.begin(), before_account_members.end(),
@@ -117,9 +117,9 @@ namespace golos {
 //
 //
 //            {
-//                set<public_key_type> after_key_members = get_key_members(after);
+//                std::set<public_key_type> after_key_members = get_key_members(after);
 //
-//                vector<public_key_type> removed;
+//                std::vector<public_key_type> removed;
 //                removed.reserve(before_key_members.size());
 //                std::set_difference(before_key_members.begin(), before_key_members.end(),
 //                        after_key_members.begin(), after_key_members.end(),
@@ -129,7 +129,7 @@ namespace golos {
 //                    account_to_key_memberships[*itr].erase(after.account);
 //                }
 //
-//                vector<public_key_type> added;
+//                std::vector<public_key_type> added;
 //                added.reserve(after_key_members.size());
 //                std::set_difference(after_key_members.begin(), after_key_members.end(),
 //                        before_key_members.begin(), before_key_members.end(),

@@ -8,8 +8,8 @@ namespace golos {
     namespace wallet {
 
         struct static_variant_map {
-            flat_map<string, int> name_to_which;
-            vector<string> which_to_name;
+            flat_map<std::string, int> name_to_which;
+            std::vector<std::string> which_to_name;
         };
 
         namespace impl {

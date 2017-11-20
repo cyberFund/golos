@@ -24,35 +24,35 @@ namespace golos {
         };
 
         struct discussion_index {
-            string category;    /// category by which everything is filtered
-            vector<string> trending;    /// trending posts over the last 24 hours
-            vector<string> payout;      /// pending posts by payout
-            vector<string> payout_comments; /// pending comments by payout
-            vector<string> trending30;  /// pending lifetime payout
-            vector<string> created;     /// creation date
-            vector<string> responses;   /// creation date
-            vector<string> updated;     /// creation date
-            vector<string> active;      /// last update or reply
-            vector<string> votes;       /// last update or reply
-            vector<string> cashout;     /// last update or reply
-            vector<string> maturing;    /// about to be paid out
-            vector<string> best;        /// total lifetime payout
-            vector<string> hot;         /// total lifetime payout
-            vector<string> promoted;    /// pending lifetime payout
+            std::string category;    /// category by which everything is filtered
+            std::vector<std::string> trending;    /// trending posts over the last 24 hours
+            std::vector<std::string> payout;      /// pending posts by payout
+            std::vector<std::string> payout_comments; /// pending comments by payout
+            std::vector<std::string> trending30;  /// pending lifetime payout
+            std::vector<std::string> created;     /// creation date
+            std::vector<std::string> responses;   /// creation date
+            std::vector<std::string> updated;     /// creation date
+            std::vector<std::string> active;      /// last update or reply
+            std::vector<std::string> votes;       /// last update or reply
+            std::vector<std::string> cashout;     /// last update or reply
+            std::vector<std::string> maturing;    /// about to be paid out
+            std::vector<std::string> best;        /// total lifetime payout
+            std::vector<std::string> hot;         /// total lifetime payout
+            std::vector<std::string> promoted;    /// pending lifetime payout
         };
 
         struct category_index {
-            vector<string> active;   /// recent activity
-            vector<string> recent;   /// recently created
-            vector<string> best;     /// total lifetime payout
+            std::vector<std::string> active;   /// recent activity
+            std::vector<std::string> recent;   /// recently created
+            std::vector<std::string> best;     /// total lifetime payout
         };
 
         struct tag_index {
-            vector<string> trending; /// pending payouts
+            std::vector<std::string> trending; /// pending payouts
         };
 
         struct vote_state {
-            string voter;
+            std::string voter;
             uint64_t weight = 0;
             int64_t rshares = 0;
             int16_t percent = 0;
@@ -61,7 +61,7 @@ namespace golos {
         };
 
         struct account_vote {
-            string authorperm;
+            std::string authorperm;
             uint64_t weight = 0;
             int64_t rshares = 0;
             int16_t percent = 0;
@@ -75,16 +75,16 @@ namespace golos {
             discussion() {
             }
 
-            string url; /// /category/@rootauthor/root_permlink#author/permlink
-            string root_title;
+            std::string url; /// /category/@rootauthor/root_permlink#author/permlink
+            std::string root_title;
             asset<0, 17, 0> pending_payout_value = asset<0, 17, 0>(0, SBD_SYMBOL_NAME); ///< sbd
             asset<0, 17, 0> total_pending_payout_value = asset<0, 17, 0>(0, SBD_SYMBOL_NAME); ///< sbd including replies
-            vector<vote_state> active_votes;
-            vector<string> replies; ///< author/slug mapping
+            std::vector<vote_state> active_votes;
+            std::vector<std::string> replies; ///< author/slug mapping
             share_type author_reputation = 0;
             asset<0, 17, 0> promoted = asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
             uint32_t body_length = 0;
-            vector<account_name_type> reblogged_by;
+            std::vector<account_name_type> reblogged_by;
             optional<account_name_type> first_reblogged_by;
             optional<time_point_sec> first_reblogged_on;
         };
@@ -101,26 +101,26 @@ namespace golos {
 
             asset<0, 17, 0> vesting_balance; /// convert vesting_shares to vesting steem
             share_type reputation = 0;
-            map<uint64_t, applied_operation> transfer_history; /// transfer to/from vesting
-            map<uint64_t, applied_operation> market_history; /// limit order / cancel / fill
-            map<uint64_t, applied_operation> post_history;
-            map<uint64_t, applied_operation> vote_history;
-            map<uint64_t, applied_operation> other_history;
-            set<string> witness_votes;
-            vector<pair<string, uint32_t>> tags_usage;
-            vector<pair<account_name_type, uint32_t>> guest_bloggers;
+            std::map<uint64_t, applied_operation> transfer_history; /// transfer to/from vesting
+            std::map<uint64_t, applied_operation> market_history; /// limit order / cancel / fill
+            std::map<uint64_t, applied_operation> post_history;
+            std::map<uint64_t, applied_operation> vote_history;
+            std::map<uint64_t, applied_operation> other_history;
+            std::set<std::string> witness_votes;
+            std::vector<std::pair<std::string, uint32_t>> tags_usage;
+            std::vector<std::pair<account_name_type, uint32_t>> guest_bloggers;
 
-            optional<map<uint32_t, extended_limit_order>> open_orders;
-            optional<vector<account_balance_object>> balances;
-            optional<vector<call_order_object>> call_orders;
-            optional<vector<force_settlement_object>> settle_orders;
-            optional<vector<asset_symbol_type>> assets;
-            optional<vector<string>> comments; /// permlinks for this user
-            optional<vector<string>> blog; /// blog posts for this user
-            optional<vector<string>> feed; /// feed posts for this user
-            optional<vector<string>> recent_replies; /// blog posts for this user
-            map<string, vector<string>> blog_category; /// blog posts for this user
-            optional<vector<string>> recommended; /// posts recommened for this user
+            optional<std::map<uint32_t, extended_limit_order>> open_orders;
+            optional<std::vector<account_balance_object>> balances;
+            optional<std::vector<call_order_object>> call_orders;
+            optional<std::vector<force_settlement_object>> settle_orders;
+            optional<std::vector<asset_symbol_type>> assets;
+            optional<std::vector<std::string>> comments; /// permlinks for this user
+            optional<std::vector<std::string>> blog; /// blog posts for this user
+            optional<std::vector<std::string>> feed; /// feed posts for this user
+            optional<std::vector<std::string>> recent_replies; /// blog posts for this user
+            std::map<std::string, std::vector<std::string>> blog_category; /// blog posts for this user
+            optional<std::vector<std::string>> recommended; /// posts recommened for this user
         };
 
 
@@ -137,28 +137,28 @@ namespace golos {
 
         struct order_history_item {
             time_point_sec time;
-            string type; // buy or sell
+            std::string type; // buy or sell
             asset<0, 17, 0> sbd_quantity;
             asset<0, 17, 0> steem_quantity;
             double real_price = 0;
         };
 
         struct market {
-            vector<extended_limit_order> bids;
-            vector<extended_limit_order> asks;
-            vector<order_history_item> history;
-            vector<int> available_candlesticks;
-            vector<int> available_zoom;
+            std::vector<extended_limit_order> bids;
+            std::vector<extended_limit_order> asks;
+            std::vector<order_history_item> history;
+            std::vector<int> available_candlesticks;
+            std::vector<int> available_zoom;
             int current_candlestick = 0;
             int current_zoom = 0;
-            vector<candle_stick> price_history;
+            std::vector<candle_stick> price_history;
         };
 
         /**
          *  This struct is designed
          */
         struct state {
-            string current_route;
+            std::string current_route;
 
             dynamic_global_property_object props;
 
@@ -173,25 +173,25 @@ namespace golos {
             /**
              * "" is the global discussion index, otherwise the indicies are ranked by category
              */
-            map<string, discussion_index> discussion_idx;
+            std::map<std::string, discussion_index> discussion_idx;
 
-            map<string, category_api_obj> categories;
-            map<string, tag_api_obj> tags;
+            std::map<std::string, category_api_obj> categories;
+            std::map<std::string, tag_api_obj> tags;
 
             /**
              *  map from account/slug to full nested discussion
              */
-            map<string, discussion> content;
-            map<string, extended_account> accounts;
+            std::map<std::string, discussion> content;
+            std::map<std::string, extended_account> accounts;
 
             /**
              * The list of miners who are queued to produce work
              */
-            vector<account_name_type> pow_queue;
-            map<string, witness_api_obj> witnesses;
+            std::vector<account_name_type> pow_queue;
+            std::map<std::string, witness_api_obj> witnesses;
             witness_schedule_object witness_schedule;
             price<0, 17, 0> feed_price;
-            string error;
+            std::string error;
             optional<market> market_data;
         };
     }

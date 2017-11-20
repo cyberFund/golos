@@ -79,7 +79,7 @@ namespace golos {
             /// This function does not check if any registered asset has this symbol or not; it simply checks whether the
             /// symbol would be valid.
             /// @return true if symbol is a valid ticker symbol; false otherwise.
-            static bool is_valid_symbol(const string &symbol);
+            static bool is_valid_symbol(const std::string &symbol);
 
             /// @return true if this is a market-issued asset; false otherwise.
             bool is_market_issued() const {
@@ -120,26 +120,26 @@ namespace golos {
                 return protocol::asset<0, 17, 0>(a, asset_name);
             }
 
-            /// Convert a string amount (i.e. "123.45") to an asset object with this asset's type
-            /// The string may have a decimal and/or a negative sign.
-            protocol::asset<0, 17, 0> amount_from_string(string amount_string) const;
+            /// Convert a std::string amount (i.e. "123.45") to an asset object with this asset's type
+            /// The std::string may have a decimal and/or a negative sign.
+            protocol::asset<0, 17, 0> amount_from_string(std::string amount_string) const;
 
             /// Convert an asset to a textual representation, i.e. "123.45"
-            string amount_to_string(share_type amount) const;
+            std::string amount_to_string(share_type amount) const;
 
             /// Convert an asset to a textual representation, i.e. "123.45"
-            string amount_to_string(const protocol::asset<0, 17, 0> &amount) const {
+            std::string amount_to_string(const protocol::asset<0, 17, 0> &amount) const {
                 FC_ASSERT(amount.symbol == asset_name);
                 return amount_to_string(amount.amount);
             }
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
-            string amount_to_pretty_string(share_type amount) const {
+            std::string amount_to_pretty_string(share_type amount) const {
                 return amount_to_string(amount) + " " + asset_name;
             }
 
             /// Convert an asset to a textual representation with symbol, i.e. "123.45 USD"
-            string amount_to_pretty_string(const protocol::asset<0, 17, 0> &amount) const {
+            std::string amount_to_pretty_string(const protocol::asset<0, 17, 0> &amount) const {
                 FC_ASSERT(amount.symbol == asset_name);
                 return amount_to_pretty_string(amount.amount);
             }
@@ -202,7 +202,7 @@ namespace golos {
             /// Feeds published for this asset. If issuer is not committee, the keys in this map are the feed publishing
             /// accounts; otherwise, the feed publishers are the currently active committee_members and witnesses and this map
             /// should be treated as an implementation detail. The timestamp on each feed is the time it was published.
-            flat_map<account_name_type, pair<time_point_sec, protocol::price_feed<0, 17, 0>>> feeds;
+            flat_map<account_name_type, std::pair<time_point_sec, protocol::price_feed<0, 17, 0>>> feeds;
             /// This is the currently active price feed, calculated as the median of values from the currently active
             /// feeds.
             protocol::price_feed<0, 17, 0> current_feed;

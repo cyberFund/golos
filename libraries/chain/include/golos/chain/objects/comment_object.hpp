@@ -17,11 +17,11 @@ namespace golos {
                 return less(a.c_str(), b.c_str());
             }
 
-            bool operator()(const shared_string &a, const string &b) const {
+            bool operator()(const shared_string &a, const std::string &b) const {
                 return less(a.c_str(), b.c_str());
             }
 
-            bool operator()(const string &a, const shared_string &b) const {
+            bool operator()(const std::string &a, const shared_string &b) const {
                 return less(a.c_str(), b.c_str());
             }
 
@@ -34,8 +34,7 @@ namespace golos {
         /**
          *  Used to track the trending categories
          */
-        class category_object
-                : public object<category_object_type, category_object> {
+        class category_object : public object<category_object_type, category_object> {
         public:
             category_object() = delete;
 
@@ -58,34 +57,23 @@ namespace golos {
         struct by_rshares;
         struct by_total_payouts;
         struct by_last_update;
-        typedef multi_index_container <
-        category_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<category_object, category_object::id_type, &category_object::id>>,
+        typedef multi_index_container <category_object, indexed_by<ordered_unique < tag < by_id>, member<
+                category_object, category_object::id_type, &category_object::id>>,
         ordered_unique <tag<by_name>, member<category_object, shared_string, &category_object::name>, strcmp_less>,
-        ordered_unique <tag<by_rshares>,
-        composite_key<category_object,
-                member <
-                category_object, share_type, &category_object::abs_rshares>,
-        member<category_object, category_object::id_type, &category_object::id>
-        >,
+        ordered_unique <tag<by_rshares>, composite_key<category_object, member < category_object, share_type,
+                &category_object::abs_rshares>, member<category_object, category_object::id_type,
+                &category_object::id>>,
         composite_key_compare <std::greater<share_type>, std::less<category_object::id_type>>
         >,
-        ordered_unique <tag<by_total_payouts>,
-        composite_key<category_object,
-                member <
-                category_object, protocol::asset<0, 17, 0>, &category_object::total_payouts>,
+        ordered_unique<tag<by_total_payouts>, composite_key<category_object, member < category_object,
+                protocol::asset < 0, 17, 0>, &category_object::total_payouts>,
         member<category_object, category_object::id_type, &category_object::id>
         >,
-        composite_key_compare <std::greater<protocol::asset<0, 17, 0>>, std::less<category_object::id_type>>
+        composite_key_compare <std::greater<protocol::asset < 0, 17, 0>>, std::less<category_object::id_type>>
         >,
-        ordered_unique <tag<by_last_update>,
-        composite_key<category_object,
-                member <
-                category_object, time_point_sec, &category_object::last_update>,
-        member<category_object, category_object::id_type, &category_object::id>
-        >,
+        ordered_unique <tag<by_last_update>, composite_key<category_object, member < category_object, time_point_sec,
+                &category_object::last_update>, member<category_object, category_object::id_type,
+                &category_object::id>>,
         composite_key_compare <std::greater<time_point_sec>, std::less<category_object::id_type>>
         >
         >,
@@ -93,20 +81,14 @@ namespace golos {
         >
         category_index;
 
-        class comment_object
-                : public object<comment_object_type, comment_object> {
+        class comment_object : public object<comment_object_type, comment_object> {
         public:
             comment_object() = delete;
 
             template<typename Constructor, typename Allocator>
             comment_object(Constructor &&c, allocator <Allocator> a)
-                    : category(a),
-                      parent_permlink(a),
-                      permlink(a),
-                      title(a),
-                      body(a),
-                      json_metadata(a),
-                      beneficiaries(a) {
+                    : category(a), parent_permlink(a), permlink(a), title(a), body(a), json_metadata(a),
+                    beneficiaries(a) {
                 c(*this);
             }
 
@@ -161,13 +143,14 @@ namespace golos {
 
             id_type root_comment;
 
-            protocol::asset<0, 17, 0> max_accepted_payout = protocol::asset<0, 17, 0>(1000000000, SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
+            protocol::asset<0, 17, 0> max_accepted_payout = protocol::asset<0, 17, 0>(1000000000,
+                                                                                      SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
             bool allow_replies = true;      /// allows a post to disable replies.
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true;
 
-            boost::interprocess::vector <protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries;
+            boost::interprocess::vector<protocol::beneficiary_route_type, allocator <protocol::beneficiary_route_type>> beneficiaries;
         };
 
 
@@ -175,8 +158,7 @@ namespace golos {
          * This index maintains the set of voter/comment pairs that have been used, voters cannot
          * vote on the same comment more than once per payout period.
          */
-        class comment_vote_object
-                : public object<comment_vote_object_type, comment_vote_object> {
+        class comment_vote_object : public object<comment_vote_object_type, comment_vote_object> {
         public:
             template<typename Constructor, typename Allocator>
             comment_vote_object(Constructor &&c, allocator <Allocator> a) {
@@ -198,42 +180,29 @@ namespace golos {
         struct by_voter_comment;
         struct by_comment_weight_voter;
         struct by_voter_last_update;
-        typedef multi_index_container <
-        comment_vote_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<comment_vote_object, comment_vote_object::id_type, &comment_vote_object::id>>,
-        ordered_unique <tag<by_comment_voter>,
-        composite_key<comment_vote_object,
-                member <
-                comment_vote_object, comment_object::id_type, &comment_vote_object::comment>,
-        member<comment_vote_object, account_object::id_type, &comment_vote_object::voter>
-        >
+        typedef multi_index_container <comment_vote_object, indexed_by<ordered_unique < tag < by_id>, member<
+                comment_vote_object, comment_vote_object::id_type, &comment_vote_object::id>>,
+        ordered_unique <tag<by_comment_voter>, composite_key<comment_vote_object, member < comment_vote_object,
+                comment_object::id_type, &comment_vote_object::comment>, member<comment_vote_object,
+                account_object::id_type, &comment_vote_object::voter>>
         >,
-        ordered_unique <tag<by_voter_comment>,
-        composite_key<comment_vote_object,
-                member <
-                comment_vote_object, account_object::id_type, &comment_vote_object::voter>,
-        member<comment_vote_object, comment_object::id_type, &comment_vote_object::comment>
-        >
+        ordered_unique <tag<by_voter_comment>, composite_key<comment_vote_object, member < comment_vote_object,
+                account_object::id_type, &comment_vote_object::voter>, member<comment_vote_object,
+                comment_object::id_type, &comment_vote_object::comment>>
         >,
-        ordered_unique <tag<by_voter_last_update>,
-        composite_key<comment_vote_object,
-                member <
-                comment_vote_object, account_object::id_type, &comment_vote_object::voter>,
-        member<comment_vote_object, time_point_sec, &comment_vote_object::last_update>,
-        member<comment_vote_object, comment_object::id_type, &comment_vote_object::comment>
+        ordered_unique <tag<by_voter_last_update>, composite_key<comment_vote_object, member < comment_vote_object,
+                account_object::id_type, &comment_vote_object::voter>, member<comment_vote_object, time_point_sec,
+                &comment_vote_object::last_update>, member<comment_vote_object, comment_object::id_type,
+                &comment_vote_object::comment>>,
+        composite_key_compare <std::less<account_object::id_type>, std::greater<time_point_sec>, std::less<
+                comment_object::id_type>>
         >,
-        composite_key_compare <std::less<account_object::id_type>, std::greater<time_point_sec>, std::less<comment_object::id_type>>
-        >,
-        ordered_unique <tag<by_comment_weight_voter>,
-        composite_key<comment_vote_object,
-                member <
-                comment_vote_object, comment_object::id_type, &comment_vote_object::comment>,
-        member<comment_vote_object, uint64_t, &comment_vote_object::weight>,
-        member<comment_vote_object, account_object::id_type, &comment_vote_object::voter>
-        >,
-        composite_key_compare <std::less<comment_object::id_type>, std::greater<uint64_t>, std::less<account_object::id_type>>
+        ordered_unique <tag<by_comment_weight_voter>, composite_key<comment_vote_object, member < comment_vote_object,
+                comment_object::id_type, &comment_vote_object::comment>, member<comment_vote_object, uint64_t,
+                &comment_vote_object::weight>, member<comment_vote_object, account_object::id_type,
+                &comment_vote_object::voter>>,
+        composite_key_compare <std::less<comment_object::id_type>, std::greater<uint64_t>, std::less<
+                account_object::id_type>>
         >
         >,
         allocator <comment_vote_object>
@@ -259,63 +228,41 @@ namespace golos {
         /**
          * @ingroup object_index
          */
-        typedef multi_index_container <
-        comment_object,
-        indexed_by<
+        typedef multi_index_container <comment_object, indexed_by<
                 /// CONSENUSS INDICIES - used by evaluators
-                ordered_unique < tag <
-                by_id>, member<comment_object, comment_object::id_type, &comment_object::id>>,
-        ordered_unique <tag<by_cashout_time>,
-        composite_key<comment_object,
-                member <
-                comment_object, time_point_sec, &comment_object::cashout_time>,
-        member<comment_object, comment_object::id_type, &comment_object::id>
-        >
+                ordered_unique < tag < by_id>, member<comment_object, comment_object::id_type, &comment_object::id>>,
+        ordered_unique <tag<by_cashout_time>, composite_key<comment_object, member < comment_object, time_point_sec,
+                &comment_object::cashout_time>, member<comment_object, comment_object::id_type, &comment_object::id>>
         >,
         ordered_unique <tag<by_permlink>, /// used by consensus to find posts referenced in ops
-        composite_key<comment_object,
-                member <
-                comment_object, account_name_type, &comment_object::author>,
-        member<comment_object, shared_string, &comment_object::permlink>
-        >,
+        composite_key<comment_object, member < comment_object, account_name_type, &comment_object::author>, member<
+                comment_object, shared_string, &comment_object::permlink>>,
         composite_key_compare <std::less<account_name_type>, strcmp_less>
         >,
-        ordered_unique <tag<by_root>,
-        composite_key<comment_object,
-                member <
-                comment_object, comment_object::id_type, &comment_object::root_comment>,
-        member<comment_object, comment_object::id_type, &comment_object::id>
-        >
+        ordered_unique <tag<by_root>, composite_key<comment_object, member < comment_object, comment_object::id_type,
+                &comment_object::root_comment>, member<comment_object, comment_object::id_type, &comment_object::id>>
         >,
         ordered_unique <tag<by_parent>, /// used by consensus to find posts referenced in ops
-        composite_key<comment_object,
-                member <
-                comment_object, account_name_type, &comment_object::parent_author>,
-        member<comment_object, shared_string, &comment_object::parent_permlink>,
-        member<comment_object, comment_object::id_type, &comment_object::id>
-        >,
+        composite_key<comment_object, member < comment_object, account_name_type,
+                &comment_object::parent_author>, member<comment_object, shared_string,
+                &comment_object::parent_permlink>, member<comment_object, comment_object::id_type,
+                &comment_object::id>>,
         composite_key_compare <std::less<account_name_type>, strcmp_less, std::less<comment_object::id_type>>
         >
         /// NON_CONSENSUS INDICIES - used by APIs
 #ifndef STEEMIT_BUILD_LOW_MEMORY
         ,
-        ordered_unique <tag<by_last_update>,
-        composite_key<comment_object,
-                member <
-                comment_object, account_name_type, &comment_object::parent_author>,
-        member<comment_object, time_point_sec, &comment_object::last_update>,
-        member<comment_object, comment_object::id_type, &comment_object::id>
+        ordered_unique <tag<by_last_update>, composite_key<comment_object, member < comment_object, account_name_type,
+                &comment_object::parent_author>, member<comment_object, time_point_sec,
+                &comment_object::last_update>, member<comment_object, comment_object::id_type, &comment_object::id>>,
+        composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<
+                comment_object::id_type>>
         >,
-        composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<comment_object::id_type>>
-        >,
-        ordered_unique <tag<by_author_last_update>,
-        composite_key<comment_object,
-                member <
-                comment_object, account_name_type, &comment_object::author>,
-        member<comment_object, time_point_sec, &comment_object::last_update>,
-        member<comment_object, comment_object::id_type, &comment_object::id>
-        >,
-        composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<comment_object::id_type>>
+        ordered_unique <tag<by_author_last_update>, composite_key<comment_object, member < comment_object,
+                account_name_type, &comment_object::author>, member<comment_object, time_point_sec,
+                &comment_object::last_update>, member<comment_object, comment_object::id_type, &comment_object::id>>,
+        composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<
+                comment_object::id_type>>
         >
 #endif
         >,
@@ -327,21 +274,17 @@ namespace golos {
 } // golos::chain
 
 FC_REFLECT((golos::chain::comment_object),
-        (id)(author)(permlink)
-                (category)(parent_author)(parent_permlink)
-                (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
-                (depth)(children)(children_rshares2)
-                (net_rshares)(abs_rshares)(vote_rshares)
-                (children_abs_rshares)(cashout_time)(max_cashout_time)
-                (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)
-                (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
-                (beneficiaries))
+           (id)(author)(permlink)(category)(parent_author)(parent_permlink)(title)(body)(json_metadata)(last_update)(
+                   created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)(
+                   vote_rshares)(children_abs_rshares)(cashout_time)(max_cashout_time)(total_vote_weight)(
+                   reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(
+                   net_votes)(root_comment)(max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(
+                   allow_curation_rewards)(beneficiaries))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::comment_object, golos::chain::comment_index)
 
 FC_REFLECT((golos::chain::comment_vote_object),
-        (id)(voter)(comment)(weight)(rshares)(vote_percent)(last_update)(num_changes))
+           (id)(voter)(comment)(weight)(rshares)(vote_percent)(last_update)(num_changes))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::comment_vote_object, golos::chain::comment_vote_index)
 
-FC_REFLECT((golos::chain::category_object),
-        (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update))
+FC_REFLECT((golos::chain::category_object), (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::category_object, golos::chain::category_index)

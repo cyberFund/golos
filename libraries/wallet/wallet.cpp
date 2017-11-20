@@ -7,7 +7,7 @@
 
 #include <boost/version.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/std::string/replace.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
@@ -61,7 +61,7 @@ namespace golos {
         namespace detail {
 
             template<class T>
-            optional<T> maybe_id(const string &name_or_id) {
+            optional<T> maybe_id(const std::string &name_or_id) {
                 if (std::isdigit(name_or_id.front())) {
                     try {
                         return fc::variant(name_or_id).as<T>();
@@ -71,10 +71,10 @@ namespace golos {
                 return optional<T>();
             }
 
-            string pubkey_to_shorthash(const public_key_type &key) {
+            std::string pubkey_to_shorthash(const public_key_type &key) {
                 uint32_t x = fc::sha256::hash(key)._hash[0];
                 static const char hd[] = "0123456789abcdef";
-                string result;
+                std::string result;
 
                 result += hd[(x >> 0x1c) & 0x0f];
                 result += hd[(x >> 0x18) & 0x0f];
@@ -96,7 +96,7 @@ namespace golos {
                 return derived_key;
             }
 
-            string normalize_brain_key(string s) {
+            std::string normalize_brain_key(std::string s) {
                 size_t i = 0, n = s.length();
                 std::string result;
                 char c;
@@ -220,9 +220,9 @@ namespace golos {
 
                 template<typename Type>
                 result_type operator()(const Type &op) const {
-                    string name = fc::get_typename<Type>::name();
+                    std::string name = fc::get_typename<Type>::name();
                     size_t p = name.rfind(':');
-                    if (p != string::npos) {
+                    if (p != std::string::npos) {
                         name = name.substr(p + 1);
                     }
                     name2op[name] = Type();
@@ -281,7 +281,7 @@ namespace golos {
                     }
                 }
 
-                bool copy_wallet_file(string destination_filename) {
+                bool copy_wallet_file(std::string destination_filename) {
                     fc::path src_path = get_wallet_filename();
                     if (!fc::exists(src_path)) {
                         return false;
@@ -316,9 +316,9 @@ namespace golos {
                 variant info() const {
                     auto dynamic_props = _remote_db->get_dynamic_global_properties();
                     fc::mutable_variant_object result(fc::variant(dynamic_props).get_object());
-                    result["witness_majority_version"] = fc::string(
+                    result["witness_majority_version"] = std::string(
                             _remote_db->get_witness_schedule().majority_version);
-                    result["hardfork_version"] = fc::string(_remote_db->get_hardfork_version());
+                    result["hardfork_version"] = std::string(_remote_db->get_hardfork_version());
                     result["head_block_num"] = dynamic_props.head_block_number;
                     result["head_block_id"] = dynamic_props.head_block_id;
                     result["head_block_age"] = fc::get_approximate_relative_time_string(dynamic_props.time,
@@ -336,9 +336,9 @@ namespace golos {
                 }
 
                 variant_object about() const {
-                    string client_version(graphene::utilities::git_revision_description);
+                    std::string client_version(graphene::utilities::git_revision_description);
                     const size_t pos = client_version.find('/');
-                    if (pos != string::npos && client_version.size() > pos) {
+                    if (pos != std::string::npos && client_version.size() > pos) {
                         client_version = client_version.substr(pos + 1);
                     }
 
@@ -382,17 +382,17 @@ namespace golos {
                     return result;
                 }
 
-                account_api_obj get_account(string account_name) const {
+                account_api_obj get_account(std::string account_name) const {
                     auto accounts = _remote_db->get_accounts({account_name});
                     FC_ASSERT(!accounts.empty(), "Unknown account");
                     return accounts.front();
                 }
 
-                proposal_object get_proposal(string account_name, integral_id_type id) const {
+                proposal_object get_proposal(std::string account_name, integral_id_type id) const {
                     auto proposed_transactions = _remote_db->get_proposed_transactions(account_name);
                     FC_ASSERT(!proposed_transactions.empty(), "No proposed transactions referred to this account");
                     return *std::find_if(proposed_transactions.begin(), proposed_transactions.end(),
-                                         [&](const vector<proposal_object>::value_type &iterator) -> bool {
+                                         [&](const std::vector<proposal_object>::value_type &iterator) -> bool {
                                              return iterator.proposal_id == id;
                                          });
                 }
@@ -411,7 +411,7 @@ namespace golos {
                     return rec;
                 }
 
-                optional<asset_object> find_asset(string asset_symbol) const {
+                optional<asset_object> find_asset(std::string asset_symbol) const {
                     FC_ASSERT(asset_symbol.size() > 0);
 
                     // It's a symbol
@@ -426,13 +426,13 @@ namespace golos {
                     return rec;
                 }
 
-                asset_object get_asset(string asset_symbol) const {
+                asset_object get_asset(std::string asset_symbol) const {
                     auto opt = find_asset(asset_symbol);
                     FC_ASSERT(opt);
                     return *opt;
                 }
 
-                asset_bitasset_data_object get_bitasset_data(string asset_symbol) const {
+                asset_bitasset_data_object get_bitasset_data(std::string asset_symbol) const {
                     auto asset = get_asset(asset_symbol);
                     FC_ASSERT(asset.is_market_issued());
                     fc::optional<asset_bitasset_data_object> b = _remote_db->get_bitassets_data({asset_symbol}).front();
@@ -441,7 +441,7 @@ namespace golos {
                     return *b;
                 }
 
-                string get_wallet_filename() const {
+                std::string get_wallet_filename() const {
                     return _wallet_filename;
                 }
 
@@ -461,7 +461,7 @@ namespace golos {
 
 
                 fc::ecc::private_key get_private_key_for_account(const account_api_obj &account) const {
-                    vector<public_key_type> active_keys = account.active.get_keys();
+                    std::vector<public_key_type> active_keys = account.active.get_keys();
                     if (active_keys.size() != 1)
                         FC_THROW("Expecting a simple authority with one active key");
                     return get_private_key(active_keys.front());
@@ -471,7 +471,7 @@ namespace golos {
                 // given account name.
                 // @returns true if the key matches a current active/owner/memo key for the named
                 //          account, false otherwise (but it is stored either way)
-                bool import_key(string wif_key) {
+                bool import_key(std::string wif_key) {
                     fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
                     if (!optional_private_key)
                         FC_THROW("Invalid private key");
@@ -481,7 +481,7 @@ namespace golos {
                     return true;
                 }
 
-                bool load_wallet_file(string wallet_filename = "") {
+                bool load_wallet_file(std::string wallet_filename = "") {
                     // TODO:  Merge imported wallet with existing wallet,
                     //        instead of replacing it
                     if (wallet_filename == "") {
@@ -497,7 +497,7 @@ namespace golos {
                     return true;
                 }
 
-                void save_wallet_file(string wallet_filename = "") {
+                void save_wallet_file(std::string wallet_filename = "") {
                     //
                     // Serialize in memory, then save to disk
                     //
@@ -513,7 +513,7 @@ namespace golos {
 
                     wlog("saving wallet to file ${fn}", ("fn", wallet_filename));
 
-                    string data = fc::json::to_pretty_string(_wallet);
+                    std::string data = fc::json::to_pretty_string(_wallet);
                     try {
                         enable_umask_protection();
                         //
@@ -563,7 +563,7 @@ namespace golos {
                 }
 
                 signed_transaction create_account_with_private_key(fc::ecc::private_key owner_privkey,
-                                                                   string account_name, string creator_account_name,
+                                                                   std::string account_name, std::string creator_account_name,
                                                                    bool broadcast = false, bool save_wallet = true) {
                     try {
                         int active_key_index = find_first_unused_derived_key_index(owner_privkey);
@@ -603,7 +603,7 @@ namespace golos {
                     } FC_CAPTURE_AND_RETHROW((account_name)(creator_account_name)(broadcast))
                 }
 
-                signed_transaction set_voting_proxy(string account_to_modify, string proxy,
+                signed_transaction set_voting_proxy(std::string account_to_modify, std::string proxy,
                                                     bool broadcast /* = false */) {
                     try {
                         account_witness_proxy_operation<0, 17, 0> op;
@@ -618,7 +618,7 @@ namespace golos {
                     } FC_CAPTURE_AND_RETHROW((account_to_modify)(proxy)(broadcast))
                 }
 
-                optional<witness_api_obj> get_witness(string owner_account) {
+                optional<witness_api_obj> get_witness(std::string owner_account) {
                     return _remote_db->get_witness_by_account(owner_account);
                 }
 
@@ -631,7 +631,7 @@ namespace golos {
                     flat_set<account_name_type> req_active_approvals;
                     flat_set<account_name_type> req_owner_approvals;
                     flat_set<account_name_type> req_posting_approvals;
-                    vector<authority> other_auths;
+                    std::vector<authority> other_auths;
 
                     tx.get_required_authorities(req_active_approvals, req_owner_approvals, req_posting_approvals,
                                                 other_auths);
@@ -645,7 +645,7 @@ namespace golos {
                     // std::merge lets us de-duplicate account_name's that occur in both
                     //   sets, and dump them into a vector (as required by remote_db api)
                     //   at the same time
-                    vector<string> v_approving_account_names;
+                    std::vector<std::string> v_approving_account_names;
                     std::merge(req_active_approvals.begin(), req_active_approvals.end(), req_owner_approvals.begin(),
                                req_owner_approvals.end(), std::back_inserter(v_approving_account_names));
 
@@ -662,7 +662,7 @@ namespace golos {
                     FC_ASSERT(approving_account_objects.size() == v_approving_account_names.size(), "",
                               ("aco.size:", approving_account_objects.size())("acn", v_approving_account_names.size()));
 
-                    flat_map<string, account_api_obj> approving_account_lut;
+                    flat_map<std::string, account_api_obj> approving_account_lut;
                     size_t i = 0;
                     for (const optional<account_api_obj> &approving_acct : approving_account_objects) {
                         if (!approving_acct.valid()) {
@@ -687,7 +687,7 @@ namespace golos {
                             continue;
                         }
                         const account_api_obj &acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.active.get_keys();
+                        std::vector<public_key_type> v_approving_keys = acct.active.get_keys();
                         wdump((v_approving_keys));
                         for (const public_key_type &approving_key : v_approving_keys) {
                             wdump((approving_key));
@@ -701,7 +701,7 @@ namespace golos {
                             continue;
                         }
                         const account_api_obj &acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.posting.get_keys();
+                        std::vector<public_key_type> v_approving_keys = acct.posting.get_keys();
                         wdump((v_approving_keys));
                         for (const public_key_type &approving_key : v_approving_keys) {
                             wdump((approving_key));
@@ -715,7 +715,7 @@ namespace golos {
                             continue;
                         }
                         const account_api_obj &acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.owner.get_keys();
+                        std::vector<public_key_type> v_approving_keys = acct.owner.get_keys();
                         for (const public_key_type &approving_key : v_approving_keys) {
                             wdump((approving_key));
                             approving_key_set.insert(approving_key);
@@ -747,15 +747,15 @@ namespace golos {
                     }
 
                     auto minimal_signing_keys = tx.minimize_required_signatures(STEEMIT_CHAIN_ID, available_keys,
-                                                                                [&](const string &account_name) -> const authority & {
+                                                                                [&](const std::string &account_name) -> const authority & {
                                                                                     return (get_account_from_lut(
                                                                                             account_name).active);
                                                                                 },
-                                                                                [&](const string &account_name) -> const authority & {
+                                                                                [&](const std::string &account_name) -> const authority & {
                                                                                     return (get_account_from_lut(
                                                                                             account_name).owner);
                                                                                 },
-                                                                                [&](const string &account_name) -> const authority & {
+                                                                                [&](const std::string &account_name) -> const authority & {
                                                                                     return (get_account_from_lut(
                                                                                             account_name).posting);
                                                                                 }, STEEMIT_MAX_SIG_CHECK_DEPTH);
@@ -782,9 +782,9 @@ namespace golos {
                     return tx;
                 }
 
-                std::map<string,
-                        std::function<string(fc::variant, const fc::variants &)>> get_result_formatters() const {
-                    std::map<string, std::function<string(fc::variant, const fc::variants &)>> m;
+                std::map<std::string,
+                        std::function<std::string(fc::variant, const fc::variants &)>> get_result_formatters() const {
+                    std::map<std::string, std::function<std::string(fc::variant, const fc::variants &)>> m;
                     m["help"] = [](variant result, const fc::variants &a) {
                         return result.get_string();
                     };
@@ -796,7 +796,7 @@ namespace golos {
                     m["list_my_accounts"] = [](variant result, const fc::variants &a) {
                         std::stringstream out;
 
-                        auto accounts = result.as<vector<account_api_obj>>();
+                        auto accounts = result.as<std::vector<account_api_obj>>();
                         asset<0, 17, 0> total_steem;
                         asset<0, 17, 0> total_vest(0, VESTS_SYMBOL);
                         asset<0, 17, 0> total_sbd(0, SBD_SYMBOL_NAME);
@@ -837,7 +837,7 @@ namespace golos {
                         return ss.str();
                     };
                     m["get_limit_orders_by_owner"] = [](variant result, const fc::variants &a) {
-                        auto orders = result.as<vector<extended_limit_order>>();
+                        auto orders = result.as<std::vector<extended_limit_order>>();
 
                         std::stringstream ss;
 
@@ -930,7 +930,7 @@ namespace golos {
                         return ss.str();
                     };
                     m["get_withdraw_routes"] = [](variant result, const fc::variants &a) {
-                        auto routes = result.as<vector<withdraw_route>>();
+                        auto routes = result.as<std::vector<withdraw_route>>();
                         std::stringstream ss;
 
                         ss << ' ' << std::left << std::setw(20) << "From";
@@ -1020,17 +1020,17 @@ namespace golos {
                     }
                 }
 
-                void network_add_nodes(const vector<string> &nodes) {
+                void network_add_nodes(const std::vector<std::string> &nodes) {
                     use_network_node_api();
-                    for (const string &node_address : nodes) {
+                    for (const std::string &node_address : nodes) {
                         (*_remote_net_node)->add_node(fc::ip::endpoint::from_string(node_address));
                     }
                 }
 
-                vector<variant> network_get_connected_peers() {
+                std::vector<variant> network_get_connected_peers() {
                     use_network_node_api();
                     const auto peers = (*_remote_net_node)->get_connected_peers();
-                    vector<variant> result;
+                    std::vector<variant> result;
                     result.reserve(peers.size());
                     for (const auto &peer : peers) {
                         variant v;
@@ -1040,7 +1040,7 @@ namespace golos {
                     return result;
                 }
 
-                operation get_prototype_operation(string operation_name) {
+                operation get_prototype_operation(std::string operation_name) {
                     auto it = _prototype_ops.find(operation_name);
                     if (it == _prototype_ops.end())
                         FC_THROW("Unsupported operation: \"${operation_name}\"", ("operation_name", operation_name));
@@ -1103,7 +1103,7 @@ namespace golos {
                 }
 
                 signed_transaction propose_builder_transaction2(transaction_handle_type handle,
-                                                                string account_name_or_id,
+                                                                std::string account_name_or_id,
                                                                 time_point_sec expiration = time_point::now() +
                                                                                             fc::minutes(1),
                                                                 uint32_t review_period_seconds = 0,
@@ -1129,8 +1129,8 @@ namespace golos {
                     _builder_transactions.erase(handle);
                 }
 
-                signed_transaction bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
-                                                  string additional_collateral, bool broadcast) {
+                signed_transaction bid_collateral(std::string bidder_name, std::string debt_amount, std::string debt_symbol,
+                                                  std::string additional_collateral, bool broadcast) {
                     try {
                         optional<asset_object> debt_asset = find_asset(debt_symbol);
                         if (!debt_asset)
@@ -1151,11 +1151,11 @@ namespace golos {
                     } FC_CAPTURE_AND_RETHROW((bidder_name)(debt_amount)(debt_symbol)(additional_collateral)(broadcast))
                 }
 
-                string _wallet_filename;
+                std::string _wallet_filename;
                 wallet_data _wallet;
 
-                map<public_key_type, string> _keys;
-                map<transaction_handle_type, signed_transaction> _builder_transactions;
+                std::map<public_key_type, std::string> _keys;
+                std::map<transaction_handle_type, signed_transaction> _builder_transactions;
 
                 fc::sha512 _checksum;
                 fc::api<login_api> _remote_api;
@@ -1168,16 +1168,16 @@ namespace golos {
                 optional<fc::api<follow::follow_api>> _remote_follow_api;
                 uint32_t _tx_expiration_seconds = 30;
 
-                flat_map<string, operation> _prototype_ops;
+                flat_map<std::string, operation> _prototype_ops;
 
                 static_variant_map _operation_which_map = create_static_variant_map<operation>();
 
 #ifdef __unix__
                 mode_t                  _old_umask;
 #endif
-                const string _wallet_filename_extension = ".wallet";
+                const std::string _wallet_filename_extension = ".wallet";
 
-                mutable map<asset_name_type, asset_object> _asset_cache;
+                mutable std::map<asset_name_type, asset_object> _asset_cache;
             };
         }
     }
@@ -1195,7 +1195,7 @@ namespace golos {
         wallet_api::~wallet_api() {
         }
 
-        bool wallet_api::copy_wallet_file(string destination_filename) {
+        bool wallet_api::copy_wallet_file(std::string destination_filename) {
             return my->copy_wallet_file(destination_filename);
         }
 
@@ -1203,23 +1203,23 @@ namespace golos {
             return my->_remote_db->get_block(num);
         }
 
-        vector<applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual) {
+        std::vector<applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual) {
             return my->_remote_db->get_ops_in_block(block_num, only_virtual);
         }
 
-        string wallet_api::get_account_count() const {
+        std::string wallet_api::get_account_count() const {
             return std::to_string(my->_remote_db->get_account_count());
         }
 
-        string wallet_api::get_steem_per_mvests() const {
+        std::string wallet_api::get_steem_per_mvests() const {
             auto dynamic_props = my->_remote_db->get_dynamic_global_properties();
             auto price = (dynamic_props.total_vesting_fund_steem / dynamic_props.total_vesting_shares);
             return std::to_string(price.to_real() * 1000000);
         }
 
-        vector<account_api_obj> wallet_api::list_my_accounts() const {
+        std::vector<account_api_obj> wallet_api::list_my_accounts() const {
             FC_ASSERT(!is_locked(), "Wallet must be unlocked to list accounts");
-            vector<account_api_obj> result;
+            std::vector<account_api_obj> result;
 
             try {
                 my->use_remote_account_by_key_api();
@@ -1228,7 +1228,7 @@ namespace golos {
                 return result;
             }
 
-            vector<public_key_type> pub_keys;
+            std::vector<public_key_type> pub_keys;
             pub_keys.reserve(my->_keys.size());
 
             for (const auto &item : my->_keys) {
@@ -1236,7 +1236,7 @@ namespace golos {
             }
 
             auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
-            set<string> names;
+            std::set<std::string> names;
             for (const auto &item : refs) {
                 for (const auto &name : item) {
                     names.insert(name);
@@ -1252,15 +1252,15 @@ namespace golos {
             return result;
         }
 
-        set<string> wallet_api::list_accounts(const string &lowerbound, uint32_t limit) {
+        std::set<std::string> wallet_api::list_accounts(const std::string &lowerbound, uint32_t limit) {
             return my->_remote_db->lookup_accounts(lowerbound, limit);
         }
 
-        vector<asset<0, 17, 0>> wallet_api::list_account_balances(const account_name_type &account_name) {
+        std::vector<asset<0, 17, 0>> wallet_api::list_account_balances(const account_name_type &account_name) {
             return my->_remote_db->get_account_balances(get_account(account_name).name, flat_set<asset_name_type>());
         }
 
-        vector<asset_object> wallet_api::list_assets(const string &lowerbound, uint32_t limit) const {
+        std::vector<asset_object> wallet_api::list_assets(const std::string &lowerbound, uint32_t limit) const {
             return my->_remote_db->list_assets(lowerbound, limit);
         }
 
@@ -1268,7 +1268,7 @@ namespace golos {
             return my->_remote_db->get_dynamic_global_properties();
         }
 
-        vector<account_name_type> wallet_api::get_miner_queue() const {
+        std::vector<account_name_type> wallet_api::get_miner_queue() const {
             return my->_remote_db->get_miner_queue();
         }
 
@@ -1276,7 +1276,7 @@ namespace golos {
             return my->_remote_db->get_active_witnesses();
         }
 
-        vector<collateral_bid_object> wallet_api::get_collateral_bids(string asset, uint32_t limit,
+        std::vector<collateral_bid_object> wallet_api::get_collateral_bids(std::string asset, uint32_t limit,
                                                                       uint32_t start) const {
             try {
                 my->use_remote_market_history_api();
@@ -1288,8 +1288,8 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_collateral_bids(get_asset(asset).asset_name, limit, start);
         }
 
-        signed_transaction wallet_api::bid_collateral(string bidder_name, string debt_amount, string debt_symbol,
-                                                      string additional_collateral, bool broadcast) {
+        signed_transaction wallet_api::bid_collateral(std::string bidder_name, std::string debt_amount, std::string debt_symbol,
+                                                      std::string additional_collateral, bool broadcast) {
             return my->bid_collateral(bidder_name, debt_amount, debt_symbol, additional_collateral, broadcast);
         }
 
@@ -1303,7 +1303,7 @@ namespace golos {
             fc::bigint entropy(entropy1);
             entropy <<= 8 * sha_entropy1.data_size();
             entropy += entropy2;
-            string brain_key = "";
+            std::string brain_key = "";
 
             for (int i = 0; i < BRAIN_KEY_WORD_COUNT; i++) {
                 fc::bigint choice = entropy % graphene::words::word_list_size;
@@ -1322,11 +1322,11 @@ namespace golos {
             return result;
         }
 
-        string wallet_api::serialize_transaction(signed_transaction tx) const {
+        std::string wallet_api::serialize_transaction(signed_transaction tx) const {
             return fc::to_hex(fc::raw::pack(tx));
         }
 
-        string wallet_api::get_wallet_filename() const {
+        std::string wallet_api::get_wallet_filename() const {
             return my->get_wallet_filename();
         }
 
@@ -1360,7 +1360,7 @@ namespace golos {
         }
 
         signed_transaction wallet_api::propose_builder_transaction2(transaction_handle_type handle,
-                                                                    string account_name_or_id,
+                                                                    std::string account_name_or_id,
                                                                     time_point_sec expiration,
                                                                     uint32_t review_period_seconds, bool broadcast) {
             return my->propose_builder_transaction2(handle, account_name_or_id, expiration, review_period_seconds,
@@ -1371,32 +1371,32 @@ namespace golos {
             return my->remove_builder_transaction(handle);
         }
 
-        account_api_obj wallet_api::get_account(string account_name) const {
+        account_api_obj wallet_api::get_account(std::string account_name) const {
             return my->get_account(account_name);
         }
 
-        asset_object wallet_api::get_asset(string asset_symbol) const {
+        asset_object wallet_api::get_asset(std::string asset_symbol) const {
             auto a = my->_remote_db->get_assets({asset_name_type(asset_symbol)}).front();
 
             FC_ASSERT(a);
             return *a;
         }
 
-        asset_bitasset_data_object wallet_api::get_bitasset_data(string asset_symbol) const {
+        asset_bitasset_data_object wallet_api::get_bitasset_data(std::string asset_symbol) const {
             return my->get_bitasset_data(asset_symbol);
         }
 
-        proposal_object wallet_api::get_proposal(string account_name, integral_id_type id) const {
+        proposal_object wallet_api::get_proposal(std::string account_name, integral_id_type id) const {
             return my->get_proposal(account_name, id);
         }
 
-        bool wallet_api::import_key(string wif_key) {
+        bool wallet_api::import_key(std::string wif_key) {
             FC_ASSERT(!is_locked());
             // backup wallet
             fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
             if (!optional_private_key)
                 FC_THROW("Invalid private key");
-            //   string shorthash = detail::pubkey_to_shorthash( optional_private_key->get_public_key() );
+            //   std::string shorthash = detail::pubkey_to_shorthash( optional_private_key->get_public_key() );
             //   copy_wallet_file( "before-import-key-" + shorthash );
 
             if (my->import_key(wif_key)) {
@@ -1407,7 +1407,7 @@ namespace golos {
             return false;
         }
 
-        string wallet_api::normalize_brain_key(string s) const {
+        std::string wallet_api::normalize_brain_key(std::string s) const {
             return detail::normalize_brain_key(s);
         }
 
@@ -1426,20 +1426,20 @@ namespace golos {
            }
            */
 
-        set<account_name_type> wallet_api::list_witnesses(const string &lowerbound, uint32_t limit) {
+        std::set<account_name_type> wallet_api::list_witnesses(const std::string &lowerbound, uint32_t limit) {
             return my->_remote_db->lookup_witness_accounts(lowerbound, limit);
         }
 
-        optional<witness_api_obj> wallet_api::get_witness(string owner_account) {
+        optional<witness_api_obj> wallet_api::get_witness(std::string owner_account) {
             return my->get_witness(owner_account);
         }
 
-        annotated_signed_transaction wallet_api::set_voting_proxy(string account_to_modify, string voting_account,
+        annotated_signed_transaction wallet_api::set_voting_proxy(std::string account_to_modify, std::string voting_account,
                                                                   bool broadcast /* = false */) {
             return my->set_voting_proxy(account_to_modify, voting_account, broadcast);
         }
 
-        void wallet_api::set_wallet_filename(string wallet_filename) {
+        void wallet_api::set_wallet_filename(std::string wallet_filename) {
             my->_wallet_filename = wallet_filename;
         }
 
@@ -1449,19 +1449,19 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((tx))
         }
 
-        operation wallet_api::get_prototype_operation(string operation_name) {
+        operation wallet_api::get_prototype_operation(std::string operation_name) {
             return my->get_prototype_operation(operation_name);
         }
 
-        void wallet_api::network_add_nodes(const vector<string> &nodes) {
+        void wallet_api::network_add_nodes(const std::vector<std::string> &nodes) {
             my->network_add_nodes(nodes);
         }
 
-        vector<variant> wallet_api::network_get_connected_peers() {
+        std::vector<variant> wallet_api::network_get_connected_peers() {
             return my->network_get_connected_peers();
         }
 
-        string wallet_api::help() const {
+        std::string wallet_api::help() const {
             std::vector<std::string> method_names = my->method_documentation.get_method_names();
             std::stringstream ss;
             for (const std::string method_name : method_names) {
@@ -1474,7 +1474,7 @@ namespace golos {
             return ss.str();
         }
 
-        string wallet_api::get_help(const string &method) const {
+        std::string wallet_api::get_help(const std::string &method) const {
             fc::api<wallet_api> tmp;
             std::stringstream ss;
             ss << "\n";
@@ -1489,16 +1489,16 @@ namespace golos {
             return ss.str();
         }
 
-        bool wallet_api::load_wallet_file(string wallet_filename) {
+        bool wallet_api::load_wallet_file(std::string wallet_filename) {
             return my->load_wallet_file(wallet_filename);
         }
 
-        void wallet_api::save_wallet_file(string wallet_filename) {
+        void wallet_api::save_wallet_file(std::string wallet_filename) {
             my->save_wallet_file(wallet_filename);
         }
 
-        std::map<string,
-                std::function<string(fc::variant, const fc::variants &)>> wallet_api::get_result_formatters() const {
+        std::map<std::string,
+                std::function<std::string(fc::variant, const fc::variants &)>> wallet_api::get_result_formatters() const {
             return my->get_result_formatters();
         }
 
@@ -1527,11 +1527,11 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void wallet_api::unlock(string password) {
+        void wallet_api::unlock(std::string password) {
             try {
                 FC_ASSERT(password.size() > 0);
                 auto pw = fc::sha512::hash(password.c_str(), password.size());
-                vector<char> decrypted = fc::aes_decrypt(pw, my->_wallet.cipher_keys);
+                std::vector<char> decrypted = fc::aes_decrypt(pw, my->_wallet.cipher_keys);
                 auto pk = fc::raw::unpack<plain_keys>(decrypted);
                 FC_ASSERT(pk.checksum == pw);
                 my->_keys = std::move(pk.keys);
@@ -1540,24 +1540,24 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void wallet_api::set_password(string password) {
+        void wallet_api::set_password(std::string password) {
             if (!is_new())
                 FC_ASSERT(!is_locked(), "The wallet must be unlocked before the password can be set");
             my->_checksum = fc::sha512::hash(password.c_str(), password.size());
             lock();
         }
 
-        map<public_key_type, string> wallet_api::list_keys() {
+        std::map<public_key_type, std::string> wallet_api::list_keys() {
             FC_ASSERT(!is_locked());
             return my->_keys;
         }
 
-        string wallet_api::get_private_key(public_key_type pubkey) const {
+        std::string wallet_api::get_private_key(public_key_type pubkey) const {
             return key_to_wif(my->get_private_key(pubkey));
         }
 
-        pair<public_key_type, string> wallet_api::get_private_key_from_password(string account, string role,
-                                                                                string password) const {
+        std::pair<public_key_type, std::string> wallet_api::get_private_key_from_password(std::string account, std::string role,
+                                                                                std::string password) const {
             auto seed = account + role + password;
             FC_ASSERT(seed.size());
             auto secret = fc::sha256::hash(seed.c_str(), seed.size());
@@ -1583,8 +1583,8 @@ namespace golos {
          * provide their desired keys. The resulting account may not be controllable by this
          * wallet.
          */
-        annotated_signed_transaction wallet_api::create_account_with_keys(string creator, string new_account_name,
-                                                                          string json_meta, public_key_type owner,
+        annotated_signed_transaction wallet_api::create_account_with_keys(std::string creator, std::string new_account_name,
+                                                                          std::string json_meta, public_key_type owner,
                                                                           public_key_type active,
                                                                           public_key_type posting, public_key_type memo,
                                                                           bool broadcast) const {
@@ -1614,12 +1614,12 @@ namespace golos {
          * provide their desired keys. The resulting account may not be controllable by this
          * wallet.
          */
-        annotated_signed_transaction wallet_api::create_account_with_keys_delegated(string creator,
+        annotated_signed_transaction wallet_api::create_account_with_keys_delegated(std::string creator,
 
                                                                                     asset<0, 17, 0> steem_fee,
                                                                                     asset<0, 17, 0> delegated_vests,
-                                                                                    string new_account_name,
-                                                                                    string json_meta,
+                                                                                    std::string new_account_name,
+                                                                                    std::string json_meta,
                                                                                     public_key_type owner,
                                                                                     public_key_type active,
                                                                                     public_key_type posting,
@@ -1646,8 +1646,8 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(owner)(active)(memo)(broadcast))
         }
 
-        annotated_signed_transaction wallet_api::request_account_recovery(string recovery_account,
-                                                                          string account_to_recover,
+        annotated_signed_transaction wallet_api::request_account_recovery(std::string recovery_account,
+                                                                          std::string account_to_recover,
                                                                           authority new_authority, bool broadcast) {
             FC_ASSERT(!is_locked());
             request_account_recovery_operation<0, 17, 0> op;
@@ -1662,7 +1662,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::recover_account(string account_to_recover, authority recent_authority,
+        annotated_signed_transaction wallet_api::recover_account(std::string account_to_recover, authority recent_authority,
                                                                  authority new_authority, bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -1678,7 +1678,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::change_recovery_account(string owner, string new_recovery_account,
+        annotated_signed_transaction wallet_api::change_recovery_account(std::string owner, std::string new_recovery_account,
                                                                          bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -1693,11 +1693,11 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        vector<owner_authority_history_api_obj> wallet_api::get_owner_history(string account) const {
+        std::vector<owner_authority_history_api_obj> wallet_api::get_owner_history(std::string account) const {
             return my->_remote_db->get_owner_history(account);
         }
 
-        annotated_signed_transaction wallet_api::update_account(string account_name, string json_meta,
+        annotated_signed_transaction wallet_api::update_account(std::string account_name, std::string json_meta,
                                                                 public_key_type owner, public_key_type active,
                                                                 public_key_type posting, public_key_type memo,
                                                                 bool broadcast) const {
@@ -1720,7 +1720,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((account_name)(json_meta)(owner)(active)(memo)(broadcast))
         }
 
-        annotated_signed_transaction wallet_api::update_account_auth_key(string account_name, authority_type type,
+        annotated_signed_transaction wallet_api::update_account_auth_key(std::string account_name, authority_type type,
                                                                          public_key_type key, weight_type weight,
                                                                          bool broadcast) {
             FC_ASSERT(!is_locked());
@@ -1782,8 +1782,8 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::update_account_auth_account(string account_name, authority_type type,
-                                                                             string auth_account, weight_type weight,
+        annotated_signed_transaction wallet_api::update_account_auth_account(std::string account_name, authority_type type,
+                                                                             std::string auth_account, weight_type weight,
                                                                              bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -1844,7 +1844,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::update_account_auth_threshold(string account_name, authority_type type,
+        annotated_signed_transaction wallet_api::update_account_auth_threshold(std::string account_name, authority_type type,
                                                                                uint32_t threshold, bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -1901,7 +1901,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::update_account_meta(string account_name, string json_meta,
+        annotated_signed_transaction wallet_api::update_account_meta(std::string account_name, std::string json_meta,
                                                                      bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -1921,7 +1921,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::update_account_memo_key(string account_name, public_key_type key,
+        annotated_signed_transaction wallet_api::update_account_memo_key(std::string account_name, public_key_type key,
                                                                          bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -1941,7 +1941,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::delegate_vesting_shares(string delegator, string delegatee,
+        annotated_signed_transaction wallet_api::delegate_vesting_shares(std::string delegator, std::string delegatee,
                                                                          asset<0, 17, 0> vesting_shares,
                                                                          bool broadcast) {
             FC_ASSERT(!is_locked());
@@ -1967,8 +1967,8 @@ namespace golos {
          *  This method will genrate new owner, active, and memo keys for the new account which
          *  will be controlable by this wallet.
          */
-        annotated_signed_transaction wallet_api::create_account(string creator, string new_account_name,
-                                                                string json_meta, bool broadcast) {
+        annotated_signed_transaction wallet_api::create_account(std::string creator, std::string new_account_name,
+                                                                std::string json_meta, bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
                 auto owner = suggest_brain_key();
@@ -1988,9 +1988,9 @@ namespace golos {
          *  This method will genrate new owner, active, and memo keys for the new account which
          *  will be controllable by this wallet.
          */
-        annotated_signed_transaction wallet_api::create_account_delegated(string creator, asset<0, 17, 0> steem_fee,
+        annotated_signed_transaction wallet_api::create_account_delegated(std::string creator, asset<0, 17, 0> steem_fee,
                                                                           asset<0, 17, 0> delegated_vests,
-                                                                          string new_account_name, string json_meta,
+                                                                          std::string new_account_name, std::string json_meta,
                                                                           bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
@@ -2009,7 +2009,7 @@ namespace golos {
         }
 
 
-        annotated_signed_transaction wallet_api::update_witness(string witness_account_name, string url,
+        annotated_signed_transaction wallet_api::update_witness(std::string witness_account_name, std::string url,
                                                                 public_key_type block_signing_key,
                                                                 const chain_properties<0, 17, 0> &props,
                                                                 bool broadcast) {
@@ -2039,7 +2039,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::vote_for_witness(string voting_account, string witness_to_vote_for,
+        annotated_signed_transaction wallet_api::vote_for_witness(std::string voting_account, std::string witness_to_vote_for,
                                                                   bool approve, bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
@@ -2056,7 +2056,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((voting_account)(witness_to_vote_for)(approve)(broadcast))
         }
 
-        string wallet_api::get_encrypted_memo(string from, string to, string memo) {
+        std::string wallet_api::get_encrypted_memo(std::string from, std::string to, std::string memo) {
 
             if (memo.size() > 0 && memo[0] == '#') {
                 memo_data m;
@@ -2084,7 +2084,7 @@ namespace golos {
             }
         }
 
-        annotated_signed_transaction wallet_api::transfer(string from, string to, asset<0, 17, 0> amount, string memo,
+        annotated_signed_transaction wallet_api::transfer(std::string from, std::string to, asset<0, 17, 0> amount, std::string memo,
                                                           bool broadcast) {
             try {
                 FC_ASSERT(!is_locked());
@@ -2106,11 +2106,11 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((from)(to)(amount)(memo)(broadcast))
         }
 
-        annotated_signed_transaction wallet_api::escrow_transfer(string from, string to, string agent,
+        annotated_signed_transaction wallet_api::escrow_transfer(std::string from, std::string to, std::string agent,
                                                                  uint32_t escrow_id, asset<0, 17, 0> sbd_amount,
                                                                  asset<0, 17, 0> steem_amount, asset<0, 17, 0> fee,
                                                                  time_point_sec ratification_deadline,
-                                                                 time_point_sec escrow_expiration, string json_meta,
+                                                                 time_point_sec escrow_expiration, std::string json_meta,
                                                                  bool broadcast) {
             FC_ASSERT(!is_locked());
             escrow_transfer_operation<0, 17, 0> op;
@@ -2132,7 +2132,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::escrow_approve(string from, string to, string agent, string who,
+        annotated_signed_transaction wallet_api::escrow_approve(std::string from, std::string to, std::string agent, std::string who,
                                                                 uint32_t escrow_id, bool approve, bool broadcast) {
             FC_ASSERT(!is_locked());
             escrow_approve_operation<0, 17, 0> op;
@@ -2149,7 +2149,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::escrow_dispute(string from, string to, string agent, string who,
+        annotated_signed_transaction wallet_api::escrow_dispute(std::string from, std::string to, std::string agent, std::string who,
                                                                 uint32_t escrow_id, bool broadcast) {
             FC_ASSERT(!is_locked());
             escrow_dispute_operation<0, 17, 0> op;
@@ -2166,8 +2166,8 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::escrow_release(string from, string to, string agent, string who,
-                                                                string receiver, uint32_t escrow_id,
+        annotated_signed_transaction wallet_api::escrow_release(std::string from, std::string to, std::string agent, std::string who,
+                                                                std::string receiver, uint32_t escrow_id,
                                                                 asset<0, 17, 0> sbd_amount,
                                                                 asset<0, 17, 0> steem_amount, bool broadcast) {
             FC_ASSERT(!is_locked());
@@ -2190,8 +2190,8 @@ namespace golos {
         /**
          *  Transfers into savings happen immediately, transfers from savings take 72 hours
          */
-        annotated_signed_transaction wallet_api::transfer_to_savings(string from, string to, asset<0, 17, 0> amount,
-                                                                     string memo, bool broadcast) {
+        annotated_signed_transaction wallet_api::transfer_to_savings(std::string from, std::string to, asset<0, 17, 0> amount,
+                                                                     std::string memo, bool broadcast) {
             FC_ASSERT(!is_locked());
             transfer_to_savings_operation<0, 17, 0> op;
             op.from = from;
@@ -2209,8 +2209,8 @@ namespace golos {
         /**
          * @param request_id - an unique ID assigned by from account, the id is used to cancel the operation and can be reused after the transfer completes
          */
-        annotated_signed_transaction wallet_api::transfer_from_savings(string from, uint32_t request_id, string to,
-                                                                       asset<0, 17, 0> amount, string memo,
+        annotated_signed_transaction wallet_api::transfer_from_savings(std::string from, uint32_t request_id, std::string to,
+                                                                       asset<0, 17, 0> amount, std::string memo,
                                                                        bool broadcast) {
             FC_ASSERT(!is_locked());
             transfer_from_savings_operation<0, 17, 0> op;
@@ -2231,7 +2231,7 @@ namespace golos {
          *  @param request_id the id used in transfer_from_savings
          *  @param from the account that initiated the transfer
          */
-        annotated_signed_transaction wallet_api::cancel_transfer_from_savings(string from, uint32_t request_id,
+        annotated_signed_transaction wallet_api::cancel_transfer_from_savings(std::string from, uint32_t request_id,
                                                                               bool broadcast) {
             FC_ASSERT(!is_locked());
             cancel_transfer_from_savings_operation<0, 17, 0> op;
@@ -2244,7 +2244,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string to, asset<0, 17, 0> amount,
+        annotated_signed_transaction wallet_api::transfer_to_vesting(std::string from, std::string to, asset<0, 17, 0> amount,
                                                                      bool broadcast) {
             FC_ASSERT(!is_locked());
             transfer_to_vesting_operation<0, 17, 0> op;
@@ -2259,7 +2259,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset<0, 17, 0> vesting_shares,
+        annotated_signed_transaction wallet_api::withdraw_vesting(std::string from, asset<0, 17, 0> vesting_shares,
                                                                   bool broadcast) {
             FC_ASSERT(!is_locked());
             withdraw_vesting_operation<0, 17, 0> op;
@@ -2273,7 +2273,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::set_withdraw_vesting_route(string from, string to, uint16_t percent,
+        annotated_signed_transaction wallet_api::set_withdraw_vesting_route(std::string from, std::string to, uint16_t percent,
                                                                             bool auto_vest, bool broadcast) {
             FC_ASSERT(!is_locked());
             set_withdraw_vesting_route_operation<0, 17, 0> op;
@@ -2289,7 +2289,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::convert_sbd(string from, asset<0, 17, 0> amount, bool broadcast) {
+        annotated_signed_transaction wallet_api::convert_sbd(std::string from, asset<0, 17, 0> amount, bool broadcast) {
             FC_ASSERT(!is_locked());
             convert_operation<0, 17, 0> op;
             op.owner = from;
@@ -2303,7 +2303,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::publish_feed(string witness, price<0, 17, 0> exchange_rate,
+        annotated_signed_transaction wallet_api::publish_feed(std::string witness, price<0, 17, 0> exchange_rate,
                                                               bool broadcast) {
             FC_ASSERT(!is_locked());
             feed_publish_operation<0, 17, 0> op;
@@ -2317,11 +2317,11 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        vector<convert_request_object> wallet_api::get_conversion_requests(string owner_account) {
+        std::vector<convert_request_object> wallet_api::get_conversion_requests(std::string owner_account) {
             return my->_remote_db->get_conversion_requests(owner_account);
         }
 
-        string wallet_api::decrypt_memo(string encrypted_memo) {
+        std::string wallet_api::decrypt_memo(std::string encrypted_memo) {
             if (is_locked()) {
                 return encrypted_memo;
             }
@@ -2351,7 +2351,7 @@ namespace golos {
                     }
 
                     try {
-                        vector<char> decrypted = fc::aes_decrypt(encryption_key, m->encrypted);
+                        std::vector<char> decrypted = fc::aes_decrypt(encryption_key, m->encrypted);
                         return fc::raw::unpack<std::string>(decrypted);
                     } catch (...) {
                     }
@@ -2360,7 +2360,7 @@ namespace golos {
             return encrypted_memo;
         }
 
-        annotated_signed_transaction wallet_api::decline_voting_rights(string account, bool decline, bool broadcast) {
+        annotated_signed_transaction wallet_api::decline_voting_rights(std::string account, bool decline, bool broadcast) {
             FC_ASSERT(!is_locked());
             decline_voting_rights_operation<0, 17, 0> op;
             op.account = account;
@@ -2373,7 +2373,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        map<uint32_t, applied_operation> wallet_api::get_account_history(string account, uint32_t from,
+        std::map<uint32_t, applied_operation> wallet_api::get_account_history(std::string account, uint32_t from,
                                                                          uint32_t limit) {
             auto result = my->_remote_db->get_account_history(account, from, limit);
             if (!is_locked()) {
@@ -2395,11 +2395,11 @@ namespace golos {
             return result;
         }
 
-        vector<withdraw_route> wallet_api::get_withdraw_routes(string account, withdraw_route_type type) const {
+        std::vector<withdraw_route> wallet_api::get_withdraw_routes(std::string account, withdraw_route_type type) const {
             return my->_remote_db->get_withdraw_routes(account, type);
         }
 
-        market_history::order_book wallet_api::get_order_book(const string &base, const string &quote, unsigned limit) {
+        market_history::order_book wallet_api::get_order_book(const std::string &base, const std::string &quote, unsigned limit) {
             market_history::order_book result;
 
             try {
@@ -2412,7 +2412,7 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_order_book(base, quote, limit);
         }
 
-        vector<extended_limit_order> wallet_api::get_limit_orders_by_owner(string account_name) {
+        std::vector<extended_limit_order> wallet_api::get_limit_orders_by_owner(std::string account_name) {
             try {
                 my->use_remote_market_history_api();
             } catch (fc::exception &e) {
@@ -2423,7 +2423,7 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_limit_orders_by_owner(account_name);
         }
 
-        vector<call_order_object> wallet_api::get_call_orders_by_owner(string account_name) {
+        std::vector<call_order_object> wallet_api::get_call_orders_by_owner(std::string account_name) {
             try {
                 my->use_remote_market_history_api();
             } catch (fc::exception &e) {
@@ -2434,7 +2434,7 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_call_orders_by_owner(account_name);
         }
 
-        vector<force_settlement_object> wallet_api::get_settle_orders_by_owner(string account_name) {
+        std::vector<force_settlement_object> wallet_api::get_settle_orders_by_owner(std::string account_name) {
             try {
                 my->use_remote_market_history_api();
             } catch (fc::exception &e) {
@@ -2445,7 +2445,7 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_settle_orders_by_owner(account_name);
         }
 
-        annotated_signed_transaction wallet_api::create_order(string owner, protocol::integral_id_type order_id,
+        annotated_signed_transaction wallet_api::create_order(std::string owner, protocol::integral_id_type order_id,
                                                               asset<0, 17, 0> amount_to_sell,
                                                               asset<0, 17, 0> min_to_receive, bool fill_or_kill,
                                                               uint32_t expiration_sec, bool broadcast) {
@@ -2466,7 +2466,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::cancel_order(string owner, protocol::integral_id_type order_id,
+        annotated_signed_transaction wallet_api::cancel_order(std::string owner, protocol::integral_id_type order_id,
                                                               bool broadcast) {
             FC_ASSERT(!is_locked());
             limit_order_cancel_operation<0, 17, 0> op;
@@ -2480,7 +2480,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::sell_asset(string seller_account, asset<0, 17, 0> amount_to_sell,
+        signed_transaction wallet_api::sell_asset(std::string seller_account, asset<0, 17, 0> amount_to_sell,
                                                   asset<0, 17, 0> amount_to_receive, uint32_t expiration, protocol::integral_id_type order_id, bool fill_or_kill, bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -2505,19 +2505,19 @@ namespace golos {
             return sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::sell(string seller_account, string base, string quote, double rate,
+        signed_transaction wallet_api::sell(std::string seller_account, std::string base, std::string quote, double rate,
                                             double amount, protocol::integral_id_type order_id, bool broadcast) {
             return sell_asset(seller_account, asset<0, 17, 0>(amount, asset<0, 17, 0>::from_string(base).symbol),
                               asset<0, 17, 0>(rate * amount, asset<0, 17, 0>::from_string(quote).symbol), 0, order_id, false,
                               broadcast);
         }
 
-        signed_transaction wallet_api::buy(string buyer_account, string base, string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast) {
+        signed_transaction wallet_api::buy(std::string buyer_account, std::string base, std::string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast) {
             return sell_asset(buyer_account, asset<0, 17, 0>(rate * amount, asset<0, 17, 0>::from_string(quote).symbol),
                               asset<0, 17, 0>(amount, asset<0, 17, 0>::from_string(base).symbol), 0, order_id, false, broadcast);
         }
 
-        signed_transaction wallet_api::borrow_asset(string seller_name, asset<0, 17, 0> amount_to_borrow,
+        signed_transaction wallet_api::borrow_asset(std::string seller_name, asset<0, 17, 0> amount_to_borrow,
                                                     asset<0, 17, 0> amount_of_collateral, bool broadcast) {
             FC_ASSERT(!is_locked());
             auto seller = get_account(seller_name);
@@ -2540,7 +2540,7 @@ namespace golos {
             return sign_transaction(trx, broadcast);
         }
 
-        signed_transaction wallet_api::issue_asset(string to_account, asset<0, 17, 0> amount, string memo,
+        signed_transaction wallet_api::issue_asset(std::string to_account, asset<0, 17, 0> amount, std::string memo,
                                                    bool broadcast) {
             auto asset_obj = get_asset(amount.symbol);
 
@@ -2560,7 +2560,7 @@ namespace golos {
             return sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::create_asset(string issuer, string symbol, uint8_t precision,
+        signed_transaction wallet_api::create_asset(std::string issuer, std::string symbol, uint8_t precision,
                                                     asset_options<0, 17, 0> common, fc::optional<bitasset_options> bitasset_opts,
                                                     bool broadcast) {
             try {
@@ -2582,7 +2582,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((issuer)(symbol)(precision)(common)(bitasset_opts)(broadcast))
         }
 
-        signed_transaction wallet_api::update_asset(string symbol, optional<string> new_issuer,
+        signed_transaction wallet_api::update_asset(std::string symbol, optional<std::string> new_issuer,
                                                     asset_options<0, 17, 0> new_options, bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_update = my->find_asset(symbol);
@@ -2608,7 +2608,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((symbol)(new_issuer)(new_options)(broadcast))
         }
 
-        signed_transaction wallet_api::update_bitasset(string symbol, bitasset_options new_options,
+        signed_transaction wallet_api::update_bitasset(std::string symbol, bitasset_options new_options,
                                                        bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_update = my->find_asset(symbol);
@@ -2628,7 +2628,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((symbol)(new_options)(broadcast))
         }
 
-        signed_transaction wallet_api::update_asset_feed_producers(string symbol, flat_set<string> new_feed_producers,
+        signed_transaction wallet_api::update_asset_feed_producers(std::string symbol, flat_set<std::string> new_feed_producers,
                                                                    bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_update = my->find_asset(symbol);
@@ -2653,7 +2653,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((symbol)(new_feed_producers)(broadcast))
         }
 
-        signed_transaction wallet_api::publish_asset_feed(string publishing_account, string symbol,
+        signed_transaction wallet_api::publish_asset_feed(std::string publishing_account, std::string symbol,
                                                           price_feed<0, 17, 0> feed, bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_update = my->find_asset(symbol);
@@ -2673,7 +2673,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((publishing_account)(symbol)(feed)(broadcast))
         }
 
-        signed_transaction wallet_api::fund_asset_fee_pool(string from, string symbol, string amount,
+        signed_transaction wallet_api::fund_asset_fee_pool(std::string from, std::string symbol, std::string amount,
                                                            bool broadcast /* = false */) {
             try {
                 account_api_obj from_account = get_account(from);
@@ -2695,7 +2695,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((from)(symbol)(amount)(broadcast))
         }
 
-        signed_transaction wallet_api::reserve_asset(string from, string amount, string symbol,
+        signed_transaction wallet_api::reserve_asset(std::string from, std::string amount, std::string symbol,
                                                      bool broadcast /* = false */) {
             try {
                 account_api_obj from_account = get_account(from);
@@ -2715,7 +2715,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((from)(amount)(symbol)(broadcast))
         }
 
-        signed_transaction wallet_api::global_settle_asset(string symbol, price<0, 17, 0> settle_price,
+        signed_transaction wallet_api::global_settle_asset(std::string symbol, price<0, 17, 0> settle_price,
                                                            bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_settle = my->find_asset(symbol);
@@ -2735,7 +2735,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((symbol)(settle_price)(broadcast))
         }
 
-        signed_transaction wallet_api::settle_asset(string account_to_settle, string amount_to_settle, string symbol,
+        signed_transaction wallet_api::settle_asset(std::string account_to_settle, std::string amount_to_settle, std::string symbol,
                                                     bool broadcast /* = false */) {
             try {
                 optional<asset_object> asset_to_settle = my->find_asset(symbol);
@@ -2754,7 +2754,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((account_to_settle)(amount_to_settle)(symbol)(broadcast))
         }
 
-        signed_transaction wallet_api::whitelist_account(string authorizing_account, string account_to_list,
+        signed_transaction wallet_api::whitelist_account(std::string authorizing_account, std::string account_to_list,
                                                          account_whitelist_operation<0, 17,
                                                                  0>::account_listing new_listing_status,
                                                          bool broadcast /* = false */) {
@@ -2772,9 +2772,9 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((authorizing_account)(account_to_list)(new_listing_status)(broadcast))
         }
 
-        annotated_signed_transaction wallet_api::post_comment(string author, string permlink, string parent_author,
-                                                              string parent_permlink, string title, string body,
-                                                              string json, bool broadcast) {
+        annotated_signed_transaction wallet_api::post_comment(std::string author, std::string permlink, std::string parent_author,
+                                                              std::string parent_permlink, std::string title, std::string body,
+                                                              std::string json, bool broadcast) {
             FC_ASSERT(!is_locked());
             comment_operation<0, 17, 0> op;
             op.parent_author = parent_author;
@@ -2792,7 +2792,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::extend_payout_by_cost(string payer, string author, string permlink,
+        annotated_signed_transaction wallet_api::extend_payout_by_cost(std::string payer, std::string author, std::string permlink,
                                                                        asset<0, 17, 0> extension_cost, bool broadcast) {
             FC_ASSERT(!is_locked());
 
@@ -2809,7 +2809,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::extend_payout_by_time(string payer, string author, string permlink,
+        annotated_signed_transaction wallet_api::extend_payout_by_time(std::string payer, std::string author, std::string permlink,
                                                                        fc::time_point_sec extension_time,
                                                                        bool broadcast) {
             FC_ASSERT(!is_locked());
@@ -2827,7 +2827,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::vote(string voter, string author, string permlink, int16_t weight,
+        annotated_signed_transaction wallet_api::vote(std::string voter, std::string author, std::string permlink, int16_t weight,
                                                       bool broadcast) {
             FC_ASSERT(!is_locked());
             FC_ASSERT(abs(weight) <= 100, "Weight must be between -100 and 100 and not 0");
@@ -2849,7 +2849,7 @@ namespace golos {
             my->set_transaction_expiration(seconds);
         }
 
-        annotated_signed_transaction wallet_api::challenge(string challenger, string challenged, bool broadcast) {
+        annotated_signed_transaction wallet_api::challenge(std::string challenger, std::string challenged, bool broadcast) {
             FC_ASSERT(!is_locked());
 
             challenge_authority_operation<0, 17, 0> op;
@@ -2864,7 +2864,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::prove(string challenged, bool broadcast) {
+        annotated_signed_transaction wallet_api::prove(std::string challenged, bool broadcast) {
             FC_ASSERT(!is_locked());
 
             prove_authority_operation<0, 17, 0> op;
@@ -2883,7 +2883,7 @@ namespace golos {
             return my->_remote_db->get_transaction(id);
         }
 
-        annotated_signed_transaction wallet_api::follow(string follower, string following, set<string> what,
+        annotated_signed_transaction wallet_api::follow(std::string follower, std::string following, std::set<std::string> what,
                                                         bool broadcast) {
             auto follwer_account = get_account(follower);
             FC_ASSERT(following.size());
@@ -2910,8 +2910,8 @@ namespace golos {
             return my->sign_transaction(trx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::send_private_message(string from, string to, string subject,
-                                                                      string body, bool broadcast) {
+        annotated_signed_transaction wallet_api::send_private_message(std::string from, std::string to, std::string subject,
+                                                                      std::string body, bool broadcast) {
             FC_ASSERT(!is_locked(), "wallet must be unlocked to send a private message");
             auto from_account = get_account(from);
             auto to_account = get_account(to);
@@ -2942,7 +2942,7 @@ namespace golos {
             auto hash_encrypt_key = fc::sha256::hash(encrypt_key);
             pmo.checksum = hash_encrypt_key._hash[0];
 
-            vector<char> plain_text = fc::raw::pack(message);
+            std::vector<char> plain_text = fc::raw::pack(message);
             pmo.encrypted_message = fc::aes_encrypt(encrypt_key, plain_text);
 
             message_api_obj obj;
@@ -3007,9 +3007,9 @@ namespace golos {
             }
         }
 
-        vector<extended_message_object> wallet_api::get_inbox(string account, fc::time_point newest, uint32_t limit) {
+        std::vector<extended_message_object> wallet_api::get_inbox(std::string account, fc::time_point newest, uint32_t limit) {
             FC_ASSERT(!is_locked());
-            vector<extended_message_object> result;
+            std::vector<extended_message_object> result;
             auto remote_result = (*my->_remote_message_api)->get_inbox(account, newest, limit);
             for (const auto &item : remote_result) {
                 result.emplace_back(item);
@@ -3018,9 +3018,9 @@ namespace golos {
             return result;
         }
 
-        vector<extended_message_object> wallet_api::get_outbox(string account, fc::time_point newest, uint32_t limit) {
+        std::vector<extended_message_object> wallet_api::get_outbox(std::string account, fc::time_point newest, uint32_t limit) {
             FC_ASSERT(!is_locked());
-            vector<extended_message_object> result;
+            std::vector<extended_message_object> result;
             auto remote_result = (*my->_remote_message_api)->get_outbox(account, newest, limit);
             for (const auto &item : remote_result) {
                 result.emplace_back(item);
@@ -3029,7 +3029,7 @@ namespace golos {
             return result;
         }
 
-        signed_transaction wallet_api::approve_proposal(const string &owner, integral_id_type proposal_id,
+        signed_transaction wallet_api::approve_proposal(const std::string &owner, integral_id_type proposal_id,
                                                         const approval_delta &delta, bool broadcast /* = false */
         ) {
             proposal_update_operation<0, 17, 0> update_op;

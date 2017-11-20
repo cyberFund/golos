@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 #include <iomanip>
-#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/std::string/join.hpp>
 #include <golos/wallet/wallet.hpp>
 #include <golos/wallet/api_documentation.hpp>
 

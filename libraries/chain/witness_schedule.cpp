@@ -28,7 +28,7 @@ namespace golos {
             const witness_schedule_object &wso = db.get_witness_schedule_object();
 
             /// fetch all witness objects
-            vector<const witness_object *> active;
+            std::vector<const witness_object *> active;
             active.reserve(wso.num_scheduled_witnesses);
             for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                 active.push_back(&db.get_witness(wso.current_shuffled_witnesses[i]));
@@ -70,7 +70,7 @@ namespace golos {
 
         void update_witness_schedule4(database &db) {
             const witness_schedule_object &wso = db.get_witness_schedule_object();
-            vector<account_name_type> active_witnesses;
+            std::vector<account_name_type> active_witnesses;
             active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
             /// Add the highest voted witnesses
@@ -129,7 +129,7 @@ namespace golos {
             fc::uint128 new_virtual_time = wso.current_virtual_time;
             const auto &schedule_idx = db.get_index<witness_index>().indices().get<by_schedule_time>();
             auto sitr = schedule_idx.begin();
-            vector<decltype(sitr)> processed_witnesses;
+            std::vector<decltype(sitr)> processed_witnesses;
             for (auto witness_count =
                     selected_voted.size() + selected_miners.size();
                  sitr != schedule_idx.end() &&
@@ -313,7 +313,7 @@ namespace golos {
                 const witness_schedule_object &wso = db.get_witness_schedule_object();
 
 
-                vector<account_name_type> active_witnesses;
+                std::vector<account_name_type> active_witnesses;
                 active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
                 fc::uint128 new_virtual_time;
@@ -405,7 +405,7 @@ namespace golos {
                        _wso.current_shuffled_witnesses.clear();
                        _wso.current_shuffled_witnesses.reserve( active_witnesses.size() );
 
-                       for( const string& w : active_witnesses )
+                       for( const std::string& w : active_witnesses )
                           _wso.current_shuffled_witnesses.push_back( w );
                           */
                     // active witnesses has exactly STEEMIT_MAX_WITNESSES elements, asserted above

@@ -64,8 +64,7 @@ namespace golos {
             uint64_t get_account_count() const;
 
             // Witnesses
-            std::vector<optional<witness_api_obj>> get_witnesses(
-                    const std::vector<witness_object::id_type> &witness_ids) const;
+            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
 
             fc::optional<witness_api_obj> get_witness_by_account(std::string account_name) const;
 
@@ -75,21 +74,21 @@ namespace golos {
             uint64_t get_witness_count() const;
 
             // Balances
-            vector<asset<0, 17, 0>> get_account_balances(account_name_type account_name,
-                                                         const flat_set<asset_name_type> &assets) const;
+            std::vector<asset<0, 17, 0>> get_account_balances(account_name_type account_name,
+                                                              const flat_set<asset_name_type> &assets) const;
 
             // Assets
-            vector<optional<asset_object>> get_assets(const vector<asset_name_type> &asset_symbols) const;
+            std::vector<optional<asset_object>> get_assets(const std::vector<asset_name_type> &asset_symbols) const;
 
-            vector<optional<asset_object>> get_assets_by_issuer(string issuer) const;
+            std::vector<optional<asset_object>> get_assets_by_issuer(std::string issuer) const;
 
-            vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(
-                    const vector<asset_name_type> &asset_symbols) const;
+            std::vector<optional<asset_dynamic_data_object>> get_assets_dynamic_data(
+                    const std::vector<asset_name_type> &asset_symbols) const;
 
-            vector<optional<asset_bitasset_data_object>> get_bitassets_data(
-                    const vector<asset_name_type> &asset_symbols) const;
+            std::vector<optional<asset_bitasset_data_object>> get_bitassets_data(
+                    const std::vector<asset_name_type> &asset_symbols) const;
 
-            vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
+            std::vector<asset_object> list_assets(const asset_name_type &lower_bound_symbol, uint32_t limit) const;
 
             // Authority / validation
             std::string get_transaction_hex(const signed_transaction &trx) const;
@@ -105,7 +104,7 @@ namespace golos {
                                           const flat_set<public_key_type> &signers) const;
 
             // Proposed transactions
-            vector<proposal_object> get_proposed_transactions(account_name_type name) const;
+            std::vector<proposal_object> get_proposed_transactions(account_name_type name) const;
 
             template<typename T>
             void subscribe_to_item(const T &i) const {
@@ -142,7 +141,8 @@ namespace golos {
 
             boost::signals2::scoped_connection _block_applied_connection;
 
-            map<pair<asset_symbol_type, asset_symbol_type>, std::function<void(const variant &)>> _market_subscriptions;
+            map <std::pair<asset_symbol_type, asset_symbol_type>, std::function<
+                    void(const variant &)>> _market_subscriptions;
         };
 
         applied_operation::applied_operation() {
@@ -516,8 +516,7 @@ namespace golos {
                 const auto &acc = my->_db.get_account(account);
 
                 if (type == outgoing || type == all) {
-                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<
-                            by_withdraw_route>();
+                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
                     auto route = by_route.lower_bound(acc.id);
 
                     while (route != by_route.end() && route->from_account == acc.id) {
@@ -681,14 +680,14 @@ namespace golos {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        vector<asset<0, 17, 0>> database_api::get_account_balances(account_name_type name,
-                                                                   const flat_set<asset_name_type> &assets) const {
+        std::vector<asset<0, 17, 0>> database_api::get_account_balances(account_name_type name,
+                                                                        const flat_set<asset_name_type> &assets) const {
             return my->get_account_balances(name, assets);
         }
 
-        vector<asset<0, 17, 0>> database_api_impl::get_account_balances(account_name_type acnt,
-                                                                        const flat_set<asset_name_type> &assets) const {
-            vector<asset<0, 17, 0>> result;
+        std::vector<asset<0, 17, 0>> database_api_impl::get_account_balances(account_name_type acnt, const flat_set<
+                asset_name_type> &assets) const {
+            std::vector<asset<0, 17, 0>> result;
             if (assets.empty()) {
                 // if the caller passes in an empty list of assets, return balances for all assets the account owns
                 auto range = _db.get_index<account_balance_index>().indices().get<by_account_asset>().equal_range(
@@ -714,13 +713,14 @@ namespace golos {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        vector<optional<asset_object>> database_api::get_assets(const vector<asset_name_type> &asset_symbols) const {
+        std::vector<optional<asset_object>> database_api::get_assets(
+                const std::vector<asset_name_type> &asset_symbols) const {
             return my->get_assets(asset_symbols);
         }
 
-        vector<optional<asset_object>> database_api_impl::get_assets(
-                const vector<asset_name_type> &asset_symbols) const {
-            vector<optional<asset_object>> result;
+        std::vector<optional<asset_object>> database_api_impl::get_assets(
+                const std::vector<asset_name_type> &asset_symbols) const {
+            std::vector<optional<asset_object>> result;
 
             const auto &idx = _db.get_index<asset_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
@@ -735,12 +735,12 @@ namespace golos {
             return result;
         }
 
-        vector<optional<asset_object>> database_api::get_assets_by_issuer(string issuer) const {
+        std::vector<optional<asset_object>> database_api::get_assets_by_issuer(std::string issuer) const {
             return my->get_assets_by_issuer(issuer);
         }
 
-        vector<optional<asset_object>> database_api_impl::get_assets_by_issuer(string issuer) const {
-            vector<optional<asset_object>> result;
+        std::vector<optional<asset_object>> database_api_impl::get_assets_by_issuer(std::string issuer) const {
+            std::vector<optional<asset_object>> result;
 
             auto range = _db.get_index<asset_index>().indices().get<by_issuer>().equal_range(issuer);
             for (const asset_object &asset : boost::make_iterator_range(range.first, range.second)) {
@@ -750,18 +750,18 @@ namespace golos {
             return result;
         }
 
-        vector<optional<asset_dynamic_data_object>> database_api::get_assets_dynamic_data(
-                const vector<asset_name_type> &asset_symbols) const {
+        std::vector<optional<asset_dynamic_data_object>> database_api::get_assets_dynamic_data(
+                const std::vector<asset_name_type> &asset_symbols) const {
             return my->get_assets_dynamic_data(asset_symbols);
         }
 
-        vector<optional<asset_dynamic_data_object>> database_api_impl::get_assets_dynamic_data(
-                const vector<asset_name_type> &asset_symbols) const {
-            vector<optional<asset_dynamic_data_object>> result;
+        std::vector<optional<asset_dynamic_data_object>> database_api_impl::get_assets_dynamic_data(
+                const std::vector<asset_name_type> &asset_symbols) const {
+            std::vector<optional<asset_dynamic_data_object>> result;
 
             const auto &idx = _db.get_index<asset_dynamic_data_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                           [&](string symbol) -> optional<asset_dynamic_data_object> {
+                           [&](std::string symbol) -> optional<asset_dynamic_data_object> {
                                auto itr = idx.find(symbol);
                                if (itr != idx.end()) {
                                    subscribe_to_item(symbol);
@@ -772,18 +772,18 @@ namespace golos {
             return result;
         }
 
-        vector<optional<asset_bitasset_data_object>> database_api::get_bitassets_data(
-                const vector<asset_name_type> &asset_symbols) const {
+        std::vector<optional<asset_bitasset_data_object>> database_api::get_bitassets_data(
+                const std::vector<asset_name_type> &asset_symbols) const {
             return my->get_bitassets_data(asset_symbols);
         }
 
-        vector<optional<asset_bitasset_data_object>> database_api_impl::get_bitassets_data(
-                const vector<asset_name_type> &asset_symbols) const {
-            vector<optional<asset_bitasset_data_object>> result;
+        std::vector<optional<asset_bitasset_data_object>> database_api_impl::get_bitassets_data(
+                const std::vector<asset_name_type> &asset_symbols) const {
+            std::vector<optional<asset_bitasset_data_object>> result;
 
             const auto &idx = _db.get_index<asset_bitasset_data_index>().indices().get<by_asset_name>();
             std::transform(asset_symbols.begin(), asset_symbols.end(), std::back_inserter(result),
-                           [&](string symbol) -> optional<asset_bitasset_data_object> {
+                           [&](std::string symbol) -> optional<asset_bitasset_data_object> {
                                auto itr = idx.find(symbol);
                                if (itr != idx.end()) {
                                    subscribe_to_item(symbol);
@@ -794,16 +794,16 @@ namespace golos {
             return result;
         }
 
-        vector<asset_object> database_api::list_assets(const asset_name_type &lower_bound_symbol,
-                                                       uint32_t limit) const {
+        std::vector<asset_object> database_api::list_assets(const asset_name_type &lower_bound_symbol,
+                                                            uint32_t limit) const {
             return my->list_assets(lower_bound_symbol, limit);
         }
 
-        vector<asset_object> database_api_impl::list_assets(const asset_name_type &lower_bound_symbol,
-                                                            uint32_t limit) const {
+        std::vector<asset_object> database_api_impl::list_assets(const asset_name_type &lower_bound_symbol,
+                                                                 uint32_t limit) const {
             FC_ASSERT(limit <= 100);
             const auto &assets_by_symbol = _db.get_index<asset_index>().indices().get<by_asset_name>();
-            vector<asset_object> result;
+            std::vector<asset_object> result;
 
             auto itr = assets_by_symbol.begin();
 
@@ -1187,17 +1187,18 @@ namespace golos {
             });
         }
 
-        asset<0, 17, 0> database_api::get_payout_extension_cost(const string &author, const string &permlink,
+        asset<0, 17, 0> database_api::get_payout_extension_cost(const std::string &author, const std::string &permlink,
                                                                 fc::time_point_sec time) const {
             return my->_db.get_payout_extension_cost(my->_db.get_comment(author, permlink), time);
         }
 
-        fc::time_point_sec database_api::get_payout_extension_time(const string &author, const string &permlink,
+        fc::time_point_sec database_api::get_payout_extension_time(const std::string &author,
+                                                                   const std::string &permlink,
                                                                    asset<0, 17, 0> cost) const {
             return my->_db.get_payout_extension_time(my->_db.get_comment(author, permlink), cost);
         }
 
-        std::vector<pair<std::string, uint32_t>> database_api::get_tags_used_by_author(
+        std::vector<std::pair<std::string, uint32_t>> database_api::get_tags_used_by_author(
                 const std::string &author) const {
             return my->_db.with_read_lock([&]() {
                 const auto *acnt = my->_db.find_account(author);
@@ -1205,7 +1206,7 @@ namespace golos {
                 const auto &tidx = my->_db.get_index<tags::author_tag_stats_index>().indices().get<
                         tags::by_author_posts_tag>();
                 auto itr = tidx.lower_bound(boost::make_tuple(acnt->id, 0));
-                std::vector<pair<std::string, uint32_t>> result;
+                std::vector<std::pair<std::string, uint32_t>> result;
                 while (itr != tidx.end() && itr->author == acnt->id && result.size() < 1000) {
                     if (!fc::is_utf8(itr->tag)) {
                         result.emplace_back(std::make_pair(fc::prune_invalid_utf8(itr->tag), itr->total_posts));
@@ -1419,7 +1420,7 @@ namespace golos {
         }
 
 
-        vector<discussion> database_api::get_post_discussions_by_payout(const discussion_query &query) const {
+        std::vector<discussion> database_api::get_post_discussions_by_payout(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto parent = comment_object::id_type();
@@ -1455,7 +1456,7 @@ namespace golos {
             });
         }
 
-        vector<discussion> database_api::get_comment_discussions_by_payout(const discussion_query &query) const {
+        std::vector<discussion> database_api::get_comment_discussions_by_payout(const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
 
@@ -1855,8 +1856,8 @@ namespace golos {
         }
 
         template<typename DatabaseIndex, typename DiscussionIndex>
-        std::vector<discussion> database_api::feed(const std::set<string> &select_set, const discussion_query &query,
-                                                   const std::string &start_author,
+        std::vector<discussion> database_api::feed(const std::set<std::string> &select_set,
+                                                   const discussion_query &query, const std::string &start_author,
                                                    const std::string &start_permlink) const {
             std::vector<discussion> result;
 
@@ -1938,8 +1939,8 @@ namespace golos {
         }
 
         template<typename DatabaseIndex, typename DiscussionIndex>
-        std::vector<discussion> database_api::blog(const std::set<string> &select_set, const discussion_query &query,
-                                                   const std::string &start_author,
+        std::vector<discussion> database_api::blog(const std::set<std::string> &select_set,
+                                                   const discussion_query &query, const std::string &start_author,
                                                    const std::string &start_permlink) const {
             std::vector<discussion> result;
             for (const auto &iterator : query.select_authors) {
@@ -2169,7 +2170,7 @@ namespace golos {
             return my->_db.with_read_lock([&]() {
                 const auto &wso = my->_db.get_witness_schedule_object();
                 size_t n = wso.current_shuffled_witnesses.size();
-                vector<account_name_type> result;
+                std::vector<account_name_type> result;
                 result.reserve(n);
                 for (size_t i = 0; i < n; i++) {
                     result.push_back(wso.current_shuffled_witnesses[i]);
@@ -2249,12 +2250,13 @@ namespace golos {
             });
         }
 
-        vector<vesting_delegation_object> database_api::get_vesting_delegations(string account, string from,
-                                                                                uint32_t limit) const {
+        std::vector<vesting_delegation_object> database_api::get_vesting_delegations(std::string account,
+                                                                                     std::string from,
+                                                                                     uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
-                vector<vesting_delegation_object> result;
+                std::vector<vesting_delegation_object> result;
                 result.reserve(limit);
 
                 const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_delegation>();
@@ -2268,13 +2270,12 @@ namespace golos {
             });
         }
 
-        vector<vesting_delegation_expiration_object> database_api::get_expiring_vesting_delegations(string account,
-                                                                                                    time_point_sec from,
-                                                                                                    uint32_t limit) const {
+        std::vector<vesting_delegation_expiration_object> database_api::get_expiring_vesting_delegations(
+                std::string account, time_point_sec from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
-                vector<vesting_delegation_expiration_object> result;
+                std::vector<vesting_delegation_expiration_object> result;
                 result.reserve(limit);
 
                 const auto &exp_idx = my->_db.get_index<vesting_delegation_expiration_index, by_account_expiration>();
@@ -2350,7 +2351,7 @@ namespace golos {
             return map_result;
         }
 
-        reward_fund_object database_api::get_reward_fund(string name) const {
+        reward_fund_object database_api::get_reward_fund(std::string name) const {
             return my->_db.with_read_lock([&]() {
                 const reward_fund_object *fund = my->_db.find<reward_fund_object, by_name>(name);
                 FC_ASSERT(fund != nullptr, "Invalid reward fund name");
@@ -2369,14 +2370,14 @@ namespace golos {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        vector<proposal_object> database_api::get_proposed_transactions(account_name_type name) const {
+        std::vector<proposal_object> database_api::get_proposed_transactions(account_name_type name) const {
             return my->get_proposed_transactions(name);
         }
 
         /** TODO: add secondary index that will accelerate this process */
-        vector<proposal_object> database_api_impl::get_proposed_transactions(account_name_type name) const {
+        std::vector<proposal_object> database_api_impl::get_proposed_transactions(account_name_type name) const {
             const auto &idx = _db.get_index<proposal_index>();
-            vector<proposal_object> result;
+            std::vector<proposal_object> result;
 
             idx.inspect_objects([&](const proposal_object &p) {
                 if (p.required_active_approvals.find(name) != p.required_active_approvals.end()) {

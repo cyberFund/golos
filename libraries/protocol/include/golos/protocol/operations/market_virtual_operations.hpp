@@ -21,8 +21,8 @@ namespace golos {
 
             }
 
-            fill_order_operation(const string &c_o, uint32_t c_id, const asset <Major, Hardfork, Release> &c_p,
-                                 const string &o_o, uint32_t o_id, const asset <Major, Hardfork, Release> &o_p)
+            fill_order_operation(const std::string &c_o, uint32_t c_id, const asset <Major, Hardfork, Release> &c_p,
+                                 const std::string &o_o, uint32_t o_id, const asset <Major, Hardfork, Release> &o_p)
                     : current_owner(c_o), current_order_id(c_id), current_pays(c_p), open_owner(o_o),
                     open_order_id(o_id), open_pays(o_p) {
             }
@@ -61,7 +61,7 @@ namespace golos {
             asset <Major, Hardfork, Release> receives;
             asset <Major, Hardfork, Release> fee; // paid by receiving account
 
-            pair<typename asset<Major, Hardfork, Release>::asset_container_type,
+            std::pair<typename asset<Major, Hardfork, Release>::asset_container_type,
                     typename asset<Major, Hardfork, Release>::asset_container_type> get_market() const {
                 return pays.symbol < receives.symbol ? std::make_pair(pays.symbol, receives.symbol) : std::make_pair(
                         receives.symbol, pays.symbol);
@@ -95,7 +95,7 @@ namespace golos {
             asset <Major, Hardfork, Release> receives;
             asset <Major, Hardfork, Release> fee; // paid by receiving account
 
-            pair<typename asset<Major, Hardfork, Release>::asset_container_type,
+            std::pair<typename asset<Major, Hardfork, Release>::asset_container_type,
                     typename asset<Major, Hardfork, Release>::asset_container_type> get_market() const {
                 return pays.symbol < receives.symbol ? std::make_pair(pays.symbol, receives.symbol) : std::make_pair(
                         receives.symbol, pays.symbol);

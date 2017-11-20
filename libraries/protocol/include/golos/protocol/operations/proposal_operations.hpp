@@ -53,7 +53,7 @@ namespace golos {
         struct proposal_create_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type proposal_id;
-            vector <operation_wrapper> proposed_operations;
+            std::vector <operation_wrapper> proposed_operations;
             time_point_sec expiration_time;
             optional <uint32_t> review_period_seconds;
             extensions_type extensions;
@@ -99,7 +99,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_authorities(vector <authority> &) const;
+            void get_required_authorities(std::vector <authority> &) const;
 
             void get_required_active_authorities(flat_set <account_name_type> &) const;
 

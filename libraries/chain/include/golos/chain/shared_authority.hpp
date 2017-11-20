@@ -74,7 +74,7 @@ namespace golos {
                 add_authorities(auths...);
             }
 
-            vector<public_key_type> get_keys() const;
+            std::vector<public_key_type> get_keys() const;
 
             bool is_impossible() const;
 

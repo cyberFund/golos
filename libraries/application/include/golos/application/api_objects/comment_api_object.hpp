@@ -62,15 +62,15 @@ namespace golos {
             }
 
             comment_object::id_type id;
-            string category;
+            std::string category;
             account_name_type parent_author;
-            string parent_permlink;
+            std::string parent_permlink;
             account_name_type author;
-            string permlink;
+            std::string permlink;
 
-            string title;
-            string body;
-            string json_metadata;
+            std::string title;
+            std::string body;
+            std::string json_metadata;
             time_point_sec last_update;
             time_point_sec created;
             time_point_sec active;
@@ -107,7 +107,7 @@ namespace golos {
             bool allow_votes;
             bool allow_curation_rewards;
 
-            vector<protocol::beneficiary_route_type> beneficiaries;
+            std::vector<protocol::beneficiary_route_type> beneficiaries;
         };
 
      }

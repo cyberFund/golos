@@ -19,7 +19,7 @@ namespace golos {
             authority active;
             authority posting;
             public_key_type memo_key;
-            string json_metadata;
+            std::string json_metadata;
 
             void validate() const;
 
@@ -42,7 +42,7 @@ namespace golos {
             authority active;
             authority posting;
             public_key_type memo_key;
-            string json_metadata;
+            std::string json_metadata;
 
             extensions_type extensions;
 
@@ -67,7 +67,7 @@ namespace golos {
             optional <authority> active;
             optional <authority> posting;
             public_key_type memo_key;
-            string json_metadata;
+            std::string json_metadata;
 
             void validate() const;
 

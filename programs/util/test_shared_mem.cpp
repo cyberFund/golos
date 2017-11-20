@@ -22,7 +22,7 @@ using boost::multi_index_container;
 using namespace boost::multi_index;
 namespace bip=boost::interprocess;
 
-/* shared_string is a string type placeable in shared memory,
+/* shared_string is a std::string type placeable in shared memory,
  *  * courtesy of Boost.Interprocess.
  *   */
 

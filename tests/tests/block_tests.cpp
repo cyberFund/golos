@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 for (uint32_t i = 1;; ++i) {
                     BOOST_CHECK(db.head_block_id() == b.id());
                     //witness_object::id_type prev_witness = b.witness;
-                    string cur_witness = db.get_scheduled_witness(1);
+                    std::string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
                     b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key,
                                           database::skip_nothing);
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 for (uint32_t i = 0; i < 200; ++i) {
                     BOOST_CHECK(db.head_block_id() == b.id());
                     //witness_object::id_type prev_witness = b.witness;
-                    string cur_witness = db.get_scheduled_witness(1);
+                    std::string cur_witness = db.get_scheduled_witness(1);
                     //BOOST_CHECK( cur_witness != prev_witness );
                     b = db.generate_block(db.get_slot_time(1), cur_witness, init_account_priv_key,
                                           database::skip_nothing);
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
                 auto b = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key,
                                             database::skip_nothing);
             }
-            string db1_tip = db1.head_block_id().str();
+            std::string db1_tip = db1.head_block_id().str();
             uint32_t next_slot = 3;
             for (uint32_t i = 13; i < 16; ++i) {
                 auto b = db2.generate_block(db2.get_slot_time(next_slot), db2.get_scheduled_witness(next_slot),
@@ -529,9 +529,9 @@ BOOST_AUTO_TEST_SUITE(block_tests)
         try {
             generate_block();
 
-            auto rsf = [&]() -> string {
+            auto rsf = [&]() -> std::string {
                 fc::uint128 rsf = db.get_dynamic_global_properties().recent_slots_filled;
-                string result = "";
+                std::string result = "";
                 result.reserve(128);
                 for (int i = 0; i < 128; i++) {
                     result += ((rsf.lo & 1) == 0) ? '0' : '1';
@@ -707,14 +707,14 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_TEST_MESSAGE("Generate a block and check hardfork is applied");
             generate_block();
 
-            string op_msg = "Testnet: Hardfork applied";
+            std::string op_msg = "Testnet: Hardfork applied";
             auto itr = db.get_index<account_history_index>().indices().get<by_id>().end();
             itr--;
 
             BOOST_REQUIRE(db.has_hardfork(0));
             BOOST_REQUIRE(db.has_hardfork(STEEMIT_HARDFORK_0_1));
             BOOST_REQUIRE(get_last_operations(1)[0].get<custom_operation>().data ==
-                          vector<char>(op_msg.begin(), op_msg.end()));
+                          std::vector<char>(op_msg.begin(), op_msg.end()));
             BOOST_REQUIRE(db.get(itr->op).timestamp == db.head_block_time());
 
             BOOST_TEST_MESSAGE("Testing hardfork is only applied once");
@@ -726,7 +726,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             BOOST_REQUIRE(db.has_hardfork(0));
             BOOST_REQUIRE(db.has_hardfork(STEEMIT_HARDFORK_0_1));
             BOOST_REQUIRE(get_last_operations(1)[0].get<custom_operation>().data ==
-                          vector<char>(op_msg.begin(), op_msg.end()));
+                          std::vector<char>(op_msg.begin(), op_msg.end()));
             BOOST_REQUIRE(db.get(itr->op).timestamp == db.head_block_time() - STEEMIT_BLOCK_INTERVAL);
         } FC_LOG_AND_RETHROW()
     }

@@ -36,7 +36,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::asset(share_type a, asset_name_type name)
                 : asset_interface<Major, Hardfork, Release, asset_symbol_type, share_type>(a, asset_symbol_type()) {
-            string s = fc::trim(name);
+            std::string s = fc::trim(name);
 
             this->symbol = uint64_t(3);
             char *sy = (char *) &this->symbol;
@@ -99,9 +99,9 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        string asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::to_string() const {
+        std::string asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::to_string() const {
             int64_t prec = precision();
-            string result = fc::to_string(this->amount.value / prec);
+            std::string result = fc::to_string(this->amount.value / prec);
             if (prec > 1) {
                 auto fract = this->amount.value % prec;
                 // prec is a power of ten, so for example when working with
@@ -114,9 +114,9 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        asset<Major, Hardfork, Release> asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::from_string(const string &from) {
+        asset<Major, Hardfork, Release> asset<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::from_string(const std::string &from) {
             try {
-                string s = fc::trim(from);
+                std::string s = fc::trim(from);
                 auto space_pos = s.find(' ');
                 auto dot_pos = s.find('.');
 
@@ -233,9 +233,9 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        string asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::to_string() const {
+        std::string asset<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::to_string() const {
             int64_t prec = precision();
-            string result = fc::to_string(this->amount.value / prec);
+            std::string result = fc::to_string(this->amount.value / prec);
             if (prec > 1) {
                 auto fract = this->amount.value % prec;
                 // prec is a power of ten, so for example when working with
@@ -249,9 +249,9 @@ namespace golos {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         asset<Major, Hardfork, Release> asset<Major, Hardfork, Release,
-                type_traits::static_range<Hardfork >= 17>>::from_string(const string &from) {
+                type_traits::static_range<Hardfork >= 17>>::from_string(const std::string &from) {
             try {
-                string s = fc::trim(from);
+                std::string s = fc::trim(from);
                 auto space_pos = s.find(' ');
                 auto dot_pos = s.find('.');
 

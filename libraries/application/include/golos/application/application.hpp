@@ -60,9 +60,9 @@ namespace golos {
 
             void enable_plugin(const std::string &name);
 
-            std::shared_ptr<abstract_plugin> get_plugin(const string &name) const;
+            std::shared_ptr<abstract_plugin> get_plugin(const std::string &name) const;
 
-            template<typename PluginType> std::shared_ptr<PluginType> get_plugin(const string &name) const {
+            template<typename PluginType> std::shared_ptr<PluginType> get_plugin(const std::string &name) const {
                 std::shared_ptr<abstract_plugin> abs_plugin = get_plugin(name);
                 std::shared_ptr<PluginType> result = std::dynamic_pointer_cast<PluginType>(abs_plugin);
                 FC_ASSERT(result != std::shared_ptr<PluginType>());
@@ -76,24 +76,24 @@ namespace golos {
 
             void set_block_production(bool producing_blocks);
 
-            fc::optional<api_access_info> get_api_access_info(const string &username) const;
+            fc::optional<api_access_info> get_api_access_info(const std::string &username) const;
 
-            void set_api_access_info(const string &username, api_access_info &&permissions);
+            void set_api_access_info(const std::string &username, api_access_info &&permissions);
 
             /**
              * Register a way to instantiate the named API with the application.
              */
-            void register_api_factory(const string &name, std::function<fc::api_ptr(const api_context &)> factory);
+            void register_api_factory(const std::string &name, std::function<fc::api_ptr(const api_context &)> factory);
 
             /**
              * Convenience method to build an API factory from a type which only requires a reference to the application.
              */
-            template<typename Api> void register_api_factory(const string &name) {
+            template<typename Api> void register_api_factory(const std::string &name) {
 #ifndef STEEMIT_BUILD_TESTNET
                 idump((name));
 #endif
                 register_api_factory(name, [](const api_context &ctx) -> fc::api_ptr {
-                    // apparently the compiler is smart enough to downcast shared_ptr< api<Api> > to shared_ptr< api_base > automatically
+                    // apparently the compiler is smart enough to downcast std::shared_ptr< api<Api> > to std::shared_ptr< api_base > automatically
                     // see http://en.cppreference.com/w/cpp/memory/shared_ptr/pointer_cast for example
                     std::shared_ptr<Api> api = std::make_shared<Api>(ctx);
                     api->on_api_startup();
@@ -112,7 +112,7 @@ namespace golos {
 
             bool _read_only = true;
 
-            fc::optional<string> _remote_endpoint;
+            fc::optional<std::string> _remote_endpoint;
             fc::optional<fc::api<network_broadcast_api>> _remote_net_api;
             fc::optional<fc::api<login_api>> _remote_login;
             fc::http::websocket_connection_ptr _ws_ptr;

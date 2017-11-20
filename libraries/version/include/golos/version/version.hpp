@@ -55,7 +55,7 @@ namespace golos {
                 return v_num >= o.v_num;
             }
 
-            operator fc::string() const;
+            operator std::string() const;
 
             uint32_t v_num = 0;
         };

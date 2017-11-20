@@ -15,7 +15,7 @@ namespace golos {
 
             fc::time_point_sec expiration;
 
-            vector<operation> operations;
+            std::vector<operation> operations;
             extensions_type extensions;
 
             digest_type digest() const;
@@ -31,8 +31,8 @@ namespace golos {
             void set_reference_block(const block_id_type &reference_block);
 
             template<typename Visitor>
-            vector<typename Visitor::result_type> visit(Visitor &&visitor) {
-                vector<typename Visitor::result_type> results;
+            std::vector<typename Visitor::result_type> visit(Visitor &&visitor) {
+                std::vector<typename Visitor::result_type> results;
                 for (auto &op : operations) {
                     results.push_back(op.visit(std::forward<Visitor>(visitor)));
                 }
@@ -40,8 +40,8 @@ namespace golos {
             }
 
             template<typename Visitor>
-            vector<typename Visitor::result_type> visit(Visitor &&visitor) const {
-                vector<typename Visitor::result_type> results;
+            std::vector<typename Visitor::result_type> visit(Visitor &&visitor) const {
+                std::vector<typename Visitor::result_type> results;
                 for (auto &op : operations) {
                     results.push_back(op.visit(std::forward<Visitor>(visitor)));
                 }
@@ -51,7 +51,7 @@ namespace golos {
             void get_required_authorities(flat_set<account_name_type> &active,
                     flat_set<account_name_type> &owner,
                     flat_set<account_name_type> &posting,
-                    vector<authority> &other) const;
+                    std::vector<authority> &other) const;
         };
 
         struct signed_transaction : public transaction {
@@ -63,7 +63,7 @@ namespace golos {
 
             signature_type sign(const private_key_type &key, const chain_id_type &chain_id) const;
 
-            set<public_key_type> get_required_signatures(
+            std::set<public_key_type> get_required_signatures(
                     const chain_id_type &chain_id,
                     const flat_set<public_key_type> &available_keys,
                     const authority_getter &get_active,
@@ -79,7 +79,7 @@ namespace golos {
                     const authority_getter &get_posting,
                     uint32_t max_recursion = STEEMIT_MAX_SIG_CHECK_DEPTH) const;
 
-            set<public_key_type> minimize_required_signatures(
+            std::set<public_key_type> minimize_required_signatures(
                     const chain_id_type &chain_id,
                     const flat_set<public_key_type> &available_keys,
                     const authority_getter &get_active,
@@ -90,7 +90,7 @@ namespace golos {
 
             flat_set<public_key_type> get_signature_keys(const chain_id_type &chain_id) const;
 
-            vector<signature_type> signatures;
+            std::vector<signature_type> signatures;
 
             digest_type merkle_digest() const;
 
@@ -100,7 +100,7 @@ namespace golos {
             }
         };
 
-        void verify_authority(const vector<operation> &ops, const flat_set<public_key_type> &sigs,
+        void verify_authority(const std::vector<operation> &ops, const flat_set<public_key_type> &sigs,
                 const authority_getter &get_active,
                 const authority_getter &get_owner,
                 const authority_getter &get_posting,

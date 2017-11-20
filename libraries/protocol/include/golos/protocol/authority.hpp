@@ -11,10 +11,7 @@ namespace golos {
             }
 
             enum classification {
-                owner = 0,
-                active = 1,
-                key = 2,
-                posting = 3
+                owner = 0, active = 1, key = 2, posting = 3
             };
 
             template<class ...Args>
@@ -38,7 +35,7 @@ namespace golos {
                 add_authorities(auths...);
             }
 
-            vector <public_key_type> get_keys() const;
+            std::vector<public_key_type> get_keys() const;
 
             bool is_impossible() const;
 
@@ -57,46 +54,43 @@ namespace golos {
         };
 
         template<typename AuthorityType>
-        void add_authority_accounts(
-                flat_set <account_name_type> &result,
-                const AuthorityType &a
-        ) {
+        void add_authority_accounts(flat_set <account_name_type> &result, const AuthorityType &a) {
             for (auto &item : a.account_auths) {
                 result.insert(item.first);
             }
         }
 
-/**
- * Names must comply with the following grammar (RFC 1035):
- * <domain> ::= <subdomain> | " "
- * <subdomain> ::= <label> | <subdomain> "." <label>
- * <label> ::= <letter> [ [ <ldh-str> ] <let-dig> ]
- * <ldh-str> ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
- * <let-dig-hyp> ::= <let-dig> | "-"
- * <let-dig> ::= <letter> | <digit>
- *
- * Which is equivalent to the following:
- *
- * <domain> ::= <subdomain> | " "
- * <subdomain> ::= <label> ("." <label>)*
- * <label> ::= <letter> [ [ <let-dig-hyp>+ ] <let-dig> ]
- * <let-dig-hyp> ::= <let-dig> | "-"
- * <let-dig> ::= <letter> | <digit>
- *
- * I.e. a valid name consists of a dot-separated sequence
- * of one or more labels consisting of the following rules:
- *
- * - Each label is three characters or more
- * - Each label begins with a letter
- * - Each label ends with a letter or digit
- * - Each label contains only letters, digits or hyphens
- *
- * In addition we require the following:
- *
- * - All letters are lowercase
- * - Length is between (inclusive) STEEMIT_MIN_ACCOUNT_NAME_LENGTH and STEEMIT_MAX_ACCOUNT_NAME_LENGTH
- */
-        bool is_valid_account_name(const string &name);
+        /**
+         * Names must comply with the following grammar (RFC 1035):
+         * <domain> ::= <subdomain> | " "
+         * <subdomain> ::= <label> | <subdomain> "." <label>
+         * <label> ::= <letter> [ [ <ldh-str> ] <let-dig> ]
+         * <ldh-str> ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+         * <let-dig-hyp> ::= <let-dig> | "-"
+         * <let-dig> ::= <letter> | <digit>
+         *
+         * Which is equivalent to the following:
+         *
+         * <domain> ::= <subdomain> | " "
+         * <subdomain> ::= <label> ("." <label>)*
+         * <label> ::= <letter> [ [ <let-dig-hyp>+ ] <let-dig> ]
+         * <let-dig-hyp> ::= <let-dig> | "-"
+         * <let-dig> ::= <letter> | <digit>
+         *
+         * I.e. a valid name consists of a dot-separated sequence
+         * of one or more labels consisting of the following rules:
+         *
+         * - Each label is three characters or more
+         * - Each label begins with a letter
+         * - Each label ends with a letter or digit
+         * - Each label contains only letters, digits or hyphens
+         *
+         * In addition we require the following:
+         *
+         * - All letters are lowercase
+         * - Length is between (inclusive) STEEMIT_MIN_ACCOUNT_NAME_LENGTH and STEEMIT_MAX_ACCOUNT_NAME_LENGTH
+         */
+        bool is_valid_account_name(const std::string &name);
 
         bool operator==(const authority &a, const authority &b);
 

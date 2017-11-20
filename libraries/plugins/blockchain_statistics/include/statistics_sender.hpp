@@ -20,7 +20,7 @@ public:
     ~stat_client() = default;
 
     bool can_start();
-    // sends a string to all endpoints
+    // sends a std::string to all endpoints
     void send(const std::string & str);
     
     // adds address to _recipient_ip_vec.

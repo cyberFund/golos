@@ -62,17 +62,17 @@ int main(int argc, char **argv) {
             std::string prefix;
             int lep = -1, rep;
             auto dash_pos = arg.rfind('-');
-            if (dash_pos != string::npos) {
+            if (dash_pos != std::string::npos) {
                 std::string lhs = arg.substr(0, dash_pos + 1);
                 std::string rhs = arg.substr(dash_pos + 1);
                 auto colon_pos = rhs.find(':');
-                if (colon_pos != string::npos) {
+                if (colon_pos != std::string::npos) {
                     prefix = lhs;
                     lep = std::stoi(rhs.substr(0, colon_pos));
                     rep = std::stoi(rhs.substr(colon_pos + 1));
                 }
             }
-            vector<fc::ecc::private_key> keys;
+            std::vector<fc::ecc::private_key> keys;
             if (lep >= 0) {
                 for (int k = lep; k < rep; k++) {
                     std::string s = dev_key_prefix + prefix + std::to_string(k);

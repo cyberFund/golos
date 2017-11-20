@@ -28,7 +28,7 @@ namespace golos {
     namespace chain {
         using fc::uint128_t;
 
-        inline void validate_permlink_0_1(const string &permlink) {
+        inline void validate_permlink_0_1(const std::string &permlink) {
             FC_ASSERT(permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH && permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH,
                       "Permlink is not a valid size.");
 
@@ -38,7 +38,7 @@ namespace golos {
         }
 
         struct strcmp_equal {
-            bool operator()(const shared_string &a, const string &b) {
+            bool operator()(const shared_string &a, const std::string &b) {
                 return a.size() == b.size() || std::strcmp(a.c_str(), b.c_str()) == 0;
             }
         };
@@ -1341,7 +1341,7 @@ namespace golos {
             if (account_to_recover.recovery_account.length()) {   // Make sure recovery matches expected recovery account
                 FC_ASSERT(account_to_recover.recovery_account == o.recovery_account,
                           "Cannot recover an account that does not have you as there recovery partner.");
-            } else {                                                  // Empty string recovery account defaults to top witness
+            } else {                                                  // Empty std::string recovery account defaults to top witness
                 FC_ASSERT(this->db.template get_index<witness_index>().indices().
                         template get<by_vote_name>().begin()->owner == o.recovery_account,
                           "Top witness must recover an account with no recovery partner.");

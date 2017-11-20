@@ -63,7 +63,7 @@ namespace golos {
 
         /**
          *  The purpose of the tag object is to allow the generation and listing of
-         *  all top level posts by a string tag.  The desired sort orders include:
+         *  all top level posts by a std::string tag.  The desired sort orders include:
          *
          *  1. created - time of creation
          *  2. maturing - about to receive a payout
@@ -528,7 +528,7 @@ namespace golos {
          * Used to parse the metadata from the comment json_meta field.
          */
         struct comment_metadata {
-            string language;
+            std::string language;
         };
 
         /**

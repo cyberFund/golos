@@ -30,7 +30,7 @@ namespace golos {
             shutdown_witness_operation() {
             }
 
-            shutdown_witness_operation(const string &o) : owner(o) {
+            shutdown_witness_operation(const std::string &o) : owner(o) {
             }
 
             account_name_type owner;

@@ -9,12 +9,12 @@ namespace fc {
     }
 
     void from_variant(const fc::variant &var, golos::private_message::private_message_plugin_operation &vo) {
-        static std::map<string, uint32_t> to_tag = []() {
-            std::map<string, uint32_t> name_map;
+        static std::map<std::string, uint32_t> to_tag = []() {
+            std::map<std::string, uint32_t> name_map;
             for (int i = 0; i < golos::private_message::private_message_plugin_operation::count(); ++i) {
                 golos::private_message::private_message_plugin_operation tmp;
                 tmp.set_which(i);
-                string n;
+                std::string n;
                 tmp.visit(get_operation_name<get_operation_name_policy>(n));
                 name_map[n] = i;
             }

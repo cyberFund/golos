@@ -70,9 +70,9 @@ namespace fc {
             std::is_base_of<get_operation_name_policy_interface, Policy>::value>::type>
     class get_operation_name {
     public:
-        string &name;
+        std::string &name;
 
-        get_operation_name(string &dv) : name(dv) {
+        get_operation_name(std::string &dv) : name(dv) {
         }
 
         typedef void result_type;
@@ -86,9 +86,9 @@ namespace fc {
     template<>
     class get_operation_name<versioned_get_operation_name_policy> {
     public:
-        string &name;
+        std::string &name;
 
-        get_operation_name(string &dv) : name(dv) {
+        get_operation_name(std::string &dv) : name(dv) {
         }
 
         typedef void result_type;

@@ -99,7 +99,7 @@ namespace golos {
             /**
              * Gets a list of authors that have had their content reblogged on a given blog account
              */
-            std::vector<pair<account_name_type, uint32_t>> get_blog_authors(const account_name_type &blog_account) const;
+            std::vector<std::pair<account_name_type, uint32_t>> get_blog_authors(const account_name_type &blog_account) const;
 
         private:
             std::shared_ptr<detail::follow_api_impl> my;

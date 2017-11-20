@@ -34,7 +34,7 @@ namespace golos {
             return std::string(str.begin(), str.end());
         }
 
-        inline void from_string(shared_string &out, const string &in) {
+        inline void from_string(shared_string &out, const std::string &in) {
             out.assign(in.begin(), in.end());
         }
 
@@ -160,7 +160,7 @@ namespace fc {
     class variant;
 
     inline void to_variant(const golos::chain::shared_string &s, variant &var) {
-        var = fc::string(golos::chain::to_string(s));
+        var = std::string(golos::chain::to_string(s));
     }
 
     inline void from_variant(const variant &var, golos::chain::shared_string &s) {

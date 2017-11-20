@@ -46,7 +46,7 @@ namespace golos {
                 update_feed_producers(swan(), {_feedproducer});
             }
 
-            vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
+            std::vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
                                                               uint32_t start) const {
                 try {
                     FC_ASSERT(limit <= 100);
@@ -60,7 +60,7 @@ namespace golos {
                                                                     collateral_bid_object::id_type()));
                     auto end = aidx.lower_bound(boost::make_tuple(asset, price<0, 17, 0>::min(back.asset_name, asset),
                                                                   collateral_bid_object::id_type(STEEMIT_MAX_INSTANCE_ID)));
-                    vector<collateral_bid_object> result;
+                    std::vector<collateral_bid_object> result;
                     while (start != end && limit-- > 0) {
                         result.emplace_back(*start);
                         ++start;

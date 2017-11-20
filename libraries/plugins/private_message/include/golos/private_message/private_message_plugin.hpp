@@ -62,10 +62,10 @@ namespace golos {
 
         struct message_body {
             fc::time_point thread_start; /// the sent_time of the original message, if any
-            string subject;
-            string body;
-            string json_meta;
-            flat_set<string> cc;
+            std::string subject;
+            std::string body;
+            std::string json_meta;
+            flat_set<std::string> cc;
         };
 
 
@@ -116,7 +116,7 @@ namespace golos {
             uint64_t sent_time;
             time_point_sec receive_time;
             uint32_t checksum;
-            vector<char> encrypted_message;
+            std::vector<char> encrypted_message;
         };
 
         struct extended_message_object : public message_api_obj {
@@ -145,7 +145,7 @@ namespace golos {
                                         member<message_object, time_point_sec, &message_object::receive_time>,
                                         member<message_object, message_id_type, &message_object::id>
                                 >,
-                                composite_key_compare<std::less<string>, std::greater<time_point_sec>, std::less<message_id_type>>
+                                composite_key_compare<std::less<std::string>, std::greater<time_point_sec>, std::less<message_id_type>>
                         >,
                         ordered_unique<tag<by_from_date>,
                                 composite_key<message_object,
@@ -153,7 +153,7 @@ namespace golos {
                                         member<message_object, time_point_sec, &message_object::receive_time>,
                                         member<message_object, message_id_type, &message_object::id>
                                 >,
-                                composite_key_compare<std::less<string>, std::greater<time_point_sec>, std::less<message_id_type>>
+                                composite_key_compare<std::less<std::string>, std::greater<time_point_sec>, std::less<message_id_type>>
                         >
                 >,
                 allocator<message_object>
@@ -181,7 +181,7 @@ namespace golos {
 
             virtual void plugin_startup() override;
 
-            flat_map<string, string> tracked_accounts() const; /// map start_range to end_range
+            flat_map<std::string, std::string> tracked_accounts() const; /// map start_range to end_range
 
             friend class detail::private_message_plugin_impl;
 
@@ -206,9 +206,9 @@ namespace golos {
             /**
              *
              */
-            vector<message_api_obj> get_inbox(string to, time_point newest, uint16_t limit) const;
+            std::vector<message_api_obj> get_inbox(std::string to, time_point newest, uint16_t limit) const;
 
-            vector<message_api_obj> get_outbox(string from, time_point newest, uint16_t limit) const;
+            std::vector<message_api_obj> get_outbox(std::string from, time_point newest, uint16_t limit) const;
 
         private:
             golos::application::application *_app = nullptr;

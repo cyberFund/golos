@@ -237,8 +237,8 @@ namespace golos {
              * then every time someone fetches this account object they will get the full list of 2000 accounts.
              */
             ///@{
-            set<account_name_type> whitelisted_accounts;
-            set<account_name_type> blacklisted_accounts;
+            std::set<account_name_type> whitelisted_accounts;
+            std::set<account_name_type> blacklisted_accounts;
             ///@}
 
 
@@ -691,16 +691,16 @@ namespace golos {
 //
 //
 //            /** given an account or key, map it to the set of accounts that reference it in an active or owner authority */
-//            map<account_name_type, set<account_name_type>> account_to_account_memberships;
-//            map<public_key_type, set<account_name_type>> account_to_key_memberships;
+//            std::map<account_name_type, std::set<account_name_type>> account_to_account_memberships;
+//            std::map<public_key_type, std::set<account_name_type>> account_to_key_memberships;
 //
 //        protected:
-//            set<account_name_type> get_account_members(const value_type &a) const;
+//            std::set<account_name_type> get_account_members(const value_type &a) const;
 //
-//            set<public_key_type> get_key_members(const value_type &a) const;
+//            std::set<public_key_type> get_key_members(const value_type &a) const;
 //
-//            set<account_name_type> before_account_members;
-//            set<public_key_type> before_key_members;
+//            std::set<account_name_type> before_account_members;
+//            std::set<public_key_type> before_key_members;
 //        };
 //
 //        /**
@@ -718,7 +718,7 @@ namespace golos {
 //            virtual void object_modified(const value_type &after) override;
 //
 //            /** maps the referrer to the set of accounts that they have referred */
-//            map<account_name_type, set<account_name_type>> referred_by;
+//            std::map<account_name_type, std::set<account_name_type>> referred_by;
 //        };
     }
 }

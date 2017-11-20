@@ -1980,7 +1980,7 @@ namespace golos {
 
             void node_impl::parse_hello_user_data_for_peer(peer_connection *originating_peer, const fc::variant_object &user_data) {
                 VERIFY_CORRECT_THREAD();
-                // try to parse data out of the user_agent string
+                // try to parse data out of the user_agent std::string
                 if (user_data.contains("graphene_git_revision_sha")) {
                     originating_peer->graphene_git_revision_sha = user_data["graphene_git_revision_sha"].as_string();
                 }
@@ -3153,7 +3153,7 @@ namespace golos {
                 // at the end of this function
                 std::set<peer_connection_ptr> peers_with_newly_empty_item_lists;
                 std::set<peer_connection_ptr> peers_we_need_to_sync_to;
-                std::map<peer_connection_ptr, std::pair<std::string, fc::oexception>> peers_to_disconnect; // map peer -> pair<reason_string, exception>
+                std::map<peer_connection_ptr, std::pair<std::string, fc::oexception>> peers_to_disconnect; // map peer -> std::pair<reason_string, exception>
 
                 if (client_accepted_block) {
                     --_total_number_of_unfetched_items;

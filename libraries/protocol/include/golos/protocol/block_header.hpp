@@ -15,7 +15,7 @@ namespace golos {
             }
 
             fc::time_point_sec timestamp;
-            string witness;
+            std::string witness;
             checksum_type transaction_merkle_root;
             block_header_extensions_type extensions;
 

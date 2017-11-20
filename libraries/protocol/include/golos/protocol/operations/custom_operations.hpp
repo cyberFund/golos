@@ -16,7 +16,7 @@ namespace golos {
         struct custom_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_auths;
             uint16_t id = 0;
-            vector<char> data;
+            std::vector<char> data;
 
             void validate() const;
 
@@ -34,8 +34,8 @@ namespace golos {
         struct custom_json_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_auths;
             flat_set <account_name_type> required_posting_auths;
-            string id; ///< must be less than 32 characters long
-            string json; ///< must be proper utf8 / JSON string.
+            std::string id; ///< must be less than 32 characters long
+            std::string json; ///< must be proper utf8 / JSON std::string.
 
             void validate() const;
 
@@ -56,10 +56,10 @@ namespace golos {
             flat_set <account_name_type> required_owner_auths;
             flat_set <account_name_type> required_active_auths;
             flat_set <account_name_type> required_posting_auths;
-            vector <authority> required_auths;
+            std::vector<authority> required_auths;
 
-            string id; ///< must be less than 32 characters long
-            vector<char> data;
+            std::string id; ///< must be less than 32 characters long
+            std::vector<char> data;
 
             void validate() const;
 
@@ -81,7 +81,7 @@ namespace golos {
                 }
             }
 
-            void get_required_authorities(vector <authority> &a) const {
+            void get_required_authorities(std::vector<authority> &a) const {
                 for (const auto &i : required_auths) {
                     a.push_back(i);
                 }
@@ -94,6 +94,7 @@ FC_REFLECT((golos::protocol::custom_operation), (required_auths)(id)(data))
 
 FC_REFLECT((golos::protocol::custom_json_operation), (required_auths)(required_posting_auths)(id)(json))
 
-FC_REFLECT((golos::protocol::custom_binary_operation), (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
+FC_REFLECT((golos::protocol::custom_binary_operation),
+           (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data))
 
 #endif //GOLOS_CUSTOM_OPERATIONS_HPP

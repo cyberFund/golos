@@ -63,7 +63,7 @@ namespace golos {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct base_operation : public static_version<Major, Hardfork, Release> {
-            void get_required_authorities(vector<authority> &) const {
+            void get_required_authorities(std::vector<authority> &) const {
             }
 
             void get_required_active_authorities(flat_set<account_name_type> &) const {

@@ -10,13 +10,13 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type parent_author;
-            string parent_permlink;
+            std::string parent_permlink;
 
             account_name_type author;
-            string permlink;
-            string title;
-            string body;
-            string json_metadata;
+            std::string permlink;
+            std::string title;
+            std::string body;
+            std::string json_metadata;
 
             void validate() const;
 
@@ -42,7 +42,7 @@ namespace golos {
         };
 
         struct comment_payout_beneficiaries {
-            vector<beneficiary_route_type> beneficiaries;
+            std::vector<beneficiary_route_type> beneficiaries;
 
             void validate() const;
         };
@@ -63,7 +63,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_options_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type author;
-            string permlink;
+            std::string permlink;
 
             asset<Major, Hardfork, Release> max_accepted_payout = {1000000000, SBD_SYMBOL_NAME};       /// SBD value of the maximum payout this post will receive
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Gold to key, unkept amounts will be received as Golos Power
@@ -83,7 +83,7 @@ namespace golos {
                 : public base_operation<Major, Hardfork, Release> {
             account_name_type payer;
             account_name_type author;
-            string permlink;
+            std::string permlink;
 
             optional<fc::time_point_sec> extension_time;
             optional<asset<Major, Hardfork, Release>> amount;
@@ -106,7 +106,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct delete_comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type author;
-            string permlink;
+            std::string permlink;
 
             void validate() const;
 

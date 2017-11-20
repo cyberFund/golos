@@ -47,7 +47,7 @@ namespace golos {
         struct vote_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type voter;
             account_name_type author;
-            string permlink;
+            std::string permlink;
             int16_t weight = 0;
 
             void validate() const;
@@ -189,7 +189,7 @@ namespace golos {
 
             void get_required_active_authorities(flat_set <account_name_type> &a) const;
 
-            void get_required_authorities(vector <authority> &a) const {
+            void get_required_authorities(std::vector <authority> &a) const {
                 if (new_owner_key) {
                     a.push_back(authority(1, *new_owner_key, 1));
                 }
@@ -314,7 +314,7 @@ namespace golos {
 
             extensions_type extensions;                ///< Extensions. Not currently used.
 
-            void get_required_authorities(vector <authority> &a) const {
+            void get_required_authorities(std::vector <authority> &a) const {
                 a.push_back(new_owner_authority);
                 a.push_back(recent_owner_authority);
             }
@@ -377,7 +377,7 @@ namespace golos {
          *
          * On account creation the recovery account is set either to the creator of
          * the account (The account that pays the creation fee and is a signer on the transaction)
-         * or to the empty string if the account was mined. An account with no recovery
+         * or to the empty std::string if the account was mined. An account with no recovery
          * has the top voted witness as a recovery account, at the time the recover
          * request is created. Note: This does mean the effective recovery account
          * of an account with no listed recovery account can change at any time as

@@ -10,7 +10,7 @@ using std::map;
 
 namespace detail_ns {
 
-    string remove_tail_if(const string &str, char c, const string &match) {
+    std::string remove_tail_if(const std::string &str, char c, const std::string &match) {
         auto last = str.find_last_of(c);
         if (last != std::string::npos) {
             if (str.substr(last + 1) == match) {
@@ -20,7 +20,7 @@ namespace detail_ns {
         return str;
     }
 
-    string remove_namespace_if(const string &str, const string &match) {
+    std::string remove_namespace_if(const std::string &str, const std::string &match) {
         auto last = str.find(match);
         if (last != std::string::npos) {
             return str.substr(match.size() + 2);
@@ -29,7 +29,7 @@ namespace detail_ns {
     }
 
 
-    string remove_namespace(string str) {
+    std::string remove_namespace(std::string str) {
         str = remove_tail_if(str, '_', "operation");
         str = remove_tail_if(str, '_', "t");
         str = remove_tail_if(str, '_', "object");
@@ -53,10 +53,10 @@ namespace detail_ns {
     void register_serializer();
 
 
-    map<string, size_t> st;
-    golos::vector<std::function<void()>> serializers;
+    std::map<std::string, size_t> st;
+    golos::std::vector<std::function<void()>> serializers;
 
-    bool register_serializer(const string &name, std::function<void()> sr) {
+    bool register_serializer(const std::string &name, std::function<void()> sr) {
         if (st.find(name) == st.end()) {
             serializers.push_back(sr);
             st[name] = serializers.size() - 1;
@@ -75,7 +75,7 @@ namespace detail_ns {
     template<>
     struct js_name<fc::fixed_string<> > {
         static std::string name() {
-            return "string";
+            return "std::string";
         }
     };
 

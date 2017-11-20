@@ -73,7 +73,7 @@ namespace golos {
                     const std::vector<std::string> miner_to_wif_pair_strings = options["miner"].as<
                             std::vector<std::string>>();
                     for (auto p : miner_to_wif_pair_strings) {
-                        auto m = golos::application::dejsonify<pair<std::string, std::string>>(p);
+                        auto m = golos::application::dejsonify<std::pair<std::string, std::string>>(p);
                         idump((m));
 
                         fc::optional<fc::ecc::private_key> private_key = graphene::utilities::wif_to_key(m.second);

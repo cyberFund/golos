@@ -189,10 +189,10 @@ namespace golos {
                 > operation;
 
         /*void operation_get_required_authorities( const operation& op,
-                                                 flat_set<string>& active,
-                                                 flat_set<string>& owner,
-                                                 flat_set<string>& posting,
-                                                 vector<authority>&  other );
+                                                 flat_set<std::string>& active,
+                                                 flat_set<std::string>& owner,
+                                                 flat_set<std::string>& posting,
+                                                 std::vector<authority>&  other );
 
         void operation_validate( const operation& op );*/
 
@@ -225,7 +225,7 @@ namespace golos {
 
         void operation_get_required_authorities(const operation &op, flat_set<account_name_type> &active,
                                                 flat_set<account_name_type> &owner,
-                                                flat_set<account_name_type> &posting, vector<authority> &other);
+                                                flat_set<account_name_type> &posting, std::vector<authority> &other);
 
     }
 }

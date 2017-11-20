@@ -75,11 +75,11 @@ namespace fc {
     }
 
     void from_variant(const fc::variant &var, golos::protocol::operation &vo) {
-        std::map<string, uint32_t> name_map;
+        std::map<std::string, uint32_t> name_map;
         for (unsigned int i = 0; i < golos::protocol::operation::count(); ++i) {
             golos::protocol::operation tmp;
             tmp.set_which(i);
-            string n;
+            std::string n;
             tmp.visit(get_operation_name<get_operation_name_policy>(n));
             name_map[n] = i;
         }
@@ -92,7 +92,7 @@ namespace fc {
             vo.set_which(ar[0].as_uint64());
         } else {
             std::string operation_name = ar[0].as_string().append("_operation");
-            std::map<string, uint32_t>::const_iterator itr = name_map.find(operation_name);
+            std::map<std::string, uint32_t>::const_iterator itr = name_map.find(operation_name);
 
             if (itr == name_map.end()) {
                 if (golos::version::state::instance().current_version.hardfork() <= 16) {
@@ -115,7 +115,7 @@ namespace fc {
                                       major_stream.str() % hardfork_stream.str() % release_stream.str()).str();
                 }
 
-                std::map<string, uint32_t>::const_iterator itr = name_map.find(operation_name);
+                std::map<std::string, uint32_t>::const_iterator itr = name_map.find(operation_name);
                 FC_ASSERT(itr != name_map.end(), "Invalid operation name: ${n}", ("n", operation_name));
             }
             vo.set_which(name_map[operation_name]);

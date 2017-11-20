@@ -5,15 +5,15 @@
 namespace golos {
     namespace protocol {
 
-        /* Quick conversion utilities from http://joelverhagen.com/blog/2010/11/convert-an-int-to-a-string-and-vice-versa-in-c/ */
-        inline int string_to_int(fc::string input) {
+        /* Quick conversion utilities from http://joelverhagen.com/blog/2010/11/convert-an-int-to-a-std::string-and-vice-versa-in-c/ */
+        inline int string_to_int(std::string input) {
             std::stringstream s(input);
             int i;
             s >> i;
             return i;
         }
 
-        inline fc::string int_to_string(int input) {
+        inline std::string int_to_string(int input) {
             std::stringstream s;
             s << input;
             return s.str();
@@ -37,7 +37,7 @@ namespace golos {
             return static_cast<uint16_t>((v_num & 0x0000FFFF));
         }
 
-        version::operator fc::string() const {
+        version::operator std::string() const {
             std::stringstream s;
             s << ((v_num >> 24) & 0x000000FF) << '.' << ((v_num >> 16) & 0x000000FF) << '.' << ((v_num & 0x0000FFFF));
 
@@ -49,7 +49,7 @@ namespace golos {
 
 namespace fc {
     void to_variant(const golos::protocol::version &v, variant &var) {
-        var = fc::string(v);
+        var = std::string(v);
     }
 
     void from_variant(const variant &var, golos::protocol::version &v) {
@@ -65,7 +65,7 @@ namespace fc {
         FC_ASSERT(major <= 0xFF, "Major version is out of range");
         FC_ASSERT(hardfork <= 0xFF, "Hardfork version is out of range");
         FC_ASSERT(revision <= 0xFFFF, "Revision version is out of range");
-        FC_ASSERT(s.eof(), "Extra information at end of version string");
+        FC_ASSERT(s.eof(), "Extra information at end of version std::string");
 
         v.v_num = 0 | (major << 24) | (hardfork << 16) | revision;
     }

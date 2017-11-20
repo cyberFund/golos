@@ -69,9 +69,9 @@ namespace golos {
 
             int64_t precision() const;
 
-            static asset<Major, Hardfork, Release> from_string(const string &from);
+            static asset<Major, Hardfork, Release> from_string(const std::string &from);
 
-            string to_string() const;
+            std::string to_string() const;
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
             asset<Major, Hardfork, Release> &operator+=(
@@ -181,9 +181,9 @@ namespace golos {
 
             int64_t precision() const;
 
-            static asset<Major, Hardfork, Release> from_string(const string &from);
+            static asset<Major, Hardfork, Release> from_string(const std::string &from);
 
-            string to_string() const;
+            std::string to_string() const;
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
             asset<Major, Hardfork, Release> &operator+=(

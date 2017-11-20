@@ -85,7 +85,7 @@ namespace golos {
 //
 //            void remove(account_name_type a, proposal_object::id_type p);
 //
-//            map<account_name_type, set<proposal_object::id_type>> account_to_proposals;
+//            std::map<account_name_type, std::set<proposal_object::id_type>> account_to_proposals;
 //        };
     }
 }

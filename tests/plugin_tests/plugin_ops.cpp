@@ -18,14 +18,14 @@ using namespace golos::chain;
 
 struct test_a_operation : base_operation
 {
-   string account;
+   std::string account;
 
    void validate() { FC_ASSERT( account.size() ); }
 };
 
 struct test_b_operation : base_operation
 {
-   string account;
+   std::string account;
 
    void validate() { FC_ASSERT( account.size() ); }
 };

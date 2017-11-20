@@ -16,7 +16,7 @@ namespace golos {
             return itr->second = true;
         }
 
-        bool sign_state::check_authority(string id) {
+        bool sign_state::check_authority(std::string id) {
             if (approved_by.find(id) != approved_by.end()) {
                 return true;
             }
@@ -57,7 +57,7 @@ namespace golos {
         }
 
         bool sign_state::remove_unused_signatures() {
-            vector<public_key_type> remove_sigs;
+            std::vector<public_key_type> remove_sigs;
             for (const auto &sig : provided_signatures) {
                 if (!sig.second) {
                     remove_sigs.push_back(sig.first);

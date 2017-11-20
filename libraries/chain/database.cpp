@@ -297,7 +297,7 @@ namespace golos {
                 }
 
                 // Finally we query the fork DB.
-                shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
+                std::shared_ptr<fork_item> fitem = _fork_db.fetch_block_on_main_branch_by_number(block_num);
                 if (fitem) {
                     return fitem->id;
                 }
@@ -356,9 +356,9 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
+        std::vector<block_id_type> database::get_block_ids_on_fork(block_id_type head_of_fork) const {
             try {
-                pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
+                std::pair<fork_database::branch_type, fork_database::branch_type> branches = _fork_db.fetch_branch_from(
                         head_block_id(), head_of_fork);
                 if (!((branches.first.back()->previous_id() == branches.second.back()->previous_id()))) {
                     edump((head_of_fork)(head_block_id())(branches.first.size())(branches.second.size()));
@@ -461,13 +461,13 @@ namespace golos {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
-        const comment_object &database::get_comment(const account_name_type &author, const string &permlink) const {
+        const comment_object &database::get_comment(const account_name_type &author, const std::string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *database::find_comment(const account_name_type &author, const string &permlink) const {
+        const comment_object *database::find_comment(const account_name_type &author, const std::string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
@@ -726,7 +726,7 @@ namespace golos {
         void database::_maybe_warn_multiple_production(uint32_t height) const {
             auto blocks = _fork_db.fetch_block_by_number(height);
             if (blocks.size() > 1) {
-                vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
+                std::vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
                     witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
                 }
@@ -743,7 +743,7 @@ namespace golos {
                 //uint32_t skip_undo_db = skip & skip_undo_block;
 
                 if (!(skip & skip_fork_db)) {
-                    shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
+                    std::shared_ptr<fork_item> new_head = _fork_db.push_block(new_block);
                     _maybe_warn_multiple_production(new_head->num);
                     //If the head block from the longest chain does not build off of the current head, we need to switch forks.
                     if (new_head->data.previous != head_block_id()) {
@@ -883,7 +883,7 @@ namespace golos {
             uint32_t skip = get_node_properties().skip_flags;
             uint32_t slot_num = get_slot_at_time(when);
             FC_ASSERT(slot_num > 0);
-            string scheduled_witness = get_scheduled_witness(slot_num);
+            std::string scheduled_witness = get_scheduled_witness(slot_num);
             FC_ASSERT(scheduled_witness == witness_owner);
 
             const auto &witness_obj = get_witness(witness_owner);
@@ -1734,8 +1734,8 @@ namespace golos {
 
             ctx.current_steem_price = get_feed_history().current_median_history;
 
-            vector<reward_fund_context> funds;
-            vector<share_type> steem_awarded;
+            std::vector<reward_fund_context> funds;
+            std::vector<share_type> steem_awarded;
             const auto &reward_idx = get_index<reward_fund_index, by_id>();
 
             for (const auto &itr : reward_idx) {
@@ -2650,17 +2650,17 @@ namespace golos {
 
         void database::notify_changed_objects() {
             try {
-                /*vector< golos::chainbase::generic_id > ids;
+                /*std::vector< golos::chainbase::generic_id > ids;
         get_changed_ids( ids );
         STEEMIT_TRY_NOTIFY( changed_objects, ids )*/
                 /*
         if( _undo_db.enabled() )
         {
          const auto& head_undo = _undo_db.head();
-         vector<object_id_type> changed_ids;  changed_ids.reserve(head_undo.old_values.size());
+         std::vector<object_id_type> changed_ids;  changed_ids.reserve(head_undo.old_values.size());
          for( const auto& item : head_undo.old_values ) changed_ids.push_back(item.first);
          for( const auto& item : head_undo.new_ids ) changed_ids.push_back(item);
-         vector<const object*> removed;
+         std::vector<const object*> removed;
          removed.reserve( head_undo.removed.size() );
          for( const auto& item : head_undo.removed )
          {
@@ -2912,7 +2912,7 @@ namespace golos {
 
                 auto now = head_block_time();
                 const witness_schedule_object &wso = get_witness_schedule_object();
-                vector<price<0, 17, 0>> feeds;
+                std::vector<price<0, 17, 0>> feeds;
                 feeds.reserve(wso.num_scheduled_witnesses);
                 for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                     const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
@@ -3004,13 +3004,13 @@ namespace golos {
                           "Duplicate transaction check failed", ("trx_ix", trx_id));
 
                 if (!(skip & (skip_transaction_signatures | skip_authority_check))) {
-                    auto get_active = [&](const string &name) {
+                    auto get_active = [&](const std::string &name) {
                         return authority(get<account_authority_object, by_account>(name).active);
                     };
-                    auto get_owner = [&](const string &name) {
+                    auto get_owner = [&](const std::string &name) {
                         return authority(get<account_authority_object, by_account>(name).owner);
                     };
-                    auto get_posting = [&](const string &name) {
+                    auto get_posting = [&](const std::string &name) {
                         return authority(get<account_authority_object, by_account>(name).posting);
                     };
 
@@ -3023,7 +3023,7 @@ namespace golos {
                     }
                 }
                 flat_set<account_name_type> required;
-                vector<authority> other;
+                std::vector<authority> other;
                 trx.get_required_authorities(required, required, required, other);
 
                 auto trx_size = fc::raw::pack_size(trx);
@@ -3117,7 +3117,7 @@ namespace golos {
                     uint32_t slot_num = get_slot_at_time(next_block.timestamp);
                     FC_ASSERT(slot_num > 0);
 
-                    string scheduled_witness = get_scheduled_witness(slot_num);
+                    std::string scheduled_witness = get_scheduled_witness(slot_num);
 
                     FC_ASSERT(witness.owner == scheduled_witness, "Witness produced block at wrong time",
                               ("block witness", next_block.witness)("scheduled", scheduled_witness)("slot_num",
@@ -3285,7 +3285,7 @@ namespace golos {
                 } else {
                     const witness_schedule_object &wso = get_witness_schedule_object();
 
-                    vector<const witness_object *> wit_objs;
+                    std::vector<const witness_object *> wit_objs;
                     wit_objs.reserve(wso.num_scheduled_witnesses);
                     for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
                         wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
@@ -3327,7 +3327,7 @@ namespace golos {
 
                     if (log_head_num < dpo.last_irreversible_block_num) {
                         while (log_head_num < dpo.last_irreversible_block_num) {
-                            shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
+                            std::shared_ptr<fork_item> block = _fork_db.fetch_block_on_main_branch_by_number(
                                     log_head_num + 1);
                             FC_ASSERT(block,
                                       "Current fork in the fork database does not contain the last_irreversible_block");
@@ -4213,7 +4213,7 @@ namespace golos {
             }
         }
 
-        string database::to_pretty_string(const asset<0, 17, 0> &a) const {
+        std::string database::to_pretty_string(const asset<0, 17, 0> &a) const {
             return get_asset(a.symbol).amount_to_pretty_string(a.amount);
         }
 
@@ -4542,8 +4542,8 @@ namespace golos {
 #ifdef STEEMIT_BUILD_TESTNET
                 {
                     custom_operation test_op;
-                    string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = vector<char>(op_msg.begin(), op_msg.end());
+                    std::string op_msg = "Testnet: Hardfork applied";
+                    test_op.data = std::vector<char>(op_msg.begin(), op_msg.end());
                     test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
                     operation op = test_op;   // we need the operation object to live to the end of this scope
                     operation_notification note(op);
@@ -4720,9 +4720,9 @@ namespace golos {
                      */
                     const auto &comment_idx = get_index<comment_index, by_cashout_time>();
                     const auto &by_root_idx = get_index<comment_index, by_root>();
-                    vector<const comment_object *> root_posts;
+                    std::vector<const comment_object *> root_posts;
                     root_posts.reserve(60000);
-                    vector<const comment_object *> replies;
+                    std::vector<const comment_object *> replies;
                     replies.reserve(100000);
 
                     for (auto itr = comment_idx.begin();

@@ -31,20 +31,6 @@ namespace golos {
 
     using fc::uint128_t;
 
-    using std::map;
-    using std::vector;
-    using std::unordered_map;
-    using std::string;
-    using std::deque;
-    using std::shared_ptr;
-    using std::weak_ptr;
-    using std::unique_ptr;
-    using std::set;
-    using std::pair;
-    using std::enable_shared_from_this;
-    using std::tie;
-    using std::make_pair;
-
     using fc::smart_ref;
     using fc::variant_object;
     using fc::variant;

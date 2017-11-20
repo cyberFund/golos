@@ -147,7 +147,7 @@ namespace golos {
 
             const signed_transaction get_recent_transaction(const transaction_id_type &trx_id) const;
 
-            vector<block_id_type> get_block_ids_on_fork(block_id_type head_of_fork) const;
+            std::vector<block_id_type> get_block_ids_on_fork(block_id_type head_of_fork) const;
 
             chain_id_type get_chain_id() const;
 
@@ -183,9 +183,9 @@ namespace golos {
 
             const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
 
-            const comment_object &get_comment(const account_name_type &author, const string &permlink) const;
+            const comment_object &get_comment(const account_name_type &author, const std::string &permlink) const;
 
-            const comment_object *find_comment(const account_name_type &author, const string &permlink) const;
+            const comment_object *find_comment(const account_name_type &author, const std::string &permlink) const;
 
             const category_object &get_category(const shared_string &name) const;
 
@@ -333,12 +333,12 @@ namespace golos {
              *  Emitted After a block has been applied and committed.  The callback
              *  should not yield and should execute quickly.
              */
-            //fc::signal<void(const vector< golos::db2::generic_id >&)> changed_objects;
+            //fc::signal<void(const std::vector< golos::db2::generic_id >&)> changed_objects;
 
             /** this signal is emitted any time an object is removed and contains a
              * pointer to the last value of every object that was removed.
              */
-            //fc::signal<void(const vector<const object*>&)>  removed_objects;
+            //fc::signal<void(const std::vector<const object*>&)>  removed_objects;
 
             //////////////////// db_witness_schedule.cpp ////////////////////
 
@@ -729,7 +729,7 @@ namespace golos {
 
             void clear_expired_orders();
 
-            string to_pretty_string(const asset<0, 17, 0> &a) const;
+            std::string to_pretty_string(const asset<0, 17, 0> &a) const;
 
             void update_expired_feeds();
 
@@ -758,7 +758,7 @@ namespace golos {
 
             std::unique_ptr<database_impl> _my;
 
-            vector<signed_transaction> _pending_tx;
+            std::vector<signed_transaction> _pending_tx;
             fork_database _fork_db;
             fc::time_point_sec _hardfork_times[STEEMIT_NUM_HARDFORKS + 1];
             protocol::hardfork_version _hardfork_versions[STEEMIT_NUM_HARDFORKS + 1];

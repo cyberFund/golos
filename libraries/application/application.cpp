@@ -61,8 +61,8 @@ namespace golos {
                         _p2p_network->set_node_delegate(this);
 
                         if (_options->count("seed-node")) {
-                            auto seeds = _options->at("seed-node").as<vector<string>>();
-                            for (const string &endpoint_string : seeds) {
+                            auto seeds = _options->at("seed-node").as<std::vector<std::string>>();
+                            for (const std::string &endpoint_string : seeds) {
                                 try {
                                     std::vector<fc::ip::endpoint> endpoints = resolve_string_to_ip_endpoints(endpoint_string);
                                     for (const fc::ip::endpoint &endpoint : endpoints) {
@@ -78,7 +78,7 @@ namespace golos {
                         }
 
                         if (_options->count("p2p-endpoint")) {
-                            auto p2p_endpoint = _options->at("p2p-endpoint").as<string>();
+                            auto p2p_endpoint = _options->at("p2p-endpoint").as<std::string>();
                             auto endpoints = resolve_string_to_ip_endpoints(p2p_endpoint);
                             FC_ASSERT(endpoints.size(), "p2p-endpoint ${hostname} did not resolve", ("hostname", p2p_endpoint));
                             _p2p_network->listen_on_endpoint(endpoints[0], true);
@@ -107,9 +107,9 @@ namespace golos {
 
                 std::vector<fc::ip::endpoint> resolve_string_to_ip_endpoints(const std::string &endpoint_string) {
                     try {
-                        string::size_type colon_pos = endpoint_string.find(':');
+                        std::string::size_type colon_pos = endpoint_string.find(':');
                         if (colon_pos == std::string::npos)
-                            FC_THROW("Missing required port number in endpoint string \"${endpoint_string}\"",
+                            FC_THROW("Missing required port number in endpoint std::string \"${endpoint_string}\"",
                                     ("endpoint_string", endpoint_string));
                         std::string port_string = endpoint_string.substr(
                                 colon_pos + 1);
@@ -138,7 +138,7 @@ namespace golos {
                         _websocket_server = std::make_shared<fc::http::websocket_server>();
 
                         _websocket_server->on_connection([&](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
-                        auto rpc_endpoint = _options->at("rpc-endpoint").as<string>();
+                        auto rpc_endpoint = _options->at("rpc-endpoint").as<std::string>();
                         ilog("Configured websocket rpc to listen on ${ip}", ("ip", rpc_endpoint));
                         auto endpoints = resolve_string_to_ip_endpoints(rpc_endpoint);
                         FC_ASSERT(endpoints.size(), "rpc-endpoint ${hostname} did not resolve", ("hostname", rpc_endpoint));
@@ -158,13 +158,13 @@ namespace golos {
                             return;
                         }
 
-                        string password = _options->count("server-pem-password")
-                                          ? _options->at("server-pem-password").as<string>()
+                        std::string password = _options->count("server-pem-password")
+                                          ? _options->at("server-pem-password").as<std::string>()
                                           : "";
-                        _websocket_tls_server = std::make_shared<fc::http::websocket_tls_server>(_options->at("server-pem").as<string>(), password);
+                        _websocket_tls_server = std::make_shared<fc::http::websocket_tls_server>(_options->at("server-pem").as<std::string>(), password);
 
                         _websocket_tls_server->on_connection([this](const fc::http::websocket_connection_ptr &c) { on_connection(c); });
-                        auto rpc_tls_endpoint = _options->at("rpc-tls-endpoint").as<string>();
+                        auto rpc_tls_endpoint = _options->at("rpc-tls-endpoint").as<std::string>();
                         ilog("Configured websocket TLS rpc to listen on ${ip}", ("ip", rpc_tls_endpoint));
                         auto endpoints = resolve_string_to_ip_endpoints(rpc_tls_endpoint);
                         FC_ASSERT(endpoints.size(), "rpc-tls-endpoint ${hostname} did not resolve", ("hostname", rpc_tls_endpoint));
@@ -208,7 +208,7 @@ namespace golos {
 
                 void startup() {
                     try {
-                        _shared_file_size = fc::parse_size(_options->at("shared-file-size").as<string>());
+                        _shared_file_size = fc::parse_size(_options->at("shared-file-size").as<std::string>());
                         ilog("shared_file_size is ${n} bytes", ("n", _shared_file_size));
                         bool read_only = _options->count("read-only");
                         register_builtin_apis();
@@ -218,7 +218,7 @@ namespace golos {
                         }
 
                         if (_options->count("shared-file-dir")) {
-                            _shared_dir = fc::path(_options->at("shared-file-dir").as<string>());
+                            _shared_dir = fc::path(_options->at("shared-file-dir").as<std::string>());
                         } else {
                             _shared_dir = _data_dir / "blockchain";
                         }
@@ -237,7 +237,7 @@ namespace golos {
 
                             flat_map<uint32_t, block_id_type> loaded_checkpoints;
                             if (_options->count("checkpoint")) {
-                                auto cps = _options->at("checkpoint").as<vector<string>>();
+                                auto cps = _options->at("checkpoint").as<std::vector<std::string>>();
                                 loaded_checkpoints.reserve(cps.size());
                                 for (auto cp : cps) {
                                     auto item = fc::json::from_string(cp).as<std::pair<uint32_t, block_id_type>>();
@@ -282,7 +282,7 @@ namespace golos {
 
                             if (_options->count("read-forward-rpc")) {
                                 try {
-                                    _self->_remote_endpoint = _options->at("read-forward-rpc").as<string>();
+                                    _self->_remote_endpoint = _options->at("read-forward-rpc").as<std::string>();
                                 }
                                 catch (fc::exception &e) {
                                     wlog("Error connecting to remote RPC, network api forwarding disabled.  ${e}", ("e", e.to_detail_string()));
@@ -311,7 +311,7 @@ namespace golos {
                         }
 
                         for (const std::string &arg : _options->at("public-api").as<std::vector<std::string>>()) {
-                            vector<string> names;
+                            std::vector<std::string> names;
                             boost::split(names, arg, boost::is_any_of(" \t,"));
                             for (const std::string &name : names) {
                                 ilog("API ${name} enabled publicly", ("name", name));
@@ -329,7 +329,7 @@ namespace golos {
                     } FC_LOG_AND_RETHROW()
                 }
 
-                optional<api_access_info> get_api_access_info(const string &username) const {
+                optional<api_access_info> get_api_access_info(const std::string &username) const {
                     optional<api_access_info> result;
                     auto it = _apiaccess.permission_map.find(username);
                     if (it == _apiaccess.permission_map.end()) {
@@ -341,11 +341,11 @@ namespace golos {
                     return it->second;
                 }
 
-                void set_api_access_info(const string &username, api_access_info &&permissions) {
+                void set_api_access_info(const std::string &username, api_access_info &&permissions) {
                     _apiaccess.permission_map.insert(std::make_pair(username, std::move(permissions)));
                 }
 
-                void register_api_factory(const string &name, std::function<fc::api_ptr(const api_context &)> factory) {
+                void register_api_factory(const std::string &name, std::function<fc::api_ptr(const api_context &)> factory) {
                     _api_factories_by_name[name] = factory;
                 }
 
@@ -487,7 +487,7 @@ namespace golos {
                         uint32_t &remaining_item_count,
                         uint32_t limit) override {
                     try {
-                        vector<block_id_type> result;
+                        std::vector<block_id_type> result;
                         remaining_item_count = 0;
                         if (_chain_db->head_block_num() == 0) {
                             return result;
@@ -821,8 +821,8 @@ namespace golos {
                 std::shared_ptr<fc::http::websocket_server> _websocket_server;
                 std::shared_ptr<fc::http::websocket_tls_server> _websocket_tls_server;
 
-                std::map<string, std::shared_ptr<abstract_plugin>> _plugins_available;
-                std::map<string, std::shared_ptr<abstract_plugin>> _plugins_enabled;
+                std::map<std::string, std::shared_ptr<abstract_plugin>> _plugins_available;
+                std::map<std::string, std::shared_ptr<abstract_plugin>> _plugins_enabled;
                 flat_map<std::string, std::function<fc::api_ptr(const api_context &)>> _api_factories_by_name;
                 std::vector<std::string> _public_apis;
                 int32_t _max_block_age = -1;
@@ -871,20 +871,20 @@ namespace golos {
             std::string str_default_plugins = boost::algorithm::join(default_plugins, " ");
 
             configuration_file_options.add_options()
-                    ("p2p-endpoint", bpo::value<string>(), "Endpoint for P2P node to listen on")
+                    ("p2p-endpoint", bpo::value<std::string>(), "Endpoint for P2P node to listen on")
                     ("p2p-max-connections", bpo::value<uint32_t>(), "Maximum number of incoming connections on P2P endpoint")
-                    ("seed-node,s", bpo::value<vector<string>>()->composing(), "P2P nodes to connect to on startup (may specify multiple times)")
-                    ("checkpoint,c", bpo::value<vector<string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
-                    ("shared-file-dir", bpo::value<string>(), "Location of the shared memory file. Defaults to data_dir/blockchain")
-                    ("shared-file-size", bpo::value<string>()->default_value("48G"), "Size of the shared memory file. Default: 48G")
-                    ("rpc-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8090"), "Endpoint for websocket RPC to listen on")
-                    ("rpc-tls-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8089"), "Endpoint for TLS websocket RPC to listen on")
-                    ("read-forward-rpc", bpo::value<string>(), "Endpoint to forward write API calls to for a read node")
-                    ("server-pem,p", bpo::value<string>()->implicit_value("server.pem"), "The TLS certificate file for this server")
-                    ("server-pem-password,P", bpo::value<string>()->implicit_value(""), "Password for this certificate")
-                    ("api-user", bpo::value<vector<string>>()->composing(), "API user specification, may be specified multiple times")
-                    ("public-api", bpo::value<vector<string>>()->composing()->default_value(default_apis, str_default_apis), "Set an API to be publicly available, may be specified multiple times")
-                    ("enable-plugin", bpo::value<vector<string>>()->composing()->default_value(default_plugins, str_default_plugins), "Plugin(s) to enable, may be specified multiple times")
+                    ("seed-node,s", bpo::value<std::vector<std::string>>()->composing(), "P2P nodes to connect to on startup (may specify multiple times)")
+                    ("checkpoint,c", bpo::value<std::vector<std::string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
+                    ("shared-file-dir", bpo::value<std::string>(), "Location of the shared memory file. Defaults to data_dir/blockchain")
+                    ("shared-file-size", bpo::value<std::string>()->default_value("48G"), "Size of the shared memory file. Default: 48G")
+                    ("rpc-endpoint", bpo::value<std::string>()->implicit_value("127.0.0.1:8090"), "Endpoint for websocket RPC to listen on")
+                    ("rpc-tls-endpoint", bpo::value<std::string>()->implicit_value("127.0.0.1:8089"), "Endpoint for TLS websocket RPC to listen on")
+                    ("read-forward-rpc", bpo::value<std::string>(), "Endpoint to forward write API calls to for a read node")
+                    ("server-pem,p", bpo::value<std::string>()->implicit_value("server.pem"), "The TLS certificate file for this server")
+                    ("server-pem-password,P", bpo::value<std::string>()->implicit_value(""), "Password for this certificate")
+                    ("api-user", bpo::value<std::vector<std::string>>()->composing(), "API user specification, may be specified multiple times")
+                    ("public-api", bpo::value<std::vector<std::string>>()->composing()->default_value(default_apis, str_default_apis), "Set an API to be publicly available, may be specified multiple times")
+                    ("enable-plugin", bpo::value<std::vector<std::string>>()->composing()->default_value(default_plugins, str_default_plugins), "Plugin(s) to enable, may be specified multiple times")
                     ("max-block-age", bpo::value<int32_t>()->default_value(200), "Maximum age of head block when broadcasting tx via API")
                                         ("flush", bpo::value<uint32_t>()->default_value(100000), "Flush shared memory file to disk this many blocks")
                     ("statsd_port", bpo::value<uint32_t>()->default_value(8125), "Statsd agregators port");
@@ -916,7 +916,7 @@ namespace golos {
             }
         }
 
-        std::shared_ptr<abstract_plugin> application::get_plugin(const string &name) const {
+        std::shared_ptr<abstract_plugin> application::get_plugin(const std::string &name) const {
             try {
                 return my->_plugins_enabled.at(name);
             }
@@ -943,15 +943,15 @@ namespace golos {
             my->_is_block_producer = producing_blocks;
         }
 
-        optional<api_access_info> application::get_api_access_info(const string &username) const {
+        optional<api_access_info> application::get_api_access_info(const std::string &username) const {
             return my->get_api_access_info(username);
         }
 
-        void application::set_api_access_info(const string &username, api_access_info &&permissions) {
+        void application::set_api_access_info(const std::string &username, api_access_info &&permissions) {
             my->set_api_access_info(username, std::move(permissions));
         }
 
-        void application::register_api_factory(const string &name, std::function<fc::api_ptr(const api_context &)> factory) {
+        void application::register_api_factory(const std::string &name, std::function<fc::api_ptr(const api_context &)> factory) {
             return my->register_api_factory(name, factory);
         }
 
@@ -1012,7 +1012,7 @@ namespace golos {
         void application::initialize_plugins(const boost::program_options::variables_map &options) {
             if (options.count("enable-plugin") > 0) {
                 for (auto &arg : options.at("enable-plugin").as<std::vector<std::string>>()) {
-                    vector<string> names;
+                    std::vector<std::string> names;
                     boost::split(names, arg, boost::is_any_of(" \t,"));
                     for (const std::string &name : names) {
                         enable_plugin(name);

@@ -28,7 +28,7 @@ namespace golos {
                 void on_operation(const operation_notification &note);
 
                 account_history_plugin &_self;
-                flat_map<string, string> _tracked_accounts;
+                flat_map<std::string, std::string> _tracked_accounts;
                 bool _filter_content = false;
             };
 
@@ -38,14 +38,14 @@ namespace golos {
 
             struct operation_visitor {
                 operation_visitor(database &db, const operation_notification &note, const operation_object *&n,
-                                  string i) : _db(db), _note(note), new_obj(n), item(i) {
+                                  std::string i) : _db(db), _note(note), new_obj(n), item(i) {
                 };
                 typedef void result_type;
 
                 database &_db;
                 const operation_notification &_note;
                 const operation_object *&new_obj;
-                string item;
+                std::string item;
 
                 /// ignore these ops
                 /*
@@ -88,7 +88,7 @@ namespace golos {
 
             struct operation_visitor_filter : operation_visitor {
                 operation_visitor_filter(database &db, const operation_notification &note, const operation_object *&n,
-                                         string i) : operation_visitor(db, note, n, i) {
+                                         std::string i) : operation_visitor(db, note, n, i) {
                 }
 
                 template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -200,7 +200,7 @@ namespace golos {
                 my->on_operation(note);
             });
 
-            typedef pair<string, string> pairstring;
+            typedef std::pair<std::string, std::string> pairstring;
             LOAD_VALUE_SET(options, "track-account-range", my->_tracked_accounts, pairstring);
             if (options.count("filter-posting-ops")) {
                 my->_filter_content = true;
@@ -213,7 +213,7 @@ namespace golos {
             ilog("account_history plugin: plugin_startup() end");
         }
 
-        flat_map<string, string> account_history_plugin::tracked_accounts() const {
+        flat_map<std::string, std::string> account_history_plugin::tracked_accounts() const {
             return my->_tracked_accounts;
         }
 

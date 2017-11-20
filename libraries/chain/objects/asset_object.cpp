@@ -25,8 +25,8 @@ namespace golos {
 
         void asset_bitasset_data_object::update_median_feeds(time_point_sec current_time) {
             current_feed_publication_time = current_time;
-            vector<std::reference_wrapper<const price_feed<0, 17, 0>>> current_feeds;
-            for (const pair<account_name_type, pair<time_point_sec, price_feed<0, 17, 0>>> &f : feeds) {
+            std::vector<std::reference_wrapper<const price_feed<0, 17, 0>>> current_feeds;
+            for (const std::pair<account_name_type, std::pair<time_point_sec, price_feed<0, 17, 0>>> &f : feeds) {
                 if ((current_time - f.second.first).to_seconds() <
                     options.feed_lifetime_sec &&
                     f.second.first != time_point_sec()) {
@@ -66,7 +66,7 @@ namespace golos {
         }
 
 
-        asset<0, 17, 0> asset_object::amount_from_string(string amount_string) const {
+        asset<0, 17, 0> asset_object::amount_from_string(std::string amount_string) const {
             try {
                 bool negative_found = false;
                 bool decimal_found = false;
@@ -93,7 +93,7 @@ namespace golos {
                 share_type scaled_precision = asset<0, 17, 0>::scaled_precision(precision);
 
                 const auto decimal_pos = amount_string.find('.');
-                const string lhs = amount_string.substr(negative_found, decimal_pos);
+                const std::string lhs = amount_string.substr(negative_found, decimal_pos);
                 if (!lhs.empty()) {
                     satoshis += fc::safe<int64_t>(std::stoll(lhs)) *= scaled_precision;
                 }
@@ -101,7 +101,7 @@ namespace golos {
                 if (decimal_found) {
                     const size_t max_rhs_size = std::to_string(scaled_precision.value).substr(1).size();
 
-                    string rhs = amount_string.substr(decimal_pos + 1);
+                    std::string rhs = amount_string.substr(decimal_pos + 1);
                     FC_ASSERT(rhs.size() <= max_rhs_size);
 
                     while (rhs.size() < max_rhs_size) {
@@ -123,14 +123,14 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((amount_string))
         }
 
-        string asset_object::amount_to_string(share_type amount) const {
+        std::string asset_object::amount_to_string(share_type amount) const {
             share_type scaled_precision = 1;
             for (uint8_t i = 0; i < precision; ++i) {
                 scaled_precision *= 10;
             }
             assert(scaled_precision > 0);
 
-            string result = fc::to_string(
+            std::string result = fc::to_string(
                     amount.value / scaled_precision.value);
             auto decimals = amount.value % scaled_precision.value;
             if (decimals) {

@@ -3,9 +3,9 @@
 namespace golos {
     namespace chain {
 
-/*set< string > account_member_index::get_account_members( const account_object& a ) const
+/*std::set< std::string > account_member_index::get_account_members( const account_object& a ) const
 {
-   set< string > result;
+   std::set< std::string > result;
    for( auto auth : a.owner.account_auths )
       result.insert( auth.first );
    for( auto auth : a.active.account_auths )
@@ -15,9 +15,9 @@ namespace golos {
    return result;
 }
 
-set< public_key_type > account_member_index::get_key_members( const account_object& a ) const
+std::set< public_key_type > account_member_index::get_key_members( const account_object& a ) const
 {
-   set< public_key_type > result;
+   std::set< public_key_type > result;
    for( auto auth : a.owner.key_auths )
       result.insert( auth.first );
    for( auto auth : a.active.key_auths )
@@ -74,8 +74,8 @@ void account_member_index::object_modified( const object& after )
     const account_object& a = static_cast< const account_object& >( after );
 
     {
-       set< string > after_account_members = get_account_members( a );
-       vector< string > removed;
+       std::set< std::string > after_account_members = get_account_members( a );
+       std::vector< std::string > removed;
        removed.reserve( before_account_members.size() );
        std::set_difference( before_account_members.begin(), before_account_members.end(),
                             after_account_members.begin(), after_account_members.end(),
@@ -84,7 +84,7 @@ void account_member_index::object_modified( const object& after )
        for( auto itr = removed.begin(); itr != removed.end(); ++itr )
           account_to_account_memberships[*itr].erase( a.name );
 
-       vector<string> added;
+       std::vector<std::string> added;
        added.reserve( after_account_members.size() );
        std::set_difference( after_account_members.begin(), after_account_members.end(),
                             before_account_members.begin(), before_account_members.end(),
@@ -96,9 +96,9 @@ void account_member_index::object_modified( const object& after )
 
 
     {
-       set<public_key_type> after_key_members = get_key_members( a );
+       std::set<public_key_type> after_key_members = get_key_members( a );
 
-       vector<public_key_type> removed;
+       std::vector<public_key_type> removed;
        removed.reserve( before_key_members.size() );
        std::set_difference( before_key_members.begin(), before_key_members.end(),
                             after_key_members.begin(), after_key_members.end(),
@@ -107,7 +107,7 @@ void account_member_index::object_modified( const object& after )
        for( auto itr = removed.begin(); itr != removed.end(); ++itr )
           account_to_key_memberships[*itr].erase( a.name );
 
-       vector<public_key_type> added;
+       std::vector<public_key_type> added;
        added.reserve(after_key_members.size());
        std::set_difference( after_key_members.begin(), after_key_members.end(),
                             before_key_members.begin(), before_key_members.end(),

@@ -33,7 +33,7 @@ namespace golos {
             }
 
             category_object::id_type id;
-            string name;
+            std::string name;
             share_type abs_rshares;
             asset<0, 17, 0> total_payouts;
             uint32_t discussions;
@@ -53,7 +53,7 @@ namespace golos {
             tag_api_obj() {
             }
 
-            string name;
+            std::string name;
             fc::uint128_t total_children_rshares2;
             asset<0, 17, 0> total_payouts;
             int32_t net_votes = 0;
@@ -74,7 +74,7 @@ namespace golos {
             language_api_obj() {
             }
 
-            string name;
+            std::string name;
             fc::uint128_t total_children_rshares2;
             asset<0, 17, 0> total_payouts;
             int32_t net_votes = 0;
@@ -182,7 +182,7 @@ namespace golos {
             authority active;
             authority posting;
             public_key_type memo_key;
-            string json_metadata;
+            std::string json_metadata;
             account_name_type proxy;
 
             time_point_sec last_owner_update;
@@ -232,7 +232,7 @@ namespace golos {
             share_type to_withdraw;
             uint16_t withdraw_routes;
 
-            vector<share_type> proxied_vsf_votes;
+            std::vector<share_type> proxied_vsf_votes;
 
             uint16_t witnesses_voted_for;
 
@@ -308,7 +308,7 @@ namespace golos {
             savings_withdraw_object::id_type id;
             account_name_type from;
             account_name_type to;
-            string memo;
+            std::string memo;
             uint32_t request_id = 0;
             asset<0, 17, 0> amount;
             time_point_sec complete;
@@ -359,7 +359,7 @@ namespace golos {
             witness_object::id_type id;
             account_name_type owner;
             time_point_sec created;
-            string url;
+            std::string url;
             uint32_t total_missed;
             uint64_t last_aslot;
             uint64_t last_confirmed_block_num;

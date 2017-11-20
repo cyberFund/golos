@@ -144,7 +144,7 @@ namespace golos {
             account_name_type committee_account;
             fc::ecc::private_key private_key = fc::ecc::private_key::generate();
             fc::ecc::private_key init_account_priv_key;
-            string debug_key = graphene::utilities::key_to_wif(init_account_priv_key);
+            std::string debug_key = graphene::utilities::key_to_wif(init_account_priv_key);
             public_key_type init_account_pub_key = init_account_priv_key.get_public_key();
             uint32_t default_skip = 0 | database::skip_undo_history_check | database::skip_authority_check;
 
@@ -162,9 +162,9 @@ namespace golos {
 
             }
 
-            static fc::ecc::private_key generate_private_key(string seed);
+            static fc::ecc::private_key generate_private_key(std::string seed);
 
-            string generate_anon_acct_name();
+            std::string generate_anon_acct_name();
 
             void open_database();
 
@@ -235,18 +235,18 @@ namespace golos {
 
             const asset_object &get_asset(const asset_name_type &symbol) const;
 
-            const account_object &get_account(const string &name) const;
+            const account_object &get_account(const std::string &name) const;
 
-            const asset_object &create_bitasset(const string &name, account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
+            const asset_object &create_bitasset(const std::string &name, account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
                                                 uint16_t market_fee_percent = 100 /*1%*/,
                                                 uint16_t flags = charge_market_fee);
 
-            const asset_object &create_prediction_market(const string &name,
+            const asset_object &create_prediction_market(const std::string &name,
                                                          account_name_type issuer = STEEMIT_WITNESS_ACCOUNT,
                                                          uint16_t market_fee_percent = 100 /*1%*/,
                                                          uint16_t flags = charge_market_fee);
 
-            const asset_object &create_user_issued_asset(const string &name);
+            const asset_object &create_user_issued_asset(const std::string &name);
 
             const asset_object &create_user_issued_asset(const asset_name_type &name, const account_object &issuer,
                                                          uint16_t flags);
@@ -255,46 +255,46 @@ namespace golos {
 
             void issue_uia(account_name_type recipient_id, const asset<0, 17, 0> &amount);
 
-            const account_object &account_create(const string &name, const string &creator,
+            const account_object &account_create(const std::string &name, const std::string &creator,
                                                  const private_key_type &creator_key, const share_type &fee,
                                                  const public_key_type &key, const public_key_type &post_key,
-                                                 const string &json_metadata);
+                                                 const std::string &json_metadata);
 
-            const account_object &account_create(const string &name, const public_key_type &key,
+            const account_object &account_create(const std::string &name, const public_key_type &key,
                                                  const public_key_type &post_key);
 
-            const account_object &account_create(const string &name, const public_key_type &key = public_key_type());
+            const account_object &account_create(const std::string &name, const public_key_type &key = public_key_type());
 
 
-            const witness_object &witness_create(const string &owner, const private_key_type &owner_key,
-                                                 const string &url, const public_key_type &signing_key,
+            const witness_object &witness_create(const std::string &owner, const private_key_type &owner_key,
+                                                 const std::string &url, const public_key_type &signing_key,
                                                  const share_type &fee);
 
-            void fund(const string &account_name, const share_type &amount = 500000);
+            void fund(const std::string &account_name, const share_type &amount = 500000);
 
-            void fund(const string &account_name, const asset<0, 17, 0> &amount);
+            void fund(const std::string &account_name, const asset<0, 17, 0> &amount);
 
-            void transfer(const string &from, const string &to, const asset<0, 17, 0> &steem);
+            void transfer(const std::string &from, const std::string &to, const asset<0, 17, 0> &steem);
 
-            void convert(const string &account_name, const asset<0, 17, 0> &amount);
+            void convert(const std::string &account_name, const asset<0, 17, 0> &amount);
 
-            void vest(const string &from, const share_type &amount);
+            void vest(const std::string &from, const share_type &amount);
 
-            void vest(const string &account, const asset<0, 17, 0> &amount);
+            void vest(const std::string &account, const asset<0, 17, 0> &amount);
 
-            void proxy(const string &account, const string &proxy);
+            void proxy(const std::string &account, const std::string &proxy);
 
             void set_price_feed(const price<0, 17, 0> &new_price);
 
-            void print_market(const string &syma, const string &symb) const;
+            void print_market(const std::string &syma, const std::string &symb) const;
 
-            string pretty(const asset<0, 17, 0> &a) const;
+            std::string pretty(const asset<0, 17, 0> &a) const;
 
             void print_limit_order(const limit_order_object &cur) const;
 
             void print_call_orders() const;
 
-            void print_joint_market(const string &syma, const string &symb) const;
+            void print_joint_market(const std::string &syma, const std::string &symb) const;
 
             int64_t get_balance(account_name_type account, const asset_name_type &a) const;
 
@@ -302,7 +302,7 @@ namespace golos {
 
             void sign(signed_transaction &trx, const fc::ecc::private_key &key);
 
-            vector<operation> get_last_operations(uint32_t ops);
+            std::vector<operation> get_last_operations(uint32_t ops);
 
             void validate_database();
         };

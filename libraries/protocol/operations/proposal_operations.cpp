@@ -46,7 +46,7 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void proposal_update_operation<Major, Hardfork, Release>::get_required_authorities(vector<authority> &o) const {
+        void proposal_update_operation<Major, Hardfork, Release>::get_required_authorities(std::vector<authority> &o) const {
             authority auth;
             for (const auto &k : key_approvals_to_add) {
                 auth.key_auths[k] = 1;
