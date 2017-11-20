@@ -43,7 +43,7 @@ namespace golos {
 
 #define LANGUAGES_PLUGIN_NAME "languages"
 
-        typedef fc::fixed_string<fc::sha256> language_name_type;
+        typedef fc::fixed_string<fc::erpair<fc::uint128_t, fc::uint128_t>> language_name_type;
 
         // Plugins need to define object type IDs such that they do not conflict
         // globally. If each plugin uses the upper 8 bits as a space identifier,
@@ -113,7 +113,8 @@ namespace golos {
 
         typedef object_id<language_object> language_id_type;
 
-        template<typename T, typename C = std::less<T>> class comparable_index {
+        template<typename T, typename C = std::less<T>>
+        class comparable_index {
         public:
             typedef T value_type;
 
@@ -513,13 +514,15 @@ namespace golos {
                                         &author_language_stats_object::language>,
                                 member<author_language_stats_object, asset<0, 17, 0>,
                                         &author_language_stats_object::total_rewards> >,
-                        composite_key_compare<less<account_object::id_type>, less<language_name_type>, greater<asset<0, 17, 0>>>>,
-                ordered_unique<tag<by_tag_rewards_author>, composite_key<author_language_stats_object,
-                        member<author_language_stats_object, language_name_type,
-                                &author_language_stats_object::language>,
-                        member<author_language_stats_object, asset<0, 17, 0>, &author_language_stats_object::total_rewards>,
-                        member<author_language_stats_object, account_object::id_type,
-                                &author_language_stats_object::author> >,
+                        composite_key_compare<less<account_object::id_type>, less<language_name_type>,
+                                greater<asset<0, 17, 0>>>>, ordered_unique<tag<by_tag_rewards_author>,
+                        composite_key<author_language_stats_object,
+                                member<author_language_stats_object, language_name_type,
+                                        &author_language_stats_object::language>,
+                                member<author_language_stats_object, asset<0, 17, 0>,
+                                        &author_language_stats_object::total_rewards>,
+                                member<author_language_stats_object, account_object::id_type,
+                                        &author_language_stats_object::author> >,
                         composite_key_compare<less<language_name_type>, greater<asset<0, 17, 0>>,
                                 less<account_object::id_type>>> > > author_language_stats_index;
 
@@ -602,5 +605,4 @@ FC_REFLECT((golos::languages::peer_stats_object),
 CHAINBASE_SET_INDEX_TYPE(golos::languages::peer_stats_object, golos::languages::peer_stats_index)
 
 FC_REFLECT((golos::languages::author_language_stats_object), (id)(author)(language)(total_posts)(total_rewards))
-CHAINBASE_SET_INDEX_TYPE(golos::languages::author_language_stats_object,
-                         golos::languages::author_language_stats_index)
+CHAINBASE_SET_INDEX_TYPE(golos::languages::author_language_stats_object, golos::languages::author_language_stats_index)

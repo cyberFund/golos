@@ -43,7 +43,7 @@ namespace golos {
 
 #define TAGS_PLUGIN_NAME "tags"
 
-        typedef fc::fixed_string<fc::sha256> tag_name_type;
+        typedef fc::fixed_string<fc::erpair<fc::uint128_t, fc::uint128_t>> tag_name_type;
 
         // Plugins need to define object type IDs such that they do not conflict
         // globally. If each plugin uses the upper 8 bits as a space identifier,
