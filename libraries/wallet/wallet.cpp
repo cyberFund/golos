@@ -7,7 +7,7 @@
 
 #include <boost/version.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/std::string/replace.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
