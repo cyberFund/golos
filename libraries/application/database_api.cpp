@@ -141,8 +141,8 @@ namespace golos {
 
             boost::signals2::scoped_connection _block_applied_connection;
 
-            std::map<std::pair<asset_symbol_type, asset_symbol_type>, std::function<
-                    void(const variant &)>> _market_subscriptions;
+            std::map<std::pair<asset_symbol_type, asset_symbol_type>,
+                    std::function<void(const variant &)>> _market_subscriptions;
         };
 
         applied_operation::applied_operation() {
@@ -516,7 +516,8 @@ namespace golos {
                 const auto &acc = my->_db.get_account(account);
 
                 if (type == outgoing || type == all) {
-                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<
+                            by_withdraw_route>();
                     auto route = by_route.lower_bound(acc.id);
 
                     while (route != by_route.end() && route->from_account == acc.id) {
@@ -572,8 +573,7 @@ namespace golos {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        std::vector<optional<witness_api_obj>> database_api::get_witnesses(
-                const std::vector<witness_object::id_type> &witness_ids) const {
+        std::vector<optional<witness_api_obj>> database_api::get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_witnesses(witness_ids);
             });
