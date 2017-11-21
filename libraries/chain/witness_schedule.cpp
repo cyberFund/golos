@@ -332,7 +332,7 @@ namespace golos {
 
                         /// don't consider the top 19 for the purpose of virtual time scheduling
                         db.modify(*itr, [&](witness_object &wo) {
-                            wo.virtual_scheduled_time = fc::uint128_t::uint128_t();
+                            wo.virtual_scheduled_time = fc::uint128_t();
                         });
                     }
 
