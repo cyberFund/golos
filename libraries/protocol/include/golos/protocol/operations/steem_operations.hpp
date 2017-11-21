@@ -18,7 +18,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(challenger);
             }
         };
@@ -30,13 +30,13 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 if (!require_owner) {
                     a.insert(challenged);
                 }
             }
 
-            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
                 if (require_owner) {
                     a.insert(challenged);
                 }
@@ -52,7 +52,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
                 a.insert(voter);
             }
         };
@@ -71,11 +71,11 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct withdraw_vesting_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
-            asset <Major, Hardfork, Release> vesting_shares;
+            asset<Major, Hardfork, Release> vesting_shares;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -89,8 +89,7 @@ namespace golos {
          * vests to steem and back, guaranteeing they maintain their value.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct set_withdraw_vesting_route_operation
-                : public base_operation<Major, Hardfork, Release> {
+        struct set_withdraw_vesting_route_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from_account;
             account_name_type to_account;
             uint16_t percent = 0;
@@ -98,7 +97,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(from_account);
             }
         };
@@ -114,7 +113,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(publisher);
             }
         };
@@ -147,7 +146,7 @@ namespace golos {
             }
 
             /** there is no need to verify authority, the proof of work is sufficient */
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
             }
         };
 
@@ -182,14 +181,14 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct pow2_operation : public base_operation<Major, Hardfork, Release> {
             pow2_work work;
-            optional <public_key_type> new_owner_key;
+            optional<public_key_type> new_owner_key;
             chain_properties<Major, Hardfork, Release> props;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const;
+            void get_required_active_authorities(flat_set<account_name_type> &a) const;
 
-            void get_required_authorities(std::vector <authority> &a) const {
+            void get_required_authorities(std::vector<authority> &a) const {
                 if (new_owner_key) {
                     a.push_back(authority(1, *new_owner_key, 1));
                 }
@@ -211,8 +210,7 @@ namespace golos {
          * of the block producer to the reporter.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct report_over_production_operation
-                : public base_operation<Major, Hardfork, Release> {
+        struct report_over_production_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type reporter;
             signed_block_header first_block;
             signed_block_header second_block;
@@ -259,7 +257,7 @@ namespace golos {
 
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(recovery_account);
             }
 
@@ -314,7 +312,7 @@ namespace golos {
 
             extensions_type extensions;                ///< Extensions. Not currently used.
 
-            void get_required_authorities(std::vector <authority> &a) const {
+            void get_required_authorities(std::vector<authority> &a) const {
                 a.push_back(new_owner_authority);
                 a.push_back(recent_owner_authority);
             }
@@ -333,7 +331,7 @@ namespace golos {
             account_name_type account_to_reset;
             authority new_owner_authority;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(reset_account);
             }
 
@@ -352,13 +350,13 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
                 if (current_reset_account.size()) {
                     a.insert(account);
                 }
             }
 
-            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
                 if (!current_reset_account.size()) {
                     a.insert(account);
                 }
@@ -385,13 +383,12 @@ namespace golos {
          * witness according to stake.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct change_recovery_account_operation
-                : public base_operation<Major, Hardfork, Release> {
+        struct change_recovery_account_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account_to_recover;     ///< The account that would be recovered in case of compromise
             account_name_type new_recovery_account;   ///< The account that creates the recover request
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
                 a.insert(account_to_recover);
             }
 
@@ -399,12 +396,11 @@ namespace golos {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct decline_voting_rights_operation
-                : public base_operation<Major, Hardfork, Release> {
+        struct decline_voting_rights_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
             bool decline = true;
 
-            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
                 a.insert(account);
             }
 
@@ -421,13 +417,12 @@ namespace golos {
          * of VESTS from voting on the same content twice.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct delegate_vesting_shares_operation
-                : public base_operation<Major, Hardfork, Release> {
+        struct delegate_vesting_shares_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type delegator;        ///< The account delegating vesting shares
             account_name_type delegatee;        ///< The account receiving vesting shares
-            asset <Major, Hardfork, Release> vesting_shares;   ///< The amount of vesting shares delegated
+            asset<Major, Hardfork, Release> vesting_shares;   ///< The amount of vesting shares delegated
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(delegator);
             }
 
@@ -464,8 +459,10 @@ FC_REFLECT((golos::protocol::pow2_operation<0, 17, 0>), (work)(new_owner_key)(pr
 FC_REFLECT((golos::protocol::withdraw_vesting_operation<0, 16, 0>), (account)(vesting_shares))
 FC_REFLECT((golos::protocol::withdraw_vesting_operation<0, 17, 0>), (account)(vesting_shares))
 
-FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation<0, 16, 0>), (from_account)(to_account)(percent)(auto_vest))
-FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation<0, 17, 0>), (from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation<0, 16, 0>),
+           (from_account)(to_account)(percent)(auto_vest))
+FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation<0, 17, 0>),
+           (from_account)(to_account)(percent)(auto_vest))
 
 FC_REFLECT((golos::protocol::vote_operation<0, 16, 0>), (voter)(author)(permlink)(weight))
 FC_REFLECT((golos::protocol::vote_operation<0, 17, 0>), (voter)(author)(permlink)(weight))
@@ -476,14 +473,20 @@ FC_REFLECT((golos::protocol::challenge_authority_operation<0, 17, 0>), (challeng
 FC_REFLECT((golos::protocol::prove_authority_operation<0, 16, 0>), (challenged)(require_owner));
 FC_REFLECT((golos::protocol::prove_authority_operation<0, 17, 0>), (challenged)(require_owner));
 
-FC_REFLECT((golos::protocol::request_account_recovery_operation<0, 16, 0>), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
-FC_REFLECT((golos::protocol::request_account_recovery_operation<0, 17, 0>), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+FC_REFLECT((golos::protocol::request_account_recovery_operation<0, 16, 0>),
+           (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
+FC_REFLECT((golos::protocol::request_account_recovery_operation<0, 17, 0>),
+           (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
 
-FC_REFLECT((golos::protocol::recover_account_operation<0, 16, 0>), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
-FC_REFLECT((golos::protocol::recover_account_operation<0, 17, 0>), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT((golos::protocol::recover_account_operation<0, 16, 0>),
+           (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT((golos::protocol::recover_account_operation<0, 17, 0>),
+           (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 
-FC_REFLECT((golos::protocol::change_recovery_account_operation<0, 16, 0>), (account_to_recover)(new_recovery_account)(extensions));
-FC_REFLECT((golos::protocol::change_recovery_account_operation<0, 17, 0>), (account_to_recover)(new_recovery_account)(extensions));
+FC_REFLECT((golos::protocol::change_recovery_account_operation<0, 16, 0>),
+           (account_to_recover)(new_recovery_account)(extensions));
+FC_REFLECT((golos::protocol::change_recovery_account_operation<0, 17, 0>),
+           (account_to_recover)(new_recovery_account)(extensions));
 
 FC_REFLECT((golos::protocol::decline_voting_rights_operation<0, 16, 0>), (account)(decline));
 FC_REFLECT((golos::protocol::decline_voting_rights_operation<0, 17, 0>), (account)(decline));
