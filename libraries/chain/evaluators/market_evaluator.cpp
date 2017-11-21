@@ -10,7 +10,7 @@
 #include <golos/protocol/exceptions.hpp>
 #include <golos/protocol/operations/market_operations.hpp>
 
-#include <fc/uint128.hpp>
+#include <fc/uint128_t.hpp>
 #include <fc/smart_ref_impl.hpp>
 
 namespace golos {

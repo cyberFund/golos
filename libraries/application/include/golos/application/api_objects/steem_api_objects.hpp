@@ -369,9 +369,9 @@ namespace golos {
             price<0, 17, 0> sbd_exchange_rate;
             time_point_sec last_sbd_exchange_update;
             share_type votes;
-            fc::uint128 virtual_last_update;
-            fc::uint128 virtual_position;
-            fc::uint128 virtual_scheduled_time;
+            fc::uint128_t virtual_last_update;
+            fc::uint128_t virtual_position;
+            fc::uint128_t virtual_scheduled_time;
             digest_type last_work;
             version running_version;
             hardfork_version hardfork_version_vote;

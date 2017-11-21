@@ -96,9 +96,9 @@ namespace golos {
              * @defgroup virtual_time Virtual Time Scheduling
              */
             ///@{
-            fc::uint128 virtual_last_update;
-            fc::uint128 virtual_position;
-            fc::uint128 virtual_scheduled_time = fc::uint128::max_value();
+            fc::uint128_t virtual_last_update;
+            fc::uint128_t virtual_position;
+            fc::uint128_t virtual_scheduled_time = fc::uint128_t::uint128_t();
             ///@}
 
             digest_type last_work;
@@ -143,7 +143,7 @@ namespace golos {
 
             id_type id;
 
-            fc::uint128 current_virtual_time;
+            fc::uint128_t current_virtual_time;
             uint32_t next_shuffle_block_num = 1;
             fc::array<account_name_type, STEEMIT_MAX_WITNESSES> current_shuffled_witnesses;
             uint8_t num_scheduled_witnesses = 1;
@@ -180,7 +180,7 @@ namespace golos {
                         composite_key_compare<std::greater<share_type>,
                                 golos::protocol::string_less> //std::less< account_name_type > >
                 >, ordered_unique<tag<by_schedule_time>, composite_key<witness_object,
-                        member<witness_object, fc::uint128, &witness_object::virtual_scheduled_time>,
+                        member<witness_object, fc::uint128_t, &witness_object::virtual_scheduled_time>,
                         member<witness_object, witness_object::id_type, &witness_object::id> > > >,
                 allocator<witness_object> > witness_index;
 

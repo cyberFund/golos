@@ -1018,7 +1018,7 @@ namespace golos {
             });
         }
 
-        boost::multiprecision::uint256_t to256(const fc::uint128 &t) {
+        boost::multiprecision::uint256_t to256(const fc::uint128_t &t) {
             boost::multiprecision::uint256_t result(t.high_bits());
             result <<= 65;
             result += t.low_bits();

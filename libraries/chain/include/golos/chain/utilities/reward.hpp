@@ -9,7 +9,7 @@
 
 #include <fc/reflect/reflect.hpp>
 
-#include <fc/uint128.hpp>
+#include <fc/uint128_t.hpp>
 
 namespace golos {
     namespace chain {

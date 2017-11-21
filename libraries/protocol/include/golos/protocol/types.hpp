@@ -16,7 +16,7 @@
 #include <fc/container/flat.hpp>
 #include <fc/string.hpp>
 #include <fc/io/raw.hpp>
-#include <fc/uint128.hpp>
+#include <fc/uint128_t.hpp>
 #include <fc/static_variant.hpp>
 #include <fc/smart_ref_fwd.hpp>
 
@@ -77,8 +77,8 @@ namespace golos {
 
         typedef fc::ecc::private_key private_key_type;
         typedef fc::sha256 chain_id_type;
-        typedef fc::fixed_string<> account_name_type;
-        typedef fc::fixed_string<> asset_name_type;
+        typedef fc::fixed_string<fc::uint128_t> account_name_type;
+        typedef fc::fixed_string<fc::uint128_t> asset_name_type;
 
         struct string_less {
             bool operator()(const std::string &a, const std::string &b) const {

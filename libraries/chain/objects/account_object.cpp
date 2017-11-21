@@ -12,7 +12,7 @@ namespace golos {
                 return a;
             }
 
-            fc::uint128 r(a.value);
+            fc::uint128_t r(a.value);
             r *= p;
             r /= STEEMIT_100_PERCENT;
             return r.to_uint64();

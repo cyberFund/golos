@@ -1,7 +1,7 @@
 #include <golos/chain/objects/asset_object.hpp>
 #include <golos/chain/database.hpp>
 
-#include <fc/uint128.hpp>
+#include <fc/uint128_t.hpp>
 
 #include <cmath>
 
@@ -16,7 +16,7 @@ namespace golos {
                 return current_supply + force_settled_volume;
             }
 
-            fc::uint128 volume =
+            fc::uint128_t volume =
                     current_supply.value + force_settled_volume.value;
             volume *= options.maximum_force_settlement_volume;
             volume /= STEEMIT_100_PERCENT;

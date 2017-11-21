@@ -612,11 +612,11 @@ namespace golos {
                         b.last_bandwidth_update = now;
                     });
 
-                    fc::uint128 account_vshares(a.vesting_shares.amount.value);
-                    fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
+                    fc::uint128_t account_vshares(a.vesting_shares.amount.value);
+                    fc::uint128_t total_vshares(props.total_vesting_shares.amount.value);
 
-                    fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
-                    fc::uint128 max_virtual_bandwidth(props.max_virtual_bandwidth);
+                    fc::uint128_t account_average_bandwidth(band->average_bandwidth.value);
+                    fc::uint128_t max_virtual_bandwidth(props.max_virtual_bandwidth);
 
                     FC_ASSERT((account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares),
                               "Account exceeded maximum allowed bandwidth per vesting share.",
@@ -650,7 +650,7 @@ namespace golos {
                     new_bandwidth = 0;
                 } else {
                     new_bandwidth = (((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) *
-                                      fc::uint128(band->average_bandwidth.value)) /
+                                      fc::uint128_t(band->average_bandwidth.value)) /
                                      STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
                 }
 
@@ -662,10 +662,10 @@ namespace golos {
                     b.last_bandwidth_update = head_block_time();
                 });
 
-                fc::uint128 account_vshares(a.effective_vesting_shares().amount.value);
-                fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
-                fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
-                fc::uint128 max_virtual_bandwidth(props.max_virtual_bandwidth);
+                fc::uint128_t account_vshares(a.effective_vesting_shares().amount.value);
+                fc::uint128_t total_vshares(props.total_vesting_shares.amount.value);
+                fc::uint128_t account_average_bandwidth(band->average_bandwidth.value);
+                fc::uint128_t max_virtual_bandwidth(props.max_virtual_bandwidth);
 
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
 
@@ -1264,7 +1264,7 @@ namespace golos {
                 /** witnesses with a low number of votes could overflow the time field and end up with a scheduled time in the past */
                 if (has_hardfork(STEEMIT_HARDFORK_0_4)) {
                     if (w.virtual_scheduled_time < wso.current_virtual_time) {
-                        w.virtual_scheduled_time = fc::uint128::max_value();
+                        w.virtual_scheduled_time = fc::uint128_t::uint128_t();
                     }
                 }
             });
@@ -2614,7 +2614,7 @@ namespace golos {
                 create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
                     p.current_witness = STEEMIT_INIT_MINER_NAME;
                     p.time = STEEMIT_GENESIS_TIME;
-                    p.recent_slots_filled = fc::uint128::max_value();
+                    p.recent_slots_filled = fc::uint128_t::uint128_t();
                     p.participation_count = 128;
                     p.current_supply = asset<0, 17, 0>(init_supply, STEEM_SYMBOL_NAME);
                     p.virtual_supply = p.current_supply;
@@ -3859,7 +3859,7 @@ namespace golos {
                 return trade_asset.amount(0);
             }
 
-            fc::uint128 a(trade_amount.amount.value);
+            fc::uint128_t a(trade_amount.amount.value);
             a *= trade_asset.options.market_fee_percent;
             a /= STEEMIT_100_PERCENT;
             asset<0, 17, 0> percent_fee = trade_asset.amount(a.to_uint64());
@@ -4469,13 +4469,13 @@ namespace golos {
         void database::reset_virtual_schedule_time() {
             const witness_schedule_object &wso = get_witness_schedule_object();
             modify(wso, [&](witness_schedule_object &o) {
-                o.current_virtual_time = fc::uint128(); // reset it 0
+                o.current_virtual_time = fc::uint128_t(); // reset it 0
             });
 
             const auto &idx = get_index<witness_index>().indices();
             for (const auto &witness : idx) {
                 modify(witness, [&](witness_object &wobj) {
-                    wobj.virtual_position = fc::uint128();
+                    wobj.virtual_position = fc::uint128_t();
                     wobj.virtual_last_update = wso.current_virtual_time;
                     wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 / (wobj.votes.value + 1);
                 });

@@ -7,7 +7,7 @@
 #include <golos/chain/steem_object_types.hpp>
 
 #include <fc/api.hpp>
-#include <fc/uint128.hpp>
+#include <fc/uint128_t.hpp>
 #include <boost/asio/ip/udp.hpp>
 
 using namespace golos::chain;

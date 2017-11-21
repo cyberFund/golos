@@ -530,7 +530,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
             generate_block();
 
             auto rsf = [&]() -> std::string {
-                fc::uint128 rsf = db.get_dynamic_global_properties().recent_slots_filled;
+                fc::uint128_t rsf = db.get_dynamic_global_properties().recent_slots_filled;
                 std::string result = "";
                 result.reserve(128);
                 for (int i = 0; i < 128; i++) {
