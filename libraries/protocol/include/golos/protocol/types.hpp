@@ -85,7 +85,8 @@ namespace golos {
                 return a < b;
             }
 
-            bool operator()(const fc::fixed_string<> &a, const fc::fixed_string<> &b) const {
+            template<typename Storage>
+            bool operator()(const fc::fixed_string<Storage> &a, const fc::fixed_string<Storage> &b) const {
                 const char *ap = (const char *)&a;
                 const char *ab = (const char *)&b;
                 int count = sizeof(a) - 1;
@@ -97,11 +98,13 @@ namespace golos {
                 return *ap < *ab;
             }
 
-            bool operator()(const fc::fixed_string<> &a, const std::string &b) const {
+            template<typename Storage>
+            bool operator()(const fc::fixed_string<Storage> &a, const std::string &b) const {
                 return std::string(a) < b;
             }
 
-            bool operator()(const std::string &a, const fc::fixed_string<> &b) const {
+            template<typename Storage>
+            bool operator()(const std::string &a, const fc::fixed_string<Storage> &b) const {
                 return a < std::string(b);
             }
         };
