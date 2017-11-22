@@ -353,7 +353,7 @@ namespace golos {
                             /// extra cautious sanity check... we should never end up here if witnesses are
                             /// properly voted on. TODO: remove this line if it is not triggered and therefore
                             /// the code path is unreachable.
-                            if (new_virtual_time == fc::uint128_t::uint128_t()) {
+                            if (new_virtual_time == fc::uint128_t()) {
                                 new_virtual_time = fc::uint128_t();
                             }
 

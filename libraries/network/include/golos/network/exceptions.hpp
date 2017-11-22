@@ -6,7 +6,7 @@ namespace golos {
     namespace network {
         namespace exceptions {
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wmultichar"
 
             template<uint32_t IncrementalCode = 0, typename What = boost::mpl::string<'P2P Networking Exception'>>
             using basic = fc::basic_exception<90000 + IncrementalCode, What>;

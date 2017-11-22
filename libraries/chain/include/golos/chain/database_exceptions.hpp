@@ -7,7 +7,7 @@ namespace golos {
         namespace exceptions {
             namespace chain {
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wmultichar"
                 template<uint32_t Code = 4000000,
                         typename What = boost::mpl::string<'blockchain exception'>> using basic = fc::basic_exception<
                         Code, What>;
