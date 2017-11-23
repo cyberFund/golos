@@ -1264,7 +1264,7 @@ namespace golos {
                 /** witnesses with a low number of votes could overflow the time field and end up with a scheduled time in the past */
                 if (has_hardfork(STEEMIT_HARDFORK_0_4)) {
                     if (w.virtual_scheduled_time < wso.current_virtual_time) {
-                        w.virtual_scheduled_time = fc::uint128_t();
+                        w.virtual_scheduled_time = fc::uint128_t::max_value();
                     }
                 }
             });

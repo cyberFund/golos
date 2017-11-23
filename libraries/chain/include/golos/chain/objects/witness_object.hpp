@@ -98,7 +98,7 @@ namespace golos {
             ///@{
             fc::uint128_t virtual_last_update;
             fc::uint128_t virtual_position;
-            fc::uint128_t virtual_scheduled_time = fc::uint128_t();
+            fc::uint128_t virtual_scheduled_time = fc::uint128_t::max_value();
             ///@}
 
             digest_type last_work;

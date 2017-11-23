@@ -429,8 +429,7 @@ namespace golos {
                          i < _wso.num_scheduled_witnesses; ++i) {
                         /// High performance random generator
                         /// http://xorshift.di.unimi.it/
-                        uint64_t k =
-                                now_hi + uint64_t(i) * 2685821657736338717ULL;
+                        uint64_t k = now_hi + uint64_t(i) * 2685821657736338717ULL;
                         k ^= (k >> 12);
                         k ^= (k << 25);
                         k ^= (k >> 27);
