@@ -1079,7 +1079,7 @@ namespace golos {
 
         fc::time_point_sec database::get_slot_time(uint32_t slot_num) const {
             if (slot_num == 0) {
-                return fc::time_point_sec();
+                return {};
             }
 
             auto interval = STEEMIT_BLOCK_INTERVAL;

@@ -156,16 +156,15 @@ namespace golos {
 
             /// Update virtual schedule of processed witnesses
             bool reset_virtual_time = false;
-            for (auto itr = processed_witnesses.begin();
-                 itr != processed_witnesses.end(); ++itr) {
+            for (auto &processed_witnesse : processed_witnesses) {
                 auto new_virtual_scheduled_time = new_virtual_time +
                                                   VIRTUAL_SCHEDULE_LAP_LENGTH2 /
-                                                  ((*itr)->votes.value + 1);
+                                                  (processed_witnesse->votes.value + 1);
                 if (new_virtual_scheduled_time < new_virtual_time) {
                     reset_virtual_time = true; /// overflow
                     break;
                 }
-                db.modify(*(*itr), [&](witness_object &wo) {
+                db.modify(*processed_witnesse, [&](witness_object &wo) {
                     wo.virtual_position = fc::uint128_t();
                     wo.virtual_last_update = new_virtual_time;
                     wo.virtual_scheduled_time = new_virtual_scheduled_time;
@@ -332,7 +331,7 @@ namespace golos {
 
                         /// don't consider the top 19 for the purpose of virtual time scheduling
                         db.modify(*itr, [&](witness_object &wo) {
-                            wo.virtual_scheduled_time = fc::uint128_t();
+                            wo.virtual_scheduled_time = fc::uint128_t::max_value();
                         });
                     }
 
@@ -353,7 +352,7 @@ namespace golos {
                             /// extra cautious sanity check... we should never end up here if witnesses are
                             /// properly voted on. TODO: remove this line if it is not triggered and therefore
                             /// the code path is unreachable.
-                            if (new_virtual_time == fc::uint128_t()) {
+                            if (new_virtual_time == fc::uint128_t::max_value()) {
                                 new_virtual_time = fc::uint128_t();
                             }
 
