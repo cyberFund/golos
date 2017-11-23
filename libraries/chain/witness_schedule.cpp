@@ -417,7 +417,8 @@ namespace golos {
                         _wso.current_shuffled_witnesses[i] = account_name_type();
                     }
 
-                    _wso.num_scheduled_witnesses = std::max<uint8_t>(active_witnesses.size(), 1);
+                    _wso.num_scheduled_witnesses = std::max<uint8_t>(
+                            static_cast<const uint8_t &>(active_witnesses.size()), 1);
 
                     //idump( (_wso.current_shuffled_witnesses)(active_witnesses.size()) );
 
@@ -441,9 +442,7 @@ namespace golos {
                                 _wso.current_shuffled_witnesses[j]);
                     }
 
-                    if (props.num_pow_witnesses == 0 ||
-                        db.head_block_num() >
-                        STEEMIT_START_MINER_VOTING_BLOCK) {
+                    if (props.num_pow_witnesses == 0 || db.head_block_num() > STEEMIT_START_MINER_VOTING_BLOCK) {
                         _wso.current_virtual_time = new_virtual_time;
                     }
 

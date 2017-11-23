@@ -2614,7 +2614,7 @@ namespace golos {
                 create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
                     p.current_witness = STEEMIT_INIT_MINER_NAME;
                     p.time = STEEMIT_GENESIS_TIME;
-                    p.recent_slots_filled = fc::uint128_t();
+                    p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
                     p.current_supply = asset<0, 17, 0>(init_supply, STEEM_SYMBOL_NAME);
                     p.virtual_supply = p.current_supply;
