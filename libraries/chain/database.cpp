@@ -2824,13 +2824,13 @@ namespace golos {
                 create_block_summary(next_block);
 
                 if (has_hardfork(STEEMIT_HARDFORK_0_17__111)) {
-                    clear_expired_transactions();
+                    clear_expired_witness_votes();
                 }
 
                 clear_expired_proposals();
                 clear_expired_orders();
                 clear_expired_delegations();
-                clear_expired_witness_votes();
+                clear_expired_transactions();
                 update_expired_feeds();
                 update_witness_schedule(*this);
 
