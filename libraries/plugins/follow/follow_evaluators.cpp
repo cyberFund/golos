@@ -191,6 +191,5 @@ namespace golos {
                 }
             } FC_CAPTURE_AND_RETHROW((o))
         }
-
     }
 } // golos::follow
