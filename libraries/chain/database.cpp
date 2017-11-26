@@ -461,13 +461,15 @@ namespace golos {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
-        const comment_object &database::get_comment(const account_name_type &author, const std::string &permlink) const {
+        const comment_object &database::get_comment(const account_name_type &author,
+                                                    const std::string &permlink) const {
             try {
                 return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *database::find_comment(const account_name_type &author, const std::string &permlink) const {
+        const comment_object *database::find_comment(const account_name_type &author,
+                                                     const std::string &permlink) const {
             return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
@@ -1285,7 +1287,8 @@ namespace golos {
 
                 remove(current);
 
-                push_virtual_operation(expire_witness_vote_operation<0, 17 ,0>(current.account, current.witness, current.created));
+                push_virtual_operation(
+                        expire_witness_vote_operation<0, 17, 0>(current.account, current.witness, current.created));
             }
         }
 
@@ -2038,8 +2041,9 @@ namespace golos {
             FC_ASSERT((input_time - fc::time_point::now()).to_seconds() < STEEMIT_CASHOUT_WINDOW_SECONDS,
                       "Extension time should be less or equal than a week");
 
-            return asset<0, 17, 0>((input_time - fc::time_point::now()).to_seconds() * STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value /
-                    (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL_NAME);
+            return asset<0, 17, 0>((input_time - fc::time_point::now()).to_seconds() *
+                                   STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value /
+                                   (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL_NAME);
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
@@ -2055,7 +2059,8 @@ namespace golos {
         asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
             return name.size() >= STEEMIT_MIN_ASSET_SYMBOL_LENGTH && name.size() < STEEMIT_MAX_ASSET_SYMBOL_LENGTH / 2
                    ? asset<0, 17, 0>(get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY * 90 /
-                      std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME) : asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+                                     std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME)
+                   : asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
         }
 
         void database::pay_liquidity_reward() {
@@ -3229,11 +3234,11 @@ namespace golos {
         void database::update_virtual_supply() {
             try {
                 modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
-                    dgp.virtual_supply = dgp.current_supply +
-                                         (get_feed_history().current_median_history.is_null() ? asset<0, 17, 0>(0,
-                                                                                                                STEEM_SYMBOL_NAME)
-                                                                                              : dgp.current_sbd_supply *
-                                                                                                get_feed_history().current_median_history);
+                    if (get_feed_history().current_median_history.is_null()) {
+                        dgp.virtual_supply = dgp.current_supply;
+                    } else {
+                        dgp.virtual_supply = dgp.current_supply + dgp.current_sbd_supply * get_feed_history().current_median_history;
+                    }
 
                     auto median_price = get_feed_history().current_median_history;
 
@@ -4462,8 +4467,7 @@ namespace golos {
                       "Blockchain version is older than last applied hardfork");
             FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
 
-            golos::version::state::instance().current_version = protocol::hardfork_version(0,
-                                                                                             hardforks.last_hardfork);
+            golos::version::state::instance().current_version = protocol::hardfork_version(0, hardforks.last_hardfork);
         }
 
         void database::reset_virtual_schedule_time() {
@@ -4540,17 +4544,17 @@ namespace golos {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                {
-                    custom_operation test_op;
-                    std::string op_msg = "Testnet: Hardfork applied";
-                    test_op.data = std::vector<char>(op_msg.begin(), op_msg.end());
-                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                    operation op = test_op;   // we need the operation object to live to the end of this scope
-                    operation_notification note(op);
-                    notify_pre_apply_operation(note);
-                    notify_post_apply_operation(note);
-                }
-                break;
+                    {
+                        custom_operation test_op;
+                        std::string op_msg = "Testnet: Hardfork applied";
+                        test_op.data = std::vector<char>(op_msg.begin(), op_msg.end());
+                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                        operation op = test_op;   // we need the operation object to live to the end of this scope
+                        operation_notification note(op);
+                        notify_pre_apply_operation(note);
+                        notify_post_apply_operation(note);
+                    }
+                    break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:

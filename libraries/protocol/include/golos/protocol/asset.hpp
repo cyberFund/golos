@@ -341,12 +341,19 @@ namespace golos {
                 FC_ASSERT(b.base.amount.value > 0);
                 uint128_t result = (uint128_t(a.amount.value) * b.quote.amount.value) / b.base.amount.value;
                 FC_ASSERT(result.hi == 0);
-                return asset<Major, Hardfork, Release>(result.to_uint64(), b.quote.symbol);
+
+                asset<Major, Hardfork, Release> result_asset(result.to_uint64(), b.quote.symbol_name());
+                result_asset.set_decimals(b.quote.get_decimals());
+
+                return result_asset;
             } else if (a.symbol == b.quote.symbol) {
                 FC_ASSERT(b.quote.amount.value > 0);
                 uint128_t result = (uint128_t(a.amount.value) * b.base.amount.value) / b.quote.amount.value;
                 FC_ASSERT(result.hi == 0);
-                return asset<Major, Hardfork, Release>(result.to_uint64(), b.base.symbol);
+                asset<Major, Hardfork, Release> result_asset(result.to_uint64(), b.base.symbol_name());
+                result_asset.set_decimals(b.base.get_decimals());
+
+                return result_asset;
             }
             FC_THROW_EXCEPTION(fc::assert_exception, "invalid asset * price", ("asset", a)("price", b));
         }
@@ -362,7 +369,7 @@ namespace golos {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         inline price<Major, Hardfork, Release> operator~(const price<Major, Hardfork, Release> &p) {
-            return {p.quote, p.base};
+            return price<Major, Hardfork, Release>(p.quote, p.base);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
