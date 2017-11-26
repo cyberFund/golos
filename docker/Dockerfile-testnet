@@ -13,6 +13,7 @@ RUN \
         bsdmainutils \
         build-essential \
         cmake \
+        ccache \
         doxygen \
         git \
         libboost-all-dev \
@@ -159,3 +160,6 @@ RUN chmod +x /etc/service/golosd/run
 
 # the following adds lots of logging info to stdout
 ADD contribution/config.ini /etc/golosd/config.ini
+
+# put blockchain data into separate docker volume
+VOLUME /var/lib/golosd

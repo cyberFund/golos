@@ -163,3 +163,6 @@ ADD documentation/seednodes /etc/golosd/seednodes
 
 # the following adds lots of logging info to stdout
 ADD contribution/config.ini /etc/golosd/config.ini
+
+# put blockchain data into separate docker volume
+VOLUME /var/lib/golosd
