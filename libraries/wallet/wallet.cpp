@@ -2525,19 +2525,18 @@ namespace golos {
             return sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::sell(std::string seller_account, std::string base, std::string quote,
-                                            double rate, double amount, protocol::integral_id_type order_id,
-                                            bool broadcast) {
-            return sell_asset(seller_account, asset<0, 17, 0>(amount, asset<0, 17, 0>::from_string(base).symbol),
-                              asset<0, 17, 0>(rate * amount, asset<0, 17, 0>::from_string(quote).symbol), 0, order_id,
-                              false, broadcast);
+        signed_transaction wallet_api::sell(std::string seller_account, asset<0, 17, 0> base, asset<0, 17, 0> quote, protocol::integral_id_type order_id, bool broadcast) {
+            return sell_asset(seller_account, asset<0, 17, 0>(base.amount, base.symbol_name(), base.get_decimals()),
+                              asset<0, 17, 0>(quote.amount * base.amount, quote.symbol_name(), quote.get_decimals()), 0,
+                              order_id, false, broadcast);
         }
 
-        signed_transaction wallet_api::buy(std::string buyer_account, std::string base, std::string quote, double rate,
-                                           double amount, protocol::integral_id_type order_id, bool broadcast) {
-            return sell_asset(buyer_account, asset<0, 17, 0>(rate * amount, asset<0, 17, 0>::from_string(quote).symbol),
-                              asset<0, 17, 0>(amount, asset<0, 17, 0>::from_string(base).symbol), 0, order_id, false,
-                              broadcast);
+        signed_transaction wallet_api::buy(std::string buyer_account, asset<0, 17, 0> base, asset<0, 17, 0> quote,
+                                           protocol::integral_id_type order_id, bool broadcast) {
+            return sell_asset(buyer_account,
+                              asset<0, 17, 0>(base.amount * quote.amount, quote.symbol_name(), quote.get_decimals()),
+                              asset<0, 17, 0>(quote.amount, base.symbol_name(), base.get_decimals()), 0, order_id,
+                              false, broadcast);
         }
 
         signed_transaction wallet_api::borrow_asset(std::string seller_name, asset<0, 17, 0> amount_to_borrow,
