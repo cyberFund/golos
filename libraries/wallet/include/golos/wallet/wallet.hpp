@@ -976,7 +976,7 @@ namespace golos {
              * @param broadcast true to broadcast the transaction on the network.
              * @returns The signed transaction selling the funds.
              */
-            signed_transaction sell(std::string seller_account, std::string base, std::string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast);
+            signed_transaction sell(std::string seller_account, asset<0, 17, 0> base, asset<0, 17, 0> quote, protocol::integral_id_type order_id, bool broadcast);
 
             /** Place a limit order attempting to buy one asset with another.
              *
@@ -987,13 +987,13 @@ namespace golos {
              *
              * @param buyer_account The account buying the asset for another asset.
              * @param base The name or id of the asset to buy.
-             * @param quote The name or id of the assest being offered as payment.
+             * @param quote The name or id of the asset being offered as payment.
              * @param rate The rate in base:quote at which you want to buy.
              * @param amount the amount of base you want to buy.
              * @param broadcast true to broadcast the transaction on the network.
              * @returns The signed transaction selling the funds.
              */
-            signed_transaction buy(std::string buyer_account, std::string base, std::string quote, double rate, double amount, protocol::integral_id_type order_id, bool broadcast);
+            signed_transaction buy(std::string buyer_account, asset<0, 17, 0> base, asset<0, 17, 0> quote, protocol::integral_id_type order_id, bool broadcast);
 
             /** Borrow an asset or update the debt/collateral ratio for the loan.
              *
