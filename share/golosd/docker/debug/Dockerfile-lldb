@@ -100,7 +100,6 @@ RUN \
         doxygen \
         dpkg-dev \
         git \
-        lldb \
         libboost-all-dev \
         libc6-dev \
         libexpat1-dev \
