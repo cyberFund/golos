@@ -78,9 +78,13 @@ else
     P2P_ENDPOINT="0.0.0.0:2001"
 fi
 
+if [[ $STEEMD == *"\""* ]]; then
+    STEEMD_SUFFIX="\""
+fi
+
 exec chpst -ugolosd $STEEMD \
-    --rpc-endpoint=\\${RPC_ENDPOINT} \
-    --p2p-endpoint=\\${P2P_ENDPOINT} \
+    --rpc-endpoint=${RPC_ENDPOINT} \
+    --p2p-endpoint=${P2P_ENDPOINT} \
     --data-dir=$HOME \
     $ARGS \
     $STEEMD_EXTRA_OPTS \
