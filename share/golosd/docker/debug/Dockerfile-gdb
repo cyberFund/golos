@@ -4,8 +4,7 @@ FROM phusion/baseimage:0.9.19
 
 ENV LANG=en_US.UTF-8
 
-RUN add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main" && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y \
         autoconf \
         automake \
@@ -13,11 +12,10 @@ RUN add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial ma
         bsdmainutils \
         build-essential \
         cmake \
-        clang \
         ccache \
         doxygen \
+        gdb \
         git \
-        lldb \
         libboost-all-dev \
         libreadline-dev \
         libssl-dev \
@@ -149,7 +147,7 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ENV STEEMD_PREFIX "lldb -f /usr/local/bin/golosd -o \"run "
+ENV STEEMD_PREFIX "gdb -f /usr/local/bin/golosd -o \"run "
 ENV STEEMD_SUFFIX "\""
 
 # rpc service:
