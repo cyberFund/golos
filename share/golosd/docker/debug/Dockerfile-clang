@@ -96,7 +96,7 @@ RUN \
         autotools-dev \
         bsdmainutils \
         build-essential \
-	clang \
+	    clang \
         cmake \
         doxygen \
         dpkg-dev \
