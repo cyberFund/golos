@@ -150,8 +150,7 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ENV STEEMD_PREFIX "lldb -f /usr/local/bin/golosd -o \"run "
-ENV STEEMD_SUFFIX "\""
+ENV STEEMD "lldb -f /usr/local/bin/golosd -o \"run "
 
 # rpc service:
 EXPOSE 8090

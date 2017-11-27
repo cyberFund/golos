@@ -2,8 +2,8 @@
 
 export HOME="/var/lib/golosd"
 
-if [[ ! -z "$STEEMD_PREFIX" ]]; then
-    STEEMD_PREFIX="/usr/local/bin/golosd"
+if [[ ! -z "$STEEMD" ]]; then
+    STEEMD="/usr/local/bin/golosd"
 fi
 
 chown -R golosd:golosd $HOME
@@ -69,39 +69,20 @@ sleep 1
 if [[ ! -z "$STEEMD_RPC_ENDPOINT" ]]; then
     RPC_ENDPOINT=$STEEMD_RPC_ENDPOINT
 else
-    if [[ -z "$STEEMD_PREFIX" && -z "$STEEMD_SUFFIX" == "\"" ]]; then
-        RPC_ENDPOINT="0.0.0.0:8090\\"
-    else
-        RPC_ENDPOINT="0.0.0.0:8090"
-    fi
+    RPC_ENDPOINT="0.0.0.0:8090"
 fi
 
 if [[ ! -z "$STEEMD_P2P_ENDPOINT" ]]; then
     P2P_ENDPOINT=$STEEMD_P2P_ENDPOINT
 else
-    if [[ -z "$STEEMD_PREFIX" && -z "$STEEMD_SUFFIX" == "\"" ]]; then
-        P2P_ENDPOINT="0.0.0.0:2001\\"
-    else
-        P2P_ENDPOINT="0.0.0.0:2001"
-    fi
+    P2P_ENDPOINT="0.0.0.0:2001"
 fi
 
-if [[ -z "$STEEMD_PREFIX" && -z "$STEEMD_SUFFIX" == "\"" ]]; then
-    exec chpst -ugolosd $STEEMD_PREFIX \
-        --rpc-endpoint=\\${RPC_ENDPOINT} \
-        --p2p-endpoint=\\${P2P_ENDPOINT} \
-        --data-dir=$HOME \
-        $ARGS \
-        $STEEMD_EXTRA_OPTS \
-        $STEEMD_SUFFIX \
-        2>&1
-else
-    exec chpst -ugolosd $STEEMD_PREFIX \
-        --rpc-endpoint=\\${RPC_ENDPOINT} \
-        --p2p-endpoint=\\${P2P_ENDPOINT} \
-        --data-dir=$HOME \
-        $ARGS \
-        $STEEMD_EXTRA_OPTS \
-        $STEEMD_SUFFIX \
-        2>&1
-fi
+exec chpst -ugolosd $STEEMD \
+    --rpc-endpoint=\\${RPC_ENDPOINT} \
+    --p2p-endpoint=\\${P2P_ENDPOINT} \
+    --data-dir=$HOME \
+    $ARGS \
+    $STEEMD_EXTRA_OPTS \
+    $STEEMD_SUFFIX \
+    2>&1
