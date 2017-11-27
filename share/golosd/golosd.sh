@@ -69,20 +69,39 @@ sleep 1
 if [[ ! -z "$STEEMD_RPC_ENDPOINT" ]]; then
     RPC_ENDPOINT=$STEEMD_RPC_ENDPOINT
 else
-    RPC_ENDPOINT="0.0.0.0:8090"
+    if [[ -z "$STEEMD_PREFIX" && -z "$STEEMD_SUFFIX" == "\"" ]]; then
+        RPC_ENDPOINT="0.0.0.0:8090\\"
+    else
+        RPC_ENDPOINT="0.0.0.0:8090"
+    fi
 fi
 
 if [[ ! -z "$STEEMD_P2P_ENDPOINT" ]]; then
     P2P_ENDPOINT=$STEEMD_P2P_ENDPOINT
 else
-    P2P_ENDPOINT="0.0.0.0:2001"
+    if [[ -z "$STEEMD_PREFIX" && -z "$STEEMD_SUFFIX" == "\"" ]]; then
+        P2P_ENDPOINT="0.0.0.0:2001\\"
+    else
+        P2P_ENDPOINT="0.0.0.0:2001"
+    fi
 fi
 
-exec chpst -ugolosd $STEEMD_PREFIX \
-        --rpc-endpoint=${RPC_ENDPOINT} \
-        --p2p-endpoint=${P2P_ENDPOINT} \
+if [[ -z "$STEEMD_PREFIX" && -z "$STEEMD_SUFFIX" == "\"" ]]; then
+    exec chpst -ugolosd $STEEMD_PREFIX \
+        --rpc-endpoint=\\${RPC_ENDPOINT} \
+        --p2p-endpoint=\\${P2P_ENDPOINT} \
         --data-dir=$HOME \
         $ARGS \
         $STEEMD_EXTRA_OPTS \
         $STEEMD_SUFFIX \
         2>&1
+else
+    exec chpst -ugolosd $STEEMD_PREFIX \
+        --rpc-endpoint=\\${RPC_ENDPOINT} \
+        --p2p-endpoint=\\${P2P_ENDPOINT} \
+        --data-dir=$HOME \
+        $ARGS \
+        $STEEMD_EXTRA_OPTS \
+        $STEEMD_SUFFIX \
+        2>&1
+fi
