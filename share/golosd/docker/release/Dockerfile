@@ -1,6 +1,6 @@
 FROM phusion/baseimage:0.9.19
 
-#ARG STEEMD_BLOCKCHAIN=https://example.com/steemd-blockchain.tbz2
+#ARG STEEMD_BLOCKCHAIN=https://download.golos.io/blockchain.tar.bz2
 
 ENV LANG=en_US.UTF-8
 
@@ -31,7 +31,7 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-ADD . /usr/local/src/golos
+ADD ../../../../ /usr/local/src/golos
 
 #RUN \
 #    cd /usr/local/src/golos && \
@@ -147,7 +147,7 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ADD programs/golosd/snapshot5392323.json /var/lib/golosd
+ADD ../../snapshot5392323.json /var/lib/golosd
 
 # rpc service:
 EXPOSE 8090
@@ -155,14 +155,11 @@ EXPOSE 8090
 EXPOSE 2001
 
 RUN mkdir -p /etc/service/golosd
-ADD contribution/golosd.sh /etc/service/golosd/run
+ADD ../../golosd.sh /etc/service/golosd/run
 RUN chmod +x /etc/service/golosd/run
 
-# add seednodes from documentation to image
-ADD documentation/seednodes /etc/golosd/seednodes
-
 # the following adds lots of logging info to stdout
-ADD contribution/config.ini /etc/golosd/config.ini
+ADD ../../config/config_release.ini /etc/golosd/config.ini
 
 # put blockchain data into separate docker volume
 VOLUME /var/lib/golosd

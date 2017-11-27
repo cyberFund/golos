@@ -10,8 +10,8 @@ project(Golos)
 get_property(RULE_LAUNCH_COMPILE GLOBAL PROPERTY RULE_LAUNCH_COMPILE)
 if(RULE_LAUNCH_COMPILE AND CMAKE_GENERATOR STREQUAL "Xcode")
     # Set up wrapper scripts
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/contribution/launch-c.in launch-c)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/contribution/launch-cxx.in launch-cxx)
+    configure_file(share/golosd/cmake/launch-c.in launch-c)
+    configure_file(share/golosd/cmake/launch-cxx.in launch-cxx)
     execute_process(COMMAND chmod a+rx "${CMAKE_BINARY_DIR}/launch-c" "${CMAKE_BINARY_DIR}/launch-cxx")
 
     # Set Xcode project attributes to route compilation and linking

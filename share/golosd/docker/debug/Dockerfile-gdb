@@ -1,10 +1,10 @@
 FROM phusion/baseimage:0.9.19
 
-#ARG STEEMD_BLOCKCHAIN=https://example.com/steemd-blockchain.tbz2
+#ARG STEEMD_BLOCKCHAIN=https://download.golos.io/blockchain.tar.bz2
 
 ENV LANG=en_US.UTF-8
 
-RUN \
+RUN add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main" && \
     apt-get update && \
     apt-get install -y \
         autoconf \
@@ -12,11 +12,12 @@ RUN \
         autotools-dev \
         bsdmainutils \
         build-essential \
-        ccache \
-	    clang \
         cmake \
+        clang \
+        ccache \
         doxygen \
         git \
+        lldb \
         libboost-all-dev \
         libreadline-dev \
         libssl-dev \
@@ -32,7 +33,7 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-ADD . /usr/local/src/golos
+ADD ../../../../ /usr/local/src/golos
 
 #RUN \
 #    cd /usr/local/src/golos && \
@@ -77,14 +78,12 @@ RUN \
     mkdir build && \
     cd build && \
     cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_GOLOS_TESTNET=FALSE \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DBUILD_GOLOS_TESTNET=TRUE \
         -DBUILD_SHARED_LIBRARIES=FALSE \
         -DLOW_MEMORY_NODE=FALSE \
         -DCHAINBASE_CHECK_LOCKING=FALSE \
         -DCLEAR_VOTES=FALSE \
-	-DCMAKE_CXX_COMPILER=clang++ \
-	-DCMAKE_C_COMPILER=clang \
         .. \
     && \
     make -j$(nproc) && \
@@ -97,7 +96,6 @@ RUN \
         autotools-dev \
         bsdmainutils \
         build-essential \
-	clang \
         cmake \
         doxygen \
         dpkg-dev \
@@ -151,7 +149,8 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ADD programs/golosd/snapshot5392323.json /var/lib/golosd
+ENV STEEMD_PREFIX "lldb -f /usr/local/bin/golosd -o \"run "
+ENV STEEMD_SUFFIX "\""
 
 # rpc service:
 EXPOSE 8090
@@ -159,14 +158,11 @@ EXPOSE 8090
 EXPOSE 2001
 
 RUN mkdir -p /etc/service/golosd
-ADD contribution/golosd.sh /etc/service/golosd/run
+ADD ../../golosd.sh /etc/service/golosd/run
 RUN chmod +x /etc/service/golosd/run
 
-# add seednodes from documentation to image
-ADD documentation/seednodes /etc/golosd/seednodes
-
 # the following adds lots of logging info to stdout
-ADD contribution/config.ini /etc/golosd/config.ini
+ADD ../../config/config_debug.ini /etc/golosd/config.ini
 
 # put blockchain data into separate docker volume
 VOLUME /var/lib/golosd

@@ -2,13 +2,11 @@
 
 export HOME="/var/lib/golosd"
 
-STEEMD="/usr/local/bin/golosd"
+if [[ ! -z "$STEEMD_PREFIX" ]]; then
+    STEEMD_PREFIX="/usr/local/bin/golosd"
+fi
 
 chown -R golosd:golosd $HOME
-
-# seed nodes come from documentation/seednodes which is
-# installed by docker into /etc/golosd/seednodes
-SEED_NODES="$(cat /etc/golosd/seednodes | awk -F' ' '{print $1}')"
 
 ARGS=""
 
@@ -80,11 +78,11 @@ else
     P2P_ENDPOINT="0.0.0.0:2001"
 fi
 
-exec chpst -ugolosd \
-    $STEEMD \
+exec chpst -ugolosd $STEEMD_PREFIX \
         --rpc-endpoint=${RPC_ENDPOINT} \
         --p2p-endpoint=${P2P_ENDPOINT} \
         --data-dir=$HOME \
         $ARGS \
         $STEEMD_EXTRA_OPTS \
+        $STEEMD_SUFFIX \
         2>&1
