@@ -33,7 +33,7 @@ RUN add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial ma
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-ADD ../../../../ /usr/local/src/golos
+ADD . /usr/local/src/golos
 
 #RUN \
 #    cd /usr/local/src/golos && \
@@ -158,11 +158,11 @@ EXPOSE 8090
 EXPOSE 2001
 
 RUN mkdir -p /etc/service/golosd
-ADD ../../golosd.sh /etc/service/golosd/run
+ADD share/golosd/golosd.sh /etc/service/golosd/run
 RUN chmod +x /etc/service/golosd/run
 
 # the following adds lots of logging info to stdout
-ADD ../../config/config_debug.ini /etc/golosd/config.ini
+ADD share/golosd/config/config_debug.ini /etc/golosd/config.ini
 
 # put blockchain data into separate docker volume
 VOLUME /var/lib/golosd
