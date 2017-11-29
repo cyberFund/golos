@@ -115,7 +115,7 @@ namespace golos {
             market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_order_operation<0, 16, 0> &o) const {
             market_trade trade;
 
-            if (assets[0]->asset_name == o.open_pays.symbol_name()) {
+            if (assets[0]->asset_name == o.receives.symbol_name()) {
             trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
             trade.value = price_to_real(o.receives.amount, assets[0]->precision);
         } else {
@@ -130,7 +130,7 @@ template<>
 market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_order_operation<0, 17, 0> &o) const {
 market_trade trade;
 
-if (assets[0]->asset_name == o.open_pays.symbol_name()) {
+if (assets[0]->asset_name == o.receives.symbol_name()) {
 trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
 trade.value = price_to_real(o.receives.amount, assets[0]->precision);
 } else {
