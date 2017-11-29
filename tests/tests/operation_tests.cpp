@@ -2591,14 +2591,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
             BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
             BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("992.500 TBD").amount.value);
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 1);
             BOOST_REQUIRE(
-                    fill_order_op.open_pays.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 1);
+                    fill_order_op.receives.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(fill_order_op.owner == "bob");
+            BOOST_REQUIRE(fill_order_op.order_id == 1);
             BOOST_REQUIRE(
-                    fill_order_op.current_pays.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
+                    fill_order_op.pays.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling an existing order fully, but the new order partially");
@@ -2942,14 +2940,12 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
             BOOST_REQUIRE(alice.sbd_balance.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
             BOOST_REQUIRE(bob.balance.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
             BOOST_REQUIRE(bob.sbd_balance.amount.value == latest_asset::from_string("992.500 TBD").amount.value);
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 1);
             BOOST_REQUIRE(
-                    fill_order_op.open_pays.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 1);
+                    fill_order_op.receives.amount.value == latest_asset::from_string("5.000 TESTS").amount.value);
+            BOOST_REQUIRE(fill_order_op.owner == "bob");
+            BOOST_REQUIRE(fill_order_op.order_id == 1);
             BOOST_REQUIRE(
-                    fill_order_op.current_pays.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
+                    fill_order_op.pays.amount.value == latest_asset::from_string("7.500 TBD").amount.value);
             validate_database();
 
             BOOST_TEST_MESSAGE("--- Test filling an existing order fully, but the new order partially");
