@@ -1856,13 +1856,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
 
             auto fill_order_op = ops[0].get<fill_order_operation<0, 17, 0>>();
 
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 1);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.receives.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME).amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 2);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.owner == "bob");
+            BOOST_REQUIRE(fill_order_op.order_id == 2);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value ==
                           (latest_asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME) * exchange_rate).amount.value);
 
             BOOST_CHECK(limit_order_idx.find(std::make_tuple("alice", 1)) == limit_order_idx.end());
@@ -1928,25 +1926,21 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ops = get_last_operations(4);
 
             fill_order_op = ops[1].get<fill_order_operation<0, 17, 0>>();
-            BOOST_REQUIRE(fill_order_op.open_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 4);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.receives.amount.value ==
                           latest_asset((alice_sbd.amount.value / 10) * 3 - alice_sbd.amount.value / 20,
                                        STEEM_SYMBOL_NAME).amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 5);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.owner == "alice");
+            BOOST_REQUIRE(fill_order_op.order_id == 5);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value ==
                           latest_asset((alice_sbd.amount.value / 10) * 3 - alice_sbd.amount.value / 20,
                                        SBD_SYMBOL_NAME).amount.value);
 
             fill_order_op = ops[3].get<fill_order_operation<0, 17, 0>>();
-            BOOST_REQUIRE(fill_order_op.open_owner == "sam");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 3);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.receives.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, STEEM_SYMBOL_NAME).amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 5);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.owner == "alice");
+            BOOST_REQUIRE(fill_order_op.order_id == 5);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
@@ -2006,13 +2000,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ops = get_last_operations(1);
             fill_order_op = ops[0].get<fill_order_operation<0, 17, 0>>();
 
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 6);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.receives.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME).amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 7);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.owner == "bob");
+            BOOST_REQUIRE(fill_order_op.order_id == 7);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, STEEM_SYMBOL_NAME).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
@@ -2056,13 +2048,11 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ops = get_last_operations(2);
             fill_order_op = ops[1].get<fill_order_operation<0, 17, 0>>();
 
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 6);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.receives.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, SBD_SYMBOL_NAME).amount.value);
-            BOOST_REQUIRE(fill_order_op.current_owner == "sam");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 8);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value ==
+            BOOST_REQUIRE(fill_order_op.owner == "sam");
+            BOOST_REQUIRE(fill_order_op.order_id == 8);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value ==
                           latest_asset(alice_sbd.amount.value / 20, STEEM_SYMBOL_NAME).amount.value);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
@@ -2131,12 +2121,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ops = get_last_operations(1);
             fill_order_op = ops[0].get<fill_order_operation<0, 17, 0>>();
 
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 9);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value == 7 * (alice_sbd.amount.value / 20));
-            BOOST_REQUIRE(fill_order_op.current_owner == "dave");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 10);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value == 7 * (alice_sbd.amount.value / 20));
+            BOOST_REQUIRE(fill_order_op.receives.amount.value == 7 * (alice_sbd.amount.value / 20));
+            BOOST_REQUIRE(fill_order_op.owner == "dave");
+            BOOST_REQUIRE(fill_order_op.order_id == 10);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value == 7 * (alice_sbd.amount.value / 20));
 
             reward = liquidity_idx.find(db.get_account("alice").id);
             BOOST_REQUIRE(reward == liquidity_idx.end());
@@ -2184,12 +2172,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ops = get_last_operations(1);
             fill_order_op = ops[0].get<fill_order_operation<0, 17, 0>>();
 
-            BOOST_REQUIRE(fill_order_op.open_owner == "alice");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 9);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value == alice_sbd.amount.value / 20);
-            BOOST_REQUIRE(fill_order_op.current_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 11);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value == alice_sbd.amount.value / 20);
+            BOOST_REQUIRE(fill_order_op.receives.amount.value == alice_sbd.amount.value / 20);
+            BOOST_REQUIRE(fill_order_op.owner == "bob");
+            BOOST_REQUIRE(fill_order_op.order_id == 11);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value == alice_sbd.amount.value / 20);
 
             reward = liquidity_idx.find(db.get_account("alice").id);
             BOOST_REQUIRE(reward == liquidity_idx.end());
@@ -2259,12 +2245,10 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             ops = get_last_operations(1);
             fill_order_op = ops[0].get<fill_order_operation<0, 17, 0>>();
 
-            BOOST_REQUIRE(fill_order_op.open_owner == "bob");
-            BOOST_REQUIRE(fill_order_op.open_order_id == 12);
-            BOOST_REQUIRE(fill_order_op.open_pays.amount.value == 3 * (alice_sbd.amount.value / 40));
-            BOOST_REQUIRE(fill_order_op.current_owner == "dave");
-            BOOST_REQUIRE(fill_order_op.current_order_id == 13);
-            BOOST_REQUIRE(fill_order_op.current_pays.amount.value == 3 * (alice_sbd.amount.value / 40));
+            BOOST_REQUIRE(fill_order_op.receives.amount.value == 3 * (alice_sbd.amount.value / 40));
+            BOOST_REQUIRE(fill_order_op.owner == "dave");
+            BOOST_REQUIRE(fill_order_op.order_id == 13);
+            BOOST_REQUIRE(fill_order_op.pays.amount.value == 3 * (alice_sbd.amount.value / 40));
 
             reward = liquidity_idx.find(db.get_account("alice").id);
             BOOST_REQUIRE(reward == liquidity_idx.end());

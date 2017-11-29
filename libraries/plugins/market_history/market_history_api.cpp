@@ -30,7 +30,9 @@ namespace golos {
                     };
 
                     template<typename T>
-                    market_trade operator()(const T &o) const {return {};}
+                    market_trade operator()(const T &o) const {
+                        return {};
+                    }
 
                     template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
                     market_trade operator()(const fill_order_operation<Major, Hardfork, Release> &o) const;
@@ -113,94 +115,94 @@ namespace golos {
 
             template<>
             market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_order_operation<0, 16, 0> &o) const {
-            market_trade trade;
+                market_trade trade;
 
-            if (assets[0]->asset_name == o.open_pays.symbol_name()) {
-            trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
-            trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
-        } else {
-        trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
-        trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
-    }
+                if (assets[0]->asset_name == o.receives.symbol_name()) {
+                    trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+                } else {
+                    trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+                }
 
-    return trade;
-}
+                return trade;
+            }
 
-template<>
-market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_order_operation<0, 17, 0> &o) const {
-market_trade trade;
+            template<>
+            market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_order_operation<0, 17, 0> &o) const {
+                market_trade trade;
 
-if (assets[0]->asset_name == o.open_pays.symbol_name()) {
-trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
-} else {
-trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
-}
+                if (assets[0]->asset_name == o.receives.symbol_name()) {
+                    trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+                } else {
+                    trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+                }
 
-return trade;
-}
+                return trade;
+            }
 
-template<>
-market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_call_order_operation<0, 16, 0> &o) const{
-market_trade trade;
+            template<>
+            market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_call_order_operation<0, 16, 0> &o) const {
+                market_trade trade;
 
-if (assets[0]->asset_name == o.receives.symbol_name()) {
-trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.receives.amount, assets[0]->precision);
-} else {
-trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
-trade.value = price_to_real(o.pays.amount, assets[0]->precision);
-}
+                if (assets[0]->asset_name == o.receives.symbol_name()) {
+                    trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+                } else {
+                    trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+                }
 
-return trade;
-}
+                return trade;
+            }
 
-template<>
-market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_call_order_operation<0, 17, 0> &o) const {
-market_trade trade;
+            template<>
+            market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_call_order_operation<0, 17, 0> &o) const {
+                market_trade trade;
 
-if (assets[0]->asset_name == o.receives.symbol_name()) {
-trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.receives.amount, assets[0]->precision);
-} else {
-trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
-trade.value = price_to_real(o.pays.amount, assets[0]->precision);
-}
+                if (assets[0]->asset_name == o.receives.symbol_name()) {
+                    trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+                } else {
+                    trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+                }
 
-return trade;
-}
+                return trade;
+            }
 
-template<>
-market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_settlement_order_operation<0, 16, 0> &o) const {
+            template<>
+            market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 16, 0>(const fill_settlement_order_operation<0, 16, 0> &o) const {
 
-market_trade trade;
+                market_trade trade;
 
-if (assets[0]->asset_name == o.receives.symbol_name()) {
-trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.receives.amount, assets[0]->precision);
-} else {
-trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
-trade.value = price_to_real(o.pays.amount, assets[0]->precision);
-}
+                if (assets[0]->asset_name == o.receives.symbol_name()) {
+                    trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+                } else {
+                    trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+                }
 
-return trade;
-}
+                return trade;
+            }
 
-template<>
-market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_settlement_order_operation<0, 17, 0> &o) const {
-market_trade trade;
+            template<>
+            market_trade market_history_api_impl::operation_process_fill_order_visitor::operator()<0, 17, 0>(const fill_settlement_order_operation<0, 17, 0> &o) const {
+                market_trade trade;
 
-if (assets[0]->asset_name == o.receives.symbol_name()) {
-trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.receives.amount, assets[0]->precision);
-} else {
-trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
-trade.value = price_to_real(o.pays.amount, assets[0]->precision);
-}
+                if (assets[0]->asset_name == o.receives.symbol_name()) {
+                    trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.receives.amount, assets[0]->precision);
+                } else {
+                    trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+                    trade.value = price_to_real(o.pays.amount, assets[0]->precision);
+                }
 
-return trade;
-}
+                return trade;
+            }
 
             //////////////////////////////////////////////////////////////////////
             //                                                                  //
@@ -642,21 +644,18 @@ return trade;
                 return result;
             }
 
-            std::vector<golos::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
-                    const std::string &owner) const {
+            std::vector<golos::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(const std::string &owner) const {
                 std::vector<golos::application::extended_limit_order> result;
                 const auto &idx = app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
                 while (itr != idx.end() && itr->seller == owner) {
                     result.emplace_back(*itr);
 
-                    auto assets = lookup_asset_symbols(
-                            {itr->sell_price.base.symbol, itr->sell_price.quote.symbol});
+                    auto assets = lookup_asset_symbols({itr->sell_price.base.symbol, itr->sell_price.quote.symbol});
                     FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
                     FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
 
-                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
-                                                                                     int p) -> double {
+                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a, int p) -> double {
                         return double(a.value) / std::pow(10, p);
                     };
 
