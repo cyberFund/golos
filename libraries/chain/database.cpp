@@ -3552,7 +3552,7 @@ namespace golos {
                 auto issuer_fees = pay_market_fees(recv_asset, receives);
                 pay_order(seller, receives - issuer_fees, pays);
 
-                push_virtual_operation(fill_order_operation<0, 17, 0>(order.seller, order.order_id, pays, receives));
+                push_virtual_operation(fill_order_operation<0, 17, 0>(order.seller, order.order_id, pays, receives, issuer_fees));
 
                 if (pays == order.amount_for_sale()) {
                     remove(order);
