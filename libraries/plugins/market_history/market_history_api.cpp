@@ -116,11 +116,11 @@ namespace golos {
             market_trade trade;
 
             if (assets[0]->asset_name == o.open_pays.symbol_name()) {
-            trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
-            trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
+            trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+            trade.value = price_to_real(o.receives.amount, assets[0]->precision);
         } else {
-        trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
-        trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
+        trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+        trade.value = price_to_real(o.pays.amount, assets[0]->precision);
     }
 
     return trade;
@@ -131,11 +131,11 @@ market_trade market_history_api_impl::operation_process_fill_order_visitor::oper
 market_trade trade;
 
 if (assets[0]->asset_name == o.open_pays.symbol_name()) {
-trade.amount = price_to_real(o.current_pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.open_pays.amount, assets[0]->precision);
+trade.amount = price_to_real(o.pays.amount, assets[1]->precision);
+trade.value = price_to_real(o.receives.amount, assets[0]->precision);
 } else {
-trade.amount = price_to_real(o.open_pays.amount, assets[1]->precision);
-trade.value = price_to_real(o.current_pays.amount, assets[0]->precision);
+trade.amount = price_to_real(o.receives.amount, assets[1]->precision);
+trade.value = price_to_real(o.pays.amount, assets[0]->precision);
 }
 
 return trade;
