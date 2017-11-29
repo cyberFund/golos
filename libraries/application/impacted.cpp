@@ -128,8 +128,7 @@ namespace golos {
 
             template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
             void operator()(const fill_order_operation<Major, Hardfork, Release> &op) {
-                _impacted.insert(op.current_owner);
-                _impacted.insert(op.open_owner);
+                _impacted.insert(op.owner);
             }
 
             template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
