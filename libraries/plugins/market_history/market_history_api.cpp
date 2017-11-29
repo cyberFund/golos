@@ -642,21 +642,18 @@ return trade;
                 return result;
             }
 
-            std::vector<golos::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(
-                    const std::string &owner) const {
+            std::vector<golos::application::extended_limit_order> market_history_api_impl::get_limit_orders_by_owner(const std::string &owner) const {
                 std::vector<golos::application::extended_limit_order> result;
                 const auto &idx = app.chain_database()->get_index<limit_order_index>().indices().get<by_account>();
                 auto itr = idx.lower_bound(owner);
                 while (itr != idx.end() && itr->seller == owner) {
                     result.emplace_back(*itr);
 
-                    auto assets = lookup_asset_symbols(
-                            {itr->sell_price.base.symbol, itr->sell_price.quote.symbol});
+                    auto assets = lookup_asset_symbols({itr->sell_price.base.symbol, itr->sell_price.quote.symbol});
                     FC_ASSERT(assets[0], "Invalid base asset symbol: ${s}", ("s", itr->sell_price.base));
                     FC_ASSERT(assets[1], "Invalid quote asset symbol: ${s}", ("s", itr->sell_price.quote));
 
-                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a,
-                                                                                     int p) -> double {
+                    std::function<double(const share_type, int)> price_to_real = [&](const share_type a, int p) -> double {
                         return double(a.value) / std::pow(10, p);
                     };
 

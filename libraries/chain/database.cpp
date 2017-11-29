@@ -3237,7 +3237,8 @@ namespace golos {
                     if (get_feed_history().current_median_history.is_null()) {
                         dgp.virtual_supply = dgp.current_supply;
                     } else {
-                        dgp.virtual_supply = dgp.current_supply + dgp.current_sbd_supply * get_feed_history().current_median_history;
+                        dgp.virtual_supply =
+                                dgp.current_supply + dgp.current_sbd_supply * get_feed_history().current_median_history;
                     }
 
                     auto median_price = get_feed_history().current_median_history;
@@ -3494,13 +3495,10 @@ namespace golos {
                 }
             }
 
-            push_virtual_operation(fill_order_operation<0, 17, 0>(new_order.seller, new_order.order_id, new_order_pays,
-                                                                  old_order.seller, old_order.order_id,
-                                                                  old_order_pays));
-
             int result = 0;
             result |= fill_order(new_order, new_order_pays, new_order_receives);
             result |= fill_order(old_order, old_order_pays, old_order_receives) << 1;
+
             assert(result != 0);
             return result;
         }
@@ -3553,6 +3551,8 @@ namespace golos {
 
                 auto issuer_fees = pay_market_fees(recv_asset, receives);
                 pay_order(seller, receives - issuer_fees, pays);
+
+                push_virtual_operation(fill_order_operation<0, 17, 0>(order.owner, order.order_id, pays, receives));
 
                 if (pays == order.amount_for_sale()) {
                     remove(order);
