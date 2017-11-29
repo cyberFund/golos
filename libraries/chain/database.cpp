@@ -3552,7 +3552,7 @@ namespace golos {
                 auto issuer_fees = pay_market_fees(recv_asset, receives);
                 pay_order(seller, receives - issuer_fees, pays);
 
-                push_virtual_operation(fill_order_operation<0, 17, 0>(order.owner, order.order_id, pays, receives));
+                push_virtual_operation(fill_order_operation<0, 17, 0>(order.seller, order.order_id, pays, receives));
 
                 if (pays == order.amount_for_sale()) {
                     remove(order);
@@ -3778,11 +3778,6 @@ namespace golos {
 
                     auto old_limit_itr = filled_limit ? limit_itr++ : limit_itr;
                     fill_order(*old_limit_itr, order_pays, order_receives);
-                    push_virtual_operation(fill_order_operation<0, 17, 0>(limit_itr->seller, limit_itr->order_id,
-                                                                          limit_itr->amount_for_sale(),
-                                                                          old_limit_itr->seller,
-                                                                          old_limit_itr->order_id,
-                                                                          old_limit_itr->amount_for_sale()));
                 } // whlie call_itr != call_end
 
                 return margin_called;

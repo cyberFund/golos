@@ -17,7 +17,7 @@ namespace golos {
                     fc::time_point_sec _now;
 
                     operation_process_fill_order(market_history_plugin &mhp, fc::time_point_sec n) : _plugin(mhp),
-                                                                                                     _now(n) {
+                            _now(n) {
                     }
 
                     typedef void result_type;
@@ -39,8 +39,8 @@ namespace golos {
                         auto time = db.head_block_time();
 
                         history_key hkey;
-                        hkey.base = o.current_pays.symbol_name();
-                        hkey.quote = o.open_pays.symbol_name();
+                        hkey.base = o.pays.symbol_name();
+                        hkey.quote = o.receives.symbol_name();
                         if (hkey.base > hkey.quote) {
                             std::swap(hkey.base, hkey.quote);
                         }
@@ -80,8 +80,8 @@ namespace golos {
                             auto cutoff = (fc::time_point() + fc::seconds(bucket * max_history));
 
                             bucket_key key;
-                            key.base = o.current_pays.symbol_name();
-                            key.quote = o.open_pays.symbol_name();
+                            key.base = o.pays.symbol_name();
+                            key.quote = o.receives.symbol_name();
 
 
                             /** for every matched order there are two fill order operations created, one for
@@ -93,9 +93,12 @@ namespace golos {
                                 continue;
                             }
 
-                            price<Major, Hardfork, Release> v_trade_price = (o.current_pays / o.open_pays);
+                            price<Major, Hardfork, Release> v_trade_price = (o.pays / o.receives);
 
-                            price<0, 17, 0> trade_price(asset<0, 17, 0>(v_trade_price.base.template amount, v_trade_price.base.template symbol_name()), asset<0, 17, 0>(v_trade_price.quote.template amount, v_trade_price.quote.template symbol_name()));
+                            price<0, 17, 0> trade_price(asset<0, 17, 0>(v_trade_price.base.template amount,
+                                                                        v_trade_price.base.template symbol_name()),
+                                                        asset<0, 17, 0>(v_trade_price.quote.template amount,
+                                                                        v_trade_price.quote.template symbol_name()));
 
                             key.seconds = bucket;
                             key.open = fc::time_point() +
@@ -167,16 +170,18 @@ namespace golos {
                         history_key hkey;
                         hkey.base = o.pays.symbol_name();
                         hkey.quote = o.receives.symbol_name();
-                        if (hkey.base > hkey.quote)
+                        if (hkey.base > hkey.quote) {
                             std::swap(hkey.base, hkey.quote);
+                        }
                         hkey.sequence = std::numeric_limits<int64_t>::min();
 
                         auto itr = history_idx.lower_bound(hkey);
 
-                        if (itr->key.base == hkey.base && itr->key.quote == hkey.quote)
+                        if (itr->key.base == hkey.base && itr->key.quote == hkey.quote) {
                             hkey.sequence = itr->key.sequence - 1;
-                        else
+                        } else {
                             hkey.sequence = 0;
+                        }
 
                         db.create<order_history_object>([&](order_history_object &ho) {
                             ho.key = hkey;
@@ -277,16 +282,18 @@ namespace golos {
                         history_key hkey;
                         hkey.base = o.pays.symbol_name();
                         hkey.quote = o.receives.symbol_name();
-                        if (hkey.base > hkey.quote)
+                        if (hkey.base > hkey.quote) {
                             std::swap(hkey.base, hkey.quote);
+                        }
                         hkey.sequence = std::numeric_limits<int64_t>::min();
 
                         auto itr = history_idx.lower_bound(hkey);
 
-                        if (itr->key.base == hkey.base && itr->key.quote == hkey.quote)
+                        if (itr->key.base == hkey.base && itr->key.quote == hkey.quote) {
                             hkey.sequence = itr->key.sequence - 1;
-                        else
+                        } else {
                             hkey.sequence = 0;
+                        }
 
                         db.create<order_history_object>([&](order_history_object &ho) {
                             ho.key = hkey;
@@ -403,8 +410,7 @@ namespace golos {
         } // detail
 
         market_history_plugin::market_history_plugin(application *app) : plugin(app),
-                                                                         _my(new detail::market_history_plugin_impl(
-                                                                                 *this)) {
+                _my(new detail::market_history_plugin_impl(*this)) {
         }
 
         market_history_plugin::~market_history_plugin() {
