@@ -14,27 +14,6 @@ namespace golos {
         class set_withdraw_vesting_route_evaluator<0, 17, 0>;
 
         template
-        class comment_evaluator<0, 16, 0>;
-
-        template
-        class comment_evaluator<0, 17, 0>;
-
-        template
-        class comment_options_evaluator<0, 16, 0>;
-
-        template
-        class comment_options_evaluator<0, 17, 0>;
-
-        template
-        class comment_payout_extension_evaluator<0, 17, 0>;
-
-        template
-        class delete_comment_evaluator<0, 16, 0>;
-
-        template
-        class delete_comment_evaluator<0, 17, 0>;
-
-        template
         class vote_evaluator<0, 16, 0>;
 
         template

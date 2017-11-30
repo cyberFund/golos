@@ -10,6 +10,8 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
      include/golos/chain/block_log.hpp
      include/golos/chain/objects/block_summary_object.hpp
      include/golos/chain/objects/comment_object.hpp
+     include/golos/chain/evaluators/comment_evaluator.hpp
+     include/golos/chain/evaluators/comment_evaluator.tpp
      include/golos/chain/compound.hpp
      include/golos/chain/custom_operation_interpreter.hpp
      include/golos/chain/evaluators/custom_evaluator.hpp
@@ -62,6 +64,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
      objects/asset_object.cpp
      block_log.cpp
      evaluators/custom_evaluator.cpp
+     evaluators/comment_evaluator.cpp
      database.cpp
      evaluators/escrow_evaluator.cpp
      fork_database.cpp

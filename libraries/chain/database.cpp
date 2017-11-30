@@ -31,6 +31,7 @@
 #include <golos/chain/evaluators/market_evaluator.hpp>
 #include <golos/chain/evaluators/asset_evaluator.hpp>
 #include <golos/chain/evaluators/custom_evaluator.hpp>
+#include <golos/chain/evaluators/comment_evaluator.hpp>
 #include <golos/chain/evaluators/transfer_evaluator.hpp>
 #include <golos/chain/evaluators/proposal_evaluator.hpp>
 #include <golos/chain/evaluators/escrow_evaluator.hpp>
