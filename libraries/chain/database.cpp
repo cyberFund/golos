@@ -2043,7 +2043,7 @@ namespace golos {
 
             return asset<0, 17, 0>((input_time - fc::time_point::now()).to_seconds() *
                                    STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value /
-                                   (input_comment.net_rshares * 60 * 60 * 24), SBD_SYMBOL_NAME);
+                                   (60 * 60 * 24), SBD_SYMBOL_NAME);
         }
 
         time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
@@ -2052,7 +2052,7 @@ namespace golos {
             FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount > 0,
                       "Extension payment should cover more than a day");
             return fc::time_point::now() + fc::seconds(
-                    ((input_cost.amount.value * 60 * 60 * 24 * input_comment.net_rshares.value) /
+                    ((input_cost.amount.value * 60 * 60 * 24) /
                      STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value));
         }
 
