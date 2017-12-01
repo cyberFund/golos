@@ -48,6 +48,7 @@
 #include <golos/wallet/reflect_utilities.hpp>
 
 #include <golos/account_by_key/account_by_key_api.hpp>
+#include <golos/version/version_state.hpp>
 
 #ifndef WIN32
 
@@ -261,6 +262,8 @@ namespace golos {
                         _remote_api(rapi), _remote_db(rapi->get_api_by_name("database_api")->as<database_api>()),
                         _remote_net_broadcast(
                                 rapi->get_api_by_name("network_broadcast_api")->as<network_broadcast_api>()) {
+                    golos::version::state::instance().current_version = _remote_db->get_hardfork_version();
+
                     init_prototype_ops();
 
                     _wallet.ws_server = initial_data.ws_server;
@@ -2391,6 +2394,8 @@ namespace golos {
 
         std::map<uint32_t, applied_operation> wallet_api::get_account_history(std::string account, uint32_t from,
                                                                               uint32_t limit) {
+            golos::version::state::instance().current_version = my->_remote_db->get_hardfork_version();
+
             auto result = my->_remote_db->get_account_history(account, from, limit);
             if (!is_locked()) {
                 for (auto &item : result) {
@@ -2525,7 +2530,8 @@ namespace golos {
             return sign_transaction(tx, broadcast);
         }
 
-        signed_transaction wallet_api::sell(std::string seller_account, asset<0, 17, 0> base, asset<0, 17, 0> quote, protocol::integral_id_type order_id, bool broadcast) {
+        signed_transaction wallet_api::sell(std::string seller_account, asset<0, 17, 0> base, asset<0, 17, 0> quote,
+                                            protocol::integral_id_type order_id, bool broadcast) {
             return sell_asset(seller_account, asset<0, 17, 0>(base.amount, base.symbol_name(), base.get_decimals()),
                               asset<0, 17, 0>(quote.amount * base.amount, quote.symbol_name(), quote.get_decimals()), 0,
                               order_id, false, broadcast);
