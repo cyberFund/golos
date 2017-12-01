@@ -183,14 +183,14 @@ namespace golos {
                             const asset_object &backing_backing = this->db.template get_asset(
                                     this->db.get_asset_bitasset_data(backing.asset_name).options.short_backing_asset);
                             FC_ASSERT(backing_backing.asset_name == STEEM_SYMBOL_NAME,
-                                      "May not create a blockchain-controlled market asset which is not backed by CORE.");
+                                      "May not create a blockchain-controlled market asset which is not backed by Golos.");
                         } else
                             FC_ASSERT(backing.asset_name == STEEM_SYMBOL_NAME,
-                                      "May not create a blockchain-controlled market asset which is not backed by CORE.");
+                                      "May not create a blockchain-controlled market asset which is not backed by Golos.");
                     }
                 }
 
-                if ((this->db.get_asset_dynamic_data(a.asset_name).current_supply != 0)) {
+                if (this->db.get_asset_dynamic_data(a.asset_name).current_supply != 0) {
                     // new issuer_permissions must be subset of old issuer permissions
                     FC_ASSERT(!(o.new_options.issuer_permissions & ~a.options.issuer_permissions),
                               "Cannot reinstate previously revoked issuer permissions on an asset.");
