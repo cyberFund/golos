@@ -1,5 +1,6 @@
 #pragma once
 
+#include <golos/protocol/operations/account_operations.hpp>
 #include <golos/protocol/operations/asset_operations.hpp>
 #include <golos/protocol/operations/comment_operations.hpp>
 #include <golos/protocol/operations/custom_operations.hpp>
@@ -10,7 +11,6 @@
 #include <golos/protocol/operations/steem_virtual_operations.hpp>
 #include <golos/protocol/operations/asset_virtual_operations.hpp>
 #include <golos/protocol/operations/witness_virtual_operations.hpp>
-#include <golos/protocol/operations/account_operations.hpp>
 #include <golos/protocol/operations/transfer_operations.hpp>
 #include <golos/protocol/operations/proposal_operations.hpp>
 #include <golos/protocol/operations/witness_operations.hpp>
