@@ -266,11 +266,15 @@ namespace golos {
             return _app.p2p_node()->set_advanced_node_parameters(params);
         }
 
-        asset_api::asset_api(golos::chain::database &db) : _db(db) {
+        asset_api::asset_api(const api_context &c) : _db(*c.app.chain_database()) {
 
         }
 
         asset_api::~asset_api() {
+
+        }
+
+        void asset_api::on_api_startup() {
 
         }
 

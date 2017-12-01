@@ -176,7 +176,7 @@ namespace golos {
          */
         class asset_api {
         public:
-            asset_api(golos::chain::database &db);
+            asset_api(const api_context &db);
 
             ~asset_api();
 
@@ -186,6 +186,8 @@ namespace golos {
 
             std::vector<asset_holders> get_all_asset_holders() const;
 
+            /// internal method, not exposed via JSON RPC
+            void on_api_startup();
         private:
             golos::chain::database &_db;
         };

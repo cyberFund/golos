@@ -204,6 +204,7 @@ namespace golos {
                     _self->register_api_factory<database_api>("database_api");
                     _self->register_api_factory<network_node_api>("network_node_api");
                     _self->register_api_factory<network_broadcast_api>("network_broadcast_api");
+                    _self->register_api_factory<network_broadcast_api>("asset_api");
                 }
 
                 void startup() {
@@ -306,6 +307,7 @@ namespace golos {
                             wild_access.password_salt_b64 = "*";
                             wild_access.allowed_apis.push_back("database_api");
                             wild_access.allowed_apis.push_back("network_broadcast_api");
+                            wild_access.allowed_apis.push_back("asset_api");
                             wild_access.allowed_apis.push_back("tag_api");
                             _apiaccess.permission_map["*"] = wild_access;
                         }
