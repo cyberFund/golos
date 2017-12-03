@@ -36,8 +36,8 @@ namespace golos {
                 auto dotpos = asset_name_string.rfind('.');
                 if (dotpos != std::string::npos) {
                     auto prefix = asset_name_string.substr(0, dotpos);
-                    auto asset_symbol_sub_itr = asset_indx.find(op.asset_name);
-                    FC_ASSERT(prefix != asset_indx.end(),
+                    auto asset_symbol_sub_itr = asset_indx.find(prefix);
+                    FC_ASSERT(asset_symbol_sub_itr != asset_indx.end(),
                               "Asset ${s} may only be created by issuer of ${p}, but ${p} has not been registered",
                               ("s", op.asset_name)("p", prefix));
                     FC_ASSERT(asset_symbol_sub_itr->issuer == op.issuer,
