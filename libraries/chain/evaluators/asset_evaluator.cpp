@@ -29,8 +29,7 @@ namespace golos {
 
                 auto &asset_indx = this->db.template get_index<asset_index>().indices().template get<by_asset_name>();
                 auto asset_symbol_itr = asset_indx.find(op.asset_name);
-                FC_ASSERT(asset_symbol_itr == asset_indx.end());
-
+                FC_ASSERT(asset_symbol_itr == asset_indx.end(), "Asset with name ${s} already exists", ("s", op.asset_name));
 
                 std::string asset_name_string = op.asset_name;
 
@@ -38,7 +37,7 @@ namespace golos {
                 if (dotpos != std::string::npos) {
                     auto prefix = asset_name_string.substr(0, dotpos);
                     auto asset_symbol_sub_itr = asset_indx.find(op.asset_name);
-                    FC_ASSERT(asset_symbol_sub_itr != asset_indx.end(),
+                    FC_ASSERT(prefix != asset_indx.end(),
                               "Asset ${s} may only be created by issuer of ${p}, but ${p} has not been registered",
                               ("s", op.asset_name)("p", prefix));
                     FC_ASSERT(asset_symbol_sub_itr->issuer == op.issuer,
