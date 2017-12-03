@@ -2280,8 +2280,7 @@ namespace golos {
                 result.reserve(limit);
 
                 const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_id>();
-                for (const vesting_delegation_index::value_type &itr = delegation_idx.begin();
-                     result.size() < limit && itr != delegation_idx.end(); ++itr) {
+                for (auto itr = delegation_idx.begin(); result.size() < limit && itr != delegation_idx.end(); ++itr) {
                     if (itr->delegator == account) {
                         result.push_back(*itr);
                     }
