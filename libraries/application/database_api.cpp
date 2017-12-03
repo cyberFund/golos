@@ -2270,6 +2270,24 @@ namespace golos {
             });
         }
 
+        std::vector<vesting_delegation_object> database_api::get_delegated_vestings(std::string account,
+                                                                                    uint32_t limit) const {
+            FC_ASSERT(limit <= 1000);
+            return my->_db.with_read_lock([&]() {
+                std::vector<vesting_delegation_object> result;
+                result.reserve(limit);
+
+                const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_id>();
+                for (auto itr = delegation_idx.begin(); result.size() < limit && itr != delegation_idx.end(); ++itr) {
+                    if (itr->delegator == account) {
+                        result.push_back(*itr);
+                    }
+                }
+
+                return result;
+            });
+        }
+
         std::vector<vesting_delegation_expiration_object> database_api::get_expiring_vesting_delegations(
                 std::string account, time_point_sec from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
