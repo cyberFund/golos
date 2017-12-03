@@ -64,7 +64,8 @@ namespace golos {
             uint64_t get_account_count() const;
 
             // Witnesses
-            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
+            std::vector<optional<witness_api_obj>> get_witnesses(
+                    const std::vector<witness_object::id_type> &witness_ids) const;
 
             fc::optional<witness_api_obj> get_witness_by_account(std::string account_name) const;
 
@@ -573,7 +574,8 @@ namespace golos {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        std::vector<optional<witness_api_obj>> database_api::get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const {
+        std::vector<optional<witness_api_obj>> database_api::get_witnesses(
+                const std::vector<witness_object::id_type> &witness_ids) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_witnesses(witness_ids);
             });
@@ -2264,6 +2266,25 @@ namespace golos {
                 while (result.size() < limit && itr != delegation_idx.end() && itr->delegator == account) {
                     result.push_back(*itr);
                     ++itr;
+                }
+
+                return result;
+            });
+        }
+
+        std::vector<vesting_delegation_object> database_api::get_delegated_vestings(std::string account,
+                                                                                    uint32_t limit) const {
+            FC_ASSERT(limit <= 1000);
+            return my->_db.with_read_lock([&]() {
+                std::vector<vesting_delegation_object> result;
+                result.reserve(limit);
+
+                const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_id>();
+                for (const vesting_delegation_index::value_type &itr = delegation_idx.begin();
+                     result.size() < limit && itr != delegation_idx.end(); ++itr) {
+                    if (itr->delegator == account) {
+                        result.push_back(*itr);
+                    }
                 }
 
                 return result;
