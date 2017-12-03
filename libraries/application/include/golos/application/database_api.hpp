@@ -216,6 +216,8 @@ namespace golos {
 
             std::vector<vesting_delegation_object> get_vesting_delegations(std::string account, std::string from, uint32_t limit = 100) const;
 
+            std::vector<vesting_delegation_object> get_delegated_vestings(std::string account, uint32_t limit = 100) const;
+
             std::vector<vesting_delegation_expiration_object> get_expiring_vesting_delegations(std::string account, time_point_sec from, uint32_t limit = 100) const;
 
             ///////////////
@@ -612,6 +614,7 @@ FC_API(golos::application::database_api,
                 (get_savings_withdraw_from)
                 (get_savings_withdraw_to)
                 (get_vesting_delegations)
+                (get_delegated_vestings)
                 (get_expiring_vesting_delegations)
 
                 // Balances
