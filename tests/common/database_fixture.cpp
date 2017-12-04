@@ -858,9 +858,9 @@ namespace golos {
             auto cur = price_idx.begin();
             while (cur != price_idx.end()) {
                 cerr << std::setw(10) << std::left << db.get_account(cur->seller).name.operator std::string() << " ";
-                cerr << std::setw(10) << std::right << cur->for_sale.value << " ";
+                cerr << std::setw(10) << std::right << cur->for_sale.to_string() << " ";
                 cerr << std::setw(5) << std::left
-                     << db.get_asset(cur->amount_for_sale().symbol_name()).asset_name.operator std::string() << " ";
+                     << db.get_asset(cur->for_sale.symbol_name()).asset_name.operator std::string() << " ";
                 cerr << std::setw(10) << std::right << cur->amount_to_receive().amount.value << " ";
                 cerr << std::setw(5) << std::left
                      << db.get_asset(cur->amount_to_receive().symbol_name()).asset_name.operator std::string() << " ";
