@@ -3453,7 +3453,7 @@ namespace golos {
                             const price<0, 17, 0> &match_price) {
             assert(new_order.sell_price.quote.symbol == old_order.sell_price.base.symbol);
             assert(new_order.sell_price.base.symbol == old_order.sell_price.quote.symbol);
-            assert(new_order.for_sale > 0 && old_order.for_sale > 0);
+            assert(new_order.for_sale.amount > 0 && old_order.for_sale.amount > 0);
             assert(match_price.quote.symbol == new_order.sell_price.base.symbol);
             assert(match_price.base.symbol == old_order.sell_price.base.symbol);
 
@@ -3561,7 +3561,7 @@ namespace golos {
                 } else {
 
                     modify(order, [&](limit_order_object &b) {
-                        b.for_sale -= pays.amount;
+                        b.for_sale -= pays;
                     });
                     /**
                      *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
@@ -4825,9 +4825,9 @@ namespace golos {
 
                 for (const auto &itr : limit_order_idx) {
                     if (itr.sell_price.base.symbol == STEEM_SYMBOL_NAME) {
-                        total_supply += asset<0, 17, 0>(itr.for_sale, STEEM_SYMBOL_NAME);
+                        total_supply += itr.for_sale;
                     } else if (itr.sell_price.base.symbol == SBD_SYMBOL_NAME) {
-                        total_sbd += asset<0, 17, 0>(itr.for_sale, SBD_SYMBOL_NAME);
+                        total_sbd += itr.for_sale;
                     }
                 }
 

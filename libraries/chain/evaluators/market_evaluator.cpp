@@ -81,7 +81,7 @@ namespace golos {
                 obj.created = this->db.head_block_time();
                 obj.seller = o.owner;
                 obj.order_id = o.order_id;
-                obj.for_sale = o.amount_to_sell.amount;
+                obj.for_sale = protocol::asset<0, 17, 0>(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
                 obj.sell_price = protocol::price<0, 17, 0>(
                         protocol::asset<0, 17, 0>(o.get_price().base.amount,
                                                   o.get_price().base.symbol_name(),
@@ -147,7 +147,7 @@ namespace golos {
                             obj.created = this->db.head_block_time();
                             obj.order_id = o.order_id;
                             obj.seller = seller->name;
-                            obj.for_sale = o.amount_to_sell.amount;
+                            obj.for_sale = protocol::asset<0, 17, 0>(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
                             obj.sell_price = protocol::price<0, 17, 0>(
                                     protocol::asset<0, 17, 0>(o.get_price().base.amount,
                                                               o.get_price().base.symbol_name(),
@@ -212,7 +212,7 @@ namespace golos {
                     obj.created = this->db.template head_block_time();
                     obj.order_id = o.order_id;
                     obj.seller = seller->name;
-                    obj.for_sale = o.amount_to_sell.amount;
+                    obj.for_sale = protocol::asset<0, 17, 0>(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
                     obj.sell_price = protocol::price<0, 17, 0>(
                             protocol::asset<0, 17, 0>(o.get_price().base.amount,
                                                       o.get_price().base.symbol_name(),
@@ -245,19 +245,15 @@ namespace golos {
 
             asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name());
 
-            FC_ASSERT(this->db.template get_balance(owner, o.amount_to_sell.symbol_name()) >=
-                      typename BOOST_IDENTITY_TYPE((protocol::asset<0, 17, 0>))(o.amount_to_sell.amount,
-                                                                                o.amount_to_sell.symbol_name()),
-                      "Account does not have sufficient funds for limit order.");
+            FC_ASSERT(this->db.template get_balance(owner, o.amount_to_sell.symbol_name()) >= delta, "Account does not have sufficient funds for limit order.");
 
-            this->db.template adjust_balance(owner, -protocol::asset<0, 17, 0>(o.amount_to_sell.amount,
-                                                                               o.amount_to_sell.symbol_name()));
+            this->db.template adjust_balance(owner, -delta);
 
             const auto &order = this->db.template create<limit_order_object>([&](limit_order_object &obj) {
                 obj.created = this->db.template head_block_time();
                 obj.seller = o.owner;
                 obj.order_id = o.order_id;
-                obj.for_sale = o.amount_to_sell.amount;
+                obj.for_sale = protocol::asset<0, 17, 0>(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
                 obj.sell_price = protocol::price<0, 17, 0>(
                         protocol::asset<0, 17, 0>(o.exchange_rate.base.amount,
                                                   o.exchange_rate.base.symbol_name(),

@@ -30,7 +30,7 @@ namespace golos {
             time_point_sec expiration;
             account_name_type seller;
             protocol::integral_id_type order_id = 0;
-            share_type for_sale; ///< asset id is sell_price.base.symbol
+            protocol::asset<0, 17, 0> for_sale; ///< asset id is sell_price.base.symbol
             protocol::price<0, 17, 0> sell_price;
             share_type deferred_fee;
 
@@ -43,7 +43,7 @@ namespace golos {
             }
 
             protocol::asset<0, 17, 0> amount_for_sale() const {
-                return protocol::asset<0, 17, 0>(for_sale, sell_price.base.symbol);
+                return protocol::asset<0, 17, 0>(for_sale.amount, sell_price.base.symbol);
             }
 
             protocol::asset<0, 17, 0> amount_to_receive() const {
