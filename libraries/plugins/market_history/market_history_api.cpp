@@ -80,10 +80,6 @@ namespace golos {
                 std::vector<collateral_bid_object> get_collateral_bids(const asset_name_type asset, uint32_t limit,
                                                                   uint32_t start, uint32_t skip) const;
 
-                void subscribe_to_market(std::function<void(const variant &)> callback, std::string a, std::string b);
-
-                void unsubscribe_from_market(std::string a, std::string b);
-
                 std::vector<liquidity_balance> get_liquidity_queue(const std::string &start_account, uint32_t limit) const;
 
                 std::vector<optional<asset_object>> lookup_asset_symbols(const std::vector<asset_name_type> &asset_symbols) const;
@@ -96,6 +92,32 @@ namespace golos {
                 void set_block_applied_callback(std::function<void(const variant &block_id)> cb);
 
                 void cancel_all_subscriptions();
+
+                void subscribe_to_market(std::function<void(const variant &)> callback, std::string a, std::string b);
+
+                void unsubscribe_from_market(std::string a, std::string b);
+
+                template<typename T>
+                void subscribe_to_item(const T &i) const {
+                    auto vec = fc::raw::pack(i);
+                    if (!_subscribe_callback) {
+                        return;
+                    }
+
+                    if (!is_subscribed_to_item(i)) {
+                        idump((i));
+                        _subscribe_filter.insert(vec.data(), vec.size());//(vecconst char*)&i, sizeof(i) );
+                    }
+                }
+
+                template<typename T>
+                bool is_subscribed_to_item(const T &i) const {
+                    if (!_subscribe_callback) {
+                        return false;
+                    }
+
+                    return _subscribe_filter.contains(i);
+                }
 
                 // signal handlers
                 void on_applied_block(const chain::signed_block &b);

@@ -83,8 +83,12 @@ namespace golos {
                 obj.order_id = o.order_id;
                 obj.for_sale = o.amount_to_sell.amount;
                 obj.sell_price = protocol::price<0, 17, 0>(
-                        protocol::asset<0, 17, 0>(o.get_price().base.amount, o.get_price().base.symbol_name()),
-                        protocol::asset<0, 17, 0>(o.get_price().quote.amount, o.get_price().quote.symbol_name()));
+                        protocol::asset<0, 17, 0>(o.get_price().base.amount,
+                                                  o.get_price().base.symbol_name(),
+                                                  o.get_price().base.get_decimals()),
+                        protocol::asset<0, 17, 0>(o.get_price().quote.amount,
+                                                  o.get_price().quote.symbol_name(),
+                                                  o.get_price().quote.get_decimals()));
                 obj.expiration = o.expiration;
             });
 
@@ -136,20 +140,24 @@ namespace golos {
 
                 this->db.adjust_balance(this->db.get_account(o.owner), -delta);
 
-                bool filled = this->db.apply_order(
-                        this->db.template create<limit_order_object>([&](limit_order_object &obj) {
+                const limit_order_object &limit_order = this->db.template create<limit_order_object>(
+                        [&](limit_order_object &obj) {
                             obj.created = this->db.head_block_time();
                             obj.order_id = o.order_id;
                             obj.seller = seller->name;
                             obj.for_sale = o.amount_to_sell.amount;
                             obj.sell_price = protocol::price<0, 17, 0>(
                                     protocol::asset<0, 17, 0>(o.get_price().base.amount,
-                                                              o.get_price().base.symbol_name()),
+                                                              o.get_price().base.symbol_name(),
+                                                              o.get_price().base.get_decimals()),
                                     protocol::asset<0, 17, 0>(o.get_price().quote.amount,
-                                                              o.get_price().quote.symbol_name()));
+                                                              o.get_price().quote.symbol_name(),
+                                                              o.get_price().quote.get_decimals()));
                             obj.expiration = o.expiration;
                             obj.deferred_fee = deferred_fee;
-                        }));
+                        });
+
+                bool filled = this->db.apply_order(limit_order);
 
                 FC_ASSERT(!o.fill_or_kill || filled);
             } FC_CAPTURE_AND_RETHROW((o))
@@ -196,20 +204,23 @@ namespace golos {
 
                 this->db.adjust_balance(this->db.get_account(o.owner), -delta);
 
-                bool filled = this->db.apply_order(
-                        this->db.template create<limit_order_object>([&](limit_order_object &obj) {
-                            obj.created = this->db.template head_block_time();
-                            obj.order_id = o.order_id;
-                            obj.seller = seller->name;
-                            obj.for_sale = o.amount_to_sell.amount;
-                            obj.sell_price = protocol::price<0, 17, 0>(
-                                    protocol::asset<0, 17, 0>(o.get_price().base.amount,
-                                                              o.get_price().base.symbol_name()),
-                                    protocol::asset<0, 17, 0>(o.get_price().quote.amount,
-                                                              o.get_price().quote.symbol_name()));
-                            obj.expiration = o.expiration;
-                            obj.deferred_fee = deferred_fee;
-                        }));
+                const limit_order_object &limit_order = this->db.template create<limit_order_object>([&](limit_order_object &obj) {
+                    obj.created = this->db.template head_block_time();
+                    obj.order_id = o.order_id;
+                    obj.seller = seller->name;
+                    obj.for_sale = o.amount_to_sell.amount;
+                    obj.sell_price = protocol::price<0, 17, 0>(
+                            protocol::asset<0, 17, 0>(o.get_price().base.amount,
+                                                      o.get_price().base.symbol_name(),
+                                                      o.get_price().base.get_decimals()),
+                            protocol::asset<0, 17, 0>(o.get_price().quote.amount,
+                                                      o.get_price().quote.symbol_name(),
+                                                      o.get_price().quote.get_decimals()));
+                    obj.expiration = o.expiration;
+                    obj.deferred_fee = deferred_fee;
+                });
+
+                bool filled = this->db.apply_order(limit_order);
 
                 FC_ASSERT(!o.fill_or_kill || filled);
             } FC_CAPTURE_AND_RETHROW((o))
@@ -244,8 +255,12 @@ namespace golos {
                 obj.order_id = o.order_id;
                 obj.for_sale = o.amount_to_sell.amount;
                 obj.sell_price = protocol::price<0, 17, 0>(
-                        protocol::asset<0, 17, 0>(o.exchange_rate.base.amount, o.exchange_rate.base.symbol_name()),
-                        protocol::asset<0, 17, 0>(o.exchange_rate.quote.amount, o.exchange_rate.quote.symbol_name()));
+                        protocol::asset<0, 17, 0>(o.exchange_rate.base.amount,
+                                                  o.exchange_rate.base.symbol_name(),
+                                                  o.exchange_rate.base.get_decimals()),
+                        protocol::asset<0, 17, 0>(o.exchange_rate.quote.amount,
+                                                  o.exchange_rate.quote.symbol_name(),
+                                                  o.exchange_rate.quote.get_decimals()));
                 obj.expiration = o.expiration;
             });
 
@@ -404,7 +419,7 @@ namespace golos {
                     // limit orders available that could be used to fill the order.
                     if (this->db.template check_call_orders(*_debt_asset, false)) {
                         const auto order_obj = this->db.template find<call_order_object, by_id>(call_order_id);
-                        // if we filled at least one call order, we are OK if we totally filled. 
+                        // if we filled at least one call order, we are OK if we totally filled.
                         STEEMIT_ASSERT(!order_obj,
                                        typename BOOST_IDENTITY_TYPE((exceptions::operations::call_order_update::unfilled_margin_call<
                                                Major, Hardfork, Release >)),

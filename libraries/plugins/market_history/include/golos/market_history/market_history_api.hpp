@@ -240,10 +240,15 @@ FC_REFLECT((golos::market_history::liquidity_balance), (account)(weight));
 
 FC_API(golos::market_history::market_history_api,
 // Subscriptions
-       (set_subscribe_callback)(set_pending_transaction_callback)(set_block_applied_callback)(cancel_all_subscriptions)
+       (set_subscribe_callback)
+               (set_pending_transaction_callback)
+               (set_block_applied_callback)
+               (cancel_all_subscriptions)
+               (subscribe_to_market)
+               (unsubscribe_from_market)
 
                //Market
                (get_ticker)(get_volume)(get_order_book)(get_trade_history)(get_market_history)(
                get_market_history_buckets)(get_limit_orders)(get_call_orders)(get_settle_orders)(get_margin_positions)(
-               get_liquidity_queue)(subscribe_to_market)(unsubscribe_from_market)(get_limit_orders_by_owner)(
+               get_liquidity_queue)(get_limit_orders_by_owner)(
                get_call_orders_by_owner)(get_settle_orders_by_owner)(get_fill_order_history)(get_collateral_bids));
