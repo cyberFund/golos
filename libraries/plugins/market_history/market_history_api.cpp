@@ -387,14 +387,14 @@ namespace golos {
                     if (o.sell_price.base.symbol == base_id) {
                         order ord;
                         ord.price = o.sell_price.to_real();
-                        ord.quote = ((o.for_sale * o.sell_price.quote) / o.sell_price.base).to_real();
+                        ord.quote = (o.for_sale * (o.sell_price.quote / o.sell_price.base)).to_real();
                         ord.base = o.for_sale.to_real();
                         result.bids.push_back(ord);
                     } else {
                         order ord;
                         ord.price = o.sell_price.to_real();
                         ord.quote = o.for_sale.to_real();
-                        ord.base = ((o.for_sale * o.sell_price.quote) / o.sell_price.base).to_real();
+                        ord.base = (o.for_sale * (o.sell_price.quote / o.sell_price.base)).to_real();
                         result.asks.push_back(ord);
                     }
                 }
