@@ -856,7 +856,7 @@ namespace golos {
                             ss << ' ' << setw(10) << o.order_id;
                             ss << ' ' << setw(10) << o.real_price;
                             ss << ' ' << setw(10)
-                               << fc::variant(asset<0, 17, 0>(o.for_sale, o.sell_price.base.symbol)).as_string();
+                               << fc::variant(o.for_sale).as_string();
                             ss << ' ' << setw(10) << (o.sell_price.base.symbol == STEEM_SYMBOL_NAME ? "SELL" : "BUY");
                             ss << "\n";
                         }
