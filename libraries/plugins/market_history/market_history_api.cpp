@@ -383,7 +383,7 @@ namespace golos {
                 asset_name_type base_id = assets[0]->asset_name;
                 asset_name_type quote_id = assets[1]->asset_name;
 
-                for (const auto &o : orders) {
+                for (const limit_order_object &o : orders) {
                     if (o.sell_price.base.symbol == base_id) {
                         order ord;
                         ord.price = o.sell_price.to_real();

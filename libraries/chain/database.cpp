@@ -3355,7 +3355,7 @@ namespace golos {
             auto order_id = new_order_object.id;
 
             if (has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
-                const asset_object &sell_asset = get_asset(new_order_object.amount_for_sale().symbol);
+                const asset_object &sell_asset = get_asset(new_order_object.for_sale.symbol_name());
                 const asset_object &receive_asset = get_asset(new_order_object.amount_to_receive().symbol);
 
                 // Possible optimization: We only need to check calls if both are true:
@@ -3457,8 +3457,8 @@ namespace golos {
             assert(match_price.quote.symbol == new_order.sell_price.base.symbol);
             assert(match_price.base.symbol == old_order.sell_price.base.symbol);
 
-            auto new_order_for_sale = new_order.amount_for_sale();
-            auto old_order_for_sale = old_order.amount_for_sale();
+            auto new_order_for_sale = new_order.for_sale;
+            auto old_order_for_sale = old_order.for_sale;
 
             asset<0, 17, 0> new_order_pays, new_order_receives, old_order_pays, old_order_receives;
 
@@ -3477,7 +3477,7 @@ namespace golos {
             old_order_pays = new_order_receives;
             new_order_pays = old_order_receives;
 
-            assert(new_order_pays == new_order.amount_for_sale() || old_order_pays == old_order.amount_for_sale());
+            assert(new_order_pays == new_order.for_sale || old_order_pays == old_order.for_sale);
 
             if (old_order_receives.symbol == STEEM_SYMBOL_NAME || old_order_receives.symbol == SBD_SYMBOL_NAME) {
                 fc::microseconds age = head_block_time() - old_order.created;
@@ -3544,7 +3544,7 @@ namespace golos {
         bool database::fill_order(const limit_order_object &order, const asset<0, 17, 0> &pays,
                                   const asset<0, 17, 0> &receives) {
             try {
-                FC_ASSERT(order.amount_for_sale().symbol == pays.symbol);
+                FC_ASSERT(order.for_sale.symbol == pays.symbol);
                 FC_ASSERT(pays.symbol != receives.symbol);
 
                 const account_object &seller = get_account(order.seller);
@@ -3555,7 +3555,7 @@ namespace golos {
 
                 push_virtual_operation(fill_order_operation<0, 17, 0>(order.seller, order.order_id, pays, receives, issuer_fees));
 
-                if (pays == order.amount_for_sale()) {
+                if (pays == order.for_sale) {
                     remove(order);
                     return true;
                 } else {
@@ -3721,7 +3721,7 @@ namespace golos {
                     if (limit_itr != limit_end) {
                         assert(limit_itr != limit_price_index.end());
                         match_price = limit_itr->sell_price;
-                        usd_for_sale = limit_itr->amount_for_sale();
+                        usd_for_sale = limit_itr->for_sale;
                     } else {
                         return margin_called;
                     }
@@ -3890,7 +3890,7 @@ namespace golos {
 
         void database::cancel_order(const limit_order_object &order, bool create_virtual_op) {
             if (has_hardfork(STEEMIT_HARDFORK_0_17__115)) {
-                auto refunded = order.amount_for_sale();
+                auto refunded = order.for_sale;
 
                 modify(get_account_statistics(order.seller), [&](account_statistics_object &obj) {
                     if (refunded.symbol == STEEM_SYMBOL_NAME) {
@@ -3909,7 +3909,7 @@ namespace golos {
 
                 remove(order);
             } else {
-                adjust_balance(get_account(order.seller), order.amount_for_sale());
+                adjust_balance(get_account(order.seller), order.for_sale);
                 remove(order);
             }
         }

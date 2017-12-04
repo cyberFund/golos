@@ -42,12 +42,8 @@ namespace golos {
                 return tmp;
             }
 
-            protocol::asset<0, 17, 0> amount_for_sale() const {
-                return protocol::asset<0, 17, 0>(for_sale.amount, sell_price.base.symbol);
-            }
-
             protocol::asset<0, 17, 0> amount_to_receive() const {
-                return amount_for_sale() * sell_price;
+                return for_sale * sell_price;
             }
         };
 

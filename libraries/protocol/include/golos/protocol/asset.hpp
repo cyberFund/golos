@@ -150,6 +150,17 @@ namespace golos {
                 return amount;
             }
 
+            template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+            friend asset<Major, Hardfork, Release> operator*(const asset<Major, Hardfork, Release> &a,
+                                                             const asset<ArgumentMajor, ArgumentHardfork,
+                                                                     ArgumentRelease> &b) {
+                FC_ASSERT(a.symbol == b.symbol);
+                FC_ASSERT(a.get_decimals() == b.get_decimals());
+                asset<Major, Hardfork, Release> amount(a.amount * b.amount, a.symbol);
+                amount.set_decimals(a.get_decimals());
+                return amount;
+            }
+
             static share_type scaled_precision(uint8_t precision) {
                 FC_ASSERT(precision < 19);
                 return scaled_precision_lut[precision];
@@ -260,6 +271,17 @@ namespace golos {
                 FC_ASSERT(a.symbol == b.symbol);
                 FC_ASSERT(a.get_decimals() == b.get_decimals());
                 asset<Major, Hardfork, Release> amount(a.amount + b.amount, a.symbol);
+                amount.set_decimals(a.get_decimals());
+                return amount;
+            }
+
+            template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
+            friend asset<Major, Hardfork, Release> operator*(const asset<Major, Hardfork, Release> &a,
+                                                             const asset<ArgumentMajor, ArgumentHardfork,
+                                                                     ArgumentRelease> &b) {
+                FC_ASSERT(a.symbol == b.symbol);
+                FC_ASSERT(a.get_decimals() == b.get_decimals());
+                asset<Major, Hardfork, Release> amount(a.amount * b.amount, a.symbol);
                 amount.set_decimals(a.get_decimals());
                 return amount;
             }

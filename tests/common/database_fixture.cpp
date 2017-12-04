@@ -206,7 +206,7 @@ namespace golos {
             }
 
             for (const limit_order_object &o : input_db.get_index<limit_order_index>().indices()) {
-                asset<0, 17, 0> for_sale = o.amount_for_sale();
+                asset<0, 17, 0> for_sale = o.for_sale;
                 if (for_sale.symbol_name() == STEEM_SYMBOL_NAME) {
                     core_in_orders += for_sale.amount;
                 }
@@ -443,7 +443,7 @@ namespace golos {
             db.push_transaction(trx, ~0);
             trx.operations.clear();
             verify_asset_supplies(db);
-            return order.amount_for_sale();
+            return order.for_sale;
         }
 
         const asset_object &database_fixture::get_asset(const asset_name_type &symbol) const {
@@ -881,7 +881,7 @@ namespace golos {
         void database_fixture::print_limit_order(const limit_order_object &cur) const {
             std::cout << std::setw(10) << db.get_account(cur.seller).name.operator std::string() << " ";
             std::cout << std::setw(10) << "LIMIT" << " ";
-            std::cout << std::setw(16) << pretty(cur.amount_for_sale()) << " ";
+            std::cout << std::setw(16) << pretty(cur.for_sale) << " ";
             std::cout << std::setw(16) << pretty(cur.amount_to_receive()) << " ";
             std::cout << std::setw(16) << cur.sell_price.to_real() << " ";
         }
