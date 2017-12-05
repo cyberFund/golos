@@ -2269,8 +2269,7 @@ namespace golos {
             });
         }
 
-        std::vector<vesting_delegation_object> database_api::get_delegated_vestings(std::string account,
-                                                                                    uint32_t limit) const {
+        std::vector<vesting_delegation_object> database_api::get_delegated_vestings(std::string account, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
             return my->_db.with_read_lock([&]() {
                 std::vector<vesting_delegation_object> result;
