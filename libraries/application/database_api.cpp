@@ -2270,8 +2270,7 @@ namespace golos {
             });
         }
 
-        std::vector<vesting_delegation_expiration_object> database_api::get_expiring_vesting_delegations(
-                std::string account, time_point_sec from, uint32_t limit) const {
+        std::vector<vesting_delegation_expiration_object> database_api::get_expiring_vesting_delegations(std::string account, time_point_sec from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
