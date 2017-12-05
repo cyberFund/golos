@@ -205,15 +205,6 @@ namespace golos {
 
                 asset<0, 17, 0> effective_vesting_shares = voter.effective_vesting_shares();
 
-                if (this->db.has_hardfork(STEEMIT_HARDFORK_0_17__308)) {
-                    const auto &delegation_idx = db.template get_index<vesting_delegation_index, by_delegation>();
-                    auto delegation_itr = delegation_idx.lower_bound(boost::make_tuple(voter, comment.author));
-                    while (delegation_itr != delegation_idx.end() && delegation_itr->delegator == comment.author && delegation_itr->delegatee == voter) {
-                        effective_vesting_shares -= delegation_itr->vesting_shares;
-                        ++delegation_itr;
-                    }
-                }
-
                 int64_t abs_rshares = ((fc::uint128_t(effective_vesting_shares.amount.value) * used_power) /
                                        (STEEMIT_100_PERCENT)).to_uint64();
                 if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_14__259) && abs_rshares == 0) {

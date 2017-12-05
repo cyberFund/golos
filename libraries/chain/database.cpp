@@ -2380,7 +2380,6 @@ namespace golos {
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator<0, 17, 0>>();
             _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator<0, 17, 0>>();
             _my->_evaluator_registry.register_evaluator<bid_collateral_evaluator<0, 17, 0>>();
-            _my->_evaluator_registry.register_evaluator<comment_payout_extension_evaluator<0, 17, 0>>();
         }
 
         std::shared_ptr<custom_operation_interpreter> database::get_custom_json_evaluator(const std::string &id) {

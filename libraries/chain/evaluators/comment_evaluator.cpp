@@ -167,42 +167,6 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void comment_payout_extension_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
-            const account_object &from_account = this->db.get_account(o.payer);
-
-            if (from_account.active_challenged) {
-                this->db.modify(from_account, [&](account_object &a) {
-                    a.active_challenged = false;
-                    a.last_active_proved = this->db.head_block_time();
-                });
-            }
-
-            const comment_object &comment = this->db.get_comment(o.author, o.permlink);
-
-            if (o.amount) {
-                FC_ASSERT(this->db.get_balance(from_account, o.amount->symbol) >= *o.amount,
-                          "Account does not have sufficient funds for transfer.");
-
-                this->db.pay_fee(from_account, *o.amount);
-
-                this->db.modify(comment, [&](comment_object &c) {
-                    c.cashout_time = this->db.get_payout_extension_time(comment, *o.amount);
-                });
-            } else if (o.extension_time) {
-                asset<0, 17, 0> amount = this->db.get_payout_extension_cost(comment, *o.extension_time);
-
-                FC_ASSERT(this->db.get_balance(from_account, o.amount->symbol) >= amount,
-                          "Account does not have sufficient funds for transfer.");
-
-                this->db.pay_fee(from_account, amount);
-
-                this->db.modify(comment, [&](comment_object &c) {
-                    c.cashout_time = *o.extension_time;
-                });
-            }
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void comment_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 if (this->db.is_producing() || this->db.has_hardfork(STEEMIT_HARDFORK_0_5__55)) {
