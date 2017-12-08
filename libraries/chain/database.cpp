@@ -4234,6 +4234,7 @@ namespace golos {
                     create<account_balance_object>([&](account_balance_object &b) {
                         b.owner = a.name;
                         b.asset_name = delta.symbol;
+                        b.precision = delta.decimals;
 
                         if (delta.symbol == SBD_SYMBOL_NAME) {
                             adjust_sbd_balance(a, b);
