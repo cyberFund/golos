@@ -203,7 +203,7 @@ namespace golos {
 
             if (o.fee.amount > 0) {
                 this->db.template create_vesting(new_account,
-                                                 protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
+                                                 protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name(), o.fee.get_decimals()));
             }
 
             this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
