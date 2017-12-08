@@ -42,7 +42,7 @@ namespace golos {
                 });
             }
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(). o.amount.get_decimals());
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
             FC_ASSERT(this->db.template get_balance(from_account, o.amount.symbol_name()) >= required_amount,
                       "Account does not have sufficient funds for transfer.");

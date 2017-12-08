@@ -4228,7 +4228,7 @@ namespace golos {
                 if (itr == index.end()) {
                     FC_ASSERT(delta.amount > 0,
                               "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                              ("a", get_account(a.name).name)("b", to_pretty_string(asset<0, 17, 0>(0, delta.symbol)))(
+                              ("a", get_account(a.name).name)("b", to_pretty_string(asset<0, 17, 0>(0, delta.symbol, delta.get_decimals())))(
                                       "r", to_pretty_string(-delta)));
 
                     create<account_balance_object>([&](account_balance_object &b) {
