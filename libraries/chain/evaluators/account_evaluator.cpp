@@ -72,12 +72,14 @@ namespace golos {
                 b.owner = new_account.name;
                 b.asset_name = STEEM_SYMBOL_NAME;
                 b.balance = 0;
+                b.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
             });
 
             this->db.template create<account_balance_object>([new_account](account_balance_object &b) {
                 b.owner = new_account.name;
                 b.asset_name = SBD_SYMBOL_NAME;
                 b.balance = 0;
+                b.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
             });
 
             this->db.template create<account_authority_object>([&](account_authority_object &auth) {
