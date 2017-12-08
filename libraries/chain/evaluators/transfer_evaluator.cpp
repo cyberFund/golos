@@ -42,7 +42,7 @@ namespace golos {
                 });
             }
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(). o.amount.get_decimals());
 
             FC_ASSERT(this->db.template get_balance(from_account, o.amount.symbol_name()) >= required_amount,
                       "Account does not have sufficient funds for transfer.");
@@ -57,7 +57,7 @@ namespace golos {
             const auto &from_account = this->db.template get_account(o.from);
             const auto &to_account = o.to.size() ? this->db.template get_account(o.to) : from_account;
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
             FC_ASSERT(this->db.template get_balance(from_account, STEEM_SYMBOL_NAME) >= required_amount,
                       "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
@@ -71,7 +71,7 @@ namespace golos {
             const auto &from = this->db.template get_account(o.from);
             const auto &to = this->db.template get_account(o.to);
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
             FC_ASSERT(this->db.template get_balance(from, o.amount.symbol_name()) >= required_amount,
                       "Account does not have sufficient funds to transfer to savings.");
@@ -89,7 +89,7 @@ namespace golos {
             FC_ASSERT(from.savings_withdraw_requests < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT,
                       "Account has reached limit for pending withdraw requests.");
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
             FC_ASSERT(this->db.template get_savings_balance(from, o.amount.symbol_name()) >= required_amount);
             this->db.template adjust_savings_balance(from, -required_amount);
@@ -142,7 +142,7 @@ namespace golos {
                 FC_ASSERT(this->db.template get_balance(from_account, asset_type).amount >= o.amount.amount, "",
                           ("total_transfer", o.amount)("balance",
                                                        this->db.template get_balance(from_account, asset_type).amount));
-                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name());
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
                 this->db.template adjust_balance(this->db.template get_account(o.from), -required_amount);
                 this->db.template adjust_balance(this->db.template get_account(o.to), required_amount);

@@ -47,7 +47,7 @@ namespace golos {
                 }
             }
 
-            this->db.adjust_balance(creator, -protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
+            this->db.adjust_balance(creator, -protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name(), o.fee.get_decimals()));
 
             const auto &new_account = this->db.template create<account_object>([&](account_object &acc) {
                 acc.name = o.new_account_name;
@@ -149,7 +149,7 @@ namespace golos {
                 this->db.get_account(a.first);
             }
 
-            this->db.adjust_balance(creator, -protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name()));
+            this->db.adjust_balance(creator, -protocol::asset<0, 17, 0>(o.fee.amount, o.fee.symbol_name(), o.fee.get_decimals()));
 
             this->db.modify(creator, [&](account_object &c) {
                 c.delegated_vesting_shares += o.delegation;
