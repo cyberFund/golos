@@ -31,7 +31,7 @@ namespace golos {
         void convert_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &owner = this->db.get_account(o.owner);
-            asset<0, 17, 0> delta(o.amount.amount, o.amount.symbol_name());
+            asset<0, 17, 0> delta(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
             FC_ASSERT(this->db.get_balance(owner, o.amount.symbol_name()) >= delta,
                       "Account ${n} does not have sufficient balance for conversion. Balance: ${b}. Required: ${r}",
@@ -70,7 +70,7 @@ namespace golos {
 
             const auto &owner = this->db.get_account(o.owner);
 
-            asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name());
+            asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
 
             FC_ASSERT(this->db.get_balance(owner, o.amount_to_sell.symbol_name()) >= delta,
                       "Account does not have sufficient funds for limit order.");
@@ -187,7 +187,7 @@ namespace golos {
                 FC_ASSERT(this->db.is_authorized_asset(*seller, *sell_asset));
                 FC_ASSERT(this->db.is_authorized_asset(*seller, *receive_asset));
 
-                asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name());
+                asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
 
                 FC_ASSERT(sell_asset->precision == o.amount_to_sell.get_decimals(), "Assets decimals amount does not match");
 
@@ -204,7 +204,7 @@ namespace golos {
                     }
                 });
 
-                asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name());
+                asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
 
                 this->db.adjust_balance(this->db.get_account(o.owner), -delta);
 
@@ -243,7 +243,7 @@ namespace golos {
 
             const auto &owner = this->db.get_account(o.owner);
 
-            asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name());
+            asset<0, 17, 0> delta(o.amount_to_sell.amount, o.amount_to_sell.symbol_name(), o.amount_to_sell.get_decimals());
 
             FC_ASSERT(this->db.template get_balance(owner, o.amount_to_sell.symbol_name()) >= delta, "Account does not have sufficient funds for limit order.");
 
