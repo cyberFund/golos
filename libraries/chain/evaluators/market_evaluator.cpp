@@ -313,7 +313,7 @@ namespace golos {
                 _debt_asset = this->db.template find_asset(op.delta_debt.symbol_name());
 
                 FC_ASSERT(_paying_account, "Payer account should exist");
-                FC_ASSERT(_debt_account, "Debt account should exist");
+                FC_ASSERT(_debt_asset, "Debt asset should exist");
 
                 FC_ASSERT(_debt_asset->is_market_issued(),
                           "Unable to cover ${sym} as it is not a collateralized asset.",
