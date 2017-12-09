@@ -336,19 +336,14 @@ namespace golos {
 
                 if (op.delta_debt.amount < 0) {
                     FC_ASSERT(this->db.template get_balance(*_paying_account, *_debt_asset) >= op.delta_debt,
-                              "Cannot cover by ${c} when payer only has ${b}", ("c", op.delta_debt.amount)("b",
-                                                                                                           this->db.template get_balance(
-                                                                                                                   *_paying_account,
-                                                                                                                   *_debt_asset).amount));
+                              "Cannot cover by ${c} when payer only has ${b}", ("c", op.delta_debt.amount)("b", this->db.template get_balance(*_paying_account, *_debt_asset).amount));
                 }
 
                 if (op.delta_collateral.amount > 0) {
                     FC_ASSERT(this->db.template get_balance(*_paying_account, this->db.template get_asset(
                             _bitasset_data->options.short_backing_asset)) >= op.delta_collateral,
                               "Cannot increase collateral by ${c} when payer only has ${b}",
-                              ("c", op.delta_collateral.amount)("b", this->db.template get_balance(*_paying_account,
-                                                                                                   this->db.template get_asset(
-                                                                                                           op.delta_collateral.symbol_name())).amount));
+                              ("c", op.delta_collateral.amount)("b", this->db.template get_balance(*_paying_account, this->db.template get_asset(op.delta_collateral.symbol_name())).amount));
                 }
             } FC_CAPTURE_AND_RETHROW((op))
 
