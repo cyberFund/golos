@@ -110,6 +110,7 @@ namespace golos {
             try {
                 const asset_object &a = this->db.get_asset(o.asset_to_issue.symbol);
                 FC_ASSERT(o.issuer == a.issuer);
+                FC_ASSERT(o.asset_to_issue.get_decimals() == a.precision);
                 FC_ASSERT(!a.is_market_issued(), "Cannot manually issue a market-issued asset.");
 
                 to_account = this->db.find_account(o.issue_to_account);
@@ -132,6 +133,7 @@ namespace golos {
         void asset_reserve_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
             try {
                 const asset_object &a = this->db.get_asset(o.amount_to_reserve.symbol);
+                FC_ASSERT(o.amount_to_reserve.get_decimals() == a.precision);
                 STEEMIT_ASSERT(!a.is_market_issued(), typename BOOST_IDENTITY_TYPE((exceptions::operations::asset_reserve::invalid_on_mia<Major, Hardfork, Release>)),
                                "Cannot reserve ${sym} because it is a market-issued asset", ("sym", a.asset_name));
 
