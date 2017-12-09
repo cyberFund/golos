@@ -109,6 +109,10 @@ namespace golos {
                 sell_asset = this->db.find_asset(o.amount_to_sell.symbol_name());
                 receive_asset = this->db.find_asset(o.min_to_receive.symbol_name());
 
+                FC_ASSERT(seller, "Seller should exist");
+                FC_ASSERT(sell_asset, "Sell asset should exist");
+                FC_ASSERT(receive_asset, "Receive asset should exist");
+
                 if (!sell_asset->options.whitelist_markets.empty()) {
                     FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
                               sell_asset->options.whitelist_markets.end());
@@ -174,6 +178,10 @@ namespace golos {
                 seller = this->db.find_account(o.owner);
                 sell_asset = this->db.find_asset(o.amount_to_sell.symbol_name());
                 receive_asset = this->db.find_asset(o.exchange_rate.quote.symbol_name());
+
+                FC_ASSERT(seller, "Seller should exist");
+                FC_ASSERT(sell_asset, "Sell asset should exist");
+                FC_ASSERT(receive_asset, "Receive asset should exist");
 
                 if (!sell_asset->options.whitelist_markets.empty()) {
                     FC_ASSERT(sell_asset->options.whitelist_markets.find(receive_asset->asset_name) !=
@@ -303,6 +311,9 @@ namespace golos {
             try {
                 _paying_account = this->db.template find_account(op.funding_account);
                 _debt_asset = this->db.template find_asset(op.delta_debt.symbol_name());
+
+                FC_ASSERT(_paying_account, "Payer account should exist");
+                FC_ASSERT(_debt_account, "Debt account should exist");
 
                 FC_ASSERT(_debt_asset->is_market_issued(),
                           "Unable to cover ${sym} as it is not a collateralized asset.",
