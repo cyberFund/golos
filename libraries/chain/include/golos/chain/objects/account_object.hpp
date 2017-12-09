@@ -106,7 +106,7 @@ namespace golos {
             account_name_type owner;
             protocol::asset_name_type asset_name;
             share_type balance = 0; ///< total liquid shares held by this account
-            uint8_t precision = 0;
+            uint8_t precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
 
             protocol::asset<0, 17, 0> get_balance() const {
                 return protocol::asset<0, 17, 0>(balance, asset_name, precision);
