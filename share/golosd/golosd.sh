@@ -83,8 +83,8 @@ if [[ $STEEMD == *"\""* ]]; then
 fi
 
 exec chpst -ugolosd $STEEMD \
-    --rpc-endpoint=${RPC_ENDPOINT} \
-    --p2p-endpoint=${P2P_ENDPOINT} \
+    --rpc-endpoint=$RPC_ENDPOINT \
+    --p2p-endpoint=$P2P_ENDPOINT \
     --data-dir=$HOME \
     $ARGS \
     $STEEMD_EXTRA_OPTS \
