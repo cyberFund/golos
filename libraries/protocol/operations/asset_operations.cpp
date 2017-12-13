@@ -144,7 +144,8 @@ namespace golos {
             FC_ASSERT(asset_to_settle == settle_price.base.symbol_name());
         }
 
-        void bitasset_options::validate() const {
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void bitasset_options<Major, Hardfork, Release>::validate() const {
             FC_ASSERT(minimum_feeds > 0);
             FC_ASSERT(force_settlement_offset_percent <= STEEMIT_100_PERCENT);
             FC_ASSERT(maximum_force_settlement_volume <= STEEMIT_100_PERCENT);

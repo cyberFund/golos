@@ -92,8 +92,8 @@ namespace golos {
 
         typedef message_object::id_type message_id_type;
 
-        struct message_api_obj {
-            message_api_obj(const message_object &o) :
+        struct message_api_object {
+            message_api_object(const message_object &o) :
                     id(o.id),
                     from(o.from),
                     to(o.to),
@@ -105,7 +105,7 @@ namespace golos {
                     encrypted_message(o.encrypted_message.begin(), o.encrypted_message.end()) {
             }
 
-            message_api_obj() {
+            message_api_object() {
             }
 
             message_id_type id;
@@ -119,12 +119,12 @@ namespace golos {
             std::vector<char> encrypted_message;
         };
 
-        struct extended_message_object : public message_api_obj {
+        struct extended_message_object : public message_api_object {
             extended_message_object() {
             }
 
-            extended_message_object(const message_api_obj &o)
-                    : message_api_obj(o) {
+            extended_message_object(const message_api_object &o)
+                    : message_api_object(o) {
             }
 
             message_body message;
@@ -206,9 +206,9 @@ namespace golos {
             /**
              *
              */
-            std::vector<message_api_obj> get_inbox(std::string to, time_point newest, uint16_t limit) const;
+            std::vector<message_api_object> get_inbox(std::string to, time_point newest, uint16_t limit) const;
 
-            std::vector<message_api_obj> get_outbox(std::string from, time_point newest, uint16_t limit) const;
+            std::vector<message_api_object> get_outbox(std::string from, time_point newest, uint16_t limit) const;
 
         private:
             golos::application::application *_app = nullptr;
@@ -224,6 +224,6 @@ FC_REFLECT((golos::private_message::message_body), (thread_start)(subject)(body)
 FC_REFLECT((golos::private_message::message_object), (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(receive_time)(checksum)(encrypted_message));
 CHAINBASE_SET_INDEX_TYPE(golos::private_message::message_object, golos::private_message::message_index);
 
-FC_REFLECT((golos::private_message::message_api_obj), (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(receive_time)(checksum)(encrypted_message));
+FC_REFLECT((golos::private_message::message_api_object), (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(receive_time)(checksum)(encrypted_message));
 
-FC_REFLECT_DERIVED((golos::private_message::extended_message_object), ((golos::private_message::message_api_obj)), (message));
+FC_REFLECT_DERIVED((golos::private_message::extended_message_object), ((golos::private_message::message_api_object)), (message));

@@ -44,17 +44,17 @@ namespace golos {
             share_type reputation;
         };
 
-        struct follow_api_obj {
+        struct follow_api_object {
             std::string follower;
             std::string following;
             std::vector<follow_type> what;
         };
 
-        struct follow_count_api_obj {
-            follow_count_api_obj() {
+        struct follow_count_api_object {
+            follow_count_api_object() {
             }
 
-            follow_count_api_obj(const follow_count_object &o) :
+            follow_count_api_object(const follow_count_object &o) :
                     account(o.account),
                     follower_count(o.follower_count),
                     following_count(o.following_count) {
@@ -75,11 +75,11 @@ namespace golos {
 
             void on_api_startup();
 
-            std::vector<follow_api_obj> get_followers(std::string to, std::string start, follow_type type, uint16_t limit) const;
+            std::vector<follow_api_object> get_followers(std::string to, std::string start, follow_type type, uint16_t limit) const;
 
-            std::vector<follow_api_obj> get_following(std::string from, std::string start, follow_type type, uint16_t limit) const;
+            std::vector<follow_api_object> get_following(std::string from, std::string start, follow_type type, uint16_t limit) const;
 
-            follow_count_api_obj get_follow_count(std::string account) const;
+            follow_count_api_object get_follow_count(std::string account) const;
 
             std::vector<feed_entry> get_feed_entries(std::string account, uint32_t entry_id = 0, uint16_t limit = 500) const;
 
@@ -113,8 +113,8 @@ FC_REFLECT((golos::follow::comment_feed_entry), (comment)(reblog_by)(reblog_on)(
 FC_REFLECT((golos::follow::blog_entry), (author)(permlink)(blog)(reblog_on)(entry_id));
 FC_REFLECT((golos::follow::comment_blog_entry), (comment)(blog)(reblog_on)(entry_id));
 FC_REFLECT((golos::follow::account_reputation), (account)(reputation));
-FC_REFLECT((golos::follow::follow_api_obj), (follower)(following)(what));
-FC_REFLECT((golos::follow::follow_count_api_obj), (account)(follower_count)(following_count));
+FC_REFLECT((golos::follow::follow_api_object), (follower)(following)(what));
+FC_REFLECT((golos::follow::follow_count_api_object), (account)(follower_count)(following_count));
 
 FC_API(golos::follow::follow_api,
         (get_followers)

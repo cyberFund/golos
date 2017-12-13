@@ -22,11 +22,11 @@ namespace golos {
                         : app(_app) {
                 }
 
-                std::vector<follow_api_obj> get_followers(std::string following, std::string start_follower, follow_type type, uint16_t limit) const;
+                std::vector<follow_api_object> get_followers(std::string following, std::string start_follower, follow_type type, uint16_t limit) const;
 
-                std::vector<follow_api_obj> get_following(std::string follower, std::string start_following, follow_type type, uint16_t limit) const;
+                std::vector<follow_api_object> get_following(std::string follower, std::string start_following, follow_type type, uint16_t limit) const;
 
-                follow_count_api_obj get_follow_count(std::string &account) const;
+                follow_count_api_object get_follow_count(std::string &account) const;
 
                 std::vector<feed_entry> get_feed_entries(std::string account, uint32_t entry_id, uint16_t limit) const;
 
@@ -41,9 +41,9 @@ namespace golos {
                 golos::application::application &app;
             };
 
-            std::vector<follow_api_obj> follow_api_impl::get_followers(std::string following, std::string start_follower, follow_type type, uint16_t limit) const {
+            std::vector<follow_api_object> follow_api_impl::get_followers(std::string following, std::string start_follower, follow_type type, uint16_t limit) const {
                 FC_ASSERT(limit <= 1000);
-                std::vector<follow_api_obj> result;
+                std::vector<follow_api_object> result;
                 result.reserve(limit);
 
                 const auto &idx = app.chain_database()->get_index<follow_index>().indices().get<by_following_follower>();
@@ -51,7 +51,7 @@ namespace golos {
                 while (itr != idx.end() && limit &&
                        itr->following == following) {
                     if (type == undefined || itr->what & (1 << type)) {
-                        follow_api_obj entry;
+                        follow_api_object entry;
                         entry.follower = itr->follower;
                         entry.following = itr->following;
                         set_what(entry.what, itr->what);
@@ -65,14 +65,14 @@ namespace golos {
                 return result;
             }
 
-            std::vector<follow_api_obj> follow_api_impl::get_following(std::string follower, std::string start_following, follow_type type, uint16_t limit) const {
+            std::vector<follow_api_object> follow_api_impl::get_following(std::string follower, std::string start_following, follow_type type, uint16_t limit) const {
                 FC_ASSERT(limit <= 100);
-                std::vector<follow_api_obj> result;
+                std::vector<follow_api_object> result;
                 const auto &idx = app.chain_database()->get_index<follow_index>().indices().get<by_follower_following>();
                 auto itr = idx.lower_bound(std::make_tuple(follower, start_following));
                 while (itr != idx.end() && limit && itr->follower == follower) {
                     if (type == undefined || itr->what & (1 << type)) {
-                        follow_api_obj entry;
+                        follow_api_object entry;
                         entry.follower = itr->follower;
                         entry.following = itr->following;
                         set_what(entry.what, itr->what);
@@ -86,8 +86,8 @@ namespace golos {
                 return result;
             }
 
-            follow_count_api_obj follow_api_impl::get_follow_count(std::string &account) const {
-                follow_count_api_obj result;
+            follow_count_api_object follow_api_impl::get_follow_count(std::string &account) const {
+                follow_count_api_object result;
                 auto itr = app.chain_database()->find<follow_count_object, by_account>(account);
 
                 if (itr != nullptr) {
@@ -275,19 +275,19 @@ namespace golos {
         void follow_api::on_api_startup() {
         }
 
-        std::vector<follow_api_obj> follow_api::get_followers(std::string following, std::string start_follower, follow_type type, uint16_t limit) const {
+        std::vector<follow_api_object> follow_api::get_followers(std::string following, std::string start_follower, follow_type type, uint16_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_followers(following, start_follower, type, limit);
             });
         }
 
-        std::vector<follow_api_obj> follow_api::get_following(std::string follower, std::string start_following, follow_type type, uint16_t limit) const {
+        std::vector<follow_api_object> follow_api::get_following(std::string follower, std::string start_following, follow_type type, uint16_t limit) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_following(follower, start_following, type, limit);
             });
         }
 
-        follow_count_api_obj follow_api::get_follow_count(std::string account) const {
+        follow_count_api_object follow_api::get_follow_count(std::string account) const {
             return my->app.chain_database()->with_read_lock([&]() {
                 return my->get_follow_count(account);
             });

@@ -134,6 +134,7 @@ namespace golos {
             try {
                 const asset_object &a = this->db.get_asset(o.amount_to_reserve.symbol);
                 FC_ASSERT(o.amount_to_reserve.get_decimals() == a.precision);
+
                 STEEMIT_ASSERT(!a.is_market_issued(), typename BOOST_IDENTITY_TYPE((exceptions::operations::asset_reserve::invalid_on_mia<Major, Hardfork, Release>)),
                                "Cannot reserve ${sym} because it is a market-issued asset", ("sym", a.asset_name));
 

@@ -71,29 +71,6 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void comment_payout_extension_operation<Major, Hardfork, Release>::validate() const {
-            validate_account_name(this->payer);
-            validate_account_name(this->author);
-            validate_permlink(this->permlink);
-
-            FC_ASSERT((this->amount || this->extension_time) && !(this->amount && this->extension_time),
-                      "Payout window can be extended by required SBD amount or by required time amount");
-
-            if (this->amount) {
-                FC_ASSERT(this->amount->symbol_name() == SBD_SYMBOL_NAME,
-                          "Payout window extension is only available with SBD");
-                FC_ASSERT(this->amount->amount > 0, "Cannot extend payout window with 0 SBD");
-            }
-
-            if (this->extension_time) {
-                FC_ASSERT(*this->extension_time <= fc::time_point_sec(STEEMIT_CASHOUT_WINDOW_SECONDS),
-                          "Payout window extension cannot be larger than a week");
-                FC_ASSERT(*this->extension_time > fc::time_point_sec(0),
-                          "Payout window extension cannot be extended for 0 seconds");
-            }
-        }
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void comment_options_operation<Major, Hardfork, Release>::validate() const {
             validate_account_name(this->author);
             FC_ASSERT(this->percent_steem_dollars <= STEEMIT_100_PERCENT, "Percent cannot exceed 100%");
