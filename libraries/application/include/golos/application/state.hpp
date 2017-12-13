@@ -92,11 +92,11 @@ namespace golos {
         /**
          *  Convert's vesting shares
          */
-        struct extended_account : public account_api_obj {
+        struct extended_account : public account_api_object {
             extended_account() {
             }
 
-            extended_account(const account_object &a, const database &db) : account_api_obj(a, db) {
+            extended_account(const account_object &a, const database &db) : account_api_object(a, db) {
             }
 
             asset<0, 17, 0> vesting_balance; /// convert vesting_shares to vesting steem
@@ -175,8 +175,8 @@ namespace golos {
              */
             std::map<std::string, discussion_index> discussion_idx;
 
-            std::map<std::string, category_api_obj> categories;
-            std::map<std::string, tag_api_obj> tags;
+            std::map<std::string, category_api_object> categories;
+            std::map<std::string, tag_api_object> tags;
 
             /**
              *  map from account/slug to full nested discussion
@@ -188,7 +188,7 @@ namespace golos {
              * The list of miners who are queued to produce work
              */
             std::vector<account_name_type> pow_queue;
-            std::map<std::string, witness_api_obj> witnesses;
+            std::map<std::string, witness_api_object> witnesses;
             witness_schedule_object witness_schedule;
             price<0, 17, 0> feed_price;
             std::string error;
@@ -197,7 +197,7 @@ namespace golos {
     }
 }
 
-FC_REFLECT_DERIVED((golos::application::extended_account), ((golos::application::account_api_obj)),
+FC_REFLECT_DERIVED((golos::application::extended_account), ((golos::application::account_api_object)),
                    (vesting_balance)(reputation)(transfer_history)(market_history)(post_history)(vote_history)(
                            other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(
                            recent_replies)(blog_category)(recommended)(balances))

@@ -67,6 +67,7 @@ namespace golos {
          *
          * @note Changes to this struct will break protocol compatibility
          */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct bitasset_options {
             /// Time before a price feed expires
             uint32_t feed_lifetime_sec = STEEMIT_DEFAULT_PRICE_FEED_LIFETIME;
@@ -113,7 +114,7 @@ namespace golos {
             asset_options<Major, Hardfork, Release> common_options;
             /// Options only available for BitAssets. MUST be non-null if and only if the @ref market_issued flag is set in
             /// common_options.flags
-            optional<bitasset_options> bitasset_opts;
+            optional<bitasset_options<Major, Hardfork, Release>> bitasset_opts;
             /// For BitAssets, set this to true if the asset implements a @ref prediction_market; false otherwise
             bool is_prediction_market = false;
             extensions_type extensions;
@@ -298,7 +299,7 @@ namespace golos {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
-            bitasset_options new_options;
+            bitasset_options<Major, Hardfork, Release> new_options;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -459,7 +460,7 @@ FC_REFLECT((golos::protocol::asset_options<0, 17, 0>),
                    whitelist_authorities)(blacklist_authorities)(whitelist_markets)(blacklist_markets)(description)(
                    extensions))
 
-FC_REFLECT((golos::protocol::bitasset_options),
+FC_REFLECT((golos::protocol::bitasset_options<0, 17, 0>),
            (feed_lifetime_sec)(minimum_feeds)(force_settlement_delay_sec)(force_settlement_offset_percent)(
                    maximum_force_settlement_volume)(short_backing_asset)(extensions))
 

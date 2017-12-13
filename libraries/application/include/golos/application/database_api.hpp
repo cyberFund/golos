@@ -84,15 +84,15 @@ namespace golos {
              */
             void cancel_all_subscriptions();
 
-            std::vector<tag_api_obj> get_trending_tags(std::string after_tag, uint32_t limit) const;
+            std::vector<tag_api_object> get_trending_tags(std::string after_tag, uint32_t limit) const;
 
-            std::vector<category_api_obj> get_trending_categories(std::string after, uint32_t limit) const;
+            std::vector<category_api_object> get_trending_categories(std::string after, uint32_t limit) const;
 
-            std::vector<category_api_obj> get_best_categories(std::string after, uint32_t limit) const;
+            std::vector<category_api_object> get_best_categories(std::string after, uint32_t limit) const;
 
-            std::vector<category_api_obj> get_active_categories(std::string after, uint32_t limit) const;
+            std::vector<category_api_object> get_active_categories(std::string after, uint32_t limit) const;
 
-            std::vector<category_api_obj> get_recent_categories(std::string after, uint32_t limit) const;
+            std::vector<category_api_object> get_recent_categories(std::string after, uint32_t limit) const;
 
             std::vector<account_name_type> get_active_witnesses() const;
 
@@ -148,7 +148,7 @@ namespace golos {
 
             price<0, 17, 0> get_current_median_history_price() const;
 
-            feed_history_api_obj get_feed_history() const;
+            feed_history_api_object get_feed_history() const;
 
             witness_schedule_object get_witness_schedule() const;
 
@@ -173,7 +173,7 @@ namespace golos {
              *
              * This function has semantics identical to @ref get_objects
              */
-            std::vector<optional<account_api_obj>> lookup_account_names(const std::vector<std::string> &account_names) const;
+            std::vector<optional<account_api_object>> lookup_account_names(const std::vector<std::string> &account_names) const;
 
             /**
              * @brief Get names and IDs for registered accounts
@@ -200,9 +200,9 @@ namespace golos {
              */
             uint64_t get_account_count() const;
 
-            std::vector<owner_authority_history_api_obj> get_owner_history(std::string account) const;
+            std::vector<owner_authority_history_api_object> get_owner_history(std::string account) const;
 
-            optional<account_recovery_request_api_obj> get_recovery_request(std::string account) const;
+            optional<account_recovery_request_api_object> get_recovery_request(std::string account) const;
 
             optional<escrow_object> get_escrow(std::string from, uint32_t escrow_id) const;
 
@@ -210,9 +210,9 @@ namespace golos {
 
             optional<account_bandwidth_object> get_account_bandwidth(std::string account, bandwidth_type type) const;
 
-            std::vector<savings_withdraw_api_obj> get_savings_withdraw_from(std::string account) const;
+            std::vector<savings_withdraw_api_object> get_savings_withdraw_from(std::string account) const;
 
-            std::vector<savings_withdraw_api_obj> get_savings_withdraw_to(std::string account) const;
+            std::vector<savings_withdraw_api_object> get_savings_withdraw_to(std::string account) const;
 
             std::vector<vesting_delegation_object> get_vesting_delegations(std::string account, std::string from, uint32_t limit = 100) const;
 
@@ -231,7 +231,7 @@ namespace golos {
              *
              * This function has semantics identical to @ref get_objects
              */
-            std::vector<optional<witness_api_obj>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
+            std::vector<optional<witness_api_object>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
 
             std::vector<convert_request_object> get_conversion_requests(const std::string &account_name) const;
 
@@ -240,14 +240,14 @@ namespace golos {
              * @param account The name of the account whose witness should be retrieved
              * @return The witness object, or null if the account does not have a witness
              */
-            fc::optional<witness_api_obj> get_witness_by_account(std::string account_name) const;
+            fc::optional<witness_api_object> get_witness_by_account(std::string account_name) const;
 
             /**
              *  This method is used to fetch witnesses with pagination.
              *
              *  @return an array of `count` witnesses sorted by total votes after witness `from` with at most `limit' results.
              */
-            std::vector<witness_api_obj> get_witnesses_by_vote(std::string from, uint32_t limit) const;
+            std::vector<witness_api_object> get_witnesses_by_vote(std::string from, uint32_t limit) const;
 
             /**
              * @brief Get names and IDs for registered witnesses

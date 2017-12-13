@@ -197,7 +197,7 @@ namespace golos {
             protocol::asset_name_type asset_name;
 
             /// The tunable options for BitAssets are stored in this field.
-            protocol::bitasset_options options;
+            protocol::bitasset_options<0, 17, 0> options;
 
             /// Feeds published for this asset. If issuer is not committee, the keys in this map are the feed publishing
             /// accounts; otherwise, the feed publishers are the currently active committee_members and witnesses and this map

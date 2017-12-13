@@ -79,31 +79,6 @@ namespace golos {
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct comment_payout_extension_operation
-                : public base_operation<Major, Hardfork, Release> {
-            account_name_type payer;
-            account_name_type author;
-            std::string permlink;
-
-            optional<fc::time_point_sec> extension_time;
-            optional<asset<Major, Hardfork, Release>> amount;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (amount && amount->symbol_name() == SBD_SYMBOL_NAME) {
-                    a.insert(payer);
-                }
-            }
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (amount && amount->symbol_name() == SBD_SYMBOL_NAME) {
-                    a.insert(payer);
-                }
-            }
-        };
-
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct delete_comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type author;
             std::string permlink;
@@ -135,8 +110,5 @@ FC_REFLECT((golos::protocol::comment_options_operation<0, 16, 0>),
 FC_REFLECT((golos::protocol::comment_options_operation<0, 17, 0>),
            (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(
                    extensions))
-
-FC_REFLECT((golos::protocol::comment_payout_extension_operation<0, 17, 0>),
-           (payer)(author)(permlink)(extension_time)(amount));
 
 #endif //GOLOS_COMMENT_OPERATIONS_HPP

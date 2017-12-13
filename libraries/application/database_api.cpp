@@ -56,7 +56,7 @@ namespace golos {
             // Accounts
             std::vector<extended_account> get_accounts(std::vector<std::string> names) const;
 
-            std::vector<optional<account_api_obj>> lookup_account_names(
+            std::vector<optional<account_api_object>> lookup_account_names(
                     const std::vector<std::string> &account_names) const;
 
             std::set<std::string> lookup_accounts(const std::string &lower_bound_name, uint32_t limit) const;
@@ -64,10 +64,10 @@ namespace golos {
             uint64_t get_account_count() const;
 
             // Witnesses
-            std::vector<optional<witness_api_obj>> get_witnesses(
+            std::vector<optional<witness_api_object>> get_witnesses(
                     const std::vector<witness_object::id_type> &witness_ids) const;
 
-            fc::optional<witness_api_obj> get_witness_by_account(std::string account_name) const;
+            fc::optional<witness_api_object> get_witness_by_account(std::string account_name) const;
 
             std::set<account_name_type> lookup_witness_accounts(const std::string &lower_bound_name,
                                                                 uint32_t limit) const;
@@ -332,9 +332,9 @@ namespace golos {
             });
         }
 
-        feed_history_api_obj database_api::get_feed_history() const {
+        feed_history_api_object database_api::get_feed_history() const {
             return my->_db.with_read_lock([&]() {
-                return feed_history_api_obj(my->_db.get_feed_history());
+                return feed_history_api_object(my->_db.get_feed_history());
             });
         }
 
@@ -407,25 +407,25 @@ namespace golos {
             return results;
         }
 
-        std::vector<optional<account_api_obj>> database_api::lookup_account_names(
+        std::vector<optional<account_api_object>> database_api::lookup_account_names(
                 const std::vector<std::string> &account_names) const {
             return my->_db.with_read_lock([&]() {
                 return my->lookup_account_names(account_names);
             });
         }
 
-        std::vector<optional<account_api_obj>> database_api_impl::lookup_account_names(
+        std::vector<optional<account_api_object>> database_api_impl::lookup_account_names(
                 const std::vector<std::string> &account_names) const {
-            std::vector<optional<account_api_obj>> result;
+            std::vector<optional<account_api_object>> result;
             result.reserve(account_names.size());
 
             for (auto &name : account_names) {
                 auto itr = _db.find<account_object, by_name>(name);
 
                 if (itr) {
-                    result.push_back(account_api_obj(*itr, _db));
+                    result.push_back(account_api_object(*itr, _db));
                 } else {
-                    result.push_back(optional<account_api_obj>());
+                    result.push_back(optional<account_api_object>());
                 }
             }
 
@@ -462,15 +462,15 @@ namespace golos {
             return _db.get_index<account_index>().indices().size();
         }
 
-        std::vector<owner_authority_history_api_obj> database_api::get_owner_history(std::string account) const {
+        std::vector<owner_authority_history_api_object> database_api::get_owner_history(std::string account) const {
             return my->_db.with_read_lock([&]() {
-                std::vector<owner_authority_history_api_obj> results;
+                std::vector<owner_authority_history_api_object> results;
 
                 const auto &hist_idx = my->_db.get_index<owner_authority_history_index>().indices().get<by_account>();
                 auto itr = hist_idx.lower_bound(account);
 
                 while (itr != hist_idx.end() && itr->account == account) {
-                    results.push_back(owner_authority_history_api_obj(*itr));
+                    results.push_back(owner_authority_history_api_object(*itr));
                     ++itr;
                 }
 
@@ -478,15 +478,15 @@ namespace golos {
             });
         }
 
-        optional<account_recovery_request_api_obj> database_api::get_recovery_request(std::string account) const {
+        optional<account_recovery_request_api_object> database_api::get_recovery_request(std::string account) const {
             return my->_db.with_read_lock([&]() {
-                optional<account_recovery_request_api_obj> result;
+                optional<account_recovery_request_api_object> result;
 
                 const auto &rec_idx = my->_db.get_index<account_recovery_request_index>().indices().get<by_account>();
                 auto req = rec_idx.find(account);
 
                 if (req != rec_idx.end()) {
-                    result = account_recovery_request_api_obj(*req);
+                    result = account_recovery_request_api_object(*req);
                 }
 
                 return result;
@@ -571,19 +571,19 @@ namespace golos {
         //                                                                  //
         //////////////////////////////////////////////////////////////////////
 
-        std::vector<optional<witness_api_obj>> database_api::get_witnesses(
+        std::vector<optional<witness_api_object>> database_api::get_witnesses(
                 const std::vector<witness_object::id_type> &witness_ids) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_witnesses(witness_ids);
             });
         }
 
-        std::vector<optional<witness_api_obj>> database_api_impl::get_witnesses(
+        std::vector<optional<witness_api_object>> database_api_impl::get_witnesses(
                 const std::vector<witness_object::id_type> &witness_ids) const {
-            std::vector<optional<witness_api_obj>> result;
+            std::vector<optional<witness_api_object>> result;
             result.reserve(witness_ids.size());
             std::transform(witness_ids.begin(), witness_ids.end(), std::back_inserter(result),
-                           [this](witness_object::id_type id) -> optional<witness_api_obj> {
+                           [this](witness_object::id_type id) -> optional<witness_api_object> {
                                if (auto o = _db.find(id)) {
                                    return *o;
                                }
@@ -592,18 +592,18 @@ namespace golos {
             return result;
         }
 
-        fc::optional<witness_api_obj> database_api::get_witness_by_account(std::string account_name) const {
+        fc::optional<witness_api_object> database_api::get_witness_by_account(std::string account_name) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_witness_by_account(account_name);
             });
         }
 
-        std::vector<witness_api_obj> database_api::get_witnesses_by_vote(std::string from, uint32_t limit) const {
+        std::vector<witness_api_object> database_api::get_witnesses_by_vote(std::string from, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 //idump((from)(limit));
                 FC_ASSERT(limit <= 100);
 
-                std::vector<witness_api_obj> result;
+                std::vector<witness_api_object> result;
                 result.reserve(limit);
 
                 const auto &name_idx = my->_db.get_index<witness_index>().indices().get<by_name>();
@@ -617,18 +617,18 @@ namespace golos {
                 }
 
                 while (itr != vote_idx.end() && result.size() < limit && itr->votes > 0) {
-                    result.push_back(witness_api_obj(*itr));
+                    result.push_back(witness_api_object(*itr));
                     ++itr;
                 }
                 return result;
             });
         }
 
-        fc::optional<witness_api_obj> database_api_impl::get_witness_by_account(std::string account_name) const {
+        fc::optional<witness_api_object> database_api_impl::get_witness_by_account(std::string account_name) const {
             const auto &idx = _db.get_index<witness_index>().indices().get<by_name>();
             auto itr = idx.find(account_name);
             if (itr != idx.end()) {
-                return witness_api_obj(*itr);
+                return witness_api_object(*itr);
             }
             return {};
         }
@@ -649,7 +649,7 @@ namespace golos {
             // records to return.  This could be optimized, but we expect the
             // number of witnesses to be few and the frequency of calls to be rare
             std::set<account_name_type> witnesses_by_account_name;
-            for (const witness_api_obj &witness : witnesses_by_id) {
+            for (const witness_api_object &witness : witnesses_by_id) {
                 if (witness.owner >= lower_bound_name) { // we can ignore anything below lower_bound_name
                     witnesses_by_account_name.insert(witness.owner);
                 }
@@ -1218,10 +1218,10 @@ namespace golos {
             });
         }
 
-        std::vector<tag_api_obj> database_api::get_trending_tags(std::string after, uint32_t limit) const {
+        std::vector<tag_api_object> database_api::get_trending_tags(std::string after, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 limit = std::min(limit, uint32_t(1000));
-                std::vector<tag_api_obj> result;
+                std::vector<tag_api_object> result;
                 result.reserve(limit);
 
                 const auto &nidx = my->_db.get_index<tags::tag_stats_index>().indices().get<tags::by_tag>();
@@ -1238,7 +1238,7 @@ namespace golos {
                 }
 
                 while (itr != ridx.end() && result.size() < limit) {
-                    tag_api_obj push_object = tag_api_obj(*itr);
+                    tag_api_object push_object = tag_api_object(*itr);
 
                     if (!fc::is_utf8(push_object.name)) {
                         push_object.name = fc::prune_invalid_utf8(push_object.name);
@@ -2062,10 +2062,10 @@ namespace golos {
             });
         }
 
-        std::vector<category_api_obj> database_api::get_trending_categories(std::string after, uint32_t limit) const {
+        std::vector<category_api_object> database_api::get_trending_categories(std::string after, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 limit = std::min(limit, uint32_t(100));
-                std::vector<category_api_obj> result;
+                std::vector<category_api_object> result;
                 result.reserve(limit);
 
                 const auto &nidx = my->_db.get_index<chain::category_index>().indices().get<by_name>();
@@ -2082,35 +2082,35 @@ namespace golos {
                 }
 
                 while (itr != ridx.end() && result.size() < limit) {
-                    result.emplace_back(category_api_obj(*itr));
+                    result.emplace_back(category_api_object(*itr));
                     ++itr;
                 }
                 return result;
             });
         }
 
-        std::vector<category_api_obj> database_api::get_best_categories(std::string after, uint32_t limit) const {
+        std::vector<category_api_object> database_api::get_best_categories(std::string after, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 limit = std::min(limit, uint32_t(100));
-                std::vector<category_api_obj> result;
+                std::vector<category_api_object> result;
                 result.reserve(limit);
                 return result;
             });
         }
 
-        std::vector<category_api_obj> database_api::get_active_categories(std::string after, uint32_t limit) const {
+        std::vector<category_api_object> database_api::get_active_categories(std::string after, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 limit = std::min(limit, uint32_t(100));
-                std::vector<category_api_obj> result;
+                std::vector<category_api_object> result;
                 result.reserve(limit);
                 return result;
             });
         }
 
-        std::vector<category_api_obj> database_api::get_recent_categories(std::string after, uint32_t limit) const {
+        std::vector<category_api_object> database_api::get_recent_categories(std::string after, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 limit = std::min(limit, uint32_t(100));
-                std::vector<category_api_obj> result;
+                std::vector<category_api_object> result;
                 result.reserve(limit);
                 return result;
             });
@@ -2220,29 +2220,29 @@ namespace golos {
             });
         }
 
-        std::vector<savings_withdraw_api_obj> database_api::get_savings_withdraw_from(std::string account) const {
+        std::vector<savings_withdraw_api_object> database_api::get_savings_withdraw_from(std::string account) const {
             return my->_db.with_read_lock([&]() {
-                std::vector<savings_withdraw_api_obj> result;
+                std::vector<savings_withdraw_api_object> result;
 
                 const auto &from_rid_idx = my->_db.get_index<savings_withdraw_index>().indices().get<by_from_rid>();
                 auto itr = from_rid_idx.lower_bound(account);
                 while (itr != from_rid_idx.end() && itr->from == account) {
-                    result.push_back(savings_withdraw_api_obj(*itr));
+                    result.push_back(savings_withdraw_api_object(*itr));
                     ++itr;
                 }
                 return result;
             });
         }
 
-        std::vector<savings_withdraw_api_obj> database_api::get_savings_withdraw_to(std::string account) const {
+        std::vector<savings_withdraw_api_object> database_api::get_savings_withdraw_to(std::string account) const {
             return my->_db.with_read_lock([&]() {
-                std::vector<savings_withdraw_api_obj> result;
+                std::vector<savings_withdraw_api_object> result;
 
                 const auto &to_complete_idx = my->_db.get_index<savings_withdraw_index>().indices().get<
                         by_to_complete>();
                 auto itr = to_complete_idx.lower_bound(account);
                 while (itr != to_complete_idx.end() && itr->to == account) {
-                    result.push_back(savings_withdraw_api_obj(*itr));
+                    result.push_back(savings_withdraw_api_object(*itr));
                     ++itr;
                 }
                 return result;

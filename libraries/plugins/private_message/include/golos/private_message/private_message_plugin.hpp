@@ -92,7 +92,7 @@ namespace golos {
 
         typedef message_object::id_type message_id_type;
 
-        struct message_api_obj {
+        struct message_api_object {
             message_api_obj(const message_object &o) :
                     id(o.id),
                     from(o.from),
@@ -119,11 +119,11 @@ namespace golos {
             std::vector<char> encrypted_message;
         };
 
-        struct extended_message_object : public message_api_obj {
+        struct extended_message_object : public message_api_object {
             extended_message_object() {
             }
 
-            extended_message_object(const message_api_obj &o)
+            extended_message_object(const message_api_object &o)
                     : message_api_obj(o) {
             }
 

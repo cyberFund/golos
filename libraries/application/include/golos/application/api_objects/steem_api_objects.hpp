@@ -19,8 +19,8 @@ namespace golos {
 
         using namespace golos::chain;
 
-        struct category_api_obj {
-            category_api_obj(const chain::category_object &c) :
+        struct category_api_object {
+            category_api_object(const chain::category_object &c) :
                     id(c.id),
                     name(to_string(c.name)),
                     abs_rshares(c.abs_rshares),
@@ -29,7 +29,7 @@ namespace golos {
                     last_update(c.last_update) {
             }
 
-            category_api_obj() {
+            category_api_object() {
             }
 
             category_object::id_type id;
@@ -40,8 +40,8 @@ namespace golos {
             time_point_sec last_update;
         };
 
-        struct tag_api_obj {
-            tag_api_obj(const tags::tag_stats_object &o) :
+        struct tag_api_object {
+            tag_api_object(const tags::tag_stats_object &o) :
                     name(o.tag),
                     total_children_rshares2(o.total_children_rshares2),
                     total_payouts(o.total_payout),
@@ -50,7 +50,7 @@ namespace golos {
                     comments(o.comments) {
             }
 
-            tag_api_obj() {
+            tag_api_object() {
             }
 
             std::string name;
@@ -61,8 +61,8 @@ namespace golos {
             uint32_t comments = 0;
         };
 
-        struct language_api_obj {
-            language_api_obj(const languages::language_stats_object &o) :
+        struct language_api_object {
+            language_api_object(const languages::language_stats_object &o) :
                     name(o.language),
                     total_children_rshares2(o.total_children_rshares2),
                     total_payouts(o.total_payout),
@@ -71,7 +71,7 @@ namespace golos {
                     comments(o.comments) {
             }
 
-            language_api_obj() {
+            language_api_object() {
             }
 
             std::string name;
@@ -82,8 +82,8 @@ namespace golos {
             uint32_t comments = 0;
         };
 
-        struct account_api_obj {
-            account_api_obj(const chain::account_object &a, const chain::database &db)
+        struct account_api_object {
+            account_api_object(const chain::account_object &a, const chain::database &db)
                     :
                     id(a.id),
                     name(a.name),
@@ -172,7 +172,7 @@ namespace golos {
             }
 
 
-            account_api_obj() {
+            account_api_object() {
             }
 
             account_object::id_type id;
@@ -250,8 +250,8 @@ namespace golos {
             share_type new_average_market_bandwidth;
         };
 
-        struct owner_authority_history_api_obj {
-            owner_authority_history_api_obj(const chain::owner_authority_history_object &o)
+        struct owner_authority_history_api_object {
+            owner_authority_history_api_object(const chain::owner_authority_history_object &o)
                     :
                     id(o.id),
                     account(o.account),
@@ -259,7 +259,7 @@ namespace golos {
                     last_valid_time(o.last_valid_time) {
             }
 
-            owner_authority_history_api_obj() {
+            owner_authority_history_api_object() {
             }
 
             owner_authority_history_object::id_type id;
@@ -269,8 +269,8 @@ namespace golos {
             time_point_sec last_valid_time;
         };
 
-        struct account_recovery_request_api_obj {
-            account_recovery_request_api_obj(const chain::account_recovery_request_object &o)
+        struct account_recovery_request_api_object {
+            account_recovery_request_api_object(const chain::account_recovery_request_object &o)
                     :
                     id(o.id),
                     account_to_recover(o.account_to_recover),
@@ -278,7 +278,7 @@ namespace golos {
                     expires(o.expires) {
             }
 
-            account_recovery_request_api_obj() {
+            account_recovery_request_api_object() {
             }
 
             account_recovery_request_object::id_type id;
@@ -287,12 +287,12 @@ namespace golos {
             time_point_sec expires;
         };
 
-        struct account_history_api_obj {
+        struct account_history_api_object {
 
         };
 
-        struct savings_withdraw_api_obj {
-            savings_withdraw_api_obj(const chain::savings_withdraw_object &o) :
+        struct savings_withdraw_api_object {
+            savings_withdraw_api_object(const chain::savings_withdraw_object &o) :
                     id(o.id),
                     from(o.from),
                     to(o.to),
@@ -302,7 +302,7 @@ namespace golos {
                     complete(o.complete) {
             }
 
-            savings_withdraw_api_obj() {
+            savings_withdraw_api_object() {
             }
 
             savings_withdraw_object::id_type id;
@@ -314,14 +314,14 @@ namespace golos {
             time_point_sec complete;
         };
 
-        struct feed_history_api_obj {
-            feed_history_api_obj(const chain::feed_history_object &f) :
+        struct feed_history_api_object {
+            feed_history_api_object(const chain::feed_history_object &f) :
                     id(f.id),
                     current_median_history(f.current_median_history),
                     price_history(f.price_history.begin(), f.price_history.end()) {
             }
 
-            feed_history_api_obj() {
+            feed_history_api_object() {
             }
 
             feed_history_object::id_type id;
@@ -329,8 +329,8 @@ namespace golos {
             std::deque<price<0, 17, 0>> price_history;
         };
 
-        struct witness_api_obj {
-            witness_api_obj(const chain::witness_object &w) :
+        struct witness_api_object {
+            witness_api_object(const chain::witness_object &w) :
                     id(w.id),
                     owner(w.owner),
                     created(w.created),
@@ -353,7 +353,7 @@ namespace golos {
                     hardfork_time_vote(w.hardfork_time_vote) {
             }
 
-            witness_api_obj() {
+            witness_api_object() {
             }
 
             witness_object::id_type id;
@@ -381,11 +381,11 @@ namespace golos {
     }
 } // golos::application
 
-FC_REFLECT((golos::application::category_api_obj),
+FC_REFLECT((golos::application::category_api_object),
         (id)(name)(abs_rshares)(total_payouts)(discussions)(last_update)
 )
 
-FC_REFLECT((golos::application::account_api_obj),
+FC_REFLECT((golos::application::account_api_object),
         (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
                 (created)(mined)
                 (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
@@ -404,21 +404,21 @@ FC_REFLECT((golos::application::account_api_obj),
                 (new_average_bandwidth)(new_average_market_bandwidth)
 )
 
-FC_REFLECT((golos::application::owner_authority_history_api_obj),
+FC_REFLECT((golos::application::owner_authority_history_api_object),
         (id)
                 (account)
                 (previous_owner_authority)
                 (last_valid_time)
 )
 
-FC_REFLECT((golos::application::account_recovery_request_api_obj),
+FC_REFLECT((golos::application::account_recovery_request_api_object),
         (id)
                 (account_to_recover)
                 (new_owner_authority)
                 (expires)
 )
 
-FC_REFLECT((golos::application::savings_withdraw_api_obj),
+FC_REFLECT((golos::application::savings_withdraw_api_object),
         (id)
                 (from)
                 (to)
@@ -428,13 +428,13 @@ FC_REFLECT((golos::application::savings_withdraw_api_obj),
                 (complete)
 )
 
-FC_REFLECT((golos::application::feed_history_api_obj),
+FC_REFLECT((golos::application::feed_history_api_object),
         (id)
                 (current_median_history)
                 (price_history)
 )
 
-FC_REFLECT((golos::application::tag_api_obj),
+FC_REFLECT((golos::application::tag_api_object),
         (name)
                 (total_children_rshares2)
                 (total_payouts)
@@ -444,7 +444,7 @@ FC_REFLECT((golos::application::tag_api_obj),
 )
 
 
-FC_REFLECT((golos::application::language_api_obj),
+FC_REFLECT((golos::application::language_api_object),
         (name)
                 (total_children_rshares2)
                 (total_payouts)
@@ -454,7 +454,7 @@ FC_REFLECT((golos::application::language_api_obj),
 )
 
 
-FC_REFLECT((golos::application::witness_api_obj),
+FC_REFLECT((golos::application::witness_api_object),
         (id)
                 (owner)
                 (created)

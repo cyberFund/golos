@@ -127,7 +127,6 @@ namespace golos {
                 comment_benefactor_reward_operation<0, 17, 0>,
                 delegate_vesting_shares_operation<0, 17, 0>,
                 account_create_with_delegation_operation<0, 17, 0>,
-                comment_payout_extension_operation<0, 17, 0>,
 
                 asset_create_operation<0, 17, 0>,
                 asset_update_operation<0, 17, 0>,
