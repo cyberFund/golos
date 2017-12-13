@@ -1209,7 +1209,7 @@ namespace golos {
             return my->_remote_db->get_block(num);
         }
 
-        std::vector<protocol::applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual) {
+        std::vector<application::applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual) {
             return my->_remote_db->get_ops_in_block(block_num, only_virtual);
         }
 
@@ -1343,16 +1343,16 @@ namespace golos {
         }
 
         void wallet_api::add_operation_to_builder_transaction(transaction_handle_type transaction_handle,
-                                                              const operation &op) {
+                                                              const protocol::operation &op) {
             my->add_operation_to_builder_transaction(transaction_handle, op);
         }
 
         void wallet_api::replace_operation_in_builder_transaction(transaction_handle_type handle,
-                                                                  unsigned operation_index, const operation &new_op) {
+                                                                  unsigned operation_index, const protocol::operation &new_op) {
             my->replace_operation_in_builder_transaction(handle, operation_index, new_op);
         }
 
-        transaction wallet_api::preview_builder_transaction(transaction_handle_type handle) {
+        protocol::transaction wallet_api::preview_builder_transaction(transaction_handle_type handle) {
             return my->preview_builder_transaction(handle);
         }
 
@@ -1462,7 +1462,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((tx))
         }
 
-        operation wallet_api::get_prototype_operation(std::string operation_name) {
+        protocol::operation wallet_api::get_prototype_operation(std::string operation_name) {
             return my->get_prototype_operation(operation_name);
         }
 
@@ -1726,9 +1726,9 @@ namespace golos {
 
                 protocol::account_update_operation<0, 17, 0> op;
                 op.account = account_name;
-                op.owner = authority(1, owner, 1);
-                op.active = authority(1, active, 1);
-                op.posting = authority(1, posting, 1);
+                op.owner = protocol::authority(1, owner, 1);
+                op.active = protocol::authority(1, active, 1);
+                op.posting = protocol::authority(1, posting, 1);
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
 
@@ -1754,7 +1754,7 @@ namespace golos {
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = accounts[0].json_metadata;
 
-            authority new_auth;
+            protocol::authority new_auth;
 
             switch (type) {
                 case (owner):
@@ -1817,7 +1817,7 @@ namespace golos {
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = accounts[0].json_metadata;
 
-            authority new_auth;
+            protocol::authority new_auth;
 
             switch (type) {
                 case (owner):
@@ -1880,7 +1880,7 @@ namespace golos {
             op.memo_key = accounts[0].memo_key;
             op.json_metadata = accounts[0].json_metadata;
 
-            authority new_auth;
+            protocol::authority new_auth;
 
             switch (type) {
                 case (owner):
@@ -2971,8 +2971,8 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        message_body wallet_api::try_decrypt_message(const message_api_object &mo) {
-            message_body result;
+        private_message::message_body wallet_api::try_decrypt_message(const private_message::message_api_object &mo) {
+            private_message::message_body result;
 
             fc::sha512 shared_secret;
 
@@ -3010,7 +3010,7 @@ namespace golos {
 
             auto decrypt_data = fc::aes_decrypt(encrypt_key, mo.encrypted_message);
             try {
-                return fc::raw::unpack<message_body>(decrypt_data);
+                return fc::raw::unpack<private_message::message_body>(decrypt_data);
             } catch (...) {
                 return result;
             }
