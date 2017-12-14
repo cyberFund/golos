@@ -871,7 +871,7 @@ namespace golos {
              * you can fill in.  It's better than nothing.
              *
              * @param operation_type the type of operation to return, must be one of the
-             *                       operations defined in `steemit/chain/operations.hpp`
+             *                       operations defined in `golos/chain/operations.hpp`
              *                       (e.g., "global_parameters_update_operation")
              * @return a default-constructed operation of the given type
              */
@@ -924,8 +924,7 @@ namespace golos {
              * @returns the signed transaction creating/updating the bid
              */
 
-            protocol::signed_transaction bid_collateral(std::string bidder_name, std::string debt_amount,
-                                                        std::string debt_symbol, std::string additional_collateral,
+            protocol::signed_transaction bid_collateral(std::string bidder_name, asset debt, std::string additional_collateral,
                                                         bool broadcast = false);
 
             /**
@@ -1185,8 +1184,7 @@ namespace golos {
              * @param broadcast true to broadcast the transaction on the network
              * @returns the signed transaction burning the asset
              */
-            protocol::signed_transaction reserve_asset(std::string from, std::string amount, std::string symbol,
-                                                       bool broadcast = false);
+            protocol::signed_transaction reserve_asset(std::string from, asset amount, bool broadcast = false);
 
             /** Forces a global settling of the given asset (black swan or prediction markets).
              *

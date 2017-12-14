@@ -1134,19 +1134,18 @@ namespace golos {
                     _builder_transactions.erase(handle);
                 }
 
-                chain::signed_transaction bid_collateral(std::string bidder_name, std::string debt_amount,
-                                                            std::string debt_symbol, std::string additional_collateral,
-                                                            bool broadcast) {
+                chain::signed_transaction bid_collateral(std::string bidder_name, asset debt, std::string additional_collateral, bool broadcast) {
                     try {
-                        optional<chain::asset_object> debt_asset = find_asset(debt_symbol);
+                        optional<chain::asset_object> debt_asset = find_asset(debt.symbol);
                         if (!debt_asset)
                             FC_THROW("No asset with that symbol exists!");
-                        const chain::asset_object &collateral = get_asset(
-                                get_bitasset_data(debt_asset->asset_name).options.short_backing_asset);
+                        FC_ASSERT(debt.get_decimals() == debt_asset->precision);
+
+                        const chain::asset_object &collateral = get_asset(get_bitasset_data(debt_asset->asset_name).options.short_backing_asset);
 
                         protocol::bid_collateral_operation<0, 17, 0> op;
                         op.bidder = get_account(bidder_name).name;
-                        op.debt_covered = debt_asset->amount_from_string(debt_amount);
+                        op.debt_covered = debt;
                         op.additional_collateral = collateral.amount_from_string(additional_collateral);
 
                         chain::signed_transaction tx;
@@ -1295,10 +1294,8 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_collateral_bids(get_asset(asset).asset_name, limit, start);
         }
 
-        chain::signed_transaction wallet_api::bid_collateral(std::string bidder_name, std::string debt_amount,
-                                                                std::string debt_symbol,
-                                                                std::string additional_collateral, bool broadcast) {
-            return my->bid_collateral(bidder_name, debt_amount, debt_symbol, additional_collateral, broadcast);
+        chain::signed_transaction wallet_api::bid_collateral(std::string bidder_name, asset debt_amount, std::string additional_collateral, bool broadcast) {
+            return my->bid_collateral(bidder_name, debt, additional_collateral, broadcast);
         }
 
         brain_key_info wallet_api::suggest_brain_key() const {
@@ -2735,17 +2732,16 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((from)(symbol)(amount)(broadcast))
         }
 
-        chain::signed_transaction wallet_api::reserve_asset(std::string from, std::string amount, std::string symbol,
-                                                               bool broadcast /* = false */) {
+        chain::signed_transaction wallet_api::reserve_asset(std::string from, asset amount, bool broadcast /* = false */) {
             try {
                 application::account_api_object from_account = get_account(from);
-                optional<chain::asset_object> asset_to_reserve = my->find_asset(symbol);
+                optional<chain::asset_object> asset_to_reserve = my->find_asset(amount.symbol);
                 if (!asset_to_reserve)
                     FC_THROW("No asset with that symbol exists!");
 
                 protocol::asset_reserve_operation<0, 17, 0> reserve_op;
                 reserve_op.payer = from_account.name;
-                reserve_op.amount_to_reserve = asset_to_reserve->amount_from_string(amount);
+                reserve_op.amount_to_reserve = amount;
 
                 chain::signed_transaction tx;
                 tx.operations.push_back(reserve_op);
