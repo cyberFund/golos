@@ -2838,7 +2838,7 @@ namespace golos {
             op.voter = voter;
             op.author = author;
             op.permlink = permlink;
-            op.weight = weight * STEEMIT_1_PERCENT;
+            op.weight = int16_t(weight * STEEMIT_1_PERCENT);
 
             chain::signed_transaction tx;
             tx.operations.push_back(op);
