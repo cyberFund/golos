@@ -1394,8 +1394,8 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
 
             generate_blocks(db.get_comment("alice", std::string("test")).cashout_time, true);
 
-            auto start_balance = latest_asset(db.get_comment("alice", std::string("test")).total_payout_value.amount / 2,
-                                              SBD_SYMBOL_NAME);
+            auto start_balance = latest_asset(
+                    db.get_comment("alice", std::string("test")).total_payout_value.amount / 2, SBD_SYMBOL_NAME);
 
             BOOST_TEST_MESSAGE("Setup conversion to TESTS");
             tx.operations.clear();
@@ -2989,9 +2989,9 @@ BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
             tx.sign(alice_private_key, db.get_chain_id());
             db.push_transaction(tx, 0);
 
-            auto alice_vshares = utilities::calculate_claims(db.get_comment("alice", std::string("test")).net_rshares.value,
-                                                             db.get<reward_fund_object, by_name>(
-                                                                     STEEMIT_POST_REWARD_FUND_NAME));
+            auto alice_vshares = utilities::calculate_claims(
+                    db.get_comment("alice", std::string("test")).net_rshares.value,
+                    db.get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME));
 
             generate_blocks(5);
 

@@ -644,8 +644,6 @@ FC_API(golos::application::database_api,
                 (get_content_replies)
                 (get_discussions_by_author_before_date)
                 (get_replies_by_last_update)
-                (get_payout_extension_cost)
-                (get_payout_extension_time)
 
                 // Witnesses
                 (get_witnesses)

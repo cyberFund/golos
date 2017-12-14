@@ -480,7 +480,7 @@ namespace golos {
                         work.input.worker_account = miner;
                         work.input.nonce = start + thread_num;
                         op.props = {protocol::asset<0, 16, 0>(_miner_prop_vote.account_creation_fee.amount,
-                                                              _miner_prop_vote.account_creation_fee.symbol_name()),
+                                                              _miner_prop_vote.account_creation_fee.symbol_type_value()),
                                     _miner_prop_vote.maximum_block_size, _miner_prop_vote.sbd_interest_rate};
 
                         while (true) {

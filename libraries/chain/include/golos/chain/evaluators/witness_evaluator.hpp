@@ -6,13 +6,38 @@
 
 namespace golos {
     namespace chain {
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = typename type_traits::static_range<true>>
         class witness_update_evaluator : public evaluator<witness_update_evaluator<Major, Hardfork, Release>, Major,
                 Hardfork, Release> {
+
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>
+                : public evaluator<
+                        witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>,
+                        Major, Hardfork, Release> {
         public:
             typedef protocol::witness_update_operation<Major, Hardfork, Release> operation_type;
 
-            witness_update_evaluator(database &db) : evaluator<witness_update_evaluator<Major, Hardfork, Release>,
+            witness_update_evaluator(database &db) : evaluator<
+                    witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>,
+                    Major, Hardfork, Release>(db) {
+            }
+
+            void do_apply(const operation_type &o);
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>
+                : public evaluator<
+                        witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>,
+                        Major, Hardfork, Release> {
+        public:
+            typedef protocol::witness_update_operation<Major, Hardfork, Release> operation_type;
+
+            witness_update_evaluator(database &db) : evaluator<
+                    witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>,
                     Major, Hardfork, Release>(db) {
             }
 

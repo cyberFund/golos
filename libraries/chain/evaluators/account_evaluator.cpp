@@ -10,8 +10,7 @@
 namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void account_create_evaluator<Major, Hardfork, Release>::do_apply(
-                const account_create_operation<Major, Hardfork, Release> &o) {
+        void account_create_evaluator<Major, Hardfork, Release>::do_apply(const account_create_operation<Major, Hardfork, Release> &o) {
             const auto &creator = this->db.get_account(o.creator);
 
             const auto &props = this->db.get_dynamic_global_properties();
@@ -24,9 +23,7 @@ namespace golos {
 
             asset<0, 17, 0> fee(0, STEEM_SYMBOL_NAME);
             if (this->db.template has_hardfork(STEEMIT_HARDFORK_0_17__101)) {
-                fee = asset<0, 17, 0>(
-                        wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER,
-                        STEEM_SYMBOL_NAME);
+                fee = asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL_NAME);
             } else {
                 fee = wso.median_props.account_creation_fee;
             }
