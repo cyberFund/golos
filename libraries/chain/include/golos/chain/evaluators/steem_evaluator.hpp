@@ -44,24 +44,64 @@ namespace golos {
             void do_apply(const protocol::vote_operation<Major, Hardfork, Release> &o);
         };
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
         class pow_evaluator : public evaluator<pow_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public evaluator<
+                pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>, Major, Hardfork,
+                Release> {
         public:
             typedef protocol::pow_operation<Major, Hardfork, Release> operation_type;
 
-            pow_evaluator(database &db) : evaluator<pow_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release>(
-                    db) {
+            pow_evaluator(database &db) : evaluator<pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>, Major, Hardfork,
+                    Release>(db) {
             }
 
             void do_apply(const protocol::pow_operation<Major, Hardfork, Release> &o);
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public evaluator<
+                pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>, Major, Hardfork,
+                Release> {
+        public:
+            typedef protocol::pow_operation<Major, Hardfork, Release> operation_type;
+
+            pow_evaluator(database &db) : evaluator<pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>, Major, Hardfork,
+                    Release>(db) {
+            }
+
+            void do_apply(const protocol::pow_operation<Major, Hardfork, Release> &o);
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
         class pow2_evaluator : public evaluator<pow2_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>> : public evaluator<
+                pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>, Major, Hardfork,
+                Release> {
         public:
             typedef protocol::pow2_operation<Major, Hardfork, Release> operation_type;
 
-            pow2_evaluator(database &db) : evaluator<pow2_evaluator<Major, Hardfork, Release>, Major, Hardfork,
+            pow2_evaluator(database &db) : evaluator<pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>, Major,
+                    Hardfork, Release>(db) {
+            }
+
+            void do_apply(const protocol::pow2_operation<Major, Hardfork, Release> &o);
+        };
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        class pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>> : public evaluator<
+                pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>, Major, Hardfork,
+                Release> {
+        public:
+            typedef protocol::pow2_operation<Major, Hardfork, Release> operation_type;
+
+            pow2_evaluator(database &db) : evaluator<pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>, Major, Hardfork,
                     Release>(db) {
             }
 

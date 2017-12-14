@@ -2035,33 +2035,9 @@ namespace golos {
             }
         }
 
-        asset<0, 17, 0> database::get_payout_extension_cost(const comment_object &input_comment,
-                                                            const fc::time_point_sec &input_time) const {
-            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() > STEEMIT_CASHOUT_WINDOW_SECONDS / 7,
-                      "Extension time should be equal or greater than a day");
-            FC_ASSERT((input_time - fc::time_point::now()).to_seconds() < STEEMIT_CASHOUT_WINDOW_SECONDS,
-                      "Extension time should be less or equal than a week");
-
-            return asset<0, 17, 0>((input_time - fc::time_point::now()).to_seconds() *
-                                   STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value /
-                                   (60 * 60 * 24), SBD_SYMBOL_NAME);
-        }
-
-        time_point_sec database::get_payout_extension_time(const comment_object &input_comment,
-                                                           const asset<0, 17, 0> &input_cost) const {
-            FC_ASSERT(input_cost.symbol == SBD_SYMBOL_NAME, "Extension payment should be in SBD");
-            FC_ASSERT(input_cost.amount / STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount > 0,
-                      "Extension payment should cover more than a day");
-            return fc::time_point::now() + fc::seconds(
-                    ((input_cost.amount.value * 60 * 60 * 24) /
-                     STEEMIT_PAYOUT_EXTENSION_COST_PER_DAY.amount.value));
-        }
-
         asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
-            return name.size() >= STEEMIT_MIN_ASSET_SYMBOL_LENGTH && name.size() < STEEMIT_MAX_ASSET_SYMBOL_LENGTH / 2
-                   ? asset<0, 17, 0>(get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY * 90 /
-                                     std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME)
-                   : asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            return {get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY * 90 /
+                    std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME};
         }
 
         void database::pay_liquidity_reward() {
@@ -3552,7 +3528,8 @@ namespace golos {
                 auto issuer_fees = pay_market_fees(recv_asset, receives);
                 pay_order(seller, receives - issuer_fees, pays);
 
-                push_virtual_operation(fill_order_operation<0, 17, 0>(order.seller, order.order_id, pays, receives, issuer_fees));
+                push_virtual_operation(
+                        fill_order_operation<0, 17, 0>(order.seller, order.order_id, pays, receives, issuer_fees));
 
                 if (pays == order.for_sale) {
                     remove(order);
@@ -4228,8 +4205,9 @@ namespace golos {
                 if (itr == index.end()) {
                     FC_ASSERT(delta.amount > 0,
                               "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}",
-                              ("a", get_account(a.name).name)("b", to_pretty_string(asset<0, 17, 0>(0, delta.symbol, delta.get_decimals())))(
-                                      "r", to_pretty_string(-delta)));
+                              ("a", get_account(a.name).name)("b", to_pretty_string(
+                                      asset<0, 17, 0>(0, delta.symbol, delta.get_decimals())))("r", to_pretty_string(
+                                      -delta)));
 
                     create<account_balance_object>([&](account_balance_object &b) {
                         b.owner = a.name;

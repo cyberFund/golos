@@ -461,8 +461,7 @@ namespace golos {
                     fc::uint128_t avg_cashout_sec;
 
                     if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(
-                                comment).sec_since_epoch();
+                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
                         if (this->db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
@@ -548,12 +547,15 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename Operation>
-        void pow_apply(database &db, Operation o) {
-            const auto &dgp = db.get_dynamic_global_properties();
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::do_apply(
+                const operation_type &o) {
+            FC_ASSERT(!this->db.has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
 
-            if (db.is_producing() || db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
-                const auto &witness_by_work = db.template get_index<witness_index>().indices().
+            const auto &dgp = this->db.get_dynamic_global_properties();
+
+            if (this->db.is_producing() || this->db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
+                const auto &witness_by_work = this->db.template get_index<witness_index>().indices().
                         template get<by_work>();
                 auto work_itr = witness_by_work.find(o.work.work);
                 if (work_itr != witness_by_work.end()) {
@@ -561,118 +563,123 @@ namespace golos {
                 }
             }
 
-            const auto &accounts_by_name = db.template get_index<account_index>().indices().
+            const auto &accounts_by_name = this->db.template get_index<account_index>().indices().
                     template get<by_name>();
 
             auto itr = accounts_by_name.find(o.get_worker_account());
             if (itr == accounts_by_name.end()) {
-                db.template create<account_object>([&](account_object &acc) {
+                this->db.template create<account_object>([&](account_object &acc) {
                     acc.name = o.get_worker_account();
                     acc.memo_key = o.work.worker;
                     acc.created = dgp.time;
                     acc.last_vote_time = dgp.time;
 
-                    if (!db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
+                    if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
                         acc.recovery_account = STEEMIT_INIT_MINER_NAME;
                     } else {
                         acc.recovery_account = "";
                     } /// highest voted witness at time of recovery
                 });
 
-                db.template create<account_authority_object>([&](account_authority_object &auth) {
+                this->db.template create<account_authority_object>([&](account_authority_object &auth) {
                     auth.account = o.get_worker_account();
                     auth.owner = authority(1, o.work.worker, 1);
                     auth.active = auth.owner;
                     auth.posting = auth.owner;
                 });
 
-                db.template create<account_balance_object>([&](account_balance_object &b) {
+                this->db.template create<account_balance_object>([&](account_balance_object &b) {
                     b.owner = o.get_worker_account();
                     b.asset_name = STEEM_SYMBOL_NAME;
                     b.balance = 0;
                     b.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
                 });
 
-                db.template create<account_balance_object>([&](account_balance_object &b) {
+                this->db.template create<account_balance_object>([&](account_balance_object &b) {
                     b.owner = o.get_worker_account();
                     b.asset_name = SBD_SYMBOL_NAME;
                     b.balance = 0;
                     b.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
                 });
 
-                db.template create<account_statistics_object>([&](account_statistics_object &s) {
+                this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
                     s.owner = o.get_worker_account();
                 });
             }
 
-            const auto &worker_account = db.get_account(o.get_worker_account()); // verify it exists
-            const auto &worker_auth = db.get<account_authority_object, by_account>(o.get_worker_account());
+            const auto &worker_account = this->db.get_account(o.get_worker_account()); // verify it exists
+            const auto &worker_auth = this->db.template get<account_authority_object, by_account>(o.get_worker_account());
             FC_ASSERT(worker_auth.active.num_auths() == 1, "Miners can only have one key authority. ${a}",
                       ("a", worker_auth.active));
             FC_ASSERT(worker_auth.active.key_auths.size() == 1, "Miners may only have one key authority.");
             FC_ASSERT(worker_auth.active.key_auths.begin()->first == o.work.worker,
                       "Work must be performed by key that signed the work.");
-            FC_ASSERT(o.block_id == db.head_block_id(), "pow not for last block");
-            if (db.has_hardfork(STEEMIT_HARDFORK_0_13__256)) {
-                FC_ASSERT(worker_account.last_account_update < db.head_block_time(),
+            FC_ASSERT(o.block_id == this->db.head_block_id(), "pow not for last block");
+            if (this->db.has_hardfork(STEEMIT_HARDFORK_0_13__256)) {
+                FC_ASSERT(worker_account.last_account_update < this->db.head_block_time(),
                           "Worker account must not have updated their account this block.");
             }
 
-            fc::sha256 target = db.get_pow_target();
+            fc::sha256 target = this->db.get_pow_target();
 
             FC_ASSERT(o.work.work < target, "Work lacks sufficient difficulty.");
 
-            db.modify(dgp, [&](dynamic_global_property_object &p) {
+            this->db.modify(dgp, [&](dynamic_global_property_object &p) {
                 p.total_pow++; // make sure this doesn't break anything...
                 p.num_pow_witnesses++;
             });
 
 
-            const witness_object *cur_witness = db.find_witness(worker_account.name);
+            const witness_object *cur_witness = this->db.find_witness(worker_account.name);
             if (cur_witness) {
                 FC_ASSERT(cur_witness->pow_worker == 0, "This account is already scheduled for pow block production.");
-                db.modify(*cur_witness, [&](witness_object &w) {
+                this->db.modify(*cur_witness, [&](witness_object &w) {
                     w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
-                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
-                               o.props.sbd_interest_rate};
+                                               o.props.account_creation_fee.symbol_name(),
+                                               o.props.account_creation_fee.get_decimals()),
+                               asset<0, 17, 0>(STEEMIT_MIN_ASSET_CREATION_FEE, SBD_SYMBOL_NAME),
+                               o.props.maximum_block_size, o.props.sbd_interest_rate};
                     w.pow_worker = dgp.total_pow;
                     w.last_work = o.work.work;
                 });
             } else {
-                db.template create<witness_object>([&](witness_object &w) {
+                this->db.template create<witness_object>([&](witness_object &w) {
                     w.owner = o.get_worker_account();
                     w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
-                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
-                               o.props.sbd_interest_rate};
+                                               o.props.account_creation_fee.symbol_name(),
+                                               o.props.account_creation_fee.get_decimals()),
+                               asset<0, 17, 0>(STEEMIT_MIN_ASSET_CREATION_FEE, SBD_SYMBOL_NAME),
+                               o.props.maximum_block_size, o.props.sbd_interest_rate};
                     w.signing_key = o.work.worker;
                     w.pow_worker = dgp.total_pow;
                     w.last_work = o.work.work;
                 });
             }
             /// POW reward depends upon whether we are before or after MINER_VOTING kicks in
-            asset<0, 17, 0> pow_reward = db.get_pow_reward();
-            if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
+            asset<0, 17, 0> pow_reward = this->db.get_pow_reward();
+            if (this->db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
                 pow_reward.amount *= STEEMIT_MAX_WITNESSES;
             }
-            db.adjust_supply(pow_reward, true);
+            this->db.adjust_supply(pow_reward, true);
 
             /// pay the witness that includes this POW
-            const auto &inc_witness = db.get_account(dgp.current_witness);
-            if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
-                db.adjust_balance(inc_witness, pow_reward);
+            const auto &inc_witness = this->db.get_account(dgp.current_witness);
+            if (this->db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
+                this->db.adjust_balance(inc_witness, pow_reward);
             } else {
-                db.create_vesting(inc_witness, pow_reward);
+                this->db.create_vesting(inc_witness, pow_reward);
             }
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void pow_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
+        void pow_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::do_apply(
+                const operation_type &o) {
             FC_ASSERT(!this->db.has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
-            pow_apply<Major, Hardfork, Release, operation_type>(this->db, o);
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void pow2_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
+        void pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::do_apply(
+                const operation_type &o) {
             const auto &dgp = this->db.get_dynamic_global_properties();
             uint32_t target_pow = this->db.get_pow_summary_target();
             account_name_type worker_account;
@@ -744,8 +751,10 @@ namespace golos {
                 this->db.template create<witness_object>([&](witness_object &w) {
                     w.owner = worker_account;
                     w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
-                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
-                               o.props.sbd_interest_rate};
+                                               o.props.account_creation_fee.symbol_name(),
+                                               o.props.account_creation_fee.get_decimals()),
+                               asset<0, 17, 0>(STEEMIT_MIN_ASSET_CREATION_FEE, SBD_SYMBOL_NAME),
+                               o.props.maximum_block_size, o.props.sbd_interest_rate};
                     w.signing_key = *o.new_owner_key;
                     w.pow_worker = dgp.total_pow;
                 });
@@ -756,8 +765,10 @@ namespace golos {
                 FC_ASSERT(cur_witness->pow_worker == 0, "This account is already scheduled for pow block production.");
                 this->db.modify(*cur_witness, [&](witness_object &w) {
                     w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
-                                               o.props.account_creation_fee.symbol_name()), o.props.maximum_block_size,
-                               o.props.sbd_interest_rate};
+                                               o.props.account_creation_fee.symbol_name(),
+                                               o.props.account_creation_fee.get_decimals()),
+                               asset<0, 17, 0>(STEEMIT_MIN_ASSET_CREATION_FEE, SBD_SYMBOL_NAME),
+                               o.props.maximum_block_size, o.props.sbd_interest_rate};
                     w.pow_worker = dgp.total_pow;
                 });
             }
@@ -773,13 +784,108 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void pow2_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::do_apply(
+                const operation_type &o) {
+            const auto &dgp = this->db.get_dynamic_global_properties();
+            uint32_t target_pow = this->db.get_pow_summary_target();
+            account_name_type worker_account;
+
+            const auto &work = o.work.template get<equihash_pow>();
+            FC_ASSERT(work.prev_block == this->db.head_block_id(), "Equihash pow op not for last block");
+            auto recent_block_num = protocol::block_header::num_from_id(work.input.prev_block);
+            FC_ASSERT(recent_block_num > dgp.last_irreversible_block_num,
+                      "Equihash pow done for block older than last irreversible block num. Recent block: ${l}, Irreversible block: ${r}",
+                      ("l", recent_block_num)("r", dgp.last_irreversible_block_num));
+            FC_ASSERT(work.pow_summary < target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}",
+                      ("w", work.pow_summary)("t", target_pow));
+            worker_account = work.input.worker_account;
+
+            FC_ASSERT(o.props.maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2,
+                      "Voted maximum block size is too small.");
+
+            this->db.modify(dgp, [&](dynamic_global_property_object &p) {
+                p.total_pow++;
+                p.num_pow_witnesses++;
+            });
+
+            const auto &accounts_by_name = this->db.template get_index<account_index>().indices().
+                    template get<by_name>();
+            auto itr = accounts_by_name.find(worker_account);
+            if (itr == accounts_by_name.end()) {
+                FC_ASSERT(o.new_owner_key.valid(), "New owner key is not valid.");
+                this->db.template create<account_object>([&](account_object &acc) {
+                    acc.name = worker_account;
+                    acc.memo_key = *o.new_owner_key;
+                    acc.created = dgp.time;
+                    acc.last_vote_time = dgp.time;
+                    acc.recovery_account = ""; /// highest voted witness at time of recovery
+                });
+
+                this->db.template create<account_authority_object>([&](account_authority_object &auth) {
+                    auth.account = worker_account;
+                    auth.owner = authority(1, *o.new_owner_key, 1);
+                    auth.active = auth.owner;
+                    auth.posting = auth.owner;
+                });
+
+                this->db.template create<account_balance_object>([&](account_balance_object &b) {
+                    b.owner = worker_account;
+                    b.asset_name = STEEM_SYMBOL_NAME;
+                    b.balance = 0;
+                    b.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
+                });
+
+                this->db.template create<account_balance_object>([&](account_balance_object &b) {
+                    b.owner = worker_account;
+                    b.asset_name = SBD_SYMBOL_NAME;
+                    b.balance = 0;
+                    b.precision = STEEMIT_BLOCKCHAIN_PRECISION_DIGITS;
+                });
+
+                this->db.template create<account_statistics_object>([&](account_statistics_object &s) {
+                    s.owner = worker_account;
+                });
+
+                this->db.template create<witness_object>([&](witness_object &w) {
+                    w.owner = worker_account;
+                    w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
+                                               o.props.account_creation_fee.symbol_name(),
+                                               o.props.account_creation_fee.get_decimals()),
+                               asset<0, 17, 0>(o.props.asset_creation_fee.amount,
+                                               o.props.asset_creation_fee.symbol_name(),
+                                               o.props.asset_creation_fee.get_decimals()), o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
+                    w.signing_key = *o.new_owner_key;
+                    w.pow_worker = dgp.total_pow;
+                });
+            } else {
+                FC_ASSERT(!o.new_owner_key.valid(), "Cannot specify an owner key unless creating account.");
+                const witness_object *cur_witness = this->db.find_witness(worker_account);
+                FC_ASSERT(cur_witness, "Witness must be created for existing account before mining.");
+                FC_ASSERT(cur_witness->pow_worker == 0, "This account is already scheduled for pow block production.");
+                this->db.modify(*cur_witness, [&](witness_object &w) {
+                    w.props = {asset<0, 17, 0>(o.props.account_creation_fee.amount,
+                                               o.props.account_creation_fee.symbol_name(),
+                                               o.props.account_creation_fee.get_decimals()),
+                               asset<0, 17, 0>(o.props.asset_creation_fee.amount,
+                                               o.props.asset_creation_fee.symbol_name(),
+                                               o.props.asset_creation_fee.get_decimals()), o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
+                    w.pow_worker = dgp.total_pow;
+                });
+            }
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void feed_publish_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
 
             const auto &witness = this->db.get_witness(o.publisher);
             this->db.modify(witness, [&](witness_object &w) {
                 w.sbd_exchange_rate = protocol::price<0, 17, 0>(
-                        protocol::asset<0, 17, 0>(o.exchange_rate.base.amount, o.exchange_rate.base.symbol_name()),
-                        protocol::asset<0, 17, 0>(o.exchange_rate.quote.amount, o.exchange_rate.quote.symbol_name()));
+                        protocol::asset<0, 17, 0>(o.exchange_rate.base.amount, o.exchange_rate.base.symbol_name(),
+                                                  o.exchange_rate.base.get_decimals()),
+                        protocol::asset<0, 17, 0>(o.exchange_rate.quote.amount, o.exchange_rate.quote.symbol_name(),
+                                                  o.exchange_rate.quote.get_decimals()));
                 w.last_sbd_exchange_update = this->db.head_block_time();
             });
         }

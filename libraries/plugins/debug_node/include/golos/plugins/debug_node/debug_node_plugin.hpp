@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <golos/application/plugin.hpp>
@@ -10,7 +9,7 @@
 
 namespace golos {
     namespace protocol {
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename>
         struct chain_properties;
 
         struct pow2;
@@ -31,7 +30,9 @@ namespace golos {
         namespace debug_node {
             using application::application;
 
-            namespace detail { class debug_node_plugin_impl; }
+            namespace detail {
+                class debug_node_plugin_impl;
+            }
 
             class private_key_storage {
             public:
@@ -39,11 +40,9 @@ namespace golos {
 
                 virtual ~private_key_storage();
 
-                virtual void maybe_get_private_key(
-                        fc::optional<fc::ecc::private_key> &result,
-                        const golos::chain::public_key_type &pubkey,
-                        const std::string &account_name
-                ) = 0;
+                virtual void maybe_get_private_key(fc::optional<fc::ecc::private_key> &result,
+                                                   const golos::chain::public_key_type &pubkey,
+                                                   const std::string &account_name) = 0;
             };
 
             class debug_node_plugin : public golos::application::plugin {
@@ -56,9 +55,8 @@ namespace golos {
 
                 virtual void plugin_initialize(const boost::program_options::variables_map &options) override;
 
-                virtual void plugin_set_program_options(
-                        boost::program_options::options_description &cli,
-                        boost::program_options::options_description &cfg) override;
+                virtual void plugin_set_program_options(boost::program_options::options_description &cli,
+                                                        boost::program_options::options_description &cfg) override;
 
                 virtual void plugin_startup() override;
 
@@ -71,8 +69,8 @@ namespace golos {
                     chain::block_id_type head_id = db.head_block_id();
                     auto it = _debug_updates.find(head_id);
                     if (it == _debug_updates.end()) {
-                        it = _debug_updates.emplace(head_id, std::vector<std::function<void(
-                                chain::database & )>>()).first;
+                        it = _debug_updates.emplace(head_id,
+                                                    std::vector<std::function<void(chain::database &)>>()).first;
                     }
                     it->second.emplace_back(callback);
 
@@ -85,21 +83,14 @@ namespace golos {
                 }
 
 
-                uint32_t debug_generate_blocks(
-                        const std::string &debug_key,
-                        uint32_t count,
-                        uint32_t skip = golos::chain::database::skip_nothing,
-                        uint32_t miss_blocks = 0,
-                        private_key_storage *key_storage = nullptr
-                );
+                uint32_t debug_generate_blocks(const std::string &debug_key, uint32_t count,
+                                               uint32_t skip = golos::chain::database::skip_nothing,
+                                               uint32_t miss_blocks = 0, private_key_storage *key_storage = nullptr);
 
-                uint32_t debug_generate_blocks_until(
-                        const std::string &debug_key,
-                        const fc::time_point_sec &head_block_time,
-                        bool generate_sparsely,
-                        uint32_t skip = golos::chain::database::skip_nothing,
-                        private_key_storage *key_storage = nullptr
-                );
+                uint32_t debug_generate_blocks_until(const std::string &debug_key,
+                                                     const fc::time_point_sec &head_block_time, bool generate_sparsely,
+                                                     uint32_t skip = golos::chain::database::skip_nothing,
+                                                     private_key_storage *key_storage = nullptr);
 
                 void set_json_object_stream(const std::string &filename);
 
@@ -109,10 +100,7 @@ namespace golos {
 
                 void load_debug_updates(const fc::variant_object &target);
 
-                void debug_mine_work(
-                        chain::pow2 &work,
-                        uint32_t summary_target
-                );
+                void debug_mine_work(chain::pow2 &work, uint32_t summary_target);
 
                 bool logging = true;
 
@@ -136,8 +124,7 @@ namespace golos {
 
                 std::vector<std::string> _edit_scripts;
                 //std::map< protocol::block_id_type, std::vector< fc::variant_object > > _debug_updates;
-                std::map<protocol::block_id_type, std::vector<std::function<void(
-                        chain::database & )>>> _debug_updates;
+                std::map<protocol::block_id_type, std::vector<std::function<void(chain::database & )>>> _debug_updates;
             };
 
         }

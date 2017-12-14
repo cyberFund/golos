@@ -7,7 +7,8 @@
 namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void witness_update_evaluator<Major, Hardfork, Release>::do_apply(const operation_type &o) {
+        void witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::do_apply(
+                const operation_type &o) {
 
             this->db.get_account(o.owner); // verify owner exists
 
@@ -32,8 +33,10 @@ namespace golos {
                 this->db.modify(*wit_itr, [&](witness_object &w) {
                     from_string(w.url, o.url);
                     w.signing_key = o.block_signing_key;
-                    w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name()},
-                               o.props.maximum_block_size, o.props.sbd_interest_rate};
+                    w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name(),
+                                o.props.account_creation_fee.get_decimals()},
+                               {STEEMIT_MIN_ASSET_CREATION_FEE, SBD_SYMBOL_NAME}, o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
                 });
             } else {
                 this->db.template create<witness_object>([&](witness_object &w) {
@@ -42,7 +45,48 @@ namespace golos {
                     w.signing_key = o.block_signing_key;
                     w.created = this->db.head_block_time();
                     w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name()},
-                               o.props.maximum_block_size, o.props.sbd_interest_rate};
+                               {STEEMIT_MIN_ASSET_CREATION_FEE, SBD_SYMBOL_NAME}, o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
+                });
+            }
+        }
+
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
+        void witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork >= 17>>::do_apply(
+                const operation_type &o) {
+
+            this->db.get_account(o.owner); // verify owner exists
+
+            FC_ASSERT(o.url.size() <= STEEMIT_MAX_WITNESS_URL_LENGTH, "URL is too long");
+
+            FC_ASSERT(o.props.account_creation_fee.symbol_name() == STEEM_SYMBOL_NAME);
+
+            FC_ASSERT(o.props.asset_creation_fee.symbol_name() == SBD_SYMBOL_NAME);
+
+            const auto &by_witness_name_idx = this->db.template get_index<witness_index>().indices().
+                    template get<by_name>();
+            auto wit_itr = by_witness_name_idx.find(o.owner);
+            if (wit_itr != by_witness_name_idx.end()) {
+                this->db.modify(*wit_itr, [&](witness_object &w) {
+                    from_string(w.url, o.url);
+                    w.signing_key = o.block_signing_key;
+                    w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name(),
+                                o.props.account_creation_fee.get_decimals()},
+                               {o.props.asset_creation_fee.amount, o.props.asset_creation_fee.symbol,
+                                o.props.asset_creation_fee.get_decimals()}, o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
+                });
+            } else {
+                this->db.template create<witness_object>([&](witness_object &w) {
+                    w.owner = o.owner;
+                    from_string(w.url, o.url);
+                    w.signing_key = o.block_signing_key;
+                    w.created = this->db.head_block_time();
+                    w.props = {{o.props.account_creation_fee.amount, o.props.account_creation_fee.symbol_name(),
+                                o.props.account_creation_fee.get_decimals()},
+                               {o.props.asset_creation_fee.amount, o.props.asset_creation_fee.symbol,
+                                o.props.asset_creation_fee.get_decimals()}, o.props.maximum_block_size,
+                               o.props.sbd_interest_rate};
                 });
             }
         }

@@ -27,9 +27,11 @@ namespace golos {
                     this->db.get_account(id);
                 }
 
-                auto &asset_indx = this->db.template get_index<asset_index>().indices().template get<by_asset_name>();
+                auto &asset_indx = this->db.template get_index<asset_index>().indices().
+                        template get<by_asset_name>();
                 auto asset_symbol_itr = asset_indx.find(op.asset_name);
-                FC_ASSERT(asset_symbol_itr == asset_indx.end(), "Asset with name ${s} already exists", ("s", op.asset_name));
+                FC_ASSERT(asset_symbol_itr == asset_indx.end(), "Asset with name ${s} already exists",
+                          ("s", op.asset_name));
 
                 std::string asset_name_string = op.asset_name;
 
@@ -50,7 +52,8 @@ namespace golos {
                     if (backing.is_market_issued()) {
                         const asset_bitasset_data_object &backing_bitasset_data = this->db.get_asset_bitasset_data(
                                 backing.asset_name);
-                        const asset_object &backing_backing = this->db.get_asset(backing_bitasset_data.options.short_backing_asset);
+                        const asset_object &backing_backing = this->db.get_asset(
+                                backing_bitasset_data.options.short_backing_asset);
                         FC_ASSERT(!backing_backing.is_market_issued(),
                                   "May not create a bitasset backed by a bitasset backed by a bitasset.");
                         FC_ASSERT(this->db.get_account(op.issuer).name != STEEMIT_COMMITTEE_ACCOUNT ||
@@ -72,7 +75,12 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((op))
 
             try {
-                this->db.adjust_balance(this->db.get_account(op.issuer), -this->db.get_name_cost(op.asset_name));
+                if (op.asset_name.size() >= STEEMIT_MIN_ASSET_SYMBOL_LENGTH &&
+                    op.asset_name.size() < STEEMIT_MAX_ASSET_SYMBOL_LENGTH / 2) {
+                    this->db.adjust_balance(this->db.get_account(op.issuer), -this->db.get_name_cost(op.asset_name));
+                } else {
+                    this->db.adjust_balance(this->db.get_account(op.issuer), -this->db.get_witness_schedule_object().median_props.asset_creation_fee);
+                }
 
                 this->db.template create<asset_dynamic_data_object>([&](asset_dynamic_data_object &a) {
                     a.asset_name = op.asset_name;
@@ -137,7 +145,9 @@ namespace golos {
                 const asset_object &a = this->db.get_asset(o.amount_to_reserve.symbol);
                 FC_ASSERT(o.amount_to_reserve.get_decimals() == a.precision);
 
-                STEEMIT_ASSERT(!a.is_market_issued(), typename BOOST_IDENTITY_TYPE((exceptions::operations::asset_reserve::invalid_on_mia<Major, Hardfork, Release>)),
+                STEEMIT_ASSERT(!a.is_market_issued(),
+                               typename BOOST_IDENTITY_TYPE((exceptions::operations::asset_reserve::invalid_on_mia<
+                                       Major, Hardfork, Release>)),
                                "Cannot reserve ${sym} because it is a market-issued asset", ("sym", a.asset_name));
 
                 from_account = this->db.find_account(o.payer);
@@ -163,7 +173,8 @@ namespace golos {
                 FC_ASSERT(this->db.find_asset(o.asset_name));
                 FC_ASSERT(this->db.find_asset_dynamic_data(o.asset_name));
 
-                this->db.adjust_balance(this->db.get_account(o.from_account), -protocol::asset<0, 17, 0>(o.amount, o.asset_name));
+                this->db.adjust_balance(this->db.get_account(o.from_account),
+                                        -protocol::asset<0, 17, 0>(o.amount, o.asset_name));
 
                 this->db.modify(this->db.get_asset_dynamic_data(o.asset_name), [&](asset_dynamic_data_object &data) {
                     data.fee_pool += o.amount;
@@ -182,7 +193,8 @@ namespace golos {
                 if (o.new_issuer) {
                     FC_ASSERT(this->db.find_account(*o.new_issuer));
                     if (a.is_market_issued() && *o.new_issuer == STEEMIT_COMMITTEE_ACCOUNT) {
-                        const asset_object &backing = this->db.get_asset(this->db.get_asset_bitasset_data(a.asset_name).options.short_backing_asset);
+                        const asset_object &backing = this->db.get_asset(
+                                this->db.get_asset_bitasset_data(a.asset_name).options.short_backing_asset);
                         if (backing.is_market_issued()) {
                             const asset_object &backing_backing = this->db.template get_asset(
                                     this->db.get_asset_bitasset_data(backing.asset_name).options.short_backing_asset);
@@ -222,7 +234,8 @@ namespace golos {
             try {
                 // If we are now disabling force settlements, cancel all open force settlement orders
                 if (o.new_options.flags & disable_force_settle && asset_to_update->can_force_settle()) {
-                    const auto &idx = this->db.template get_index<force_settlement_index>().indices().template get<by_expiration>();
+                    const auto &idx = this->db.template get_index<force_settlement_index>().indices().
+                            template get<by_expiration>();
                     // Funky iteration code because we're removing objects as we go. We have to re-initialize itr every loop instead
                     // of simply incrementing it.
                     for (auto itr = idx.lower_bound(o.asset_to_update);
@@ -255,7 +268,8 @@ namespace golos {
                     FC_ASSERT(this->db.find_asset(o.new_options.short_backing_asset));
 
                     if (a.issuer == STEEMIT_COMMITTEE_ACCOUNT) {
-                        const asset_object &backing = this->db.get_asset(this->db.get_asset_bitasset_data(a.asset_name).options.short_backing_asset);
+                        const asset_object &backing = this->db.get_asset(
+                                this->db.get_asset_bitasset_data(a.asset_name).options.short_backing_asset);
                         if (backing.is_market_issued()) {
                             const asset_object &backing_backing = this->db.get_asset(
                                     this->db.get_asset_bitasset_data(backing.asset_name).options.short_backing_asset);
@@ -344,11 +358,12 @@ namespace golos {
                 FC_ASSERT(asset_to_settle->can_global_settle());
                 FC_ASSERT(asset_to_settle->issuer == op.issuer);
                 FC_ASSERT(this->db.get_asset_dynamic_data(asset_to_settle->asset_name).current_supply > 0);
-                const auto &idx = this->db.template get_index<call_order_index>().indices().template get<by_collateral>();
+                const auto &idx = this->db.template get_index<call_order_index>().indices().
+                        template get<by_collateral>();
                 assert(!idx.empty());
-                auto itr = idx.lower_bound(boost::make_tuple(
-                        price<Major, Hardfork, Release>::min(this->db.get_asset_bitasset_data(asset_to_settle->asset_name).options.short_backing_asset,
-                                   op.asset_to_settle)));
+                auto itr = idx.lower_bound(boost::make_tuple(price<Major, Hardfork, Release>::min(
+                        this->db.get_asset_bitasset_data(asset_to_settle->asset_name).options.short_backing_asset,
+                        op.asset_to_settle)));
                 assert(itr != idx.end() && itr->debt_type() == op.asset_to_settle);
                 const call_order_object &least_collateralized_short = *itr;
                 FC_ASSERT(least_collateralized_short.get_debt() * op.settle_price <=
@@ -374,7 +389,8 @@ namespace golos {
                     FC_ASSERT(bitasset.has_settlement(),
                               "global settlement must occur before force settling a prediction market");
                 else if (bitasset.current_feed.settlement_price.is_null() || !bitasset.has_settlement())
-                    FC_THROW_EXCEPTION(exceptions::chain::insufficient_feeds<>, "Cannot force settle with no price feed.");
+                    FC_THROW_EXCEPTION(exceptions::chain::insufficient_feeds<>,
+                                       "Cannot force settle with no price feed.");
                 FC_ASSERT(this->db.get_balance(this->db.get_account(op.account), *asset_to_settle) >= op.amount);
             } FC_CAPTURE_AND_RETHROW((op))
 
@@ -389,7 +405,8 @@ namespace golos {
                     if (op.amount.amount == mia_dyn.current_supply) {
                         settled_amount.amount = bitasset.settlement_fund; // avoid rounding problems
                     } else {
-                        FC_ASSERT(settled_amount.amount <= bitasset.settlement_fund); // should be strictly < except for PM with zero outcome
+                        FC_ASSERT(settled_amount.amount <=
+                                  bitasset.settlement_fund); // should be strictly < except for PM with zero outcome
                     }
 
                     FC_ASSERT(settled_amount.amount <= bitasset.settlement_fund);
@@ -420,7 +437,8 @@ namespace golos {
                     FC_ASSERT(bitasset.has_settlement(),
                               "global settlement must occur before force settling a prediction market");
                 else if (bitasset.current_feed.settlement_price.is_null())
-                    FC_THROW_EXCEPTION(exceptions::chain::insufficient_feeds<>, "Cannot force settle with no price feed.");
+                    FC_THROW_EXCEPTION(exceptions::chain::insufficient_feeds<>,
+                                       "Cannot force settle with no price feed.");
                 FC_ASSERT(this->db.get_balance(this->db.get_account(op.account), *asset_to_settle) >= op.amount);
             } FC_CAPTURE_AND_RETHROW((op))
 
@@ -448,7 +466,8 @@ namespace golos {
                         s.owner = op.account;
                         s.settlement_id = op.settlement_id;
                         s.balance = op.amount;
-                        s.settlement_date = this->db.head_block_time() + this->db.get_asset_bitasset_data(asset_to_settle->asset_name).options.force_settlement_delay_sec;
+                        s.settlement_date = this->db.head_block_time() + this->db.get_asset_bitasset_data(
+                                asset_to_settle->asset_name).options.force_settlement_delay_sec;
                     });
                 }
             } FC_CAPTURE_AND_RETHROW((op))
@@ -474,12 +493,12 @@ namespace golos {
 
                 //Verify that the publisher is authoritative to publish a feed
                 if (base.options.flags & witness_fed_asset) {
-                    const account_authority_object &witness_authority = this->db.template get<account_authority_object, by_account>(
-                            STEEMIT_WITNESS_ACCOUNT);
+                    const account_authority_object &witness_authority = this->db.template get<account_authority_object,
+                            by_account>(STEEMIT_WITNESS_ACCOUNT);
                     FC_ASSERT(witness_authority.active.account_auths.count(o.publisher));
                 } else if (base.options.flags & committee_fed_asset) {
-                    const account_authority_object &committee_authority = this->db.template get<account_authority_object, by_account>(
-                            STEEMIT_COMMITTEE_ACCOUNT);
+                    const account_authority_object &committee_authority = this->db.template get<
+                            account_authority_object, by_account>(STEEMIT_COMMITTEE_ACCOUNT);
 
                     FC_ASSERT(committee_authority.active.account_auths.count(o.publisher));
                 } else {
@@ -504,9 +523,11 @@ namespace golos {
                     if (bad.has_settlement()) {
                         const asset_dynamic_data_object &mia_dyn = this->db.get_asset_dynamic_data(base.asset_name);
                         if (!bad.current_feed.settlement_price.is_null() &&
-                            ~price<Major, Hardfork, Release>::call_price(asset<Major, Hardfork, Release>(mia_dyn.current_supply, o.asset_name),
-                                               asset<Major, Hardfork, Release>(bad.settlement_fund, bad.options.short_backing_asset),
-                                               bad.current_feed.maintenance_collateral_ratio) <
+                            ~price<Major, Hardfork, Release>::call_price(
+                                    asset<Major, Hardfork, Release>(mia_dyn.current_supply, o.asset_name),
+                                    asset<Major, Hardfork, Release>(bad.settlement_fund,
+                                                                    bad.options.short_backing_asset),
+                                    bad.current_feed.maintenance_collateral_ratio) <
                             bad.current_feed.settlement_price) {
                             this->db.revive_bitasset(base);
                         }
