@@ -2265,8 +2265,7 @@ namespace golos {
             return my->sign_transaction(tx, broadcast);
         }
 
-        protocol::annotated_signed_transaction wallet_api::transfer_to_vesting(std::string from, std::string to, asset amount,
-                                                                     bool broadcast) {
+        protocol::annotated_signed_transaction wallet_api::transfer_to_vesting(std::string from, std::string to, asset amount, bool broadcast) {
             FC_ASSERT(!is_locked());
             protocol::transfer_to_vesting_operation<0, 17, 0> op;
             op.from = from;
@@ -2583,7 +2582,7 @@ namespace golos {
 
             protocol::asset_issue_operation<0, 17, 0> issue_op;
             issue_op.issuer = asset_obj.issuer;
-            issue_op.asset_to_issue = asset_obj.amount(amount.amount);
+            issue_op.asset_to_issue = amount;
             issue_op.issue_to_account = to.name;
             issue_op.memo = memo;
 
