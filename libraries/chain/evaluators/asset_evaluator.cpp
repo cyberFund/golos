@@ -95,8 +95,10 @@ namespace golos {
                     a.options = op.common_options;
                     if (a.options.core_exchange_rate.base.symbol == STEEM_SYMBOL_NAME) {
                         a.options.core_exchange_rate.quote.symbol = op.asset_name;
+                        a.options.core_exchange_rate.quote.set_decimals(op.precision);
                     } else {
                         a.options.core_exchange_rate.base.symbol = op.asset_name;
+                        a.options.core_exchange_rate.base.set_decimals(op.precision);
                     }
                     if (op.bitasset_opts.valid()) {
                         a.market_issued = true;
