@@ -23,7 +23,7 @@ else()
 endif()
 
 add_custom_target(golos_generate_${CURRENT_TARGET}
-                  COMMAND "${CMAKE_COMMAND}" -DCURRENT_TARGET="${CURRENT_TARGET}" -DCURRENT_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}" -P "${PROJECT_SOURCE_DIR}/cmake/generate_hardfork.cmake")
+                  COMMAND "${CMAKE_COMMAND}" -DCURRENT_TARGET="${CURRENT_TARGET}" -DCURRENT_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}" -P "${PROJECT_SOURCE_DIR}/share/golosd/cmake/generate_hardfork.cmake")
 
 add_dependencies(golos_${CURRENT_TARGET} golos_generate_${CURRENT_TARGET})
 

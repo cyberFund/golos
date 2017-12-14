@@ -1,11 +1,10 @@
 FROM phusion/baseimage:0.9.19
 
-#ARG STEEMD_BLOCKCHAIN=https://example.com/steemd-blockchain.tbz2
+#ARG STEEMD_BLOCKCHAIN=https://download.golos.io/blockchain.tar.bz2
 
 ENV LANG=en_US.UTF-8
 
-RUN \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y \
         autoconf \
         automake \
@@ -77,7 +76,7 @@ RUN \
     cd build && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_GOLOS_TESTNET=FALSE \
+        -DBUILD_GOLOS_TESTNET=TRUE \
         -DBUILD_SHARED_LIBRARIES=FALSE \
         -DLOW_MEMORY_NODE=FALSE \
         -DCHAINBASE_CHECK_LOCKING=FALSE \
@@ -147,22 +146,17 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ADD programs/golosd/snapshot5392323.json /var/lib/golosd
-
 # rpc service:
 EXPOSE 8090
 # p2p service:
 EXPOSE 2001
 
 RUN mkdir -p /etc/service/golosd
-ADD contribution/golosd.sh /etc/service/golosd/run
+ADD share/golosd/golosd.sh /etc/service/golosd/run
 RUN chmod +x /etc/service/golosd/run
 
-# add seednodes from documentation to image
-ADD documentation/seednodes /etc/golosd/seednodes
-
 # the following adds lots of logging info to stdout
-ADD contribution/config.ini /etc/golosd/config.ini
+ADD share/golosd/config/config_debug.ini /etc/golosd/config.ini
 
 # put blockchain data into separate docker volume
 VOLUME /var/lib/golosd

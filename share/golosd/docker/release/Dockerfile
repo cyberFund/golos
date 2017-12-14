@@ -1,20 +1,18 @@
 FROM phusion/baseimage:0.9.19
 
-#ARG STEEMD_BLOCKCHAIN=https://example.com/steemd-blockchain.tbz2
+#ARG STEEMD_BLOCKCHAIN=https://download.golos.io/blockchain.tar.bz2
 
 ENV LANG=en_US.UTF-8
 
-RUN \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y \
         autoconf \
         automake \
         autotools-dev \
         bsdmainutils \
         build-essential \
-        ccache \
-	    clang \
         cmake \
+        ccache \
         doxygen \
         git \
         libboost-all-dev \
@@ -83,8 +81,6 @@ RUN \
         -DLOW_MEMORY_NODE=FALSE \
         -DCHAINBASE_CHECK_LOCKING=FALSE \
         -DCLEAR_VOTES=FALSE \
-	-DCMAKE_CXX_COMPILER=clang++ \
-	-DCMAKE_C_COMPILER=clang \
         .. \
     && \
     make -j$(nproc) && \
@@ -97,7 +93,6 @@ RUN \
         autotools-dev \
         bsdmainutils \
         build-essential \
-	clang \
         cmake \
         doxygen \
         dpkg-dev \
@@ -151,7 +146,7 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ADD programs/golosd/snapshot5392323.json /var/lib/golosd
+ADD share/golosd/snapshot5392323.json /var/lib/golosd
 
 # rpc service:
 EXPOSE 8090
@@ -159,14 +154,11 @@ EXPOSE 8090
 EXPOSE 2001
 
 RUN mkdir -p /etc/service/golosd
-ADD contribution/golosd.sh /etc/service/golosd/run
+ADD share/golosd/golosd.sh /etc/service/golosd/run
 RUN chmod +x /etc/service/golosd/run
 
-# add seednodes from documentation to image
-ADD documentation/seednodes /etc/golosd/seednodes
-
 # the following adds lots of logging info to stdout
-ADD contribution/config.ini /etc/golosd/config.ini
+ADD share/golosd/config/config_release.ini /etc/golosd/config.ini
 
 # put blockchain data into separate docker volume
 VOLUME /var/lib/golosd

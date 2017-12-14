@@ -6,10 +6,6 @@ STEEMD="/usr/local/bin/golosd"
 
 chown -R golosd:golosd $HOME
 
-# seed nodes come from documentation/seednodes which is
-# installed by docker into /etc/golosd/seednodes
-SEED_NODES="$(cat /etc/golosd/seednodes | awk -F' ' '{print $1}')"
-
 ARGS=""
 
 # if user did not pass in any desired
@@ -80,8 +76,7 @@ else
     P2P_ENDPOINT="0.0.0.0:2001"
 fi
 
-exec chpst -ugolosd \
-    $STEEMD \
+exec chpst -ugolosd $STEEMD \
         --rpc-endpoint=${RPC_ENDPOINT} \
         --p2p-endpoint=${P2P_ENDPOINT} \
         --data-dir=$HOME \
