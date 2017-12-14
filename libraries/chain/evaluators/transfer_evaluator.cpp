@@ -9,117 +9,124 @@
 namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void transfer_evaluator<Major, Hardfork, Release>::do_apply(
-                const protocol::transfer_operation<Major, Hardfork, Release> &o) {
+        void transfer_evaluator<Major, Hardfork, Release>::do_apply(const protocol::transfer_operation<Major, Hardfork, Release> &o) {
+            try {
 
-            const auto &from_account = this->db.template get_account(o.from);
-            const auto &to_account = this->db.template get_account(o.to);
+                const auto &from_account = this->db.get_account(o.from);
+                const auto &to_account = this->db.get_account(o.to);
 
-            const asset_object &asset_type = this->db.template get_asset(o.amount.symbol_name());
+                const asset_object &asset_type = this->db.get_asset(o.amount.symbol_name());
 
-            STEEMIT_ASSERT(this->db.template is_authorized_asset(from_account, asset_type),
-                           typename BOOST_IDENTITY_TYPE((exceptions::operations::transfer::from_account_not_whitelisted<
-                                   Major, Hardfork, Release >)),
-                           "'from' account ${from} is not whitelisted for asset ${asset}",
-                           ("from", o.from)("asset", o.amount.symbol_name()));
-            STEEMIT_ASSERT(this->db.template is_authorized_asset(to_account, asset_type),
-                           typename BOOST_IDENTITY_TYPE((exceptions::operations::transfer::to_account_not_whitelisted<
-                                   Major, Hardfork, Release >)),
-                           "'to' account ${to} is not whitelisted for asset ${asset}",
-                           ("to", o.to)("asset", o.amount.symbol_name()));
+                STEEMIT_ASSERT(this->db.is_authorized_asset(from_account, asset_type),
+                               typename BOOST_IDENTITY_TYPE((exceptions::operations::transfer::from_account_not_whitelisted<Major, Hardfork, Release>)),
+                               "'from' account ${from} is not whitelisted for asset ${asset}",
+                               ("from", o.from)("asset", o.amount.symbol_name()));
+                STEEMIT_ASSERT(this->db.is_authorized_asset(to_account, asset_type),
+                               typename BOOST_IDENTITY_TYPE((exceptions::operations::transfer::to_account_not_whitelisted<Major, Hardfork, Release>)),
+                               "'to' account ${to} is not whitelisted for asset ${asset}",
+                               ("to", o.to)("asset", o.amount.symbol_name()));
 
-            if (asset_type.is_transfer_restricted()) {
-                STEEMIT_ASSERT(from_account.name == asset_type.issuer || to_account.name == asset_type.issuer,
-                               typename BOOST_IDENTITY_TYPE((exceptions::operations::transfer::restricted_transfer_asset<
-                                       Major, Hardfork, Release >)),
-                               "Asset {asset} has transfer_restricted flag enabled", ("asset", o.amount.symbol_name()));
-            }
+                if (asset_type.is_transfer_restricted()) {
+                    STEEMIT_ASSERT(from_account.name == asset_type.issuer || to_account.name == asset_type.issuer,
+                                   typename BOOST_IDENTITY_TYPE((exceptions::operations::transfer::restricted_transfer_asset<Major, Hardfork, Release>)),
+                                   "Asset {asset} has transfer_restricted flag enabled",
+                                   ("asset", o.amount.symbol_name()));
+                }
 
-            if (from_account.active_challenged) {
-                this->db.template modify(from_account, [&](account_object &a) {
-                    a.active_challenged = false;
-                    a.last_active_proved = this->db.template head_block_time();
-                });
-            }
+                if (from_account.active_challenged) {
+                    this->db.template modify(from_account, [&](account_object &a) {
+                        a.active_challenged = false;
+                        a.last_active_proved = this->db.head_block_time();
+                    });
+                }
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
 
-            FC_ASSERT(this->db.template get_balance(from_account, o.amount.symbol_name()) >= required_amount,
-                      "Account does not have sufficient funds for transfer.");
+                FC_ASSERT(this->db.get_balance(from_account, o.amount.symbol_name()) >= required_amount,
+                          "Account does not have sufficient funds for transfer.");
 
-            this->db.template adjust_balance(from_account, -required_amount);
-            this->db.template adjust_balance(to_account, required_amount);
+                this->db.adjust_balance(from_account, -required_amount);
+                this->db.adjust_balance(to_account, required_amount);
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void transfer_to_vesting_evaluator<Major, Hardfork, Release>::do_apply(
-                const protocol::transfer_to_vesting_operation<Major, Hardfork, Release> &o) {
-            const auto &from_account = this->db.template get_account(o.from);
-            const auto &to_account = o.to.size() ? this->db.template get_account(o.to) : from_account;
+        void transfer_to_vesting_evaluator<Major, Hardfork, Release>::do_apply(const protocol::transfer_to_vesting_operation<Major, Hardfork, Release> &o) {
+            try {
+                const auto &from_account = this->db.template get_account(o.from);
+                const auto &to_account = o.to.size() ? this->db.template get_account(o.to) : from_account;
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(),
+                                                          o.amount.get_decimals());
 
-            FC_ASSERT(this->db.template get_balance(from_account, STEEM_SYMBOL_NAME) >= required_amount,
-                      "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
-            this->db.template adjust_balance(from_account, -required_amount);
-            this->db.template create_vesting(to_account, required_amount);
+                FC_ASSERT(this->db.template get_balance(from_account, STEEM_SYMBOL_NAME) >= required_amount,
+                          "Account does not have sufficient {a} for transfer.", ("a", STEEM_SYMBOL_NAME));
+                this->db.template adjust_balance(from_account, -required_amount);
+                this->db.template create_vesting(to_account, required_amount);
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void transfer_to_savings_evaluator<Major, Hardfork, Release>::do_apply(
-                const transfer_to_savings_operation<Major, Hardfork, Release> &o) {
-            const auto &from = this->db.template get_account(o.from);
-            const auto &to = this->db.template get_account(o.to);
+        void transfer_to_savings_evaluator<Major, Hardfork, Release>::do_apply(const transfer_to_savings_operation<Major, Hardfork, Release> &o) {
+            try {
+                const auto &from = this->db.template get_account(o.from);
+                const auto &to = this->db.template get_account(o.to);
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(),
+                                                          o.amount.get_decimals());
 
-            FC_ASSERT(this->db.template get_balance(from, o.amount.symbol_name()) >= required_amount,
-                      "Account does not have sufficient funds to transfer to savings.");
+                FC_ASSERT(this->db.template get_balance(from, o.amount.symbol_name()) >= required_amount,
+                          "Account does not have sufficient funds to transfer to savings.");
 
-            this->db.template adjust_balance(from, -required_amount);
-            this->db.template adjust_savings_balance(to, required_amount);
+                this->db.template adjust_balance(from, -required_amount);
+                this->db.template adjust_savings_balance(to, required_amount);
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         void transfer_from_savings_evaluator<Major, Hardfork, Release>::do_apply(
                 const protocol::transfer_from_savings_operation<Major, Hardfork, Release> &o) {
-            const auto &from = this->db.template get_account(o.from);
-            this->db.template get_account(o.to); // Verify to account exists
+            try {
+                const auto &from = this->db.template get_account(o.from);
+                this->db.template get_account(o.to); // Verify to account exists
 
-            FC_ASSERT(from.savings_withdraw_requests < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT,
-                      "Account has reached limit for pending withdraw requests.");
+                FC_ASSERT(from.savings_withdraw_requests < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT,
+                          "Account has reached limit for pending withdraw requests.");
 
-            protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(),
+                                                          o.amount.get_decimals());
 
-            FC_ASSERT(this->db.template get_savings_balance(from, o.amount.symbol_name()) >= required_amount);
-            this->db.template adjust_savings_balance(from, -required_amount);
-            this->db.template create<savings_withdraw_object>([&](savings_withdraw_object &s) {
-                s.from = o.from;
-                s.to = o.to;
-                s.amount = required_amount;
+                FC_ASSERT(this->db.template get_savings_balance(from, o.amount.symbol_name()) >= required_amount);
+                this->db.template adjust_savings_balance(from, -required_amount);
+                this->db.template create<savings_withdraw_object>([&](savings_withdraw_object &s) {
+                    s.from = o.from;
+                    s.to = o.to;
+                    s.amount = required_amount;
 #ifndef STEEMIT_BUILD_LOW_MEMORY
-                from_string(s.memo, o.memo);
+                    from_string(s.memo, o.memo);
 #endif
-                s.request_id = o.request_id;
-                s.complete = this->db.template head_block_time() + STEEMIT_SAVINGS_WITHDRAW_TIME;
-            });
+                    s.request_id = o.request_id;
+                    s.complete = this->db.template head_block_time() + STEEMIT_SAVINGS_WITHDRAW_TIME;
+                });
 
-            this->db.template modify(from, [&](account_object &a) {
-                a.savings_withdraw_requests++;
-            });
+                this->db.template modify(from, [&](account_object &a) {
+                    a.savings_withdraw_requests++;
+                });
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void cancel_transfer_from_savings_evaluator<Major, Hardfork, Release>::do_apply(
-                const protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> &o) {
-            const auto &swo = this->db.template get_savings_withdraw(o.from, o.request_id);
-            this->db.template adjust_savings_balance(this->db.template get_account(swo.from), swo.amount);
-            this->db.template remove(swo);
+        void cancel_transfer_from_savings_evaluator<Major, Hardfork, Release>::do_apply(const protocol::cancel_transfer_from_savings_operation<Major, Hardfork, Release> &o) {
+            try {
+                const auto &swo = this->db.template get_savings_withdraw(o.from, o.request_id);
+                this->db.template adjust_savings_balance(this->db.template get_account(swo.from), swo.amount);
+                this->db.template remove(swo);
 
-            const auto &from = this->db.template get_account(o.from);
-            this->db.template modify(from, [&](account_object &a) {
-                a.savings_withdraw_requests--;
-            });
+                const auto &from = this->db.template get_account(o.from);
+                this->db.template modify(from, [&](account_object &a) {
+                    a.savings_withdraw_requests--;
+                });
+            } FC_CAPTURE_AND_RETHROW((o))
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -142,7 +149,8 @@ namespace golos {
                 FC_ASSERT(this->db.template get_balance(from_account, asset_type).amount >= o.amount.amount, "",
                           ("total_transfer", o.amount)("balance",
                                                        this->db.template get_balance(from_account, asset_type).amount));
-                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(), o.amount.get_decimals());
+                protocol::asset<0, 17, 0> required_amount(o.amount.amount, o.amount.symbol_name(),
+                                                          o.amount.get_decimals());
 
                 this->db.template adjust_balance(this->db.template get_account(o.from), -required_amount);
                 this->db.template adjust_balance(this->db.template get_account(o.to), required_amount);
