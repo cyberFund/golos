@@ -1153,7 +1153,7 @@ namespace golos {
                         tx.validate();
 
                         return sign_transaction(tx, broadcast);
-                    } FC_CAPTURE_AND_RETHROW((bidder_name)(debt_amount)(debt_symbol)(additional_collateral)(broadcast))
+                    } FC_CAPTURE_AND_RETHROW((bidder_name)(debt)(additional_collateral)(broadcast))
                 }
 
                 std::string _wallet_filename;
@@ -1294,7 +1294,7 @@ namespace golos {
             return (*my->_remote_market_history_api)->get_collateral_bids(get_asset(asset).asset_name, limit, start);
         }
 
-        chain::signed_transaction wallet_api::bid_collateral(std::string bidder_name, asset debt_amount, std::string additional_collateral, bool broadcast) {
+        chain::signed_transaction wallet_api::bid_collateral(std::string bidder_name, asset debt, std::string additional_collateral, bool broadcast) {
             return my->bid_collateral(bidder_name, debt, additional_collateral, broadcast);
         }
 
@@ -2747,7 +2747,7 @@ namespace golos {
                 tx.validate();
 
                 return sign_transaction(tx, broadcast);
-            } FC_CAPTURE_AND_RETHROW((from)(amount)(symbol)(broadcast))
+            } FC_CAPTURE_AND_RETHROW((from)(amount)(broadcast))
         }
 
         chain::signed_transaction wallet_api::global_settle_asset(std::string symbol, price settle_price,
