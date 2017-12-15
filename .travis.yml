@@ -26,9 +26,9 @@ before_install:
 
 script:
   - if [ -n "${TRAVIS_TAG}" ]; then
-      docker build -t goloschain/golos:"$TRAVIS_TAG" . ;
+      docker build -t goloschain/golos:"$TRAVIS_TAG" -f share/golosd/docker/release/Dockerfile . ;
     else
-      docker build -t goloschain/golos:latest . ;
+      docker build -t goloschain/golos:latest -f share/golosd/docker/release/Dockerfile . ;
     fi
   - docker images
 
