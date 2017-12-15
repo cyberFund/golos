@@ -2366,7 +2366,7 @@ namespace golos {
         }
 
         asset<0, 17, 0> database_api::get_name_cost(std::string name) const {
-            return my->_db.get_name_cost(name);
+            return name.size() >= STEEMIT_MIN_ASSET_SYMBOL_LENGTH && name.size() < STEEMIT_MAX_ASSET_SYMBOL_LENGTH / 2 ? my->_db.get_name_cost(name) : my->_db.get_witness_schedule_object().median_props.asset_creation_fee;
         }
 
         //////////////////////////////////////////////////////////////////////
