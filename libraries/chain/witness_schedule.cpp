@@ -50,6 +50,12 @@ namespace golos {
             });
             uint16_t median_sbd_interest_rate = active[active.size() / 2]->props.sbd_interest_rate;
 
+            /// sort them by producer_duration_name_cost
+            std::sort(active.begin(), active.end(), [&](const witness_object *a, const witness_object *b) {
+                return a->props.producer_duration_name_cost < b->props.producer_duration_name_cost;
+            });
+            uint32_t median_producer_duration_name_cost = active[active.size() / 2]->props.producer_duration_name_cost;
+
             db.modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props.account_creation_fee = median_account_creation_fee;
                 _wso.median_props.asset_creation_fee = {
@@ -60,6 +66,7 @@ namespace golos {
                                         }) / active.size(), SBD_SYMBOL_NAME};
                 _wso.median_props.maximum_block_size = median_maximum_block_size;
                 _wso.median_props.sbd_interest_rate = median_sbd_interest_rate;
+                _wso.median_props.producer_duration_name_cost = median_producer_duration_name_cost;
             });
 
             db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
