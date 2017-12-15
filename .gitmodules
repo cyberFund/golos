@@ -4,3 +4,6 @@
 [submodule "libraries/chainbase"]
 	path = libraries/chainbase
 	url = https://github.com/GolosChain/chainbase.git
+[submodule "share/golosd/doc"]
+	path = share/golosd/doc
+	url = https://github.com/GolosChain/golos-reference.git
