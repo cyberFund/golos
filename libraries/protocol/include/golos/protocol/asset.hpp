@@ -82,8 +82,7 @@ namespace golos {
             }
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
-            asset<Major, Hardfork, Release> &operator-=(
-                    const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
+            asset<Major, Hardfork, Release> &operator-=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
                 this->amount -= o.amount;
                 return *this;
@@ -213,7 +212,7 @@ namespace golos {
             }
 
             asset<Major, Hardfork, Release> operator-() const {
-                return asset<Major, Hardfork, Release>(-this->amount, this->symbol);
+                return asset<Major, Hardfork, Release>(-this->amount, this->symbol, this->get_decimals());
             }
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
