@@ -2037,7 +2037,7 @@ namespace golos {
 
         asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
             return {get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY * 90 /
-                    std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME};
+                    std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), SBD_SYMBOL_NAME};
         }
 
         void database::pay_liquidity_reward() {
