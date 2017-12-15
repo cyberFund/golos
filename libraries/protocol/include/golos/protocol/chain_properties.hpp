@@ -52,7 +52,7 @@ namespace golos {
             asset <Major, Hardfork, Release> account_creation_fee = {STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL_NAME};
 
             /**
-             *  This fee, paid in GOLOS, is converted into VESTING SHARES for the new account. Accounts
+             *  This fee, paid in GBG, is converted into VESTING SHARES for the new account. Accounts
              *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
              *  fee requires all accounts to have some kind of commitment to the network that includes the
              *  ability to vote and make transactions.
@@ -66,6 +66,8 @@ namespace golos {
             uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
             uint16_t sbd_interest_rate = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
 
+            uint32_t producer_duration_name_cost = STEEMIT_DEFAULT_PRODUCER_REWARD_DURATION;
+
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(asset_creation_fee.amount >= STEEMIT_MIN_ASSET_CREATION_FEE);
@@ -78,6 +80,6 @@ namespace golos {
 }
 
 FC_REFLECT((golos::protocol::chain_properties<0, 16, 0>), (account_creation_fee)(maximum_block_size)(sbd_interest_rate));
-FC_REFLECT((golos::protocol::chain_properties<0, 17, 0>), (account_creation_fee)(asset_creation_fee)(maximum_block_size)(sbd_interest_rate));
+FC_REFLECT((golos::protocol::chain_properties<0, 17, 0>), (account_creation_fee)(asset_creation_fee)(maximum_block_size)(sbd_interest_rate)(producer_duration_name_cost));
 
 #endif //GOLOS_CHAIN_PROPERTIES_HPP
