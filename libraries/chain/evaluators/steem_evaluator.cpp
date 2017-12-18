@@ -261,8 +261,7 @@ namespace golos {
                     fc::uint128_t avg_cashout_sec;
 
                     if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(
-                                comment).sec_since_epoch();
+                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
                         if (this->db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
