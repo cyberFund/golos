@@ -14,118 +14,120 @@ from steemapi.steemnoderpc import GolosNodeRPC
 
 WAITING = True
 
-def main( ):
-   global WAITING
-   if( os.name != "posix" ):
-      print( "This script only works on POSIX systems" )
-      return
 
-   parser = ArgumentParser( description='Run a golosd debug node on an existing chain, trigger a hardfork' \
-                              ' and verify hardfork does not break invariants or block production' )
-   parser.add_argument( '--golosd', '-s', type=str, required=True, help='The location of a golosd binary to run the debug node' )
-   parser.add_argument( '--data-dir', '-d', type=str, required=True, help='The location of an existing data directory. ' + \
-                        'The debug node will pull blocks from this directory when replaying the chain. The directory ' + \
-                        'will not be changed.' )
-   parser.add_argument( '--pause-node', '-p', type=bool, required=False, default=True, \
-                        help='True if the debug node should pause after it\'s tests. Default: false' )
+def main():
+    global WAITING
+    if (os.name != "posix"):
+        print("This script only works on POSIX systems")
+        return
 
-   args = parser.parse_args()
+    parser = ArgumentParser(description='Run a golosd debug node on an existing chain, trigger a hardfork' \
+                                        ' and verify hardfork does not break invariants or block production')
+    parser.add_argument('--golosd', '-s', type=str, required=True,
+                        help='The location of a golosd binary to run the debug node')
+    parser.add_argument('--data-dir', '-d', type=str, required=True,
+                        help='The location of an existing data directory. ' + \
+                             'The debug node will pull blocks from this directory when replaying the chain. The directory ' + \
+                             'will not be changed.')
+    parser.add_argument('--pause-node', '-p', type=bool, required=False, default=True, \
+                        help='True if the debug node should pause after it\'s tests. Default: false')
 
-   steemd = Path( args.steemd )
-   if( not steemd.exists() ):
-      print( 'Error: golosd does not exist.' )
-      return
+    args = parser.parse_args()
 
-   steemd = steemd.resolve()
-   if( not steemd.is_file() ):
-      print( 'Error: golosd is not a file.' )
-      return
+    steemd = Path(args.steemd)
+    if (not steemd.exists()):
+        print('Error: golosd does not exist.')
+        return
 
-   data_dir = Path( args.data_dir )
-   if( not data_dir.exists() ):
-      print( 'Error: data_dir does not exist or is not a properly constructed golosd data directory' )
+    steemd = steemd.resolve()
+    if (not steemd.is_file()):
+        print('Error: golosd is not a file.')
+        return
 
-   data_dir = data_dir.resolve()
-   if( not data_dir.is_dir() ):
-      print( 'Error: data_dir is not a directory' )
+    data_dir = Path(args.data_dir)
+    if (not data_dir.exists()):
+        print('Error: data_dir does not exist or is not a properly constructed golosd data directory')
 
-   signal.signal( signal.SIGINT, sigint_handler )
+    data_dir = data_dir.resolve()
+    if (not data_dir.is_dir()):
+        print('Error: data_dir is not a directory')
 
-   debug_node = DebugNode( str( steemd ), str( data_dir ), steemd_err=sys.stderr )
+    signal.signal(signal.SIGINT, sigint_handler)
 
-   with debug_node :
+    debug_node = DebugNode(str(steemd), str(data_dir), steemd_err=sys.stderr)
 
-      run_steemd_tests( debug_node )
+    with debug_node:
 
-      if( args.pause_node ):
-         print( "Letting the node hang for manual inspection..." )
-      else:
-         WAITING = False
+        run_steemd_tests(debug_node)
 
-      while( WAITING ):
-         sleep( 1 )
+        if (args.pause_node):
+            print("Letting the node hang for manual inspection...")
+        else:
+            WAITING = False
 
-
-def run_steemd_tests( debug_node ):
-   from steemapi.steemnoderpc import GolosNodeRPC
-
-   try:
-      print( 'Replaying blocks...', )
-      sys.stdout.flush()
-      total_blocks = 0
-      while( total_blocks % 100000 == 0 ):
-         total_blocks += debug_node.debug_push_blocks( 100000, skip_validate_invariants=True )
-         print( 'Blocks Replayed: ' + str( total_blocks ) )
-         sys.stdout.flush()
-
-      print( "Triggering payouts" )
-      sys.stdout.flush()
-      debug_node.debug_generate_blocks_until( 1467590400 - 3 )
-      rpc = GolosNodeRPC( 'ws://127.0.0.1:8095', '', '' )
-      ret = rpc.lookup_accounts( '', str( 0xFFFFFFFF ) )
-
-      debug_node.debug_generate_blocks( 1 )
-
-      print( "Generating blocks to verify nothing broke" )
-      assert( debug_node.debug_generate_blocks( 10 ) == 10 )
-
-      account_rewards = {}
-      vote_count = {}
-      for acc_name in ret:
-         acc = rpc.get_accounts( [ acc_name ] )
-         #print( acc_name + ',' + acc[0][ 'curation_rewards' ] )
-         account_rewards[ acc_name ] = float( acc[0][ 'curation_rewards' ].split( ' ' )[0] )
-         vote_count[ acc_name ] = int( acc[0][ 'lifetime_vote_count' ] )
+        while (WAITING):
+            sleep(1)
 
 
+def run_steemd_tests(debug_node):
+    from steemapi.steemnoderpc import GolosNodeRPC
 
-      '''
-      print( "Done!" )
-      print( "Getting comment dump:" )
-      sys.stdout.flush()
+    try:
+        print('Replaying blocks...',)
+        sys.stdout.flush()
+        total_blocks = 0
+        while (total_blocks % 100000 == 0):
+            total_blocks += debug_node.debug_push_blocks(100000, skip_validate_invariants=True)
+            print('Blocks Replayed: ' + str(total_blocks))
+            sys.stdout.flush()
 
-      ret = rpc.get_discussions_by_cashout_time( '', '', str( 0xFFFFFFFF ) );
+        print("Triggering payouts")
+        sys.stdout.flush()
+        debug_node.debug_generate_blocks_until(1467590400 - 3)
+        rpc = GolosNodeRPC('ws://127.0.0.1:8095', '', '')
+        ret = rpc.lookup_accounts('', str(0xFFFFFFFF))
 
-      print( 'author, url, total_payout_value, abs_rshares, num_active_votes' )
+        debug_node.debug_generate_blocks(1)
 
-      for comment in ret:
-         print( comment[ 'author' ] + ', ' + comment[ 'url' ] + ', ' + comment[ 'total_payout_value' ] + ', ' + comment[ 'cashout_time' ] )
+        print("Generating blocks to verify nothing broke")
+        assert (debug_node.debug_generate_blocks(10) == 10)
 
-      '''
-      print( "Printing account reward dump:" )
-      sorted_rewards = sorted( account_rewards.items(), key=operator.itemgetter(1) )
-      print( "account, curation_steem" )
-      for rew in sorted_rewards:
-         print( rew[0] + ', ' + str( rew[1] ) + ', ' + str( vote_count[ rew[0] ] ) )
+        account_rewards = {}
+        vote_count = {}
+        for acc_name in ret:
+            acc = rpc.get_accounts([acc_name])
+            # print( acc_name + ',' + acc[0][ 'curation_rewards' ] )
+            account_rewards[acc_name] = float(acc[0]['curation_rewards'].split(' ')[0])
+            vote_count[acc_name] = int(acc[0]['lifetime_vote_count'])
 
-   except ValueError as val_err:
-      print( str( val_err ) )
+        '''
+        print( "Done!" )
+        print( "Getting comment dump:" )
+        sys.stdout.flush()
+  
+        ret = rpc.get_discussions_by_cashout_time( '', '', str( 0xFFFFFFFF ) );
+  
+        print( 'author, url, total_payout_value, abs_rshares, num_active_votes' )
+  
+        for comment in ret:
+           print( comment[ 'author' ] + ', ' + comment[ 'url' ] + ', ' + comment[ 'total_payout_value' ] + ', ' + comment[ 'cashout_time' ] )
+  
+        '''
+        print("Printing account reward dump:")
+        sorted_rewards = sorted(account_rewards.items(), key=operator.itemgetter(1))
+        print("account, curation_steem")
+        for rew in sorted_rewards:
+            print(rew[0] + ', ' + str(rew[1]) + ', ' + str(vote_count[rew[0]]))
+
+    except ValueError as val_err:
+        print(str(val_err))
 
 
-def sigint_handler( signum, frame ):
-   global WAITING
-   WAITING = False
-   sleep( 3 )
-   sys.exit( 0 )
+def sigint_handler(signum, frame):
+    global WAITING
+    WAITING = False
+    sleep(3)
+    sys.exit(0)
+
 
 main()
