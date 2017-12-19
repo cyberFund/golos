@@ -9,6 +9,9 @@
 namespace golos {
     namespace protocol {
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct expire_witness_vote_operation : public virtual_operation<Major, Hardfork, Release> {
             expire_witness_vote_operation() {
@@ -25,6 +28,9 @@ namespace golos {
             fc::time_point_sec creation_time;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct shutdown_witness_operation : public virtual_operation<Major, Hardfork, Release> {
             shutdown_witness_operation() {

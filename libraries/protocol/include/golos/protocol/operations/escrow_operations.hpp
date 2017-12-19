@@ -8,6 +8,8 @@
 namespace golos {
     namespace protocol {
         /**
+         *  @ingroup operations
+         *
          *  The purpose of this operation is to enable someone to send money contingently to
          *  another individual. The funds leave the *from* account and go into a temporary balance
          *  where they are held until *from* releases it to *to* or *to* refunds it to *from*.
@@ -32,9 +34,9 @@ namespace golos {
             account_name_type agent;
             uint32_t escrow_id = 30;
 
-            asset<Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME};
-            asset<Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME};
-            asset<Major, Hardfork, Release> fee;
+            asset <Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME};
+            asset <Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME};
+            asset <Major, Hardfork, Release> fee;
 
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
@@ -43,13 +45,15 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from);
             }
         };
 
 
         /**
+         *  @ingroup operations
+         *
          *  The agent and to accounts must approve an escrow transaction for it to be valid on
          *  the blockchain. Once a part approves the escrow, the cannot revoke their approval.
          *  Subsequent escrow approve operations, regardless of the approval, will be rejected.
@@ -66,13 +70,15 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(who);
             }
         };
 
 
         /**
+         *  @ingroup operations
+         *
          *  If either the sender or receiver of an escrow payment has an issue, they can
          *  raise it for dispute. Once a payment is in dispute, the agent has authority over
          *  who gets what.
@@ -88,13 +94,15 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(who);
             }
         };
 
 
         /**
+         * @ingroup operations
+         *
          *  This operation can be used by anyone associated with the escrow transfer to
          *  release funds if they have permission.
          *
@@ -113,12 +121,12 @@ namespace golos {
             account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
 
             uint32_t escrow_id = 30;
-            asset<Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME}; ///< the amount of sbd to release
-            asset<Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME}; ///< the amount of steem to release
+            asset <Major, Hardfork, Release> sbd_amount = {0, SBD_SYMBOL_NAME}; ///< the amount of sbd to release
+            asset <Major, Hardfork, Release> steem_amount = {0, STEEM_SYMBOL_NAME}; ///< the amount of steem to release
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(who);
             }
         };
@@ -132,15 +140,11 @@ FC_REFLECT((golos::protocol::escrow_transfer_operation<0, 17, 0>),
            (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(
                    escrow_expiration));
 
-FC_REFLECT((golos::protocol::escrow_approve_operation<0, 16, 0>),
-           (from)(to)(agent)(who)(escrow_id)(approve));
-FC_REFLECT((golos::protocol::escrow_approve_operation<0, 17, 0>),
-           (from)(to)(agent)(who)(escrow_id)(approve));
+FC_REFLECT((golos::protocol::escrow_approve_operation<0, 16, 0>), (from)(to)(agent)(who)(escrow_id)(approve));
+FC_REFLECT((golos::protocol::escrow_approve_operation<0, 17, 0>), (from)(to)(agent)(who)(escrow_id)(approve));
 
-FC_REFLECT((golos::protocol::escrow_dispute_operation<0, 16, 0>),
-           (from)(to)(agent)(who)(escrow_id));
-FC_REFLECT((golos::protocol::escrow_dispute_operation<0, 17, 0>),
-           (from)(to)(agent)(who)(escrow_id));
+FC_REFLECT((golos::protocol::escrow_dispute_operation<0, 16, 0>), (from)(to)(agent)(who)(escrow_id));
+FC_REFLECT((golos::protocol::escrow_dispute_operation<0, 17, 0>), (from)(to)(agent)(who)(escrow_id));
 
 FC_REFLECT((golos::protocol::escrow_release_operation<0, 16, 0>),
            (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount));

@@ -28,8 +28,11 @@ namespace golos {
         };
 
 
-        /** serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
-         * this operation is designed to be human readable/developer friendly.
+        /**
+         * @brief serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
+         * @ingroup operations
+         *
+         * This operation is designed to be human readable/developer friendly.
          **/
         struct custom_json_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_auths;
@@ -51,6 +54,10 @@ namespace golos {
                 }
             }
         };
+
+        /**
+         * @ingroup operations
+         */
 
         struct custom_binary_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_owner_auths;

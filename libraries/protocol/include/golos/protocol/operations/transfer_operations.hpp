@@ -10,7 +10,7 @@ namespace golos {
         /**
          * @ingroup operations
          *
-         * @brief Transfers an amount of one asset<Major, Hardfork, Release> from one account to another
+         * @brief Transfers an amount of one asset from one account to another
          *
          *  Fees are paid by the "from" account
          *
@@ -50,6 +50,7 @@ namespace golos {
         };
 
         /**
+         * @ingroup operations
          *  This operation converts STEEM into VFS (Vesting Fund Shares) at
          *  the current exchange rate. With this operation it is possible to
          *  give another account vesting shares so that faucets can
@@ -68,6 +69,9 @@ namespace golos {
             }
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct transfer_to_savings_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
@@ -82,6 +86,9 @@ namespace golos {
             void validate() const;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct transfer_from_savings_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
@@ -97,7 +104,9 @@ namespace golos {
             void validate() const;
         };
 
-
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct cancel_transfer_from_savings_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type from;
@@ -134,7 +143,6 @@ namespace golos {
 
             void validate() const;
         };
-
     }
 }
 

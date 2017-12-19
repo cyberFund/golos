@@ -12,6 +12,8 @@
 namespace golos {
     namespace protocol {
         /**
+         *  @ingroup operations
+         *
          *  Users who wish to become a witness must pay a fee acceptable to
          *  the current witnesses to apply for the position and allow voting
          *  to begin.
@@ -42,6 +44,8 @@ namespace golos {
 
 
         /**
+         * @ingroup operations
+         *
          * All accounts with a VFS can vote for or against any witness.
          *
          * If a proxy is specified then all existing votes are removed.
@@ -59,6 +63,9 @@ namespace golos {
             }
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_witness_proxy_operation
                 : public base_operation<Major, Hardfork, Release> {

@@ -12,18 +12,22 @@ namespace golos {
         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_create_operation : public base_operation<Major, Hardfork, Release> {
-            asset <Major, Hardfork, Release> fee;
+            asset<Major, Hardfork, Release> fee;
             account_name_type creator;
             account_name_type new_account_name;
             authority owner;
             authority active;
             authority posting;
+
+            /// The memo key is the key this account will typically use to encrypt/sign transaction memos and other
+            /// non-validated account activities. This field is here to prevent confusion if the active authority has
+            /// zero or multiple keys in it.
             public_key_type memo_key;
             std::string json_metadata;
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -32,15 +36,18 @@ namespace golos {
          *  @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        struct account_create_with_delegation_operation
-                : public base_operation<Major, Hardfork, Release> {
-            asset <Major, Hardfork, Release> fee;
-            asset <Major, Hardfork, Release> delegation;
+        struct account_create_with_delegation_operation : public base_operation<Major, Hardfork, Release> {
+            asset<Major, Hardfork, Release> fee;
+            asset<Major, Hardfork, Release> delegation;
             account_name_type creator;
             account_name_type new_account_name;
             authority owner;
             authority active;
             authority posting;
+
+            /// The memo key is the key this account will typically use to encrypt/sign transaction memos and other
+            /// non-validated account activities. This field is here to prevent confusion if the active authority has
+            /// zero or multiple keys in it.
             public_key_type memo_key;
             std::string json_metadata;
 
@@ -48,7 +55,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -63,21 +70,25 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
-            optional <authority> owner;
-            optional <authority> active;
-            optional <authority> posting;
+            optional<authority> owner;
+            optional<authority> active;
+            optional<authority> posting;
+
+            /// The memo key is the key this account will typically use to encrypt/sign transaction memos and other
+            /// non-validated account activities. This field is here to prevent confusion if the active authority has
+            /// zero or multiple keys in it.
             public_key_type memo_key;
             std::string json_metadata;
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set <account_name_type> &a) const {
+            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
                 if (owner) {
                     a.insert(account);
                 }
             }
 
-            void get_required_active_authorities(flat_set <account_name_type> &a) const {
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
                 if (!owner) {
                     a.insert(account);
                 }
@@ -114,7 +125,7 @@ namespace golos {
             };
 
             /// Paid by authorizing_account
-            asset <Major, Hardfork, Release> fee;
+            asset<Major, Hardfork, Release> fee;
             /// The account which is specifying an opinion of another account
             account_name_type authorizing_account;
             /// The account being opined about

@@ -7,6 +7,9 @@
 
 namespace golos {
     namespace protocol {
+        /**
+         *  @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type parent_author;
@@ -20,7 +23,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(author);
             }
         };
@@ -47,12 +50,13 @@ namespace golos {
             void validate() const;
         };
 
-        typedef static_variant<comment_payout_beneficiaries> comment_options_extension;
+        typedef static_variant <comment_payout_beneficiaries> comment_options_extension;
 
-        typedef flat_set<comment_options_extension> comment_options_extensions_type;
-
+        typedef flat_set <comment_options_extension> comment_options_extensions_type;
 
         /**
+         *  @ingroup operations
+         *
          *  Authors of posts may not want all of the benefits that come from creating a post. This
          *  operation allows authors to update properties associated with their post.
          *
@@ -65,7 +69,8 @@ namespace golos {
             account_name_type author;
             std::string permlink;
 
-            asset<Major, Hardfork, Release> max_accepted_payout = {1000000000, SBD_SYMBOL_NAME};       /// SBD value of the maximum payout this post will receive
+            asset <Major, Hardfork, Release> max_accepted_payout = {1000000000,
+                                                                    SBD_SYMBOL_NAME};       /// SBD value of the maximum payout this post will receive
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Gold to key, unkept amounts will be received as Golos Power
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
@@ -73,11 +78,14 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(author);
             }
         };
 
+        /**
+         *  @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct delete_comment_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type author;
@@ -85,7 +93,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_posting_authorities(flat_set <account_name_type> &a) const {
                 a.insert(author);
             }
         };

@@ -10,6 +10,10 @@
 
 namespace golos {
     namespace protocol {
+
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct challenge_authority_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type challenger;
@@ -23,6 +27,9 @@ namespace golos {
             }
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct prove_authority_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type challenged;
@@ -43,6 +50,9 @@ namespace golos {
             }
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct vote_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type voter;
@@ -58,6 +68,8 @@ namespace golos {
         };
 
         /**
+         * @ingroup operations
+         *
          * At any given point in time an account can be withdrawing from their
          * vesting shares. A user may change the number of shares they wish to
          * cash out at any time between 0 and their total vesting stake.
@@ -82,6 +94,8 @@ namespace golos {
 
 
         /**
+         * @ingroup operations
+         *
          * Allows an account to setup a vesting withdraw but with the additional
          * request for the funds to be transferred directly to another account's
          * balance rather than the withdrawing account. In addition, those funds
@@ -103,6 +117,7 @@ namespace golos {
         };
 
         /**
+         *  @ingroup operations
          *  Feeds can only be published by the top N witnesses which are included in every round and are
          *  used to define the exchange rate between steem and the dollar.
          */
@@ -129,6 +144,9 @@ namespace golos {
             void validate() const;
         };
 
+        /**
+         *  @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct pow_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type worker_account;
@@ -178,6 +196,9 @@ namespace golos {
 
         typedef fc::static_variant<pow2, equihash_pow> pow2_work;
 
+        /**
+         *  @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct pow2_operation : public base_operation<Major, Hardfork, Release> {
             pow2_work work;
@@ -197,6 +218,8 @@ namespace golos {
 
 
         /**
+         * @ingroup operations
+         *
          * This operation is used to report a miner who signs two blocks
          * at the same time. To be valid, the violation must be reported within
          * STEEMIT_MAX_WITNESSES blocks of the head block (1 round) and the
@@ -220,6 +243,8 @@ namespace golos {
 
 
         /**
+         * @ingroup operations
+         *
          * All account recovery requests come from a listed recovery account. This
          * is secure based on the assumption that only a trusted account should be
          * a recovery account. It is the responsibility of the recovery account to
@@ -266,6 +291,8 @@ namespace golos {
 
 
         /**
+         * @ingroup operations
+         *
          * Recover an account to a new authority using a previous authority and verification
          * of the recovery account as proof of identity. This operation can only succeed
          * if there was a recovery request sent by the account's recover account.
@@ -322,6 +349,8 @@ namespace golos {
 
 
         /**
+         *  @ingroup operations
+         *
          *  This operation allows recovery_accoutn to change account_to_reset's owner authority to
          *  new_owner_authority after 60 days of inactivity.
          */
@@ -339,6 +368,8 @@ namespace golos {
         };
 
         /**
+         * @ingroup operations
+         *
          * This operation allows 'account' owner to control which account has the power
          * to execute the 'reset_account_operation' after 60 days.
          */
@@ -365,6 +396,8 @@ namespace golos {
 
 
         /**
+         * @ingroup operations
+         *
          * Each account lists another account as their recovery account.
          * The recovery account has the ability to create account_recovery_requests
          * for the account to recover. An account can change their recovery account
@@ -395,6 +428,9 @@ namespace golos {
             void validate() const;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct decline_voting_rights_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
@@ -408,6 +444,8 @@ namespace golos {
         };
 
         /**
+         * @ingroup operations
+         *
          * Delegate vesting shares from one account to the other. The vesting shares are still owned
          * by the original account, but content voting rights and bandwidth allocation are transferred
          * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or

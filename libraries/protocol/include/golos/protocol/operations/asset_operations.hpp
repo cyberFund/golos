@@ -34,21 +34,21 @@ namespace golos {
             /// order to accept the fee. If this asset's fee pool is funded, the chain will automatically deposite fees
             /// in this asset to its accumulated fees, and withdraw from the fee pool the same amount as converted at
             /// the core exchange rate.
-            price<Major, Hardfork, Release> core_exchange_rate;
+            price <Major, Hardfork, Release> core_exchange_rate;
 
             /// A set of accounts which maintain whitelists to consult for this asset. If whitelist_authorities
             /// is non-empty, then only accounts in whitelist_authorities are allowed to hold, use, or transfer the asset.
-            flat_set<account_name_type> whitelist_authorities;
+            flat_set <account_name_type> whitelist_authorities;
             /// A set of accounts which maintain blacklists to consult for this asset. If flags & white_list is set,
             /// an account may only send, receive, trade, etc. in this asset if none of these accounts appears in
             /// its account_object::blacklisting_accounts field. If the account is blacklisted, it may not transact in
             /// this asset even if it is also whitelisted.
-            flat_set<account_name_type> blacklist_authorities;
+            flat_set <account_name_type> blacklist_authorities;
 
             /** defines the assets that this asset may be traded against in the market */
-            flat_set<asset_name_type> whitelist_markets;
+            flat_set <asset_name_type> whitelist_markets;
             /** defines the assets that this asset may not be traded against in the market, must not overlap whitelist */
-            flat_set<asset_name_type> blacklist_markets;
+            flat_set <asset_name_type> blacklist_markets;
 
             /**
              * data that describes the meaning/purpose of this asset, fee will be charged proportional to
@@ -95,7 +95,7 @@ namespace golos {
 
 
         /**
-         * @ingroup operations
+         *  @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_create_operation : public base_operation<Major, Hardfork, Release> {
@@ -114,7 +114,7 @@ namespace golos {
             asset_options<Major, Hardfork, Release> common_options;
             /// Options only available for BitAssets. MUST be non-null if and only if the @ref market_issued flag is set in
             /// common_options.flags
-            optional<bitasset_options<Major, Hardfork, Release>> bitasset_opts;
+            optional <bitasset_options<Major, Hardfork, Release>> bitasset_opts;
             /// For BitAssets, set this to true if the asset implements a @ref prediction_market; false otherwise
             bool is_prediction_market = false;
             extensions_type extensions;
@@ -125,13 +125,14 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
         };
 
         /**
          *  @brief allows global settling of bitassets (black swan or prediction markets)
+         *  @ingroup operations
          *
          *  In order to use this operation, @ref asset_to_settle must have the global_settle flag set
          *
@@ -144,7 +145,7 @@ namespace golos {
         struct asset_global_settle_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer; ///< must equal @ref asset_to_settle->issuer
             asset_name_type asset_to_settle;
-            price<Major, Hardfork, Release> settle_price;
+            price <Major, Hardfork, Release> settle_price;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -153,7 +154,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
         };
@@ -176,7 +177,7 @@ namespace golos {
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
-            asset<Major, Hardfork, Release> amount;
+            asset <Major, Hardfork, Release> amount;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -185,7 +186,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
@@ -208,7 +209,7 @@ namespace golos {
             /// Account requesting the force settlement. This account pays the fee
             account_name_type account;
             /// Amount of asset to force settle. This must be a market-issued asset
-            asset<Major, Hardfork, Release> amount;
+            asset <Major, Hardfork, Release> amount;
             integral_id_type settlement_id;
             extensions_type extensions;
 
@@ -218,13 +219,13 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(account);
             }
         };
 
         /**
-         * @ingroup operations
+         *  @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_fund_fee_pool_operation : public base_operation<Major, Hardfork, Release> {
@@ -240,7 +241,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(from_account);
             }
         };
@@ -266,7 +267,7 @@ namespace golos {
             asset_name_type asset_to_update;
 
             /// If the asset is to be given a new issuer, specify his ID here.
-            optional<account_name_type> new_issuer;
+            optional <account_name_type> new_issuer;
             asset_options<Major, Hardfork, Release> new_options;
             extensions_type extensions;
 
@@ -276,7 +277,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
         };
@@ -308,7 +309,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
         };
@@ -334,7 +335,7 @@ namespace golos {
             account_name_type issuer;
             asset_name_type asset_to_update;
 
-            flat_set<account_name_type> new_feed_producers;
+            flat_set <account_name_type> new_feed_producers;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -343,7 +344,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
         };
@@ -368,7 +369,7 @@ namespace golos {
         struct asset_publish_feed_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type publisher;
             asset_name_type asset_name; ///< asset for which the feed is published
-            price_feed<Major, Hardfork, Release> feed;
+            price_feed <Major, Hardfork, Release> feed;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -377,7 +378,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(publisher);
             }
         };
@@ -388,12 +389,12 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_issue_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer; ///< Must be asset_to_issue->asset_id->issuer
-            asset<Major, Hardfork, Release> asset_to_issue;
+            asset <Major, Hardfork, Release> asset_to_issue;
             account_name_type issue_to_account;
 
 
             /** user provided data encrypted to the memo key of the "to" account */
-            optional<std::string> memo;
+            optional <std::string> memo;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
@@ -402,7 +403,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
         };
@@ -416,14 +417,14 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_reserve_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type payer;
-            asset<Major, Hardfork, Release> amount_to_reserve;
+            asset <Major, Hardfork, Release> amount_to_reserve;
             extensions_type extensions;
 
             account_name_type fee_payer() const {
                 return payer;
             }
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(payer);
             }
 
@@ -432,18 +433,19 @@ namespace golos {
 
         /**
          * @brief used to transfer accumulated fees back to the issuer's balance.
+         * @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_claim_fees_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type issuer;
-            asset<Major, Hardfork, Release> amount_to_claim; /// amount_to_claim.asset_id->issuer must == issuer
+            asset <Major, Hardfork, Release> amount_to_claim; /// amount_to_claim.asset_id->issuer must == issuer
             extensions_type extensions;
 
             account_name_type fee_payer() const {
                 return issuer;
             }
 
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+            void get_required_active_authorities(flat_set <account_name_type> &a) const {
                 a.insert(issuer);
             }
 
@@ -452,8 +454,7 @@ namespace golos {
     }
 } // golos::protocol
 
-FC_REFLECT((golos::protocol::asset_claim_fees_operation<0, 17, 0>),
-           (issuer)(amount_to_claim)(extensions))
+FC_REFLECT((golos::protocol::asset_claim_fees_operation<0, 17, 0>), (issuer)(amount_to_claim)(extensions))
 
 FC_REFLECT((golos::protocol::asset_options<0, 17, 0>),
            (max_supply)(market_fee_percent)(max_market_fee)(issuer_permissions)(flags)(core_exchange_rate)(
@@ -472,18 +473,13 @@ FC_REFLECT((golos::protocol::asset_update_bitasset_operation<0, 17, 0>),
            (issuer)(asset_to_update)(new_options)(extensions))
 FC_REFLECT((golos::protocol::asset_update_feed_producers_operation<0, 17, 0>),
            (issuer)(asset_to_update)(new_feed_producers)(extensions))
-FC_REFLECT((golos::protocol::asset_publish_feed_operation<0, 17, 0>),
-           (publisher)(asset_name)(feed)(extensions))
-FC_REFLECT((golos::protocol::asset_settle_operation<0, 17, 0>),
-           (account)(amount)(extensions))
-FC_REFLECT((golos::protocol::asset_force_settle_operation<0, 17, 0>),
-           (account)(amount)(settlement_id)(extensions))
+FC_REFLECT((golos::protocol::asset_publish_feed_operation<0, 17, 0>), (publisher)(asset_name)(feed)(extensions))
+FC_REFLECT((golos::protocol::asset_settle_operation<0, 17, 0>), (account)(amount)(extensions))
+FC_REFLECT((golos::protocol::asset_force_settle_operation<0, 17, 0>), (account)(amount)(settlement_id)(extensions))
 FC_REFLECT((golos::protocol::asset_global_settle_operation<0, 17, 0>),
            (issuer)(asset_to_settle)(settle_price)(extensions))
 FC_REFLECT((golos::protocol::asset_issue_operation<0, 17, 0>),
            (issuer)(asset_to_issue)(issue_to_account)(memo)(extensions))
-FC_REFLECT((golos::protocol::asset_reserve_operation<0, 17, 0>),
-           (payer)(amount_to_reserve)(extensions))
+FC_REFLECT((golos::protocol::asset_reserve_operation<0, 17, 0>), (payer)(amount_to_reserve)(extensions))
 
-FC_REFLECT((golos::protocol::asset_fund_fee_pool_operation<0, 17, 0>),
-           (from_account)(asset_name)(amount)(extensions));
+FC_REFLECT((golos::protocol::asset_fund_fee_pool_operation<0, 17, 0>), (from_account)(asset_name)(amount)(extensions));

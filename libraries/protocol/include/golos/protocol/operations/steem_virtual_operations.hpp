@@ -9,6 +9,9 @@
 namespace golos {
     namespace protocol {
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct author_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             author_reward_operation() {
@@ -28,6 +31,9 @@ namespace golos {
             asset <Major, Hardfork, Release> vesting_payout;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct curation_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             curation_reward_operation() {
@@ -43,6 +49,9 @@ namespace golos {
             std::string comment_permlink;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             comment_reward_operation() {
@@ -57,6 +66,9 @@ namespace golos {
             asset <Major, Hardfork, Release> payout;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct liquidity_reward_operation : public virtual_operation<Major, Hardfork, Release> {
             liquidity_reward_operation(std::string o = std::string(),
@@ -68,6 +80,9 @@ namespace golos {
             asset <Major, Hardfork, Release> payout;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct interest_operation : public virtual_operation<Major, Hardfork, Release> {
             interest_operation(const std::string &o = "",
@@ -80,6 +95,9 @@ namespace golos {
             asset <Major, Hardfork, Release> interest;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_convert_request_operation
                 : public virtual_operation<Major, Hardfork, Release> {
@@ -98,6 +116,9 @@ namespace golos {
             asset <Major, Hardfork, Release> amount_out;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_vesting_withdraw_operation
                 : public virtual_operation<Major, Hardfork, Release> {
@@ -115,6 +136,9 @@ namespace golos {
             asset <Major, Hardfork, Release> deposited;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct fill_transfer_from_savings_operation
                 : public virtual_operation<Major, Hardfork, Release> {
@@ -133,6 +157,9 @@ namespace golos {
             std::string memo;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct hardfork_operation : public virtual_operation<Major, Hardfork, Release> {
             hardfork_operation() {
@@ -144,6 +171,9 @@ namespace golos {
             uint32_t hardfork_id = 0;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_payout_update_operation
                 : public virtual_operation<Major, Hardfork, Release> {
@@ -157,6 +187,9 @@ namespace golos {
             std::string permlink;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_benefactor_reward_operation
                 : public virtual_operation<Major, Hardfork, Release> {
@@ -174,6 +207,9 @@ namespace golos {
             asset <Major, Hardfork, Release> reward;
         };
 
+        /**
+         * @ingroup operations
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct return_vesting_delegation_operation
                 : public virtual_operation<Major, Hardfork, Release> {
