@@ -163,7 +163,7 @@ namespace golos {
         };
 
         /**
-         * @breif a route to send withdrawn vesting shares.
+         * @brief a route to send withdrawn vesting shares.
          */
         class withdraw_vesting_route_object : public object<withdraw_vesting_route_object_type,
                 withdraw_vesting_route_object> {
