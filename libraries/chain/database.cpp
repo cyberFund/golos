@@ -4339,8 +4339,7 @@ namespace golos {
 
             modify(props, [&](dynamic_global_property_object &props) {
                 if (delta.symbol == STEEM_SYMBOL_NAME) {
-                    asset<0, 17, 0> new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0,
-                                                STEEM_SYMBOL_NAME);
+                    asset<0, 17, 0> new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, STEEM_SYMBOL_NAME);
                     props.current_supply += delta + new_vesting;
                     props.virtual_supply += delta + new_vesting;
                     props.total_vesting_fund_steem += new_vesting;

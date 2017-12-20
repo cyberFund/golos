@@ -2,7 +2,7 @@
 
 /*
 
-The bounds on asset serialization are as follows:
+The bounds on asset<0, 16, 0> serialization are as follows:
 
 index : field
 0     : decimals

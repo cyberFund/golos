@@ -74,7 +74,22 @@ namespace golos {
         };
 
         /**
+         *  @class limit_order_create2_operation
+         *  @brief instructs the blockchain to attempt to sell one asset for another
          *  @ingroup operations
+         *
+         *  The blockchain will perform an attempt to sell amount_to_sell.asset_id for as
+         *  much min_to_receive.asset_id as possible.  The fee will be paid by
+         *  the seller's account.  Market fees will apply as specified by the
+         *  issuer of both the selling asset and the receiving asset as
+         *  a percentage of the amount exchanged.
+         *
+         *  If either the selling asset or the receiving asset is white list
+         *  restricted, the order will only be created if the seller is on
+         *  the white list of the restricted asset type.
+         *
+         *  Market orders are matched in the order they are included
+         *  in the block chain.
          *
          *  This operation is identical to limit_order_create except it serializes the price rather
          *  than calculating it from other fields.
@@ -83,7 +98,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct limit_order_create2_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
-            integral_id_type order_id = 0; /// an ID assigned by owner, must be unique
+            integral_id_type order_id = 0; ///< an ID assigned by owner, must be unique
             asset <Major, Hardfork, Release> amount_to_sell;
             bool fill_or_kill = false;
             price <Major, Hardfork, Release> exchange_rate;
@@ -119,7 +134,7 @@ namespace golos {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct limit_order_cancel_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
-            integral_id_type order_id = 0;
+            integral_id_type order_id = 0; ///< an ID assigned by owner, must be unique
 
             void validate() const;
 
@@ -143,7 +158,7 @@ namespace golos {
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct call_order_update_operation : public base_operation<Major, Hardfork, Release> {
-            integral_id_type order_id = 0;
+            integral_id_type order_id = 0; ///< an ID assigned by owner, must be unique
             account_name_type funding_account; ///< pays fee, collateral, and cover
             asset <Major, Hardfork, Release> delta_collateral; ///< the amount of collateral to add to the margin position
             asset <Major, Hardfork, Release> delta_debt; ///< the amount of the debt to be paid off, may be negative to issue new debt

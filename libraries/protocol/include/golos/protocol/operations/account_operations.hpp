@@ -17,7 +17,7 @@ namespace golos {
          *  @param owner
          *  @param active
          *  @param posting
-         *  @param memo_key
+         *  @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
          *  @param json_metadata
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -29,9 +29,6 @@ namespace golos {
             authority active;
             authority posting;
 
-            /// The memo key is the key this account will typically use to encrypt/sign transaction memos and other
-            /// non-validated account activities. This field is here to prevent confusion if the active authority has
-            /// zero or multiple keys in it.
             public_key_type memo_key;
             std::string json_metadata;
 
@@ -46,14 +43,14 @@ namespace golos {
          *  @ingroup operations
          *  @brief Creates account with initially delegated Steem Power
          *
-         *  @param fee
+         *  @param fee Paid by creator
          *  @param delegation
          *  @param creator
          *  @param new_account_name
          *  @param owner
          *  @param active
          *  @param posting
-         *  @param memo_key
+         *  @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
          *  @param json_metadata
          *  @param extensions
          */
@@ -67,9 +64,6 @@ namespace golos {
             authority active;
             authority posting;
 
-            /// The memo key is the key this account will typically use to encrypt/sign transaction memos and other
-            /// non-validated account activities. This field is here to prevent confusion if the active authority has
-            /// zero or multiple keys in it.
             public_key_type memo_key;
             std::string json_metadata;
 
@@ -90,7 +84,7 @@ namespace golos {
          * @param owner
          * @param active
          * @param posting
-         * @param memo_key
+         * @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
          * @param json_metadata
          *
          * This operation is used to update an existing account. It can be used to update the authorities, or adjust the opt ions on the account.
@@ -102,9 +96,6 @@ namespace golos {
             optional<authority> active;
             optional<authority> posting;
 
-            /// The memo key is the key this account will typically use to encrypt/sign transaction memos and other
-            /// non-validated account activities. This field is here to prevent confusion if the active authority has
-            /// zero or multiple keys in it.
             public_key_type memo_key;
             std::string json_metadata;
 
@@ -127,10 +118,10 @@ namespace golos {
          * @brief This operation is used to whitelist and blacklist accounts, primarily for transacting in whitelisted ass     ets
          * @ingroup operations
          *
-         * @param fee
-         * @param authorizing_account
-         * @param account_to_list
-         * @param new_listing
+         * @param fee Paid by authorizing_account
+         * @param authorizing_account The account which is specifying an opinion of another account
+         * @param account_to_list The account being opined about
+         * @param new_listing The new white and blacklist status of account_to_list, as determined by authorizing_account. This is a bitfield using values defined in the @ref account_listing enum
          * @param extensions
          *
          * Accounts can freely specify opinions about other accounts, in the form of either whitelisting or blacklisting

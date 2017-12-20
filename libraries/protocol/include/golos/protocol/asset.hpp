@@ -82,7 +82,8 @@ namespace golos {
             }
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
-            asset<Major, Hardfork, Release> &operator-=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
+            asset<Major, Hardfork, Release> &operator-=(
+                    const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
                 this->amount -= o.amount;
                 return *this;
@@ -101,7 +102,8 @@ namespace golos {
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
             friend bool operator<(const asset<Major, Hardfork, Release> &a,
                                   const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
-                FC_ASSERT(a.symbol == b.symbol, "Cannot compare assets with different symbols", ("a.symbol", a.symbol)("b.symbol", b.symbol));
+                FC_ASSERT(a.symbol == b.symbol, "Cannot compare assets with different symbols",
+                          ("a.symbol", a.symbol)("b.symbol", b.symbol));
                 return a.amount < b.amount;
             }
 
@@ -224,7 +226,8 @@ namespace golos {
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
             friend bool operator<(const asset<Major, Hardfork, Release> &a,
                                   const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &b) {
-                FC_ASSERT(a.symbol == b.symbol, "Cannot compare assets with different symbols", ("a.symbol", a.symbol)("b.symbol", b.symbol));
+                FC_ASSERT(a.symbol == b.symbol, "Cannot compare assets with different symbols",
+                          ("a.symbol", a.symbol)("b.symbol", b.symbol));
                 return a.amount < b.amount;
             }
 
@@ -291,6 +294,18 @@ namespace golos {
             }
         };
 
+        /**
+         * @brief The price struct stores asset prices in the Graphene system.
+         *
+         * A price is defined as a ratio between two assets, and represents a possible exchange rate between those two
+         * assets. prices are generally not stored in any simplified form, i.e. a price of (1000 CORE)/(20 USD) is per     fectly
+         * normal.
+         *
+         * The assets within a price are labeled base and quote. Throughout the Graphene code base, the convention use     d is
+         * that the base asset is the asset being sold, and the quote asset is the asset being purchased, where the pri     ce is
+         * represented as base/quote, so in the example price above the seller is looking to sell CORE asset and get USD in
+         * return.
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct price : public static_version<Major, Hardfork, Release> {
             price(const asset<Major, Hardfork, Release> &input_base = asset<Major, Hardfork, Release>(0,
@@ -525,11 +540,12 @@ namespace fc {
     }
 }
 
-FC_REFLECT((golos::protocol::asset_interface<0, 16, 0, golos::protocol::asset_symbol_type,
-        golos::protocol::share_type>), (amount)(symbol))
+FC_REFLECT(
+        (golos::protocol::asset_interface<0, 16, 0, golos::protocol::asset_symbol_type, golos::protocol::share_type>),
+        (amount)(symbol))
 
-FC_REFLECT((golos::protocol::asset_interface<0, 17, 0, golos::protocol::asset_name_type,
-        golos::protocol::share_type>), (amount)(symbol))
+FC_REFLECT((golos::protocol::asset_interface<0, 17, 0, golos::protocol::asset_name_type, golos::protocol::share_type>),
+           (amount)(symbol))
 
 FC_REFLECT_DERIVED((golos::protocol::asset<0, 16, 0>),
                    ((golos::protocol::asset_interface<0, 16, 0, golos::protocol::asset_symbol_type,

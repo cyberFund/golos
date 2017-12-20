@@ -8,7 +8,7 @@
 namespace golos {
     namespace protocol {
         /**
-         * @brief provides a generic way to add higher level protocols on top of witness consensus
+         * @brief Provides a generic way to add higher level protocols on top of witness consensus
          * @ingroup operations
          *
          * There is no validation for this operation other than that required auths are valid
@@ -29,7 +29,7 @@ namespace golos {
 
 
         /**
-         * @brief serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
+         * @brief Serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
          * @ingroup operations
          *
          * This operation is designed to be human readable/developer friendly.

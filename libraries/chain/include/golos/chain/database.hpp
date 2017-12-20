@@ -88,6 +88,7 @@ namespace golos {
              * will be initialized with the default state.
              *
              * @param data_dir Path to open or create database in
+             * @param initial_supply Initial initminer supply
              */
             void open(const fc::path &data_dir, const fc::path &shared_mem_dir,
                       uint64_t initial_supply = STEEMIT_INIT_SUPPLY, uint64_t shared_file_size = 0,
@@ -409,6 +410,11 @@ namespace golos {
 
             void adjust_liquidity_reward(const account_object &owner, const asset<0, 17, 0> &volume, bool is_bid);
 
+            /**
+             * @brief Adjust a particular account's balance in a given asset by a delta
+             * @param account name whose balance should be adjusted
+             * @param delta Asset name and amount to adjust balance by
+             */
             void adjust_balance(const account_object &a, const asset<0, 17, 0> &delta);
 
             void adjust_savings_balance(const account_object &a, const asset<0, 17, 0> &delta);
@@ -418,8 +424,8 @@ namespace golos {
             /**
              * This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's             rshares2 changes
              * from old_rshares2 to new_rshares2.  Maintaining invariants that children_rshares2 is the sum of all             descendants' rshares2,
- * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
- */
+             * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
+             */
             void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);
