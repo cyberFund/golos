@@ -83,10 +83,10 @@ namespace golos {
             }
 
             static uint64_t calculate_data_fee(uint64_t bytes, uint64_t price_per_kbyte) {
-            auto result = (fc::uint128_t(bytes) * price_per_kbyte) / 1024;
-            FC_ASSERT(result <= STEEMIT_MAX_SHARE_SUPPLY);
-            return result.to_uint64();
-        }
+                auto result = (fc::uint128_t(bytes) * price_per_kbyte) / 1024;
+                FC_ASSERT(result <= STEEMIT_MAX_SHARE_SUPPLY);
+                return result.to_uint64();
+            }
         };
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -100,8 +100,7 @@ namespace golos {
             }
         };
 
-        typedef static_variant<
-                type_traits::void_t,
+        typedef static_variant<type_traits::void_t,
                 version,              // Normal witness version reporting, for diagnostics and voting
                 hardfork_version_vote // Voting for the next hardfork to trigger
         > block_header_extensions;
@@ -112,10 +111,7 @@ namespace golos {
          *  always add new types to a static_variant without breaking backward
          *  compatibility.
          */
-
-        typedef static_variant<
-                type_traits::void_t
-        > future_extensions;
+        typedef static_variant<type_traits::void_t> future_extensions;
 
         typedef flat_set<block_header_extensions> block_header_extensions_type;
 

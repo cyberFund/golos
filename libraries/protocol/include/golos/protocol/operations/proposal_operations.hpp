@@ -53,7 +53,7 @@ namespace golos {
         struct proposal_create_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type owner;
             integral_id_type proposal_id;
-            std::vector <operation_wrapper> proposed_operations;
+            std::vector<operation_wrapper> proposed_operations;
             time_point_sec expiration_time;
             optional <uint32_t> review_period_seconds;
             extensions_type extensions;
@@ -99,7 +99,7 @@ namespace golos {
 
             void validate() const;
 
-            void get_required_authorities(std::vector <authority> &) const;
+            void get_required_authorities(std::vector<authority> &) const;
 
             void get_required_active_authorities(flat_set <account_name_type> &) const;
 
@@ -131,7 +131,6 @@ namespace golos {
             }
         };
         ///@}
-
     }
 } // golos::chain
 
@@ -143,4 +142,5 @@ FC_REFLECT((golos::protocol::proposal_update_operation<0, 17, 0>),
                    owner_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)(
                    key_approvals_to_add)(key_approvals_to_remove)(extensions))
 
-FC_REFLECT((golos::protocol::proposal_delete_operation<0, 17, 0>), (owner)(using_owner_authority)(proposal_id)(extensions))
+FC_REFLECT((golos::protocol::proposal_delete_operation<0, 17, 0>),
+           (owner)(using_owner_authority)(proposal_id)(extensions))

@@ -33,11 +33,10 @@ namespace golos {
          *  This object exists as an implementation detail and its ID should never be referenced by
          *  a blockchain operation.
          */
-        class asset_dynamic_data_object
-                : public object<asset_dynamic_data_object_type, asset_dynamic_data_object> {
+        class asset_dynamic_data_object : public object<asset_dynamic_data_object_type, asset_dynamic_data_object> {
         public:
             template<typename Constructor, typename Allocator>
-            asset_dynamic_data_object(Constructor &&c, allocator<Allocator> a) {
+            asset_dynamic_data_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -63,11 +62,10 @@ namespace golos {
          *  All assets have a globally unique symbol name that controls how they are traded and an issuer who
          *  has authority over the parameters of the asset.
          */
-        class asset_object
-                : public object<asset_object_type, asset_object> {
+        class asset_object : public object<asset_object_type, asset_object> {
         public:
             template<typename Constructor, typename Allocator>
-            asset_object(Constructor &&c, allocator<Allocator> a) {
+            asset_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -111,8 +109,7 @@ namespace golos {
             }
 
             bool allow_confidential() const {
-                return !(options.flags &
-                         protocol::asset_issuer_permission_flags::disable_confidential);
+                return !(options.flags & protocol::asset_issuer_permission_flags::disable_confidential);
             }
 
             /// Helper function to get an asset object with the given amount in this asset's type
@@ -156,19 +153,15 @@ namespace golos {
             /// Extra data associated with BitAssets. This field is non-null if and only if is_market_issued() returns true
             bool market_issued = false;
 
-            optional<account_name_type> buyback_account;
+            optional <account_name_type> buyback_account;
 
             void validate() const {
                 // UIAs may not be prediction markets, have force settlement, or global settlements
                 if (!is_market_issued()) {
-                    FC_ASSERT(!(
-                            options.flags & protocol::disable_force_settle ||
-                            options.flags & protocol::global_settle));
-                    FC_ASSERT(!(
-                            options.issuer_permissions &
-                            protocol::disable_force_settle ||
-                            options.issuer_permissions &
-                            protocol::global_settle));
+                    FC_ASSERT(!(options.flags & protocol::disable_force_settle ||
+                                options.flags & protocol::global_settle));
+                    FC_ASSERT(!(options.issuer_permissions & protocol::disable_force_settle ||
+                                options.issuer_permissions & protocol::global_settle));
                 }
             }
         };
@@ -179,11 +172,10 @@ namespace golos {
          *  @ingroup object
          *  @ingroup implementation
          */
-        class asset_bitasset_data_object
-                : public object<asset_bitasset_data_object_type, asset_bitasset_data_object> {
+        class asset_bitasset_data_object : public object<asset_bitasset_data_object_type, asset_bitasset_data_object> {
         public:
             template<typename Constructor, typename Allocator>
-            asset_bitasset_data_object(Constructor &&c, allocator<Allocator> a) {
+            asset_bitasset_data_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -202,7 +194,8 @@ namespace golos {
             /// Feeds published for this asset. If issuer is not committee, the keys in this map are the feed publishing
             /// accounts; otherwise, the feed publishers are the currently active committee_members and witnesses and this map
             /// should be treated as an implementation detail. The timestamp on each feed is the time it was published.
-            flat_map<account_name_type, std::pair<time_point_sec, protocol::price_feed<0, 17, 0>>> feeds;
+            flat_map <account_name_type, std::pair<time_point_sec, protocol::price_feed < 0, 17, 0>>>
+            feeds;
             /// This is the currently active price feed, calculated as the median of values from the currently active
             /// feeds.
             protocol::price_feed<0, 17, 0> current_feed;
@@ -237,8 +230,7 @@ namespace golos {
             ///@}
 
             time_point_sec feed_expiration_time() const {
-                return current_feed_publication_time +
-                       options.feed_lifetime_sec;
+                return current_feed_publication_time + options.feed_lifetime_sec;
             }
 
             bool feed_is_expired(time_point_sec current_time) const {
@@ -253,73 +245,47 @@ namespace golos {
         struct by_type;
         struct by_issuer;
 
-        typedef multi_index_container<
-                asset_bitasset_data_object,
-                indexed_by<ordered_unique<tag<by_id>,
-                        member<asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
-                        ordered_non_unique<tag<by_feed_expiration>,
-                                const_mem_fun<asset_bitasset_data_object, time_point_sec, &asset_bitasset_data_object::feed_expiration_time>
-                        >,
-                        ordered_unique<tag<by_asset_name>,
-                                member<asset_bitasset_data_object, protocol::asset_name_type, &asset_bitasset_data_object::asset_name>>
-                >, allocator<asset_bitasset_data_object>
-        > asset_bitasset_data_index;
+        typedef multi_index_container <asset_bitasset_data_object, indexed_by<ordered_unique < tag < by_id>, member<
+                asset_bitasset_data_object, asset_bitasset_data_object::id_type, &asset_bitasset_data_object::id>>,
+        ordered_non_unique <tag<by_feed_expiration>, const_mem_fun<asset_bitasset_data_object, time_point_sec,
+                &asset_bitasset_data_object::feed_expiration_time>>,
+        ordered_unique <tag<by_asset_name>, member<asset_bitasset_data_object, protocol::asset_name_type,
+                &asset_bitasset_data_object::asset_name>>
+        >, allocator <asset_bitasset_data_object>
+        >
+        asset_bitasset_data_index;
 
-        typedef multi_index_container<
-                asset_dynamic_data_object,
-                indexed_by<
-                        ordered_unique<tag<
-                                by_id>, member<asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
-                        ordered_unique<tag<
-                                by_asset_name>, member<asset_dynamic_data_object, protocol::asset_name_type, &asset_dynamic_data_object::asset_name>>
-                >, allocator<asset_dynamic_data_object>
-        > asset_dynamic_data_index;
+        typedef multi_index_container <asset_dynamic_data_object, indexed_by<ordered_unique < tag < by_id>, member<
+                asset_dynamic_data_object, asset_dynamic_data_object::id_type, &asset_dynamic_data_object::id>>,
+        ordered_unique <tag<by_asset_name>, member<asset_dynamic_data_object, protocol::asset_name_type,
+                &asset_dynamic_data_object::asset_name>>
+        >, allocator <asset_dynamic_data_object>
+        >
+        asset_dynamic_data_index;
 
-        typedef multi_index_container<
-                asset_object,
-                indexed_by<
-                        ordered_unique<tag<
-                                by_id>, member<asset_object, asset_object::id_type, &asset_object::id>>,
-                        ordered_unique<tag<by_asset_name>, member<asset_object, protocol::asset_name_type, &asset_object::asset_name>>,
-                        ordered_non_unique<tag<by_issuer>, member<asset_object, account_name_type, &asset_object::issuer>>,
-                        ordered_unique<tag<by_type>,
-                                composite_key<asset_object,
-                                        const_mem_fun<asset_object, bool, &asset_object::is_market_issued>,
-                                        member<asset_object, asset_object::id_type, &asset_object::id>
-                                >
-                        >
-                >, allocator<asset_object>
-        > asset_index;
+        typedef multi_index_container <asset_object, indexed_by<ordered_unique < tag < by_id>, member<asset_object,
+                asset_object::id_type, &asset_object::id>>,
+        ordered_unique <tag<by_asset_name>, member<asset_object, protocol::asset_name_type, &asset_object::asset_name>>,
+        ordered_non_unique <tag<by_issuer>, member<asset_object, account_name_type, &asset_object::issuer>>,
+        ordered_unique <tag<by_type>, composite_key<asset_object, const_mem_fun < asset_object, bool,
+                &asset_object::is_market_issued>, member<asset_object, asset_object::id_type, &asset_object::id>>
+        >
+        >, allocator <asset_object>
+        >
+        asset_index;
     }
 } // golos::chain
 
 FC_REFLECT((golos::chain::asset_dynamic_data_object),
-        (id)(asset_name)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
+           (id)(asset_name)(current_supply)(confidential_supply)(accumulated_fees)(fee_pool))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::asset_dynamic_data_object, golos::chain::asset_dynamic_data_index)
 
 FC_REFLECT((golos::chain::asset_bitasset_data_object),
-        (id)
-                (asset_name)
-                (feeds)
-                (current_feed)
-                (current_feed_publication_time)
-                (options)
-                (force_settled_volume)
-                (is_prediction_market)
-                (settlement_price)
-                (settlement_fund)
-)
+           (id)(asset_name)(feeds)(current_feed)(current_feed_publication_time)(options)(force_settled_volume)(
+                   is_prediction_market)(settlement_price)(settlement_fund))
 
 CHAINBASE_SET_INDEX_TYPE(golos::chain::asset_bitasset_data_object, golos::chain::asset_bitasset_data_index)
 
-FC_REFLECT((golos::chain::asset_object),
-        (id)
-                (asset_name)
-                (precision)
-                (issuer)
-                (options)
-                (buyback_account)
-                (market_issued)
-)
+FC_REFLECT((golos::chain::asset_object), (id)(asset_name)(precision)(issuer)(options)(buyback_account)(market_issued))
 
 CHAINBASE_SET_INDEX_TYPE(golos::chain::asset_object, golos::chain::asset_index)
