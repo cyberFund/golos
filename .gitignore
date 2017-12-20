@@ -41,10 +41,6 @@ witness_node_data_dir
 
 *.wallet
 
-documentation/doxygen/html
-documentation/doxygen/xml
-documentation/doxygen/latex
-
 *.pyc
 *.pyo
 *.egg-info/

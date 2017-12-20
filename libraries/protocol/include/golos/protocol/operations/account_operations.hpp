@@ -8,8 +8,18 @@
 namespace golos {
     namespace protocol {
         /**
-        *  @ingroup operations
-        */
+         *  @ingroup operations
+         *  @brief Creates new account
+         *
+         *  @param fee
+         *  @param creator
+         *  @param new_account_name
+         *  @param owner
+         *  @param active
+         *  @param posting
+         *  @param memo_key
+         *  @param json_metadata
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_create_operation : public base_operation<Major, Hardfork, Release> {
             asset<Major, Hardfork, Release> fee;
@@ -34,6 +44,18 @@ namespace golos {
 
         /**
          *  @ingroup operations
+         *  @brief Creates account with initially delegated Steem Power
+         *
+         *  @param fee
+         *  @param delegation
+         *  @param creator
+         *  @param new_account_name
+         *  @param owner
+         *  @param active
+         *  @param posting
+         *  @param memo_key
+         *  @param json_metadata
+         *  @param extensions
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_create_with_delegation_operation : public base_operation<Major, Hardfork, Release> {
@@ -61,12 +83,18 @@ namespace golos {
         };
 
         /**
-        * @ingroup operations
-        * @brief Update an existing account
-        *
-        * This operation is used to update an existing account. It can be used to update the authorities, or adjust the options on the account.
-        * See @ref account_object::options_type for the options which may be updated.
-        */
+         * @ingroup operations
+         * @brief Update an existing account
+         *
+         * @param account
+         * @param owner
+         * @param active
+         * @param posting
+         * @param memo_key
+         * @param json_metadata
+         *
+         * This operation is used to update an existing account. It can be used to update the authorities, or adjust the opt ions on the account.
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_update_operation : public base_operation<Major, Hardfork, Release> {
             account_name_type account;
@@ -98,6 +126,12 @@ namespace golos {
         /**
          * @brief This operation is used to whitelist and blacklist accounts, primarily for transacting in whitelisted ass     ets
          * @ingroup operations
+         *
+         * @param fee
+         * @param authorizing_account
+         * @param account_to_list
+         * @param new_listing
+         * @param extensions
          *
          * Accounts can freely specify opinions about other accounts, in the form of either whitelisting or blacklisting
          * them. This information is used in chain validation only to determine whether an account is authorized to tra     nsact
@@ -134,10 +168,6 @@ namespace golos {
             /// This is a bitfield using values defined in the account_listing enum
             uint8_t new_listing = no_listing;
             extensions_type extensions;
-
-            account_name_type fee_payer() const {
-                return authorizing_account;
-            }
 
             void validate() const;
         };
