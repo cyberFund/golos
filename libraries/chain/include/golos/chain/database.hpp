@@ -218,6 +218,11 @@ namespace golos {
 
             const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const;
 
+            /**
+             * Comment object reward fund selector
+             * @param c input @ref comment_object
+             * @return @ref reward_find_object applied for the input @ref comment_object
+             */
             const reward_fund_object &get_reward_fund(const comment_object &c) const;
 
             /**
