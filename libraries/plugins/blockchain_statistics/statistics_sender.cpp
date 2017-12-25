@@ -20,8 +20,7 @@ namespace golos {
         void stat_client::send(const std::string &str) {
             boost::asio::io_service io_service;
 
-            boost::asio::ip::udp::socket socket(io_service,
-                                                boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+            boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
             socket.set_option(boost::asio::socket_base::broadcast(true));
 
             for (auto endpoint : recipient_endpoint_set) {

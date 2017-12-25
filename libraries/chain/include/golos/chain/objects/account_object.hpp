@@ -224,11 +224,11 @@ namespace golos {
             optional<flat_set<protocol::asset_name_type>> allowed_assets;
 
             /**
-          * This is a set of all accounts which have 'whitelisted' this account. Whitelisting is only used in core
-          * validation for the purpose of authorizing accounts to hold and transact in whitelisted assets. This
-          * account cannot update this set, except by transferring ownership of the account, which will clear it. Other
-          * accounts may add or remove their IDs from this set.
-          */
+             * This is a set of all accounts which have 'whitelisted' this account. Whitelisting is only used in core
+             * validation for the purpose of authorizing accounts to hold and transact in whitelisted assets. This
+             * account cannot update this set, except by transferring ownership of the account, which will clear it. Other
+             * accounts may add or remove their IDs from this set.
+             */
             flat_set<account_name_type> whitelisting_accounts;
 
             /**
@@ -268,6 +268,11 @@ namespace golos {
             }
         };
 
+        /**
+         * @brief This class represents account authorities on the object graph
+         * @ingroup object
+         * @ingroup protocol
+         */
         class account_authority_object : public object<account_authority_object_type, account_authority_object> {
         public:
             account_authority_object() = delete;
