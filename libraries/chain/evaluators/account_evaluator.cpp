@@ -98,8 +98,7 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void account_create_with_delegation_evaluator<Major, Hardfork, Release>::do_apply(
-                const account_create_with_delegation_operation<Major, Hardfork, Release> &o) {
+        void account_create_with_delegation_evaluator<Major, Hardfork, Release>::do_apply(const account_create_with_delegation_operation<Major, Hardfork, Release> &o) {
 
             FC_ASSERT(this->db.has_hardfork(STEEMIT_HARDFORK_0_17__101),
                       "Account creation with delegation is not enabled until hardfork 17");
@@ -213,8 +212,7 @@ namespace golos {
         }
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void account_update_evaluator<Major, Hardfork, Release>::do_apply(
-                const account_update_operation<Major, Hardfork, Release> &o) {
+        void account_update_evaluator<Major, Hardfork, Release>::do_apply(const account_update_operation<Major, Hardfork, Release> &o) {
 
             if (this->db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");

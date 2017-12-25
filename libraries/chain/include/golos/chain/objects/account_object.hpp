@@ -303,6 +303,11 @@ namespace golos {
             time_point_sec last_owner_update;
         };
 
+        /*
+         * @brief This database @ref object represents account bandwidth on the object graph
+         * @ingroup object
+         * @ingroup protocol
+         */
         class account_bandwidth_object : public object<account_bandwidth_object_type, account_bandwidth_object> {
         public:
             template<typename Constructor, typename Allocator>

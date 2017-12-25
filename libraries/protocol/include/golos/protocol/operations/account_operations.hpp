@@ -11,12 +11,12 @@ namespace golos {
          *  @ingroup operations
          *  @brief Creates new account
          *
-         *  @param fee
-         *  @param creator
-         *  @param new_account_name
-         *  @param owner
-         *  @param active
-         *  @param posting
+         *  @param fee Paid by creator
+         *  @param creator Account which pays the fee and is allowed to perform an account key reset operation
+         *  @param new_account_name Created account name
+         *  @param owner Created account public owner key
+         *  @param active Created account public active key
+         *  @param posting Created account public posting key
          *  @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
          *  @param json_metadata
          */
@@ -44,12 +44,12 @@ namespace golos {
          *  @brief Creates account with initially delegated Steem Power
          *
          *  @param fee Paid by creator
-         *  @param delegation
-         *  @param creator
-         *  @param new_account_name
-         *  @param owner
-         *  @param active
-         *  @param posting
+         *  @param delegation Initial vesting delegation amount
+         *  @param creator Account which pays the fee and is allowed to perform an account key reset operation
+         *  @param new_account_name Created account name
+         *  @param owner Created account public owner key
+         *  @param active Created account public active key
+         *  @param posting Created account public posting key
          *  @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
          *  @param json_metadata
          *  @param extensions
@@ -80,10 +80,10 @@ namespace golos {
          * @ingroup operations
          * @brief Update an existing account
          *
-         * @param account
-         * @param owner
-         * @param active
-         * @param posting
+         * @param account Account to update
+         * @param owner Account public owner key
+         * @param active Account public active key
+         * @param posting Account public posting key
          * @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
          * @param json_metadata
          *

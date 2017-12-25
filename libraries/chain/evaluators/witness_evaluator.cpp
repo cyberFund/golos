@@ -7,8 +7,7 @@
 namespace golos {
     namespace chain {
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
-        void witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::do_apply(
-                const operation_type &o) {
+        void witness_update_evaluator<Major, Hardfork, Release, type_traits::static_range<Hardfork <= 16>>::do_apply(const operation_type &o) {
 
             this->db.get_account(o.owner); // verify owner exists
 

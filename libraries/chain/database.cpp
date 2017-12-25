@@ -2788,11 +2788,11 @@ namespace golos {
 
                 for (const auto &trx : next_block.transactions) {
                     /* We do not need to push the undo state for each transaction
-        * because they either all apply and are valid or the
-        * entire block fails to apply.  We only need an "undo" state
-        * for transactions when validating broadcast transactions or
-        * when building a block.
-        */
+                     * because they either all apply and are valid or the
+                     * entire block fails to apply.  We only need an "undo" state
+                     * for transactions when validating broadcast transactions or
+                     * when building a block.
+                     */
                     apply_transaction(trx, skip);
                     ++_current_trx_in_block;
                 }
@@ -5081,8 +5081,7 @@ namespace golos {
 
                 // cancel remaining bids
                 const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
-                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name, protocol::price<0, 17, 0>::max(
-                        bad.options.short_backing_asset, bitasset.asset_name), collateral_bid_object::id_type()));
+                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name, protocol::price<0, 17, 0>::max(bad.options.short_backing_asset, bitasset.asset_name), collateral_bid_object::id_type()));
                 while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol == bitasset.asset_name) {
                     const collateral_bid_object &bid = *itr;
                     ++itr;
