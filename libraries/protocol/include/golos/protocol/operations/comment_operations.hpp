@@ -8,6 +8,7 @@
 namespace golos {
     namespace protocol {
         /**
+         *  @brief Provides comment creation
          *  @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
