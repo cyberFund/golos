@@ -6,7 +6,7 @@
 namespace golos {
     namespace chain {
         /**
-         *  @brief an offer to sell a amount of a asset at a specified exchange rate by a certain time
+         *  @brief An offer to sell a amount of a asset at a specified exchange rate by a certain time
          *  @ingroup objects
          *  @ingroup protocol
          *  @ingroup market
@@ -49,7 +49,7 @@ namespace golos {
 
         /**
          * @class call_order_object
-         * @brief tracks debt and call price information
+         * @brief Tracks debt and call price information
          *
          * There should only be one call_order_object per asset pair per account and
          * they will all have the same call price.
@@ -103,7 +103,7 @@ namespace golos {
         };
 
         /**
-         *  @brief tracks bitassets scheduled for force settlement at some point in the future.
+         *  @brief Tracks bitassets scheduled for force settlement at some point in the future.
          *
          *  On the @ref settlement_date the @ref balance will be converted to the collateral asset
          *  and paid to @ref owner and then this object will be deleted.
@@ -133,7 +133,7 @@ namespace golos {
 
         /**
          * @class collateral_bid_object
-         * @brief bids of collateral for debt after a black swan
+         * @brief Bids of collateral for debt after a black swan
          *
          * There should only be one collateral_bid_object per asset per account, and
          * only for smartcoin assets that have a global settlement_price.

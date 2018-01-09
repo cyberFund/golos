@@ -8,7 +8,7 @@ namespace golos {
         using golos::protocol::block_id_type;
 
         /**
-         *  @brief tracks minimal information about past blocks to implement TaPOS
+         *  @brief Tracks minimal information about past blocks to implement TaPOS
          *  @ingroup objects
          *
          *  When attempting to calculate the validity of a transaction we need to

@@ -22,7 +22,7 @@ namespace golos {
         class database;
 
         /**
-         *  @brief tracks the asset information that changes frequently
+         *  @brief Tracks the asset information that changes frequently
          *  @ingroup objects
          *  @ingroup implementation
          *
@@ -56,7 +56,7 @@ namespace golos {
         };
 
         /**
-         *  @brief tracks the parameters of an asset
+         *  @brief Tracks the parameters of an asset
          *  @ingroup objects
          *
          *  All assets have a globally unique symbol name that controls how they are traded and an issuer who
@@ -167,7 +167,7 @@ namespace golos {
         };
 
         /**
-         *  @brief contains properties that only apply to bitassets (market issued assets)
+         *  @brief Contains properties that only apply to bitassets (market issued assets)
          *
          *  @ingroup objects
          *  @ingroup implementation

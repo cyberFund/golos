@@ -8,7 +8,7 @@ namespace golos {
     namespace chain {
 
         /**
-         * @brief tracks the history of all logical operations on blockchain state
+         * @brief Tracks the history of all logical operations on blockchain state
          * @ingroup objects
          * @ingroup implementation
          *
@@ -46,7 +46,7 @@ namespace golos {
         };
 
         /**
-         *  @brief a node in a linked list of operation_history_objects
+         *  @brief Tracks a node in a linked list of operation_history_objects
          *  @ingroup implementation
          *  @ingroup objects
          *

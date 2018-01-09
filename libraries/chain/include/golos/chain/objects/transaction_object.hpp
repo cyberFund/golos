@@ -12,6 +12,8 @@ namespace golos {
         using golos::protocol::signed_transaction;
 
         /**
+         * @brief Tracks transactions coming
+         * @ingroup objects
          * The purpose of this object is to enable the detection of duplicate transactions. When a transaction is included
          * in a block a transaction_object is added. At the end of block processing all transaction_objects that have
          * expired can be removed from the index.

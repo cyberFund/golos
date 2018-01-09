@@ -4,7 +4,8 @@ namespace golos {
     namespace chain {
 
         /**
-         * @brief Contains per-node database configuration.
+         *  @brief Contains per-node database configuration.
+         *  @ingroup objects
          *
          *  Transactions are evaluated differently based on per-node state.
          *  Settings here may change based on whether the node is syncing or up-to-date.

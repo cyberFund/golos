@@ -10,6 +10,11 @@
 namespace golos {
     namespace chain {
 
+        /**
+         * @brief Tracks hardforks properties
+         * @ingroup objects
+         */
+
         class hardfork_property_object : public object<hardfork_property_object_type, hardfork_property_object> {
         public:
             template<typename Constructor, typename Allocator>

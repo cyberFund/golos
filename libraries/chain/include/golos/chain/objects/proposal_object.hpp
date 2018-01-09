@@ -7,7 +7,7 @@
 namespace golos {
     namespace chain {
         /**
-         *  @brief tracks the approval of a partially approved transaction
+         *  @brief Tracks the approval of a partially approved transaction
          *  @ingroup objects
          *  @ingroup protocol
          */

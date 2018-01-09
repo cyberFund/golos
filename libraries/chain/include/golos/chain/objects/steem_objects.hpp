@@ -19,7 +19,8 @@ namespace golos {
         typedef fc::fixed_string<> reward_fund_name_type;
 
         /**
-         *  This object is used to track pending requests to convert sbd to steem
+         *  @brief This object is used to track pending requests to convert sbd to steem
+         *  @ingroup objects
          */
         class convert_request_object : public object<convert_request_object_type, convert_request_object> {
         public:
@@ -35,7 +36,7 @@ namespace golos {
 
             account_name_type owner;
             uint32_t request_id = 0; ///< id set by owner, the owner,request_id pair must be unique
-            protocol::asset<0, 17, 0>  amount;
+            protocol::asset<0, 17, 0> amount;
             time_point_sec conversion_date; ///< at this time the feed_history_median_price * amount
         };
 
@@ -58,9 +59,9 @@ namespace golos {
             account_name_type agent;
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
-            protocol::asset<0, 17, 0>  sbd_balance;
-            protocol::asset<0, 17, 0>  steem_balance;
-            protocol::asset<0, 17, 0>  pending_fee;
+            protocol::asset<0, 17, 0> sbd_balance;
+            protocol::asset<0, 17, 0> steem_balance;
+            protocol::asset<0, 17, 0> pending_fee;
             bool to_approved = false;
             bool agent_approved = false;
             bool disputed = false;
@@ -87,12 +88,13 @@ namespace golos {
             account_name_type to;
             shared_string memo;
             uint32_t request_id = 0;
-            protocol::asset<0, 17, 0>  amount;
+            protocol::asset<0, 17, 0> amount;
             time_point_sec complete;
         };
 
 
         /**
+         *  @brief Tracks liquidity rewards
          *  If last_update is greater than 1 week, then volume gets reset to 0
          *
          *  When a user is a maker, their volume increases
@@ -102,6 +104,10 @@ namespace golos {
          *  1000 STEEM or 1000 * virtual_supply / (100*blocks_per_year) aka 10 * virtual_supply / blocks_per_year
          *
          *  After being paid volume gets reset to 0
+         *
+         *  @note Disabled before hardfork 14
+         *
+         *  @ingroup objects
          */
         class liquidity_reward_balance_object : public object<liquidity_reward_balance_object_type,
                 liquidity_reward_balance_object> {
@@ -143,7 +149,9 @@ namespace golos {
 
 
         /**
-         *  This object gets updated once per hour, on the hour
+         *  @brief Tracks witnesses feed updates
+         *  @ingroup objects
+         *  @note This object gets updated once per hour, on the hour
          */
         class feed_history_object : public object<feed_history_object_type, feed_history_object> {
             feed_history_object() = delete;
@@ -157,13 +165,15 @@ namespace golos {
 
             id_type id;
 
-            price<0, 17, 0> current_median_history; ///< the current median of the price history, used as the base for convert operations
-            boost::interprocess::deque<price<0, 17, 0>,
-                    allocator < price<0, 17, 0>>> price_history; ///< tracks this last week of median_feed one per hour
+            price<0, 17,
+                    0> current_median_history; ///< the current median of the price history, used as the base for convert operations
+            boost::interprocess::deque<price<0, 17, 0>, allocator < price<0, 17, 0>>>
+            price_history; ///< tracks this last week of median_feed one per hour
         };
 
         /**
-         * @brief a route to send withdrawn vesting shares.
+         * @brief Traks a route to send withdrawn vesting shares.
+         * @ingroup objects
          */
         class withdraw_vesting_route_object : public object<withdraw_vesting_route_object_type,
                 withdraw_vesting_route_object> {
@@ -185,6 +195,9 @@ namespace golos {
         };
 
 
+        /*
+         * @ingroup objects
+         */
         class decline_voting_rights_request_object : public object<decline_voting_rights_request_object_type,
                 decline_voting_rights_request_object> {
         public:
@@ -202,6 +215,9 @@ namespace golos {
             time_point_sec effective_date;
         };
 
+        /*
+         * @ingroup objects
+         */
         class reward_fund_object : public object<reward_fund_object_type, reward_fund_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -214,7 +230,7 @@ namespace golos {
 
             reward_fund_object::id_type id;
             reward_fund_name_type name;
-            protocol::asset<0, 17, 0>  reward_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
+            protocol::asset<0, 17, 0> reward_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
             uint128_t recent_claims = 0;
             time_point_sec last_update;
             uint128_t content_constant = 0;
@@ -308,9 +324,10 @@ namespace golos {
                 &escrow_object::id>>,
         composite_key_compare <std::less<bool>, std::less<time_point_sec>, std::less<escrow_object::id_type>>
         >,
-        ordered_unique <tag<by_sbd_balance>, composite_key<escrow_object, member < escrow_object, protocol::asset<0, 17, 0>,
-                &escrow_object::sbd_balance>, member<escrow_object, escrow_object::id_type, &escrow_object::id>>,
-        composite_key_compare <std::greater<protocol::asset<0, 17, 0>>, std::less<escrow_object::id_type>>
+        ordered_unique<tag<by_sbd_balance>, composite_key<escrow_object, member < escrow_object, protocol::asset < 0,
+                17, 0>, &escrow_object::sbd_balance>, member<escrow_object, escrow_object::id_type,
+                &escrow_object::id>>,
+        composite_key_compare <std::greater<protocol::asset < 0, 17, 0>>, std::less<escrow_object::id_type>>
         >
         >,
         allocator <escrow_object>
@@ -381,8 +398,7 @@ FC_REFLECT((golos::chain::convert_request_object), (id)(owner)(request_id)(amoun
 CHAINBASE_SET_INDEX_TYPE(golos::chain::convert_request_object, golos::chain::convert_request_index)
 
 FC_REFLECT((golos::chain::liquidity_reward_balance_object), (id)(owner)(steem_volume)(sbd_volume)(weight)(last_update))
-CHAINBASE_SET_INDEX_TYPE(golos::chain::liquidity_reward_balance_object,
-                         golos::chain::liquidity_reward_balance_index)
+CHAINBASE_SET_INDEX_TYPE(golos::chain::liquidity_reward_balance_object, golos::chain::liquidity_reward_balance_index)
 
 FC_REFLECT((golos::chain::withdraw_vesting_route_object), (id)(from_account)(to_account)(percent)(auto_vest))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::withdraw_vesting_route_object, golos::chain::withdraw_vesting_route_index)

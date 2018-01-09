@@ -327,6 +327,10 @@ namespace golos {
             time_point_sec last_bandwidth_update;
         };
 
+        /**
+         * @brief Tracks vesting delegations
+         * @ingroup objects
+         */
         class vesting_delegation_object : public object<vesting_delegation_object_type, vesting_delegation_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -344,6 +348,10 @@ namespace golos {
             time_point_sec min_delegation_time;
         };
 
+        /**
+         * @brief Tracks vesting delegations expirations
+         * @ingroup objects
+         */
         class vesting_delegation_expiration_object : public object<vesting_delegation_expiration_object_type,
                 vesting_delegation_expiration_object> {
         public:

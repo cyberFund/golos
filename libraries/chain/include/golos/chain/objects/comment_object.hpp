@@ -32,8 +32,8 @@ namespace golos {
         };
 
         /**
+         *  @brief Tracks trending categories
          *  @ingroup objects
-         *  Used to track the trending categories
          */
         class category_object : public object<category_object_type, category_object> {
         public:
@@ -82,6 +82,10 @@ namespace golos {
         >
         category_index;
 
+        /**
+         * @brief Tracks comments
+         * @ingroup objects
+         */
         class comment_object : public object<comment_object_type, comment_object> {
         public:
             comment_object() = delete;
@@ -157,6 +161,9 @@ namespace golos {
 
 
         /**
+         * @brief Tracks comment votes
+         * @ingroup objects
+         *
          * This index maintains the set of voter/comment pairs that have been used, voters cannot
          * vote on the same comment more than once per payout period.
          */

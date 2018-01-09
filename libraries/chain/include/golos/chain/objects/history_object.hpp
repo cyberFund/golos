@@ -13,6 +13,10 @@
 namespace golos {
     namespace chain {
 
+        /**
+         * @brief Tracks operations coming in transactions
+         * @ingroup objects
+         */
         class operation_object
                 : public object<operation_object_type, operation_object> {
         public:

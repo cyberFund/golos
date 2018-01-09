@@ -19,6 +19,9 @@ namespace golos {
         using golos::protocol::price;
 
         /**
+         *  @brief Tracks accounts' witness status
+         *  @ingroup objects
+         *
          *  All witnesses with at least 1% net positive approval and
          *  at least 2 weeks old are able to participate in block
          *  production.
@@ -112,7 +115,10 @@ namespace golos {
             fc::time_point_sec hardfork_time_vote = STEEMIT_GENESIS_TIME;
         };
 
-
+        /*
+         * @brief Tracks accounts' votes for witnesses
+         * @ingroup objects
+         */
         class witness_vote_object : public object<witness_vote_object_type, witness_vote_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -131,6 +137,10 @@ namespace golos {
             fc::time_point_sec created;
         };
 
+        /*
+         * @brief Tracks witness schedule
+         * @ingroup objects
+         */
         class witness_schedule_object : public object<witness_schedule_object_type, witness_schedule_object> {
         public:
             template<typename Constructor, typename Allocator>
