@@ -1,6 +1,6 @@
 #pragma once
 
-#include <golos/chain/account_object.hpp>
+#include <golos/chain/objects/account_object.hpp>
 #include <golos/chain/steem_object_types.hpp>
 
 #include <golos/protocol/operations/asset_operations.hpp>
