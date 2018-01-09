@@ -1150,7 +1150,7 @@ namespace golos {
             const auto &wso = this->db.get_witness_schedule_object();
             const auto &gpo = this->db.get_dynamic_global_properties();
             auto min_delegation =
-                    asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * 10, STEEM_SYMBOL_NAME) *
+                    asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_DELEGATION_MIN_THRESHOLD, STEEM_SYMBOL_NAME) *
                     gpo.get_vesting_share_price();
             auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
 
