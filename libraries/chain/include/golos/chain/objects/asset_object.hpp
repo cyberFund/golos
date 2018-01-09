@@ -1,5 +1,6 @@
 #pragma once
 
+#include <golos/chain/account_object.hpp>
 #include <golos/chain/steem_object_types.hpp>
 
 #include <golos/protocol/operations/asset_operations.hpp>
@@ -17,10 +18,6 @@
 
 namespace golos {
     namespace chain {
-        class account_object;
-
-        class database;
-
         /**
          *  @brief Tracks the asset information that changes frequently
          *  @ingroup objects
