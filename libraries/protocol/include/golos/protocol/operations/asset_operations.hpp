@@ -131,7 +131,7 @@ namespace golos {
         };
 
         /**
-         *  @brief allows global settling of bitassets (black swan or prediction markets)
+         *  @brief Allows global settling of bitassets (black swan or prediction markets)
          *  @ingroup operations
          *
          *  In order to use this operation, @ref asset_to_settle must have the global_settle flag set
@@ -409,7 +409,7 @@ namespace golos {
         };
 
         /**
-         * @brief used to take an asset out of circulation, returning to the issuer
+         * @brief Used to take an asset out of circulation, returning to the issuer
          * @ingroup operations
          *
          * @note You cannot use this operation on market-issued assets.
@@ -432,7 +432,7 @@ namespace golos {
         };
 
         /**
-         * @brief used to transfer accumulated fees back to the issuer's balance.
+         * @brief Used to transfer accumulated fees back to the issuer's balance.
          * @ingroup operations
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>

@@ -23,7 +23,7 @@ namespace golos {
 
         /**
          *  @brief tracks the asset information that changes frequently
-         *  @ingroup object
+         *  @ingroup objects
          *  @ingroup implementation
          *
          *  Because the asset_object is very large it doesn't make sense to save an undo state
@@ -57,7 +57,7 @@ namespace golos {
 
         /**
          *  @brief tracks the parameters of an asset
-         *  @ingroup object
+         *  @ingroup objects
          *
          *  All assets have a globally unique symbol name that controls how they are traded and an issuer who
          *  has authority over the parameters of the asset.
@@ -169,7 +169,7 @@ namespace golos {
         /**
          *  @brief contains properties that only apply to bitassets (market issued assets)
          *
-         *  @ingroup object
+         *  @ingroup objects
          *  @ingroup implementation
          */
         class asset_bitasset_data_object : public object<asset_bitasset_data_object_type, asset_bitasset_data_object> {

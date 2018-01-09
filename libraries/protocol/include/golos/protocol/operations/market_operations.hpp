@@ -28,7 +28,7 @@ namespace golos {
 
         /**
          *  @class limit_order_create_operation
-         *  @brief instructs the blockchain to attempt to sell one asset for another
+         *  @brief Instructs the blockchain to attempt to sell one asset for another
          *  @ingroup operations
          *
          *  The blockchain will perform an attempt to sell amount_to_sell.asset_id for as
@@ -75,7 +75,7 @@ namespace golos {
 
         /**
          *  @class limit_order_create2_operation
-         *  @brief instructs the blockchain to attempt to sell one asset for another
+         *  @brief Instructs the blockchain to attempt to sell one asset for another
          *  @ingroup operations
          *
          *  The blockchain will perform an attempt to sell amount_to_sell.asset_id for as

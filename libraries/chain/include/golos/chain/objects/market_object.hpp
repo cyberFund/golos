@@ -7,7 +7,7 @@ namespace golos {
     namespace chain {
         /**
          *  @brief an offer to sell a amount of a asset at a specified exchange rate by a certain time
-         *  @ingroup object
+         *  @ingroup objects
          *  @ingroup protocol
          *  @ingroup market
          *

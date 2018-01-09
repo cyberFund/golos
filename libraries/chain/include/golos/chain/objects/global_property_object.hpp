@@ -15,7 +15,7 @@ namespace golos {
         /**
          * @class dynamic_global_property_object
          * @brief Maintains global state information
-         * @ingroup object
+         * @ingroup objects
          * @ingroup implementation
          *
          * This is an implementation detail. The values here are calculated during normal chain operations and reflect the

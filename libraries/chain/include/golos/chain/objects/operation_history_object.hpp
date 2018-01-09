@@ -9,7 +9,7 @@ namespace golos {
 
         /**
          * @brief tracks the history of all logical operations on blockchain state
-         * @ingroup object
+         * @ingroup objects
          * @ingroup implementation
          *
          *  All operations and virtual operations result in the creation of an
@@ -48,7 +48,7 @@ namespace golos {
         /**
          *  @brief a node in a linked list of operation_history_objects
          *  @ingroup implementation
-         *  @ingroup object
+         *  @ingroup objects
          *
          *  Account history is important for users and wallets even though it is
          *  not part of "core validation".   Account history is maintained as

@@ -8,7 +8,7 @@ namespace golos {
     namespace chain {
         /**
          *  @brief tracks the approval of a partially approved transaction
-         *  @ingroup object
+         *  @ingroup objects
          *  @ingroup protocol
          */
         class proposal_object : public object<proposal_object_type, proposal_object> {
@@ -64,7 +64,7 @@ namespace golos {
 //         *  @brief tracks all of the proposal objects that requrie approval of
 //         *  an individual account.
 //         *
-//         *  @ingroup object
+//         *  @ingroup objects
 //         *  @ingroup protocol
 //         *
 //         *  This is a secondary index on the proposal_index

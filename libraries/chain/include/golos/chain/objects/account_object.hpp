@@ -21,7 +21,7 @@ namespace golos {
 
         /**
          * @class account_statistics_object
-         * @ingroup object
+         * @ingroup objects
          * @ingroup implementation
          *
          * This object contains regularly updated statistical data about an account. It is provided for the purpose of
@@ -85,7 +85,7 @@ namespace golos {
 
         /**
          * @brief Tracks the balance of a single account/asset pair
-         * @ingroup object
+         * @ingroup objects
          *
          * This object is indexed on owner and asset_type so that black swan
          * events in asset_type can be processed quickly.
@@ -117,7 +117,7 @@ namespace golos {
 
         /**
          * @brief This class represents an account on the object graph
-         * @ingroup object
+         * @ingroup objects
          * @ingroup protocol
          *
          * Accounts are the primary unit of authority on the graphene system. Users must have an account in order to use
@@ -270,7 +270,7 @@ namespace golos {
 
         /**
          * @brief This class represents account authorities on the object graph
-         * @ingroup object
+         * @ingroup objects
          * @ingroup protocol
          */
         class account_authority_object : public object<account_authority_object_type, account_authority_object> {
@@ -305,7 +305,7 @@ namespace golos {
 
         /*
          * @brief This database @ref object represents account bandwidth on the object graph
-         * @ingroup object
+         * @ingroup objects
          * @ingroup protocol
          */
         class account_bandwidth_object : public object<account_bandwidth_object_type, account_bandwidth_object> {

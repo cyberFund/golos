@@ -32,6 +32,7 @@ namespace golos {
         };
 
         /**
+         *  @ingroup objects
          *  Used to track the trending categories
          */
         class category_object : public object<category_object_type, category_object> {
@@ -118,7 +119,7 @@ namespace golos {
              */
             fc::uint128_t children_rshares2;
 
-            /// index on pending_payout for "things happning now... needs moderation"
+            /// index on pending_payout for "things happening now... needs moderation"
             /// TRENDING = UNCLAIMED + PENDING
             share_type net_rshares; /// reward is proportional to rshares^2, this is the sum of all votes (positive and negative)
             share_type abs_rshares; /// this is used to track the total abs(weight) of votes for the purpose of calculating cashout_time
@@ -150,7 +151,8 @@ namespace golos {
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true;
 
-            boost::interprocess::vector<protocol::beneficiary_route_type, allocator <protocol::beneficiary_route_type>> beneficiaries;
+            boost::interprocess::vector<protocol::beneficiary_route_type,
+                    allocator < protocol::beneficiary_route_type>> beneficiaries;
         };
 
 

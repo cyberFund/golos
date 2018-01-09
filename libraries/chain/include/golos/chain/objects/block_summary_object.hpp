@@ -9,7 +9,7 @@ namespace golos {
 
         /**
          *  @brief tracks minimal information about past blocks to implement TaPOS
-         *  @ingroup object
+         *  @ingroup objects
          *
          *  When attempting to calculate the validity of a transaction we need to
          *  lookup a past block and check its block hash and the time it occurred
