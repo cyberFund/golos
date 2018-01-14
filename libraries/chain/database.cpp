@@ -2036,8 +2036,9 @@ namespace golos {
         }
 
         asset<0, 17, 0> database::get_name_cost(const fc::fixed_string<> &name) const {
-            return to_sbd({get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY * get_witness_schedule_object().median_props.producer_duration_name_cost /
-                     std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME});
+            return to_sbd({get_producer_reward().amount * STEEMIT_BLOCKS_PER_DAY *
+                           get_witness_schedule_object().median_props.producer_duration_name_cost /
+                           std::pow(name.size() - STEEMIT_MIN_ASSET_SYMBOL_LENGTH + 1, 3), STEEM_SYMBOL_NAME});
         }
 
         void database::pay_liquidity_reward() {
@@ -4339,7 +4340,8 @@ namespace golos {
 
             modify(props, [&](dynamic_global_property_object &props) {
                 if (delta.symbol == STEEM_SYMBOL_NAME) {
-                    asset<0, 17, 0> new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, STEEM_SYMBOL_NAME);
+                    asset<0, 17, 0> new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0,
+                                                STEEM_SYMBOL_NAME);
                     props.current_supply += delta + new_vesting;
                     props.virtual_supply += delta + new_vesting;
                     props.total_vesting_fund_steem += new_vesting;
@@ -4517,17 +4519,17 @@ namespace golos {
                 case STEEMIT_HARDFORK_0_1:
                     perform_vesting_share_split(10000);
 #ifdef STEEMIT_BUILD_TESTNET
-                    {
-                        custom_operation test_op;
-                        std::string op_msg = "Testnet: Hardfork applied";
-                        test_op.data = std::vector<char>(op_msg.begin(), op_msg.end());
-                        test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
-                        operation op = test_op;   // we need the operation object to live to the end of this scope
-                        operation_notification note(op);
-                        notify_pre_apply_operation(note);
-                        notify_post_apply_operation(note);
-                    }
-                    break;
+                {
+                    custom_operation test_op;
+                    std::string op_msg = "Testnet: Hardfork applied";
+                    test_op.data = std::vector<char>(op_msg.begin(), op_msg.end());
+                    test_op.required_auths.insert(STEEMIT_INIT_MINER_NAME);
+                    operation op = test_op;   // we need the operation object to live to the end of this scope
+                    operation_notification note(op);
+                    notify_pre_apply_operation(note);
+                    notify_post_apply_operation(note);
+                }
+                break;
 #endif
                     break;
                 case STEEMIT_HARDFORK_0_2:
@@ -4762,77 +4764,73 @@ namespace golos {
         void database::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
-                asset<0, 17, 0> total_supply(0, STEEM_SYMBOL_NAME);
-                asset<0, 17, 0> total_sbd(0, SBD_SYMBOL_NAME);
-                asset<0, 17, 0> total_vesting(0, VESTS_SYMBOL);
+                asset total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL);
+                asset total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL);
+                asset total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
                 auto gpo = get_dynamic_global_properties();
 
                 /// verify no witness has too many votes
                 const auto &witness_idx = get_index<witness_index>().indices();
-                for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr) {
+                for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
                     FC_ASSERT(itr->votes < gpo.total_vesting_shares.amount, "", ("itr", *itr));
-                }
 
-                for (const auto &itr : account_idx) {
-                    total_supply += get_balance(itr.name, STEEM_SYMBOL_NAME);
-                    total_supply += itr.savings_balance;
-                    total_sbd += get_balance(itr.name, SBD_SYMBOL_NAME);
-                    total_sbd += itr.savings_sbd_balance;
-                    total_vesting += itr.vesting_shares;
-                    total_vsf_votes += (itr.proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr.witness_vote_weight() : (
-                            STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ? itr.proxied_vsf_votes[
-                                    STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] : itr.vesting_shares.amount));
+                for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr) {
+                    total_supply += itr->balance;
+                    total_supply += itr->savings_balance;
+                    total_sbd += itr->sbd_balance;
+                    total_sbd += itr->savings_sbd_balance;
+                    total_vesting += itr->vesting_shares;
+                    total_vsf_votes += (itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr->witness_vote_weight() : (
+                            STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ? itr->proxied_vsf_votes[
+                                    STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] : itr->vesting_shares.amount));
                 }
 
                 const auto &convert_request_idx = get_index<convert_request_index>().indices();
 
-                for (const auto &itr : convert_request_idx) {
-                    if (itr.amount.symbol == STEEM_SYMBOL_NAME) {
-                        total_supply += itr.amount;
-                    } else if (itr.amount.symbol == SBD_SYMBOL_NAME) {
-                        total_sbd += itr.amount;
-                    } else {
+                for (auto itr = convert_request_idx.begin(); itr != convert_request_idx.end(); ++itr) {
+                    if (itr->amount.symbol == STEEM_SYMBOL) {
+                        total_supply += itr->amount;
+                    } else if (itr->amount.symbol == SBD_SYMBOL) {
+                        total_sbd += itr->amount;
+                    } else
                         FC_ASSERT(false, "Encountered illegal symbol in convert_request_object");
-                    }
                 }
 
                 const auto &limit_order_idx = get_index<limit_order_index>().indices();
 
-                for (const auto &itr : limit_order_idx) {
-                    if (itr.sell_price.base.symbol == STEEM_SYMBOL_NAME) {
-                        total_supply += itr.for_sale;
-                    } else if (itr.sell_price.base.symbol == SBD_SYMBOL_NAME) {
-                        total_sbd += itr.for_sale;
+                for (auto itr = limit_order_idx.begin(); itr != limit_order_idx.end(); ++itr) {
+                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
+                        total_supply += asset(itr->for_sale, STEEM_SYMBOL);
+                    } else if (itr->sell_price.base.symbol == SBD_SYMBOL) {
+                        total_sbd += asset(itr->for_sale, SBD_SYMBOL);
                     }
                 }
 
                 const auto &escrow_idx = get_index<escrow_index>().indices().get<by_id>();
 
-                for (const auto &itr : escrow_idx) {
-                    total_supply += itr.steem_balance;
-                    total_sbd += itr.sbd_balance;
+                for (auto itr = escrow_idx.begin(); itr != escrow_idx.end(); ++itr) {
+                    total_supply += itr->steem_balance;
+                    total_sbd += itr->sbd_balance;
 
-                    if (itr.pending_fee.symbol == STEEM_SYMBOL_NAME) {
-                        total_supply += itr.pending_fee;
-                    } else if (itr.pending_fee.symbol == SBD_SYMBOL_NAME) {
-                        total_sbd += itr.pending_fee;
-                    } else {
+                    if (itr->pending_fee.symbol == STEEM_SYMBOL) {
+                        total_supply += itr->pending_fee;
+                    } else if (itr->pending_fee.symbol == SBD_SYMBOL) {
+                        total_sbd += itr->pending_fee;
+                    } else
                         FC_ASSERT(false, "found escrow pending fee that is not SBD or STEEM");
-                    }
                 }
 
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
 
-                for (const auto &itr : savings_withdraw_idx) {
-                    if (itr.amount.symbol == STEEM_SYMBOL_NAME) {
-                        total_supply += itr.amount;
-                    } else if (itr.amount.symbol == SBD_SYMBOL_NAME) {
-                        total_sbd += itr.amount;
-                    } else {
+                for (auto itr = savings_withdraw_idx.begin(); itr != savings_withdraw_idx.end(); ++itr) {
+                    if (itr->amount.symbol == STEEM_SYMBOL) {
+                        total_supply += itr->amount;
+                    } else if (itr->amount.symbol == SBD_SYMBOL) {
+                        total_sbd += itr->amount;
+                    } else
                         FC_ASSERT(false, "found savings withdraw that is not SBD or STEEM");
-                    }
                 }
 
                 fc::uint128_t total_rshares2;
@@ -4840,20 +4838,14 @@ namespace golos {
 
                 const auto &comment_idx = get_index<comment_index>().indices();
 
-                for (const auto &itr : comment_idx) {
-                    if (itr.net_rshares.value > 0) {
-                        auto delta = utilities::calculate_claims(itr.net_rshares.value);
+                for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr) {
+                    if (itr->net_rshares.value > 0) {
+                        auto delta = calculate_claims(itr->net_rshares.value);
                         total_rshares2 += delta;
                     }
-                    if (itr.parent_author == STEEMIT_ROOT_POST_PARENT) {
-                        total_children_rshares2 += itr.children_rshares2;
+                    if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
+                        total_children_rshares2 += itr->children_rshares2;
                     }
-                }
-
-                const auto &reward_idx = get_index<reward_fund_index, by_id>();
-
-                for (const auto &itr : reward_idx) {
-                    total_supply += itr.reward_balance;
                 }
 
                 total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_steem;
@@ -4866,6 +4858,12 @@ namespace golos {
                           ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting));
                 FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",
                           ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
+                FC_ASSERT(gpo.total_reward_shares2 == total_rshares2, "",
+                          ("gpo.total", gpo.total_reward_shares2)("check.total", total_rshares2)("delta",
+                                                                                                 gpo.total_reward_shares2 -
+                                                                                                 total_rshares2));
+                FC_ASSERT(total_rshares2 == total_children_rshares2, "",
+                          ("total_rshares2", total_rshares2)("total_children_rshares2", total_children_rshares2));
 
                 FC_ASSERT(gpo.virtual_supply >= gpo.current_supply);
                 if (!get_feed_history().current_median_history.is_null()) {
@@ -5081,7 +5079,8 @@ namespace golos {
 
                 // cancel remaining bids
                 const auto &bid_idx = get_index<collateral_bid_index>().indices().get<by_price>();
-                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name, protocol::price<0, 17, 0>::max(bad.options.short_backing_asset, bitasset.asset_name), collateral_bid_object::id_type()));
+                auto itr = bid_idx.lower_bound(boost::make_tuple(bitasset.asset_name, protocol::price<0, 17, 0>::max(
+                        bad.options.short_backing_asset, bitasset.asset_name), collateral_bid_object::id_type()));
                 while (itr != bid_idx.end() && itr->inv_swan_price.quote.symbol == bitasset.asset_name) {
                     const collateral_bid_object &bid = *itr;
                     ++itr;
