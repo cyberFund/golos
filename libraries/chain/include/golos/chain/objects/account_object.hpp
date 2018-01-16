@@ -160,10 +160,8 @@ namespace golos {
             uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
             time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-            protocol::asset<0, 17, 0> balance = protocol::asset<0, 17, 0>(0,
-                                                                          STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
-            protocol::asset<0, 17, 0> savings_balance = protocol::asset<0, 17, 0>(0,
-                                                                                  STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
+            protocol::asset<0, 17, 0> balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
+            protocol::asset<0, 17, 0> savings_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
 
             /**
              *  SBD Deposits pay interest based upon the interest rate set by witnesses. The purpose of these
@@ -185,9 +183,8 @@ namespace golos {
             time_point_sec sbd_last_interest_payment; ///< used to pay interest at most once per month
 
 
-            protocol::asset<0, 17, 0> savings_sbd_balance = protocol::asset<0, 17, 0>(0,
-                                                                                      SBD_SYMBOL_NAME); /// total sbd balance
-            uint128_t savings_sbd_seconds; ///< total sbd * how long it has been hel
+            protocol::asset<0, 17, 0> savings_sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// total sbd balance
+            uint128_t savings_sbd_seconds; ///< total sbd * how long it has been held
             time_point_sec savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
             time_point_sec savings_sbd_last_interest_payment; ///< used to pay interest at most once per month
 
@@ -197,20 +194,17 @@ namespace golos {
             share_type curation_rewards = 0;
             share_type posting_rewards = 0;
 
-            protocol::asset<0, 17, 0> vesting_shares = protocol::asset<0, 17, 0>(0,
-                                                                                 VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
+            protocol::asset<0, 17, 0> vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
             protocol::asset<0, 17, 0> delegated_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL);
             protocol::asset<0, 17, 0> received_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL);
 
-            protocol::asset<0, 17, 0> vesting_withdraw_rate = protocol::asset<0, 17, 0>(0,
-                                                                                        VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
+            protocol::asset<0, 17, 0> vesting_withdraw_rate = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
             time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
             share_type withdrawn = 0; /// Track how many shares have been withdrawn
             share_type to_withdraw = 0; /// Might be able to look this up with operation history.
             uint16_t withdraw_routes = 0;
 
-            fc::array<share_type,
-                    STEEMIT_MAX_PROXY_RECURSION_DEPTH> proxied_vsf_votes;// = std::vector<share_type>( STEEMIT_MAX_PROXY_RECURSION_DEPTH, 0 ); ///< the total VFS votes proxied to this account
+            fc::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH> proxied_vsf_votes;// = std::vector<share_type>( STEEMIT_MAX_PROXY_RECURSION_DEPTH, 0 ); ///< the total VFS votes proxied to this account
 
             uint16_t witnesses_voted_for = 0;
 

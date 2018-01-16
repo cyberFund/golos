@@ -7,6 +7,16 @@
 namespace golos {
     namespace chain {
 
+        /**
+         * @brief Operation notification context structure
+         *
+         * @param trx_id Unique transaction identifier
+         * @param block block number which contains the transaction with operation context
+         * @param trx_in_block amount of transactions in block
+         * @param op_in_trx operations amount in transaction
+         * @param virtual_op virtual operations amount in transaction
+         * @param op @ref operation reference
+         */
         struct operation_notification {
             operation_notification(const operation &o) : op(o) {
             }

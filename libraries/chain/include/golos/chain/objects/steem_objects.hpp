@@ -165,10 +165,8 @@ namespace golos {
 
             id_type id;
 
-            price<0, 17,
-                    0> current_median_history; ///< the current median of the price history, used as the base for convert operations
-            boost::interprocess::deque<price<0, 17, 0>, allocator < price<0, 17, 0>>>
-            price_history; ///< tracks this last week of median_feed one per hour
+            price<0, 17, 0> current_median_history; ///< the current median of the price history, used as the base for convert operations
+            boost::interprocess::deque<price<0, 17, 0>, allocator < price<0, 17, 0>>> price_history; ///< tracks this last week of median_feed one per hour
         };
 
         /**

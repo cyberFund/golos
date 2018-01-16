@@ -34,10 +34,9 @@ namespace golos {
           * multi-signature approval requires some off-chain mechanism for acquiring several signatures on a single
           * transaction. This off-chain synchronization can be avoided using proposals.
           * @{
+
+          * operaion_wrapper is used to get around the circular definition of operation and proposals that contain them.
           */
-        /**
-         * operaion_wrapper is used to get around the circular definition of operation and proposals that contain them.
-         */
         struct operation_wrapper;
 
         /**

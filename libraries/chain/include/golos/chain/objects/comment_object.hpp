@@ -99,16 +99,16 @@ namespace golos {
 
             id_type id;
 
-            shared_string category;
-            account_name_type parent_author;
-            shared_string parent_permlink;
-            account_name_type author;
-            shared_string permlink;
+            shared_string category; ///< used to track built-in-consensus comment category
+            account_name_type parent_author; ///< used to track comment parent author
+            shared_string parent_permlink; ///< used to track parent comment permanent link
+            account_name_type author; ///< used to track comment author account name of @ref account_name_type
+            shared_string permlink; ///< used to track comment permanent link
 
-            shared_string title;
-            shared_string body;
-            shared_string json_metadata;
-            time_point_sec last_update;
+            shared_string title; ///< used to track comment header
+            shared_string body; ///< used to track comment contents
+            shared_string json_metadata; ///< used to track comment metadata such as profile picture image link
+            time_point_sec last_update; ///< used to track comment last changed time
             time_point_sec created;
             time_point_sec active; ///< the last time this post was "touched" by voting or reply
             time_point_sec last_payout;
@@ -148,15 +148,13 @@ namespace golos {
 
             id_type root_comment;
 
-            protocol::asset<0, 17, 0> max_accepted_payout = protocol::asset<0, 17, 0>(1000000000,
-                                                                                      SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
+            protocol::asset<0, 17, 0> max_accepted_payout = protocol::asset<0, 17, 0>(1000000000, SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
             uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
             bool allow_replies = true;      /// allows a post to disable replies.
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true;
 
-            boost::interprocess::vector<protocol::beneficiary_route_type,
-                    allocator < protocol::beneficiary_route_type>> beneficiaries;
+            boost::interprocess::vector<protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries;
         };
 
 
