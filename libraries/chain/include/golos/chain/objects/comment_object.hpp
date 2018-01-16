@@ -100,7 +100,7 @@ namespace golos {
             id_type id;
 
             shared_string category; ///< used to track built-in-consensus comment category
-            account_name_type parent_author; ///< used to track comment parent author
+            account_name_type parent_author; ///< used to track comment parent author account name of @ref account_name_type
             shared_string parent_permlink; ///< used to track parent comment permanent link
             account_name_type author; ///< used to track comment author account name of @ref account_name_type
             shared_string permlink; ///< used to track comment permanent link

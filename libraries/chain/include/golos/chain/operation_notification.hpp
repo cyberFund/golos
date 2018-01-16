@@ -16,6 +16,8 @@ namespace golos {
          * @param op_in_trx operations amount in transaction
          * @param virtual_op virtual operations amount in transaction
          * @param op @ref operation reference
+         *
+         * Operation notification context is required to induce @ref boost::signal2 nofitications for connected @ref plugin slots.
          */
         struct operation_notification {
             operation_notification(const operation &o) : op(o) {
