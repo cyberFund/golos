@@ -17,7 +17,7 @@ namespace golos {
          * @param virtual_op virtual operations amount in transaction
          * @param op @ref operation reference
          *
-         * Operation notification context is required to induce @ref boost::signal2 notifications for connected @ref plugin slots.
+         * Operation notification context is required to induce @ref boost::signal2 notifications for connected @ref plugin slots. Operation notification context passes the operation coming in database from chain internals to plugin interfaces.
          */
         struct operation_notification {
             operation_notification(const operation &o) : op(o) {
