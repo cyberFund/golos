@@ -47,11 +47,11 @@ namespace golos {
 
             id_type id;
 
-            shared_string name;
-            share_type abs_rshares;
-            protocol::asset<0, 17, 0> total_payouts = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
-            uint32_t discussions = 0;
-            time_point_sec last_update;
+            shared_string name; ///< Category name
+            share_type abs_rshares; ///< Total category @ref comment_object abs_rshares sum
+            protocol::asset<0, 17, 0> total_payouts = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); ///< Total category @ref comment_object payouts in @ref asset<0, 17, 0>
+            uint32_t discussions = 0; ///< Total category @ref comment_object amount
+            time_point_sec last_update; ///< Last category @ref comment_object update time
         };
 
         struct by_name;
@@ -99,40 +99,35 @@ namespace golos {
 
             id_type id;
 
-            shared_string category; ///< used to track built-in-consensus comment category
-            account_name_type parent_author; ///< used to track comment parent author account name of @ref account_name_type
-            shared_string parent_permlink; ///< used to track parent comment permanent link
-            account_name_type author; ///< used to track comment author account name of @ref account_name_type
-            shared_string permlink; ///< used to track comment permanent link
+            shared_string category; ///< Used to track built-in-consensus comment category
+            account_name_type parent_author; ///< Used to track comment parent author account name of @ref account_name_type
+            shared_string parent_permlink; ///< Used to track parent comment permanent link
+            account_name_type author; ///< Used to track comment author account name of @ref account_name_type
+            shared_string permlink; ///< Used to track comment permanent link
 
-            shared_string title; ///< used to track comment header
-            shared_string body; ///< used to track comment contents
-            shared_string json_metadata; ///< used to track comment metadata such as profile picture image link
-            time_point_sec last_update; ///< used to track comment last changed time
+            shared_string title; ///< Used to track comment header
+            shared_string body; ///< Used to track comment contents
+            shared_string json_metadata; ///< Used to track comment metadata such as profile picture image link
+            time_point_sec last_update; ///< Used to track comment last changed time
             time_point_sec created;
             time_point_sec active; ///< the last time this post was "touched" by voting or reply
             time_point_sec last_payout;
 
-            uint16_t depth = 0; ///< used to track max nested depth
-            uint32_t children = 0; ///< used to track the total number of children, grandchildren, etc...
+            uint16_t depth = 0; ///< Used to track max nested depth
+            uint32_t children = 0; ///< Used to track the total number of children, grandchildren, etc...
 
-            /**
-             *  Used to track the total rshares^2 of all children, this is used for indexing purposes. A discussion
-             *  that has a nested comment of high value should promote the entire discussion so that the comment can
-             *  be reviewed.
-             */
-            fc::uint128_t children_rshares2;
+            fc::uint128_t children_rshares2; ///< Used to track the total rshares^2 of all children, this is used for indexing purposes. A discussion that has a nested comment of high value should promote the entire discussion so that the comment can be reviewed.
 
             /// index on pending_payout for "things happening now... needs moderation"
             /// TRENDING = UNCLAIMED + PENDING
-            share_type net_rshares; /// reward is proportional to rshares^2, this is the sum of all votes (positive and negative)
-            share_type abs_rshares; /// this is used to track the total abs(weight) of votes for the purpose of calculating cashout_time
-            share_type vote_rshares; /// Total positive rshares from all votes. Used to calculate delta weights. Needed to handle vote changing and removal.
+            share_type net_rshares; ///< Reward is proportional to rshares^2, this is the sum of all votes (positive and negative)
+            share_type abs_rshares; ///< This is used to track the total abs(weight) of votes for the purpose of calculating cashout_time
+            share_type vote_rshares; ///< Total positive rshares from all votes. Used to calculate delta weights. Needed to handle vote changing and removal.
 
-            share_type children_abs_rshares; /// this is used to calculate cashout time of a discussion.
-            time_point_sec cashout_time; /// 24 hours from the weighted average of vote time
-            time_point_sec max_cashout_time;
-            uint64_t total_vote_weight = 0; /// the total weight of voting rewards, used to calculate pro-rata share of curation payouts
+            share_type children_abs_rshares; ///< This is used to calculate cashout time of a discussion.
+            time_point_sec cashout_time; ///< 24 hours from the weighted average of vote time
+            time_point_sec max_cashout_time; ///< Maximum available cashout time for the comment
+            uint64_t total_vote_weight = 0; ///< The total weight of voting rewards, used to calculate pro-rata share of curation payouts
 
             uint16_t reward_weight = 0;
 
@@ -142,19 +137,19 @@ namespace golos {
             protocol::asset<0, 17, 0> beneficiary_payout_value = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME);
 
 
-            share_type author_rewards = 0;
+            share_type author_rewards = 0; ///< Used to track author rewards for this comment
 
-            int32_t net_votes = 0;
+            int32_t net_votes = 0; ///< Total votes amount
 
-            id_type root_comment;
+            id_type root_comment; ///< Root comment id of @comment_object::id_type
 
-            protocol::asset<0, 17, 0> max_accepted_payout = protocol::asset<0, 17, 0>(1000000000, SBD_SYMBOL_NAME);       /// SBD value of the maximum payout this post will receive
-            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
-            bool allow_replies = true;      /// allows a post to disable replies.
-            bool allow_votes = true;      /// allows a post to receive votes;
-            bool allow_curation_rewards = true;
+            protocol::asset<0, 17, 0> max_accepted_payout = protocol::asset<0, 17, 0>(1000000000, SBD_SYMBOL_NAME); ///< SBD value of the maximum payout this post will receive
+            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; ///< The percent of Golos Dollars to key, unkept amounts will be received as Golos Power
+            bool allow_replies = true;      ///< Allows a post to disable replies
+            bool allow_votes = true;      ///< Allows a post to receive votes
+            bool allow_curation_rewards = true; ///< Allows a post to create curation rewards
 
-            boost::interprocess::vector<protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries;
+            boost::interprocess::vector<protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries; ///< Vector of @ref comment_object reward beneficiaries of @ref beneficiary_route_type
         };
 
 
@@ -174,13 +169,13 @@ namespace golos {
 
             id_type id;
 
-            account_object::id_type voter;
-            comment_object::id_type comment;
+            account_object::id_type voter; ///< Vote author @ref account_object @ref account_object::id_type
+            comment_object::id_type comment; ///< Voted @ref comment_object @ref comment_object:id_type
             uint64_t weight = 0; ///< defines the score this vote receives, used by vote payout calc. 0 if a negative vote or changed votes.
             int64_t rshares = 0; ///< The number of rshares this vote is responsible for
             int16_t vote_percent = 0; ///< The percent weight of the vote
             time_point_sec last_update; ///< The time of the last update of the vote
-            int8_t num_changes = 0;
+            int8_t num_changes = 0; ///< Total changes amount
         };
 
         struct by_comment_voter;

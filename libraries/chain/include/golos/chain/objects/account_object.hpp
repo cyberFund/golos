@@ -135,33 +135,32 @@ namespace golos {
 
             id_type id;
 
-            /// The account's name. This name must be unique among all account names on the graph. May not be empty.
-            account_name_type name;
-            public_key_type memo_key;
-            shared_string json_metadata;
+            account_name_type name; ///< The account's name. This name must be unique among all account names on the graph. May not be empty.
+            public_key_type memo_key; ///< The account's memo key. Used to encrypt/decrypt transactions memos.
+            shared_string json_metadata; ///< The account's metadata storage.
             account_name_type proxy;
 
-            time_point_sec last_account_update;
+            time_point_sec last_account_update; ///< The account's data last update timestamp
 
-            time_point_sec created;
-            bool mined = true;
+            time_point_sec created; ///< The account's creation timestamp
+            bool mined = true; ///< Indicates if account was created with mining or not
             bool owner_challenged = false;
             bool active_challenged = false;
             time_point_sec last_owner_proved = time_point_sec::min();
             time_point_sec last_active_proved = time_point_sec::min();
-            account_name_type recovery_account;
+            account_name_type recovery_account; ///< The account's recovery account name. Usually the creator's account name is getting used
             account_name_type reset_account = STEEMIT_NULL_ACCOUNT;
             time_point_sec last_account_recovery;
-            uint32_t comment_count = 0;
-            uint32_t lifetime_vote_count = 0;
-            uint32_t post_count = 0;
+            uint32_t comment_count = 0; ///< The account's published comments count
+            uint32_t lifetime_vote_count = 0; ///< The account's vote count
+            uint32_t post_count = 0; ///< The account's published posts count
 
             bool can_vote = true;
-            uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
-            time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
+            uint16_t voting_power = STEEMIT_100_PERCENT;   ///< Current voting power of this account, it falls after every vote
+            time_point_sec last_vote_time; ///< Used to increase the voting power of this account the longer it goes without voting.
 
-            protocol::asset<0, 17, 0> balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
-            protocol::asset<0, 17, 0> savings_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< total liquid shares held by this account
+            protocol::asset<0, 17, 0> balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< Total liquid shares held by this account
+            protocol::asset<0, 17, 0> savings_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);  ///< Total liquid shares held by this account
 
             /**
              *  SBD Deposits pay interest based upon the interest rate set by witnesses. The purpose of these
@@ -177,38 +176,38 @@ namespace golos {
              *  @defgroup sbd_data SBD Balance Data
              */
             ///@{
-            protocol::asset<0, 17, 0> sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// total sbd balance
-            uint128_t sbd_seconds; ///< total sbd * how long it has been hel
-            time_point_sec sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
-            time_point_sec sbd_last_interest_payment; ///< used to pay interest at most once per month
+            protocol::asset<0, 17, 0> sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// Total sbd balance
+            uint128_t sbd_seconds; ///< Total sbd * how long it has been hel
+            time_point_sec sbd_seconds_last_update; ///< The last time the sbd_seconds was updated
+            time_point_sec sbd_last_interest_payment; ///< Used to pay interest at most once per month
 
 
-            protocol::asset<0, 17, 0> savings_sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// total sbd balance
-            uint128_t savings_sbd_seconds; ///< total sbd * how long it has been held
-            time_point_sec savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
-            time_point_sec savings_sbd_last_interest_payment; ///< used to pay interest at most once per month
+            protocol::asset<0, 17, 0> savings_sbd_balance = protocol::asset<0, 17, 0>(0, SBD_SYMBOL_NAME); /// Total sbd balance
+            uint128_t savings_sbd_seconds; ///< Total sbd * how long it has been held
+            time_point_sec savings_sbd_seconds_last_update; ///< The last time the sbd_seconds was updated
+            time_point_sec savings_sbd_last_interest_payment; ///< Used to pay interest at most once per month
 
-            uint8_t savings_withdraw_requests = 0;
+            uint8_t savings_withdraw_requests = 0; ///< The account's savings withdraw requests amount
             ///@}
 
-            share_type curation_rewards = 0;
-            share_type posting_rewards = 0;
+            share_type curation_rewards = 0; ///< The account's total curation rewards amount
+            share_type posting_rewards = 0; ///< The account's total posting rewards amount
 
-            protocol::asset<0, 17, 0> vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
-            protocol::asset<0, 17, 0> delegated_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL);
-            protocol::asset<0, 17, 0> received_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL);
+            protocol::asset<0, 17, 0> vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< Total vesting shares held by this account, controls its voting power
+            protocol::asset<0, 17, 0> delegated_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< Total delegated vesting shares amount
+            protocol::asset<0, 17, 0> received_vesting_shares = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< Total delegated vesting shares receivals
 
-            protocol::asset<0, 17, 0> vesting_withdraw_rate = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
-            time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
+            protocol::asset<0, 17, 0> vesting_withdraw_rate = protocol::asset<0, 17, 0>(0, VESTS_SYMBOL); ///< At the time this is updated it can be at most vesting_shares/104
+            time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< After every withdrawal this is incremented by 1 week
             share_type withdrawn = 0; /// Track how many shares have been withdrawn
             share_type to_withdraw = 0; /// Might be able to look this up with operation history.
             uint16_t withdraw_routes = 0;
 
             fc::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH> proxied_vsf_votes;// = std::vector<share_type>( STEEMIT_MAX_PROXY_RECURSION_DEPTH, 0 ); ///< the total VFS votes proxied to this account
 
-            uint16_t witnesses_voted_for = 0;
+            uint16_t witnesses_voted_for = 0; ///< The account's witness votes
 
-            time_point_sec last_post;
+            time_point_sec last_post; ///< The account's last post timestamp
 
             /**
              * This is a set of assets which the account is allowed to have.
@@ -279,7 +278,7 @@ namespace golos {
 
             id_type id;
 
-            account_name_type account;
+            account_name_type account; ///< Authorities account owner name
 
             /**
              * The owner authority represents absolute control over the account. Usually the keys in this authority will
@@ -287,12 +286,12 @@ namespace golos {
              * complete and irrevocable loss of the account. Generally the only time the owner authority is required is to
              * update the active authority.
              */
-            shared_authority owner;   ///< used for backup control, can set owner or active
+            shared_authority owner;   ///< Used for backup control, can set owner or active
 
             /// The owner authority contains the hot keys of the account. This authority has control over nearly all
             /// operations the account may perform.
-            shared_authority active;  ///< used for all monetary operations, can set active or posting
-            shared_authority posting; ///< used for voting and posting
+            shared_authority active;  ///< Used for all monetary operations, can set active or posting
+            shared_authority posting; ///< Used for voting and posting
 
             time_point_sec last_owner_update;
         };
@@ -314,11 +313,11 @@ namespace golos {
 
             id_type id;
 
-            account_name_type account;
-            bandwidth_type type;
-            share_type average_bandwidth;
-            share_type lifetime_bandwidth;
-            time_point_sec last_bandwidth_update;
+            account_name_type account; ///< The account's bandwidth owner name
+            bandwidth_type type; ///< The owner account's bandwidth type holder
+            share_type average_bandwidth; ///< The owner account's average bandwidth stats
+            share_type lifetime_bandwidth; ///< The owner account's lifetime bandwidth
+            time_point_sec last_bandwidth_update; ///< The owner account's last bandwidth spend or fill timestamp
         };
 
         /**
@@ -336,10 +335,10 @@ namespace golos {
             }
 
             id_type id;
-            account_name_type delegator;
-            account_name_type delegatee;
-            protocol::asset<0, 17, 0> vesting_shares;
-            time_point_sec min_delegation_time;
+            account_name_type delegator; ///< Delegated vesting source account
+            account_name_type delegatee; ///< Delegated vesting receiving account
+            protocol::asset<0, 17, 0> vesting_shares; ///< Delegated vesting amount in @ref asset<0, 17, 0>
+            time_point_sec min_delegation_time; ///< Minimum delegated vesting return time
         };
 
         /**
@@ -358,10 +357,15 @@ namespace golos {
             }
 
             id_type id;
-            account_name_type delegator;
-            protocol::asset<0, 17, 0> vesting_shares;
-            time_point_sec expiration;
+            account_name_type delegator; ///< Expiring vesting delegations owner
+            protocol::asset<0, 17, 0> vesting_shares; ///< Expiring vesting delegations amount in @ref asset<0, 17, 0>
+            time_point_sec expiration; ///< Vesting delegations expiration timestamp
         };
+
+        /**
+         * @brief Tracks account's owner authoritiy changing history
+         * @ingroup objects
+         */
 
         class owner_authority_history_object : public object<owner_authority_history_object_type,
                 owner_authority_history_object> {
@@ -376,11 +380,15 @@ namespace golos {
 
             id_type id;
 
-            account_name_type account;
-            shared_authority previous_owner_authority;
-            time_point_sec last_valid_time;
+            account_name_type account; ///< Account authority owner name
+            shared_authority previous_owner_authority; ///< Account previous owner authority
+            time_point_sec last_valid_time; ///< Last time tracked account authority was valid
         };
 
+        /**
+         * @brief Tracks account recovery requests
+         * @ingroup objects
+         */
         class account_recovery_request_object : public object<account_recovery_request_object_type,
                 account_recovery_request_object> {
         public:
@@ -394,11 +402,15 @@ namespace golos {
 
             id_type id;
 
-            account_name_type account_to_recover;
-            shared_authority new_owner_authority;
-            time_point_sec expires;
+            account_name_type account_to_recover; ///< Account requested to recover
+            shared_authority new_owner_authority; ///< New account owner authority
+            time_point_sec expires; ///< Account recovery request expiration timestamp
         };
 
+        /**
+         * @brief Tracks account recovery requests changes
+         * @ingroup objects
+         */
         class change_recovery_account_request_object : public object<change_recovery_account_request_object_type,
                 change_recovery_account_request_object> {
         public:
@@ -409,9 +421,9 @@ namespace golos {
 
             id_type id;
 
-            account_name_type account_to_recover;
-            account_name_type recovery_account;
-            time_point_sec effective_on;
+            account_name_type account_to_recover; ///< Account requested to recover
+            account_name_type recovery_account; ///< Recovery account used for @ref account_to_recover
+            time_point_sec effective_on; ///< Changed account recovery request expiration timestamp
         };
 
         struct by_account_asset;

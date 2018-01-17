@@ -14,9 +14,10 @@ namespace golos {
         /**
          * @brief Tracks transactions coming
          * @ingroup objects
-         * The purpose of this object is to enable the detection of duplicate transactions. When a transaction is included
-         * in a block a transaction_object is added. At the end of block processing all transaction_objects that have
-         * expired can be removed from the index.
+         *
+         * The purpose of this object is to enable the detection of duplicate transactions. When a transaction is included in a block a transaction_object is added. At the end of block processing all transaction_objects that have expired can be removed from the index.
+         *
+         * Custom @ref boost::multi_index_container accessors/mutators are required to speed up transaction access with @ref object_id_type identifiers
          */
         class transaction_object : public object<transaction_object_type, transaction_object> {
             transaction_object() = delete;

@@ -261,7 +261,8 @@ namespace golos {
                     fc::uint128_t avg_cashout_sec;
 
                     if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(comment).sec_since_epoch();
+                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(
+                                comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
                         if (this->db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
@@ -460,7 +461,8 @@ namespace golos {
                     fc::uint128_t avg_cashout_sec;
 
                     if (!this->db.has_hardfork(STEEMIT_HARDFORK_0_17__91)) {
-                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(comment).sec_since_epoch();
+                        fc::uint128_t cur_cashout_time_sec = this->db.calculate_discussion_payout_time(
+                                comment).sec_since_epoch();
                         fc::uint128_t new_cashout_time_sec;
 
                         if (this->db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
@@ -607,7 +609,8 @@ namespace golos {
             }
 
             const auto &worker_account = this->db.get_account(o.get_worker_account()); // verify it exists
-            const auto &worker_auth = this->db.template get<account_authority_object, by_account>(o.get_worker_account());
+            const auto &worker_auth = this->db.template get<account_authority_object, by_account>(
+                    o.get_worker_account());
             FC_ASSERT(worker_auth.active.num_auths() == 1, "Miners can only have one key authority. ${a}",
                       ("a", worker_auth.active));
             FC_ASSERT(worker_auth.active.key_auths.size() == 1, "Miners may only have one key authority.");
@@ -1150,8 +1153,8 @@ namespace golos {
             const auto &wso = this->db.get_witness_schedule_object();
             const auto &gpo = this->db.get_dynamic_global_properties();
             auto min_delegation =
-                    asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_DELEGATION_MIN_THRESHOLD, STEEM_SYMBOL_NAME) *
-                    gpo.get_vesting_share_price();
+                    asset<0, 17, 0>(wso.median_props.account_creation_fee.amount * STEEMIT_DELEGATION_MIN_THRESHOLD,
+                                    STEEM_SYMBOL_NAME) * gpo.get_vesting_share_price();
             auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
 
             // If delegation doesn't exist, create it

@@ -34,13 +34,17 @@ namespace golos {
 
             id_type id;
 
-            account_name_type owner;
-            uint32_t request_id = 0; ///< id set by owner, the owner,request_id pair must be unique
-            protocol::asset<0, 17, 0> amount;
-            time_point_sec conversion_date; ///< at this time the feed_history_median_price * amount
+            account_name_type owner; ///< Account requested a conversion
+            uint32_t request_id = 0; ///< Id set by owner, the owner,request_id pair must be unique
+            protocol::asset<0, 17, 0> amount; ///< Amount requested for conversion
+            time_point_sec conversion_date; ///< At this time the feed_history_median_price * amount
         };
 
 
+        /**
+         * @brief Tracks an escrow
+         * @ingroup objects
+         */
         class escrow_object : public object<escrow_object_type, escrow_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -53,10 +57,10 @@ namespace golos {
 
             id_type id;
 
-            uint32_t escrow_id = 20;
-            account_name_type from;
-            account_name_type to;
-            account_name_type agent;
+            uint32_t escrow_id = 20; ///< Unique escrow identifier
+            account_name_type from; ///< Account initiated an escrow transfer
+            account_name_type to; ///< Account an escrow transfer was intended for
+            account_name_type agent; ///< Escrow transfer agent account
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
             protocol::asset<0, 17, 0> sbd_balance;
@@ -72,6 +76,10 @@ namespace golos {
         };
 
 
+        /**
+         * @brief Tracks savings withdrawal requests
+         * @ingroup objects
+         */
         class savings_withdraw_object : public object<savings_withdraw_object_type, savings_withdraw_object> {
             savings_withdraw_object() = delete;
 
@@ -84,12 +92,12 @@ namespace golos {
 
             id_type id;
 
-            account_name_type from;
-            account_name_type to;
-            shared_string memo;
-            uint32_t request_id = 0;
-            protocol::asset<0, 17, 0> amount;
-            time_point_sec complete;
+            account_name_type from; ///< Account requested savings withdrawal from
+            account_name_type to; ///< Account requested savings withdrawal to
+            shared_string memo; ///< Savings withdrawal memo
+            uint32_t request_id = 0; ///< Unique savings withdrawal identifier
+            protocol::asset<0, 17, 0> amount; ///< Savings withdrawal asset amount
+            time_point_sec complete; ///< Savings withdrawal completion timestamp
         };
 
 
@@ -127,7 +135,7 @@ namespace golos {
             int64_t sbd_volume = 0;
             uint128_t weight = 0;
 
-            time_point_sec last_update = fc::time_point_sec::min(); /// used to decay negative liquidity balances. block num
+            time_point_sec last_update = fc::time_point_sec::min(); /// Used to decay negative liquidity balances. block num
 
             /// this is the sort index
             uint128_t volume_weight() const {
@@ -165,12 +173,12 @@ namespace golos {
 
             id_type id;
 
-            price<0, 17, 0> current_median_history; ///< the current median of the price history, used as the base for convert operations
-            boost::interprocess::deque<price<0, 17, 0>, allocator < price<0, 17, 0>>> price_history; ///< tracks this last week of median_feed one per hour
+            price<0, 17, 0> current_median_history; ///< The current median of the price history, used as the base for convert operations
+            boost::interprocess::deque<price<0, 17, 0>, allocator<price<0, 17, 0>>> price_history; ///< Tracks this last week of median_feed one per hour
         };
 
         /**
-         * @brief Traks a route to send withdrawn vesting shares.
+         * @brief Tracks a route to send withdrawn vesting shares.
          * @ingroup objects
          */
         class withdraw_vesting_route_object : public object<withdraw_vesting_route_object_type,
@@ -186,14 +194,15 @@ namespace golos {
 
             id_type id;
 
-            account_object::id_type from_account;
-            account_object::id_type to_account;
-            uint16_t percent = 0;
+            account_object::id_type from_account; ///< Account id to withdraw from
+            account_object::id_type to_account; ///< Account if to withdraw to
+            uint16_t percent = 0; ///< Vesting withdrawal percent
             bool auto_vest = false;
         };
 
 
         /*
+         * @brief Tracks declined voting rights
          * @ingroup objects
          */
         class decline_voting_rights_request_object : public object<decline_voting_rights_request_object_type,
@@ -209,11 +218,12 @@ namespace golos {
 
             id_type id;
 
-            account_object::id_type account;
-            time_point_sec effective_date;
+            account_object::id_type account; ///< Account identifier vote declines requested for
+            time_point_sec effective_date; ///< Timestamp date vote declines is enabled
         };
 
         /*
+         * @brief Tracks reward funds
          * @ingroup objects
          */
         class reward_fund_object : public object<reward_fund_object_type, reward_fund_object> {
@@ -226,14 +236,14 @@ namespace golos {
             reward_fund_object() {
             }
 
-            reward_fund_object::id_type id;
-            reward_fund_name_type name;
-            protocol::asset<0, 17, 0> reward_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME);
-            uint128_t recent_claims = 0;
-            time_point_sec last_update;
-            uint128_t content_constant = 0;
-            uint16_t percent_curation_rewards = 0;
-            uint16_t percent_content_rewards = 0;
+            reward_fund_object::id_type id; ///< Reward fund identifier
+            reward_fund_name_type name; ///< Reward fund name
+            protocol::asset<0, 17, 0> reward_balance = protocol::asset<0, 17, 0>(0, STEEM_SYMBOL_NAME); ///< Current reward fund balance in @ref asset<0, 17, 0>
+            uint128_t recent_claims = 0; ///< Recent rewards claimed from the particular fund
+            time_point_sec last_update; ///< Last time particular fund was modified
+            uint128_t content_constant = 0; ///< Particular reward fund content constant (e.g. 2000000000000)
+            uint16_t percent_curation_rewards = 0; ///< Curation reward percent this fund provides
+            uint16_t percent_content_rewards = 0; ///< Content reward percent this fund provides
         };
 
         struct by_owner;

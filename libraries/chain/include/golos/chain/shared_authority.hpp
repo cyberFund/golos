@@ -11,7 +11,7 @@ namespace golos {
         using golos::protocol::weight_type;
 
         /**
-         *  The purpose of this class is to represent an authority object in a manner compatiable with
+         *  The purpose of this class is to represent an authority object in a manner compatible with
          *  shared memory storage.  This requires all dynamic fields to be allocated with the same allocator
          *  that allocated the shared_authority.
          */

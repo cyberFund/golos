@@ -35,37 +35,27 @@ namespace golos {
             };
 
             template<typename Constructor, typename Allocator>
-            witness_object(Constructor &&c, allocator<Allocator> a)
+            witness_object(Constructor &&c, allocator <Allocator> a)
                     :url(a) {
                 c(*this);
             }
 
             id_type id;
 
-            /** the account that has authority over this witness */
-            account_name_type owner;
-            fc::time_point_sec created;
-            shared_string url;
-            uint32_t total_missed = 0;
+            account_name_type owner; ///< The account that has authority over this witness
+            fc::time_point_sec created; ///< Witness object creation timestamp. Usually gets created after initial @ref witness_update_operation performing
+            shared_string url; ///< Witness post url
+            uint32_t total_missed = 0; ///< Total missed blocks amount
             uint64_t last_aslot = 0;
-            uint64_t last_confirmed_block_num = 0;
+            uint64_t last_confirmed_block_num = 0; ///< Last confirmed block
 
-            /**
-             * Some witnesses have the job because they did a proof of work,
-             * this field indicates where they were in the POW order. After
-             * each round, the witness with the lowest pow_worker value greater
-             * than 0 is removed.
-             */
-            uint64_t pow_worker = 0;
+            uint64_t pow_worker = 0; ///< Some witnesses have the job because they did a proof of work, this field indicates where they were in the POW order. After each round, the witness with the lowest pow_worker value greater than 0 is removed.
 
-            /**
-             *  This is the key used to sign blocks on behalf of this witness
-             */
-            public_key_type signing_key;
+            public_key_type signing_key; ///< This is the key used to sign blocks on behalf of this witness
 
-            chain_properties<0, 17, 0> props;
-            price<0, 17, 0> sbd_exchange_rate;
-            fc::time_point_sec last_sbd_exchange_update;
+            chain_properties<0, 17, 0> props; ///< Witness-proposed @ref chain_properties
+            price<0, 17, 0> sbd_exchange_rate; ///< Witness-proposed sbd exchange rate
+            fc::time_point_sec last_sbd_exchange_update; ///< Last witness-proposed sbd exchange rate update timestamp
 
 
             /**
@@ -106,13 +96,10 @@ namespace golos {
 
             digest_type last_work;
 
-            /**
-             * This field represents the Golos blockchain version the witness is running.
-             */
-            version running_version;
+            protocol::version running_version; ///< This represents the Golos blockchain version the witness is running.
 
-            hardfork_version hardfork_version_vote;
-            fc::time_point_sec hardfork_time_vote = STEEMIT_GENESIS_TIME;
+            protocol::hardfork_version hardfork_version_vote; ///< Hardfork version this witness votes for
+            fc::time_point_sec hardfork_time_vote = STEEMIT_GENESIS_TIME; ///< Last time witness voted for some hardfork
         };
 
         /*
@@ -122,7 +109,7 @@ namespace golos {
         class witness_vote_object : public object<witness_vote_object_type, witness_vote_object> {
         public:
             template<typename Constructor, typename Allocator>
-            witness_vote_object(Constructor &&c, allocator<Allocator> a) {
+            witness_vote_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -131,10 +118,10 @@ namespace golos {
 
             id_type id;
 
-            account_name_type witness;
-            account_name_type account;
+            account_name_type witness; ///< Witness name voted for
+            account_name_type account; ///< Account voting for witness
 
-            fc::time_point_sec created;
+            fc::time_point_sec created; ///< Witness vote creation timestamp
         };
 
         /*
@@ -144,7 +131,7 @@ namespace golos {
         class witness_schedule_object : public object<witness_schedule_object_type, witness_schedule_object> {
         public:
             template<typename Constructor, typename Allocator>
-            witness_schedule_object(Constructor &&c, allocator<Allocator> a) {
+            witness_schedule_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
@@ -153,16 +140,16 @@ namespace golos {
 
             id_type id;
 
-            fc::uint128_t current_virtual_time;
+            fc::uint128_t current_virtual_time; ///< Current witness schedule virtual time
             uint32_t next_shuffle_block_num = 1;
-            fc::array<account_name_type, STEEMIT_MAX_WITNESSES> current_shuffled_witnesses;
-            uint8_t num_scheduled_witnesses = 1;
+            fc::array<account_name_type, STEEMIT_MAX_WITNESSES> current_shuffled_witnesses; ///< Current active top witnesses
+            uint8_t num_scheduled_witnesses = 1; ///< Witness amount scheduled to sign a block
             uint8_t top19_weight = 1;
             uint8_t timeshare_weight = 5;
             uint8_t miner_weight = 1;
             uint32_t witness_pay_normalization_factor = 25;
-            chain_properties<0, 17, 0> median_props;
-            version majority_version;
+            chain_properties<0, 17, 0> median_props; ///< Current median @ref chain_properties within all the witnesses
+            protocol::version majority_version; ///< Current major witness part version
 
             uint8_t max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES;
             uint8_t max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES;
@@ -179,42 +166,44 @@ namespace golos {
         /**
          * @ingroup object_index
          */
-        typedef multi_index_container<witness_object, indexed_by<
-                ordered_unique<tag<by_id>, member<witness_object, witness_object::id_type, &witness_object::id>>,
-                ordered_non_unique<tag<by_work>, member<witness_object, digest_type, &witness_object::last_work>>,
-                ordered_unique<tag<by_name>, member<witness_object, account_name_type, &witness_object::owner>>,
-                ordered_non_unique<tag<by_pow>, member<witness_object, uint64_t, &witness_object::pow_worker>>,
-                ordered_unique<tag<by_vote_name>,
-                        composite_key<witness_object, member<witness_object, share_type, &witness_object::votes>,
-                                member<witness_object, account_name_type, &witness_object::owner> >,
-                        composite_key_compare<std::greater<share_type>,
-                                golos::protocol::string_less> //std::less< account_name_type > >
-                >, ordered_unique<tag<by_schedule_time>, composite_key<witness_object,
-                        member<witness_object, fc::uint128_t, &witness_object::virtual_scheduled_time>,
-                        member<witness_object, witness_object::id_type, &witness_object::id> > > >,
-                allocator<witness_object> > witness_index;
+        typedef multi_index_container <witness_object, indexed_by<ordered_unique < tag < by_id>, member<witness_object,
+                witness_object::id_type, &witness_object::id>>,
+        ordered_non_unique <tag<by_work>, member<witness_object, digest_type, &witness_object::last_work>>,
+        ordered_unique <tag<by_name>, member<witness_object, account_name_type, &witness_object::owner>>,
+        ordered_non_unique <tag<by_pow>, member<witness_object, uint64_t, &witness_object::pow_worker>>,
+        ordered_unique <tag<by_vote_name>, composite_key<witness_object, member < witness_object, share_type,
+                &witness_object::votes>, member<witness_object, account_name_type, &witness_object::owner>>,
+        composite_key_compare <std::greater<
+                share_type>, golos::protocol::string_less> //std::less< account_name_type > >
+        >, ordered_unique <tag<by_schedule_time>, composite_key<witness_object, member < witness_object, fc::uint128_t,
+                &witness_object::virtual_scheduled_time>, member<witness_object, witness_object::id_type,
+                &witness_object::id>> > >,
+        allocator <witness_object> >
+        witness_index;
 
         struct by_account_witness;
         struct by_witness_account;
         struct by_created_time;
 
-        typedef multi_index_container<witness_vote_object, indexed_by<ordered_unique<tag<by_id>,
-                member<witness_vote_object, witness_vote_object::id_type, &witness_vote_object::id>>,
-                ordered_unique<tag<by_account_witness>, composite_key<witness_vote_object,
-                        member<witness_vote_object, account_name_type, &witness_vote_object::account>,
-                        member<witness_vote_object, account_name_type, &witness_vote_object::witness> >,
-                        composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
-                ordered_unique<tag<by_witness_account>, composite_key<witness_vote_object,
-                        member<witness_vote_object, account_name_type, &witness_vote_object::witness>,
-                        member<witness_vote_object, account_name_type, &witness_vote_object::account> >,
-                        composite_key_compare<std::less<account_name_type>, std::less<account_name_type>>>,
-                ordered_non_unique<tag<by_created_time>,
-                        member<witness_vote_object, fc::time_point_sec, &witness_vote_object::created>>>,
-                allocator<witness_vote_object> > witness_vote_index;
+        typedef multi_index_container <witness_vote_object, indexed_by<ordered_unique < tag < by_id>, member<
+                witness_vote_object, witness_vote_object::id_type, &witness_vote_object::id>>,
+        ordered_unique <tag<by_account_witness>, composite_key<witness_vote_object, member < witness_vote_object,
+                account_name_type, &witness_vote_object::account>, member<witness_vote_object, account_name_type,
+                &witness_vote_object::witness>>,
+        composite_key_compare <std::less<account_name_type>, std::less<account_name_type>>>,
+        ordered_unique <tag<by_witness_account>, composite_key<witness_vote_object, member < witness_vote_object,
+                account_name_type, &witness_vote_object::witness>, member<witness_vote_object, account_name_type,
+                &witness_vote_object::account>>,
+        composite_key_compare <std::less<account_name_type>, std::less<account_name_type>>>,
+        ordered_non_unique <tag<by_created_time>, member<witness_vote_object, fc::time_point_sec,
+                &witness_vote_object::created>>>,
+        allocator <witness_vote_object> >
+        witness_vote_index;
 
-        typedef multi_index_container<witness_schedule_object, indexed_by<ordered_unique<tag<by_id>,
-                member<witness_schedule_object, witness_schedule_object::id_type, &witness_schedule_object::id>>>,
-                allocator<witness_schedule_object> > witness_schedule_index;
+        typedef multi_index_container <witness_schedule_object, indexed_by<ordered_unique < tag < by_id>, member<
+                witness_schedule_object, witness_schedule_object::id_type, &witness_schedule_object::id>>>,
+        allocator <witness_schedule_object> >
+        witness_schedule_index;
 
     }
 }

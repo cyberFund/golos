@@ -6,10 +6,13 @@
 namespace golos {
     namespace protocol {
 
+        /**
+         * @brief Tracks signed blocks with transactions
+         */
         struct signed_block : public signed_block_header {
             checksum_type calculate_merkle_root() const;
 
-            std::vector<signed_transaction> transactions;
+            std::vector<signed_transaction> transactions; ///< Vector of @ref signed_transaction contained in block
         };
 
     }
