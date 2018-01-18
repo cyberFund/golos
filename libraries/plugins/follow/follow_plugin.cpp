@@ -90,8 +90,7 @@ namespace steemit {
 
                             if (rep != rep_idx.end()) {
                                 db.modify(*rep, [&](reputation_object &r) {
-                                    r.reputation -= (cv->rshares
-                                            >> 6); // Shift away precision from vests. It is noise
+                                    r.reputation -= (cv->rshares >> 6); // Shift away precision from vests. It is noise
                                 });
                             }
                         }
