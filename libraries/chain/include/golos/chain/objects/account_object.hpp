@@ -293,7 +293,7 @@ namespace golos {
             shared_authority active;  ///< Used for all monetary operations, can set active or posting
             shared_authority posting; ///< Used for voting and posting
 
-            time_point_sec last_owner_update;
+            time_point_sec last_owner_update; ///< Last account owner authority updated timestamp
         };
 
         /*
