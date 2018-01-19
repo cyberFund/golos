@@ -61,14 +61,14 @@ namespace golos {
             account_name_type from; ///< Account initiated an escrow transfer
             account_name_type to; ///< Account an escrow transfer was intended for
             account_name_type agent; ///< Escrow transfer agent account
-            time_point_sec ratification_deadline;
-            time_point_sec escrow_expiration;
-            protocol::asset<0, 17, 0> sbd_balance;
-            protocol::asset<0, 17, 0> steem_balance;
-            protocol::asset<0, 17, 0> pending_fee;
-            bool to_approved = false;
-            bool agent_approved = false;
-            bool disputed = false;
+            time_point_sec ratification_deadline; ///< Escrow approval deadline timestamp
+            time_point_sec escrow_expiration; ///< Escrow expiration deadline timestamp
+            protocol::asset<0, 17, 0> sbd_balance; ///< Escrow SBD balance
+            protocol::asset<0, 17, 0> steem_balance; ///< Escrow STEEM balance
+            protocol::asset<0, 17, 0> pending_fee; ///< Escrow fee
+            bool to_approved = false; ///< Used to track if @ref to account is approved the escrow
+            bool agent_approved = false; ///< Used to track if @ref agent account is approved the escrow
+            bool disputed = false; ///< Used to track if the escrow is under dispute
 
             bool is_approved() const {
                 return to_approved && agent_approved;
@@ -130,10 +130,10 @@ namespace golos {
 
             id_type id;
 
-            account_object::id_type owner;
-            int64_t steem_volume = 0;
-            int64_t sbd_volume = 0;
-            uint128_t weight = 0;
+            account_object::id_type owner; ///< liquidity reward receiver account name
+            int64_t steem_volume = 0; ///< liquidity reward steem amount received
+            int64_t sbd_volume = 0; ///< liquidity reward sbd amount received
+            uint128_t weight = 0; ///< steem_volume * sbd_volume
 
             time_point_sec last_update = fc::time_point_sec::min(); /// Used to decay negative liquidity balances. block num
 
