@@ -64,7 +64,7 @@ namespace golos {
              * @param k @ref public_key_type proposed key to add
              * @param w @ref weight_type proposed weight amount
              *
-             * Key proposed is going to have a weight in the perticular authority exactly the same as seen in this function
+             * Key proposed is going to have a weight in the particular authority exactly the same as seen in this function
              */
             void add_authority(const public_key_type &k, weight_type w);
 
@@ -73,7 +73,7 @@ namespace golos {
              * @param k @ref public_key_type proposed key to add
              * @param w @ref weight_type proposed weight amount
              *
-             * Account keys proposed are going to have a weight in the perticular authority exactly the same as seen in this function
+             * Account keys proposed are going to have a weight in the particular authority exactly the same as seen in this function
              */
             void add_authority(const account_name_type &k, weight_type w);
 
