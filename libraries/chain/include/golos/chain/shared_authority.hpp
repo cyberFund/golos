@@ -59,8 +59,22 @@ namespace golos {
 
             shared_authority &operator=(const authority &a);
 
+            /**
+             * @brief Adds proposed @ref public_key_type to shared_authority according to @ref weight_type proposed
+             * @param k @ref public_key_type proposed key to add
+             * @param w @ref weight_type proposed weight amount
+             *
+             * Key proposed is going to have a weight in the perticular authority exactly the same as seen in this function
+             */
             void add_authority(const public_key_type &k, weight_type w);
 
+            /**
+             * @brief Adds proposed @ref account_name_type to shared_authority according to @ref weight_type proposed
+             * @param k @ref public_key_type proposed key to add
+             * @param w @ref weight_type proposed weight amount
+             *
+             * Account keys proposed are going to have a weight in the perticular authority exactly the same as seen in this function
+             */
             void add_authority(const account_name_type &k, weight_type w);
 
             template<typename AuthType>
