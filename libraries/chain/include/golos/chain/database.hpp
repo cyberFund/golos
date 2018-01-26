@@ -90,6 +90,19 @@ namespace golos {
              * @param data_dir Path to open or create database in
              * @param initial_supply Initial initminer supply
              */
+
+            /**
+             * @brief Open a database, creating a new one if necessary
+             *
+             * Opens a database in the specified directory. If no initialized database is found the database
+             * will be initialized with the default state.
+             *
+             * @param data_dir Path to open or create database in
+             * @param shared_mem_dir Directory to put dumped shared memory file into
+             * @param initial_supply Initial initminer supply
+             * @param shared_file_size Initial dumped shared memory file size
+             * @param chainbase_flags
+             */
             void open(const fc::path &data_dir, const fc::path &shared_mem_dir,
                       uint64_t initial_supply = STEEMIT_INIT_SUPPLY, uint64_t shared_file_size = 0,
                       uint32_t chainbase_flags = 0);
@@ -99,6 +112,10 @@ namespace golos {
              *
              * This method may be called after or instead of @ref database::open, and will rebuild the object graph by
              * replaying blockchain history. When this method exits successfully, the database will be open.
+             *
+             * @param data_dir Path to open database in
+             * @param shared_mem_dir Directory to use for dumped shared memory file
+             * @param shared_file_size Dumped shared memory file size
              */
             void reindex(const fc::path &data_dir, const fc::path &shared_mem_dir,
                          uint64_t shared_file_size = (1024l * 1024l * 1024l * 8l));
@@ -109,29 +126,64 @@ namespace golos {
              *
              * Will close the database before wiping. Database will be closed when this function returns.
              */
+
+            /**
+             * @brief wipe Delete database from disk, and potentially the raw chain as well.
+             *
+             * @param data_dir Path to open database in
+             * @param shared_mem_dir Directory to use for dumped shared memory file
+             * @param include_blocks If true, delete the raw chain as well as the database.
+             *
+             * Will close the database before wiping. Database will be closed when this function returns.
+             */
             void wipe(const fc::path &data_dir, const fc::path &shared_mem_dir, bool include_blocks);
 
             void close(bool rewind = true);
 
             /**
              * @brief Retrieve a particular account's balance in a given asset
-             * @param owner Account whose balance should be retrieved
-             * @param asset_name ID of the asset to get balance in
-             * @return owner's balance in asset
+             *
+             * @param owner Account name whose balance should be retrieved
+             * @param asset_name Asset name of the asset to get balance for
+             *
+             * @return Owner's balance in asset
              */
             asset<0, 17, 0> get_balance(account_name_type owner, asset_name_type asset_name) const;
 
-            /// This is an overloaded method.
+            /**
+             * @brief Retrieve a particular account's balance in a given asset
+             *
+             * @param owner Account object whose balance should be retrieved
+             * @param asset_obj Asset object to get balance for
+             *
+             * @return Owner's balance in asset
+             */
             asset<0, 17, 0> get_balance(const account_object &owner, const asset_object &asset_obj) const;
 
+            /**
+             * @brief Check if an asset_object is restricted to use for the particular account_object
+             *
+             * @param acct Input account_object to check restrictions for
+             * @param asset_obj Input asset_object to checkout restrictions for
+             * @return true if allowed to deal with, false if not
+             */
             bool is_authorized_asset(const account_object &acct, const asset_object &asset_obj) const;
 
             /**
-             *  @return true if the block is in our fork DB or saved to disk as
-             *  part of the official chain, otherwise return false
+             * @brief Determines if a block_object with identifier provided exists in some way in the local storage
+             * @paral id block_id_type provided for a check
+             * @return true if the block is in our fork DB or saved to disk as part of the official chain, otherwise return false
              */
             bool is_known_block(const block_id_type &id) const;
 
+            /**
+             * @brief Determines if a transaction_object exists in some way in the local storage
+             * @param id transaction_id_type provided for a check
+             *
+             * @return true *if* the transaction has not expired or been invalidated. If this
+             * method is called with a VERY old transaction we will return false, they should
+             * query things by blocks if they are that old.
+             */
             bool is_known_transaction(const transaction_id_type &id) const;
 
             fc::sha256 get_pow_target() const;
@@ -216,12 +268,17 @@ namespace golos {
 
             const hardfork_property_object &get_hardfork_property_object() const;
 
+            /**
+             * @brief Retrieves comment_object payout time depending on the hardfork currently active
+             * @param comment Input comment_object to retrieve the payout time for
+             * @return
+             */
             const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const;
 
             /**
              * Comment object reward fund selector
              * @param c input @ref comment_object
-             * @return @ref reward_find_object applied for the input @ref comment_object
+             * @return reward_find_object applied for the input comment_object
              */
             const reward_fund_object &get_reward_fund(const comment_object &c) const;
 
@@ -389,7 +446,8 @@ namespace golos {
              *  by STEEM and increasing the sbd supply by the specified amount.
              *  @return the sbd created and deposited to_account, may return STEEM if there is no median feed
              */
-            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> create_sbd(const account_object &to_account, asset<0, 17, 0> steem);
+            std::pair<asset<0, 17, 0>, asset<0, 17, 0>> create_sbd(const account_object &to_account,
+                                                                   asset<0, 17, 0> steem);
 
             /**
              *  Creates vesting steem values
@@ -410,7 +468,8 @@ namespace golos {
              */
             asset<0, 17, 0> create_vesting(const account_object &to_account, const asset<0, 17, 0> &steem);
 
-            void adjust_total_payout(const comment_object &a, const asset<0, 17, 0> &sbd, const asset<0, 17, 0> &curator_sbd_value,
+            void adjust_total_payout(const comment_object &a, const asset<0, 17, 0> &sbd,
+                                     const asset<0, 17, 0> &curator_sbd_value,
                                      const asset<0, 17, 0> &beneficiary_value);
 
             void adjust_liquidity_reward(const account_object &owner, const asset<0, 17, 0> &volume, bool is_bid);
@@ -585,7 +644,8 @@ namespace golos {
 
             void cancel_bid(const collateral_bid_object &bid, bool create_virtual_op = true);
 
-            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund, const price_feed<0, 17, 0> &current_feed);
+            void execute_bid(const collateral_bid_object &bid, share_type debt_covered, share_type collateral_from_fund,
+                             const price_feed<0, 17, 0> &current_feed);
 
             /**
              * @brief Process a new limit order through the markets
@@ -611,17 +671,21 @@ namespace golos {
             int match(const limit_order_object &bid, const limit_order_object &ask, const price<0, 17, 0> &trade_price);
 
             /// @return the amount of asset settled
-            asset<0, 17, 0> match(const call_order_object &call, const force_settlement_object &settle, const price<0, 17, 0> &match_price, const asset<0, 17, 0> &max_settlement);
+            asset<0, 17, 0> match(const call_order_object &call, const force_settlement_object &settle,
+                                  const price<0, 17, 0> &match_price, const asset<0, 17, 0> &max_settlement);
             ///@}
 
             /**
              * @return true if the order was completely filled and thus freed.
              */
-            bool fill_order(const limit_order_object &order, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives);
+            bool fill_order(const limit_order_object &order, const asset<0, 17, 0> &pays,
+                            const asset<0, 17, 0> &receives);
 
-            bool fill_order(const call_order_object &order, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives);
+            bool fill_order(const call_order_object &order, const asset<0, 17, 0> &pays,
+                            const asset<0, 17, 0> &receives);
 
-            bool fill_order(const force_settlement_object &settle, const asset<0, 17, 0> &pays, const asset<0, 17, 0> &receives);
+            bool fill_order(const force_settlement_object &settle, const asset<0, 17, 0> &pays,
+                            const asset<0, 17, 0> &receives);
 
             /**
              *  Starting with the least collateralized orders, fill them if their
@@ -638,7 +702,8 @@ namespace golos {
             bool check_call_orders(const asset_object &mia, bool enable_black_swan = true);
 
             // helpers to fill_order
-            void pay_order(const account_object &receiver, const asset<0, 17, 0> &receives, const asset<0, 17, 0> &pays);
+            void pay_order(const account_object &receiver, const asset<0, 17, 0> &receives,
+                           const asset<0, 17, 0> &pays);
 
             asset<0, 17, 0> calculate_market_fee(const asset_object &recv_asset, const asset<0, 17, 0> &trade_amount);
 

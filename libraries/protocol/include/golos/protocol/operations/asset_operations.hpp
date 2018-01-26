@@ -250,8 +250,7 @@ namespace golos {
          * @brief Update options common to all assets
          * @ingroup operations
          *
-         * There are a number of options which all assets in the network use. These options are enumerated in the @ref
-         * asset_options struct. This operation is used to update these options for an existing asset.
+         * There are a number of options which all assets in the network use. These options are enumerated in the @ref asset_options struct. This operation is used to update these options for an existing asset.
          *
          * @note This operation cannot be used to update BitAsset-specific options. For these options, use @ref
          * asset_update_bitasset_operation instead.

@@ -18,7 +18,15 @@ namespace golos {
          *  @param active Created account public active key
          *  @param posting Created account public posting key
          *  @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
-         *  @param json_metadata
+         *  @param json_metadata Exact content of this member will be available in account_object::json_metadata
+         *
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *
+         *  This particular operation is a data context for account_create_evaluator<Major, Hardfork, Release>. The result of a particular operation is an account_object created with the params set from the operation
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_create_operation : public base_operation<Major, Hardfork, Release> {
@@ -51,8 +59,15 @@ namespace golos {
          *  @param active Created account public active key
          *  @param posting Created account public posting key
          *  @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
-         *  @param json_metadata
-         *  @param extensions
+         *  @param json_metadata Exact content of this member will be available in account_object::json_metadata
+         *
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *
+         *  This particular operation is a data context for account_create_with_delegation_evaluator<Major, Hardfork, Release>. The result of a particular operation is an account_object created with the params set from the operation
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct account_create_with_delegation_operation : public base_operation<Major, Hardfork, Release> {

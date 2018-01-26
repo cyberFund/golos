@@ -262,11 +262,6 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        /**
-         * Only return true *if* the transaction has not expired or been invalidated. If this
-         * method is called with a VERY old transaction we will return false, they should
-         * query things by blocks if they are that old.
-         */
         bool database::is_known_transaction(const transaction_id_type &id) const {
             try {
                 const auto &trx_idx = get_index<transaction_index>().indices().get<by_trx_id>();

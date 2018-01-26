@@ -16,6 +16,15 @@ namespace golos {
             virtual int get_type() const = 0;
         };
 
+        /**
+         * @brief Evaluators are used to perform one-time database state changes on some operation coming in the transaction.
+         *
+         * @tparam EvaluatorType Particular evaluator type defined with the specialization
+         * @tparam Major Indicates the major operation's protocol version this evaluator will be used for
+         * @tparam Hardfork Indicates the hardfork operation's protocol version this evaluator will be used for
+         * @tparam Release Indicates the release operation's protocol version this evaluator will be used for
+         * @tparam OperationType static_variant of operations available to use with some particular evaluator definition
+         */
         template<typename EvaluatorType, uint8_t Major, uint8_t Hardfork, uint16_t Release,
                 typename OperationType=golos::protocol::operation>
         class evaluator : public generic_evaluator<OperationType>,
