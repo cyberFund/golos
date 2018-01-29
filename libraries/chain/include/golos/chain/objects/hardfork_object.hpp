@@ -25,11 +25,11 @@ namespace golos {
 
             id_type id;
 
-            boost::interprocess::vector<fc::time_point_sec, allocator<fc::time_point_sec>> processed_hardforks;
-            uint32_t last_hardfork = 0;
-            protocol::hardfork_version current_hardfork_version;
-            protocol::hardfork_version next_hardfork;
-            fc::time_point_sec next_hardfork_time;
+            boost::interprocess::vector<fc::time_point_sec, allocator<fc::time_point_sec>> processed_hardforks; ///< Used for storing the processed hardforks timestamps
+            uint32_t last_hardfork = 0; ///< Latest hardfork applied timestamp
+            protocol::hardfork_version current_hardfork_version; ///< Current hardfork daemon process in hardfork_version type
+            protocol::hardfork_version next_hardfork; ///< Next planned hardfork version in hardfork_version type (if planned)
+            fc::time_point_sec next_hardfork_time; ///< Next planned hardfork version timestamp (if planned)
         };
 
         typedef multi_index_container<hardfork_property_object, indexed_by<ordered_unique<

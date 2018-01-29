@@ -862,7 +862,7 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((proposal))
         }
 
-        signed_block database::generate_block(fc::time_point_sec when, const account_name_type &witness_owner,
+        signed_block database::generate_block(const time_point_sec &when, const account_name_type &witness_owner,
                                               const fc::ecc::private_key &block_signing_private_key,
                                               uint32_t skip /* = 0 */
         ) {
@@ -876,7 +876,7 @@ namespace golos {
         }
 
 
-        signed_block database::_generate_block(fc::time_point_sec when, const account_name_type &witness_owner,
+        signed_block database::_generate_block(const time_point_sec &when, const account_name_type &witness_owner,
                                                const fc::ecc::private_key &block_signing_private_key) {
             uint32_t skip = get_node_properties().skip_flags;
             uint32_t slot_num = get_slot_at_time(when);
@@ -1926,9 +1926,7 @@ namespace golos {
                     a.savings_withdraw_requests--;
                 });
 
-                push_virtual_operation(
-                        fill_transfer_from_savings_operation<0, 17, 0>(itr->from, itr->to, itr->amount, itr->request_id,
-                                                                       to_string(itr->memo)));
+                push_virtual_operation(fill_transfer_from_savings_operation<0, 17, 0>(itr->from, itr->to, itr->amount, itr->request_id, to_string(itr->memo)));
 
                 remove(*itr);
                 itr = idx.begin();
@@ -4753,15 +4751,12 @@ namespace golos {
             }
         }
 
-        /**
-         * Verifies all supply invariantes check out
-         */
         void database::validate_invariants() const {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
-                asset total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL);
-                asset total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL);
-                asset total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
+                asset<0, 17, 0> total_supply = asset<0, 17, 0>(0, STEEM_SYMBOL);
+                asset<0, 17, 0> total_sbd = asset<0, 17, 0>(0, SBD_SYMBOL);
+                asset<0, 17, 0> total_vesting = asset<0, 17, 0>(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
                 auto gpo = get_dynamic_global_properties();
@@ -4785,9 +4780,9 @@ namespace golos {
                 const auto &convert_request_idx = get_index<convert_request_index>().indices();
 
                 for (auto itr = convert_request_idx.begin(); itr != convert_request_idx.end(); ++itr) {
-                    if (itr->amount.symbol == STEEM_SYMBOL) {
+                    if (itr->amount.symbol_name() == STEEM_SYMBOL_NAME) {
                         total_supply += itr->amount;
-                    } else if (itr->amount.symbol == SBD_SYMBOL) {
+                    } else if (itr->amount.symbol_name() == SBD_SYMBOL_NAME) {
                         total_sbd += itr->amount;
                     } else
                         FC_ASSERT(false, "Encountered illegal symbol in convert_request_object");
@@ -4796,10 +4791,10 @@ namespace golos {
                 const auto &limit_order_idx = get_index<limit_order_index>().indices();
 
                 for (auto itr = limit_order_idx.begin(); itr != limit_order_idx.end(); ++itr) {
-                    if (itr->sell_price.base.symbol == STEEM_SYMBOL) {
-                        total_supply += asset(itr->for_sale, STEEM_SYMBOL);
-                    } else if (itr->sell_price.base.symbol == SBD_SYMBOL) {
-                        total_sbd += asset(itr->for_sale, SBD_SYMBOL);
+                    if (itr->sell_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
+                        total_supply += asset<0, 17, 0>(itr->for_sale, STEEM_SYMBOL);
+                    } else if (itr->sell_price.base.symbol_name() == SBD_SYMBOL_NAME) {
+                        total_sbd += asset<0, 17, 0>(itr->for_sale, SBD_SYMBOL);
                     }
                 }
 
@@ -4809,9 +4804,9 @@ namespace golos {
                     total_supply += itr->steem_balance;
                     total_sbd += itr->sbd_balance;
 
-                    if (itr->pending_fee.symbol == STEEM_SYMBOL) {
+                    if (itr->pending_fee.symbol_name() == STEEM_SYMBOL_NAME) {
                         total_supply += itr->pending_fee;
-                    } else if (itr->pending_fee.symbol == SBD_SYMBOL) {
+                    } else if (itr->pending_fee.symbol_name() == SBD_SYMBOL_NAME) {
                         total_sbd += itr->pending_fee;
                     } else
                         FC_ASSERT(false, "found escrow pending fee that is not SBD or STEEM");
@@ -4820,9 +4815,9 @@ namespace golos {
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
 
                 for (auto itr = savings_withdraw_idx.begin(); itr != savings_withdraw_idx.end(); ++itr) {
-                    if (itr->amount.symbol == STEEM_SYMBOL) {
+                    if (itr->amount.symbol_name() == STEEM_SYMBOL_NAME) {
                         total_supply += itr->amount;
-                    } else if (itr->amount.symbol == SBD_SYMBOL) {
+                    } else if (itr->amount.symbol_name() == SBD_SYMBOL_NAME) {
                         total_sbd += itr->amount;
                     } else
                         FC_ASSERT(false, "found savings withdraw that is not SBD or STEEM");

@@ -315,11 +315,8 @@ namespace golos {
             /**
              * Attempts to push the transaction into the pending queue
              *
-             * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument    . This
-             * will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block si    ze.
-             * Although the transaction will probably not propagate further now, as the peers are likely to have their pe    nding
-             * queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pend    ing
-             * queues.
+             * When called to push a locally generated transaction, set the skip_block_size_check bit on the skip argument. This will allow the transaction to be pushed even if it causes the pending block size to exceed the maximum block size.
+             * Although the transaction will probably not propagate further now, as the peers are likely to have their pending queues full as well, it will be kept in the queue to be propagated later when a new block flushes out the pending queues.
              */
             void push_transaction(const signed_transaction &trx, uint32_t skip = skip_nothing);
 
@@ -329,24 +326,28 @@ namespace golos {
 
             void _push_transaction(const signed_transaction &trx);
 
-            ///@throws fc::exception if the proposed transaction fails to apply.
+            /**
+             * @throws fc::exception if the proposed transaction fails to apply.
+             */
             void push_proposal(const proposal_object &proposal);
 
-            signed_block generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
+            signed_block generate_block(const time_point_sec &when, const account_name_type &witness_owner,
                                         const fc::ecc::private_key &block_signing_private_key, uint32_t skip);
 
-            signed_block _generate_block(const fc::time_point_sec when, const account_name_type &witness_owner,
+            signed_block _generate_block(const time_point_sec &when, const account_name_type &witness_owner,
                                          const fc::ecc::private_key &block_signing_private_key);
 
             /**
-             * Removes the most recent block from the database and
-             * undoes any changes it made.
+             * @brief Removes the most recent block from the database and undoes any changes it made.
              */
             void pop_block();
 
             void clear_pending();
 
             /**
+             * @brief Operation pre-notificator.
+             * @param note operation_notification context data structure used for particular operation info storing
+             *
              *  This method is used to track applied operations during the evaluation of a block, these
              *  operations should include any operation actually included in a transaction as well
              *  as any implied/virtual operations that resulted, such as filling an order.
@@ -354,10 +355,27 @@ namespace golos {
              */
             void notify_pre_apply_operation(operation_notification &note);
 
+            /**
+             * @brief Operation post-notificator.
+             * @param note operation_notification context data structure used for particular operation info storing
+             *
+             *  This method is used to track applied operations during the evaluation of a block, these
+             *  operations should include any operation actually included in a transaction as well
+             *  as any implied/virtual operations that resulted, such as filling an order.
+             *  The applied operations are cleared after post_apply_operation.
+             */
             void notify_post_apply_operation(const operation_notification &note);
 
-            inline const void push_virtual_operation(const operation &op,
-                                                     bool force = false); // vops are not needed for low mem. Force will push them on low mem.
+            /**
+             * @brief Used to apply non-user initiated operation to the state
+             * @param op Operations static_variant which contains the operation proposed
+             * @param force Virtual operations are not required for low memory mode. Force will push them on low memory mode.
+             *
+             * @see virtual_operation
+             */
+            inline const void push_virtual_operation(const operation &op, bool force = false);
+
+
             void notify_applied_block(const signed_block &block);
 
             void notify_on_pending_transaction(const signed_transaction &tx);
@@ -365,13 +383,13 @@ namespace golos {
             void notify_on_applied_transaction(const signed_transaction &tx);
 
             /**
-             *  This signal is emitted for plugins to process every operation after it has been fully applied.
+             *  @brief This signal is emitted for plugins to process every operation after it has been fully applied.
              */
             fc::signal<void(const operation_notification &)> pre_apply_operation;
             fc::signal<void(const operation_notification &)> post_apply_operation;
 
             /**
-             *  This signal is emitted after all operations and virtual operation for a
+             *  @brief This signal is emitted after all operations and virtual operation for a
              *  block have been applied but before the get_applied_operations() are cleared.
              *
              *  You may not yield from this callback because the blockchain is holding
@@ -381,25 +399,22 @@ namespace golos {
             fc::signal<void(const signed_block &)> applied_block;
 
             /**
-             * This signal is emitted any time a new transaction is added to the pending
-             * block state.
+             * @brief This signal is emitted any time a new transaction is added to the pending block state.
              */
             fc::signal<void(const signed_transaction &)> on_pending_transaction;
 
             /**
-             * This signal is emitted any time a new transaction has been applied to the
-             * chain state.
+             * @brief This signal is emitted any time a new transaction has been applied to the chain state.
              */
             fc::signal<void(const signed_transaction &)> on_applied_transaction;
 
             /**
-             *  Emitted After a block has been applied and committed.  The callback
-             *  should not yield and should execute quickly.
+             *  @brief Emitted After a block has been applied and committed. The callback should not yield and should execute quickly.
              */
             //fc::signal<void(const std::vector< golos::db2::generic_id >&)> changed_objects;
 
-            /** this signal is emitted any time an object is removed and contains a
-             * pointer to the last value of every object that was removed.
+            /**
+             * @brief This signal is emitted any time an object is removed and contains a pointer to the last value of every object that was removed.
              */
             //fc::signal<void(const std::vector<const object*>&)>  removed_objects;
 
@@ -422,7 +437,7 @@ namespace golos {
             account_name_type get_scheduled_witness(uint32_t slot_num) const;
 
             /**
-             * Get the time at which the given slot occurs.
+             * @brief Get the time at which the given slot occurs.
              *
              * If slot_num == 0, return time_point_sec().
              *
@@ -432,17 +447,15 @@ namespace golos {
             fc::time_point_sec get_slot_time(uint32_t slot_num) const;
 
             /**
-             * Get the last slot which occurs AT or BEFORE the given time.
+             * @brief Get the last slot which occurs AT or BEFORE the given time.
              *
-             * The return value is the greatest value N such that
-             * get_slot_time( N ) <= when.
-             *
-             * If no such N exists, return 0.
+             * @return The return value is the greatest value N such that
+             * get_slot_time( N ) <= when. If no such N exists, return 0.
              */
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
             /**
-             *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
+             *  @brief Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
              *  by STEEM and increasing the sbd supply by the specified amount.
              *  @return the sbd created and deposited to_account, may return STEEM if there is no median feed
              */
@@ -450,7 +463,8 @@ namespace golos {
                                                                    asset<0, 17, 0> steem);
 
             /**
-             *  Creates vesting steem values
+             *  @brief Creates vesting steem values
+             *
              *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
              *  change as the result of the user adding funds
              *
@@ -465,6 +479,8 @@ namespace golos {
              *
              * @param to_account - the account to receive the new vesting shares
              * @param STEEM - STEEM to be converted to vesting shares
+             *
+             * @return Vesting in asset
              */
             asset<0, 17, 0> create_vesting(const account_object &to_account, const asset<0, 17, 0> &steem);
 
@@ -476,19 +492,28 @@ namespace golos {
 
             /**
              * @brief Adjust a particular account's balance in a given asset by a delta
+             *
              * @param account name whose balance should be adjusted
              * @param delta Asset name and amount to adjust balance by
              */
             void adjust_balance(const account_object &a, const asset<0, 17, 0> &delta);
 
+            /**
+             * @brief Adjust a particular account's savings balance in a given asset by delta
+             *
+             * @param a Account name whose balance should be adjusted
+             * @param delta Asset name and amount to adjust balance by
+             *
+             * This particular function is separated from @ref adjust_balance for the savings vesting purposes get satisfacted
+             */
             void adjust_savings_balance(const account_object &a, const asset<0, 17, 0> &delta);
 
             void adjust_supply(const asset<0, 17, 0> &delta, bool adjust_vesting = false);
 
             /**
-             * This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's             rshares2 changes
-             * from old_rshares2 to new_rshares2.  Maintaining invariants that children_rshares2 is the sum of all             descendants' rshares2,
-             * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
+             * @brief Updates total_reward_shares2 on dynamic_global_properties_object, and children_rshares2 on comments, when a comment's rshares2 changes from old_rshares2 to new_rshares2.
+             *
+             * Maintaining invariants that children_rshares2 is the sum of all descendants' rshares2, and dynamic_global_properties_object#total_reward_shares2 is the total number of rshares2 outstanding.
              */
             void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
@@ -498,23 +523,38 @@ namespace golos {
 
             asset<0, 17, 0> get_savings_balance(const account_object &a, const asset_name_type &asset_name) const;
 
-            /** this updates the votes for witnesses as a result of account voting proxy changing */
+            /**
+             * @brief Updates the votes for witnesses as a result of account voting proxy changing
+             */
             void adjust_proxied_witness_votes(const account_object &a, const std::array<share_type,
                     STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta, int depth = 0);
 
-            /** this updates the votes for all witnesses as a result of account VESTS changing */
+            /**
+             * @brief Updates the votes for all witnesses as a result of account VESTS changing
+             */
             void adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth = 0);
 
             /** this is called by `adjust_proxied_witness_votes` when account proxy to self */
+            /**
+             * @brief Called by `adjust_proxied_witness_votes` when account proxy to self
+             */
             void adjust_witness_votes(const account_object &a, share_type delta);
 
-            /** this updates the vote of a single witness as a result of a vote being added or removed*/
+            /**
+             * @brief Updates the vote of a single witness as a result of a vote being added or removed
+             * @param obj witness_object getting updated
+             * @param delta shares amount delta witness_object#votes changes for
+             */
             void adjust_witness_vote(const witness_object &obj, share_type delta);
 
+            /**
+             * @brief Clears witness votes which creation timestamp delta with head_block_num is larger than STEEMIT_MAX_WITNESS_VOTE_AGE
+             */
             void clear_expired_witness_votes();
 
-            /** clears all vote records for a particular account but does not update the
-             * witness vote totals.  Vote totals should be updated first via a call to
+            /**
+             * Clears all vote records for a particular account but does not update the
+             * witness vote totals. Vote totals should be updated first via a call to
              * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
              */
             void clear_witness_votes(const account_object &a);
@@ -522,10 +562,9 @@ namespace golos {
             void process_vesting_withdrawals();
 
             /**
-             *  This method will iterate through all comment_vote_objects and give them
-             *  (max_rewards * weight) / c.total_vote_weight.
+             * @brief Iterates through all comment_vote_objects and give them (max_rewards * weight) / c.total_vote_weight.
              *
-             *  @returns unclaimed rewards.
+             * @return unclaimed rewards.
              */
             share_type pay_curators(const comment_object &c, share_type &max_rewards);
 
@@ -534,26 +573,38 @@ namespace golos {
             void process_comment_cashout();
 
             /**
-             *  Overall the network has an inflation rate of 102% of virtual steem per year
-             *  90% of inflation is directed to vesting shares
-             *  10% of inflation is directed to subjective proof of work voting
-             *  1% of inflation is directed to liquidity providers
-             *  1% of inflation is directed to block producers
+             * @brief Pays out vesting and reward shares every block, and liquidity shares once per day.
              *
-             *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
-             *  This method does not pay out witnesses.
+             * Overall the network has an inflation rate of 102% of virtual steem per year
+             * 90% of inflation is directed to vesting shares
+             * 10% of inflation is directed to subjective proof of work voting
+             * 1% of inflation is directed to liquidity providers
+             * 1% of inflation is directed to block producers
+             *
+             * This method does not pay out witnesses.
              */
             void process_funds();
 
             /**
-             *  Iterates over all conversion requests with a conversion date before
-             *  the head block time and then converts them to/from steem/sbd at the
-             *  current median price feed history price times the premium
+             * @brief Iterates over all conversion requests with a conversion date before the head block time and then converts them to/from steem/sbd at the current median price feed history price times the premium
+             *
+             * Induces fill_convert_request virtual operation
+             *
+             * @see virtual_operation
              */
             void process_conversions();
 
+            /**
+             * @brief Iterates over all the savings withdrawal requests and fills the request if the completion time has come.
+             * Induces fill_transfer_from_savings_operation virtual operation
+             *
+             * @see virtual_operation
+             */
             void process_savings_withdraws();
 
+            /**
+             * @brief Iterates over all the account recovery requests and clears expired account recovery requests, clears invalid historical authorities, applies account recovery request changes
+             */
             void account_recovery_processing();
 
             void expire_escrow_ratification();
@@ -584,14 +635,24 @@ namespace golos {
 
             /**
              * Helper method to return the current sbd value of a given amount of
-             * STEEM.  Return 0 SBD if there isn't a current_median_history
+             * STEEM. Return 0 SBD if there isn't a current_median_history
              */
             asset<0, 17, 0> to_sbd(const asset<0, 17, 0> &steem) const;
 
+            /**
+             * Helper method to return the current STEEM value of a given amount of
+             * SBD. Return 0 STEEM if there isn't a current_median_history
+             */
             asset<0, 17, 0> to_steem(const asset<0, 17, 0> &sbd) const;
 
+            /**
+             * @return Last block contained in the storage timestamp
+             */
             time_point_sec head_block_time() const;
 
+            /**
+             * @return Last block contained in the storage number
+             */
             uint32_t head_block_num() const;
 
             block_id_type head_block_id() const;
@@ -599,16 +660,16 @@ namespace golos {
             node_property_object &node_properties();
 
             uint32_t last_non_undoable_block_num() const;
-            //////////////////// db_init.cpp ////////////////////
 
             void initialize_evaluators();
 
-            void set_custom_operation_interpreter(const std::string &id,
-                                                  std::shared_ptr<custom_operation_interpreter> registry);
+            void set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry);
 
             std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
 
-            /// Reset the object graph in-memory
+            /**
+             * @brief Reset the in-memory object graph
+             */
             void initialize_indexes();
 
             void init_schema();
@@ -616,7 +677,7 @@ namespace golos {
             void init_genesis(uint64_t initial_supply = STEEMIT_INIT_SUPPLY);
 
             /**
-             *  This method validates transactions without adding it to the pending state.
+             *  @brief Validates transactions without adding it to the pending state.
              *  @throw if an error occurs
              */
             void validate_transaction(const signed_transaction &trx);
@@ -711,24 +772,53 @@ namespace golos {
 
             ///@}
 
+            /**
+             * @note Unused in Golos Blockchain but still required for backward compatibility
+             */
             void perform_vesting_share_split(uint32_t magnitude);
 
+            /**
+             * @note Unused in Golos Blockchain but still required for backward compatibility
+             */
             void retally_comment_children();
 
+            /**
+             * @note Unused in Golos Blockchain but still required for backward compatibility
+             */
             void retally_witness_votes();
 
+            /**
+             * @note Unused in Golos Blockchain but still required for backward compatibility
+             */
             void retally_witness_vote_counts(bool force = false);
 
+            /**
+             * @note Unused in Golos Blockchain but still required for backward compatibility
+             */
             void retally_liquidity_weight();
 
+            /**
+             * Updates total virtual supply in STEEMs
+             */
             void update_virtual_supply();
 
+            /**
+             * @brief Checks if the hardfork timestamp has arrived
+             * @param hardfork Input hardfork UNIX timestamp
+             * @return true if the @ref head_block_num()
+             */
             bool has_hardfork(uint32_t hardfork) const;
 
-            /* For testing and debugging only. Given a hardfork
-               with id N, applies all hardforks with id <= N */
+            /**
+             * @brief Given a hardfork with id N, applies all hardforks with id <= N
+             *
+             * @note For testing and debugging only.
+             */
             void set_hardfork(uint32_t hardfork, bool process_now = true);
 
+            /**
+             * @brief Verifies all supply invariants check out
+             */
             void validate_invariants() const;
 
             /**
@@ -776,15 +866,24 @@ namespace golos {
 
             void adjust_sbd_balance(const account_object &a, account_balance_object &b);
 
-            ///Steps involved in applying a new block
-            ///@{
+            /**
+             * Steps involved in applying a new block. Let us assume if one-time changes appliers called 'evaluators', these steps are getting applied every block inside @ref apply_block function. We would call them 'routines'.
+             * @{
+             */
 
             const witness_object &validate_block_header(uint32_t skip, const signed_block &next_block) const;
 
             void create_block_summary(const signed_block &next_block);
 
+            /**
+             * @brief Clears %@null account balance every block
+             */
             void clear_null_account_balance();
 
+            /**
+             * @brief Updates dynamic_global_properties_object according to the new block data coming
+             * @param b signed_block proposed to consider
+             */
             void update_global_dynamic_data(const signed_block &b);
 
             void update_signing_witness(const witness_object &signing_witness, const signed_block &new_block);
@@ -801,6 +900,11 @@ namespace golos {
 
             std::string to_pretty_string(const asset<0, 17, 0> &a) const;
 
+            /**
+             * @brief Updates expired BitAsset price feeds
+             *
+             * Iterates over all the feeds and checks if theirs timestamp is lower than @ref head_block_time. Updates price feed to settlement price if lower.
+             */
             void update_expired_feeds();
 
             /**
@@ -818,13 +922,25 @@ namespace golos {
 
             void reset_virtual_schedule_time();
 
+            /**
+             * @brief Initializes @ref _hardfork_times and @_hardfork_versions with hardfork versions and timestamp supported within the daemon
+             */
             void init_hardforks();
 
+            /**
+             * @brief Checks if the time for another hardfork has come and initiates migration with @ref apply_hardfork
+             */
             void process_hardforks();
 
+            /**
+             * @brief Performs hardfork migration preparations
+             * @param hardfork Input hardfork timestamp to prepare for
+             */
             void apply_hardfork(uint32_t hardfork);
 
-            ///@}
+            /**
+             * @}
+             */
 
             std::unique_ptr<database_impl> _my;
 
