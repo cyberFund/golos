@@ -42,6 +42,11 @@ namespace golos {
 
         struct by_id;
 
+        /**
+         * @brief Contains, defines and guarantees the uniqueness of all the consensus objects identifiers
+         *
+         * @see object
+         */
         enum object_type {
             dynamic_global_property_object_type,
             account_object_type,
