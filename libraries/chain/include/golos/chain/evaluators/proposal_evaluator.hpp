@@ -10,6 +10,16 @@
 
 namespace golos {
     namespace chain {
+        /**
+         *  @brief Evaluator for proposal_create_operation
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @see evaluator
+         *  @see proposal_create_operation
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class proposal_create_evaluator : public golos::chain::evaluator<
                 proposal_create_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
@@ -26,6 +36,16 @@ namespace golos {
             transaction _proposed_trx;
         };
 
+        /**
+         *  @brief Evaluator for proposal_update_operation
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @see evaluator
+         *  @see proposal_update_operation
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class proposal_update_evaluator : public golos::chain::evaluator<
                 proposal_update_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {
@@ -44,6 +64,16 @@ namespace golos {
             bool proposal_failed = false;
         };
 
+        /**
+         *  @brief Evaluator for proposal_delete_operation
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @see evaluator
+         *  @see proposal_delete_operation
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class proposal_delete_evaluator : public golos::chain::evaluator<
                 proposal_delete_evaluator<Major, Hardfork, Release>, Major, Hardfork, Release> {

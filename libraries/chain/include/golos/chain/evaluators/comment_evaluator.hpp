@@ -5,6 +5,16 @@
 
 namespace golos {
     namespace chain {
+        /**
+         *  @brief Evaluator for comment_operation
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @see evaluator
+         *  @see comment_operation
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class comment_evaluator : public evaluator<comment_evaluator<Major, Hardfork, Release>, Major, Hardfork,
                 Release> {
@@ -18,6 +28,16 @@ namespace golos {
             void do_apply(const operation_type &o);
         };
 
+        /**
+         *  @brief Evaluator for comment_options_operation
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @see evaluator
+         *  @see comment_options_operation
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class comment_options_evaluator : public evaluator<comment_options_evaluator<Major, Hardfork, Release>, Major,
                 Hardfork, Release> {
@@ -31,6 +51,16 @@ namespace golos {
             void do_apply(const operation_type &o);
         };
 
+        /**
+         *  @brief Evaluator for delete_comment_operation
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @see evaluator
+         *  @see delete_comment_operation
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         class delete_comment_evaluator : public evaluator<delete_comment_evaluator<Major, Hardfork, Release>, Major,
                 Hardfork, Release> {

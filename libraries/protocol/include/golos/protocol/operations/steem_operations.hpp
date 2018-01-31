@@ -13,6 +13,8 @@ namespace golos {
 
         /**
          * @ingroup operations
+         *
+         * @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct challenge_authority_operation : public base_operation<Major, Hardfork, Release> {
@@ -29,6 +31,8 @@ namespace golos {
 
         /**
          * @ingroup operations
+         *
+         * @note Requires to be signed with active or owner authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct prove_authority_operation : public base_operation<Major, Hardfork, Release> {
@@ -51,7 +55,15 @@ namespace golos {
         };
 
         /**
+         * @brief Provides operation to perform comment_object voting
          * @ingroup operations
+         *
+         * @param voter Vote author account name
+         * @param author Comment author account name
+         * @param permlink Permanent comment link, unique human-interpretable identifier
+         * @param weight Identifies the part of a @ref voter vesting_shares will be used for voting. Requies to be in the [-100;100] percent range.
+         *
+         * @note Requires to be signed with posting authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct vote_operation : public base_operation<Major, Hardfork, Release> {
@@ -78,7 +90,8 @@ namespace golos {
          * at a rate of vesting_shares/104 per week for two years starting
          * one week after this operation is included in the blockchain.
          *
-         * This operation is not valid if the user has no vesting shares.
+         * @note This operation is not valid if the user has no vesting shares.
+         * @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct withdraw_vesting_operation : public base_operation<Major, Hardfork, Release> {
@@ -101,6 +114,8 @@ namespace golos {
          * balance rather than the withdrawing account. In addition, those funds
          * can be immediately vested again, circumventing the conversion from
          * vests to steem and back, guaranteeing they maintain their value.
+         *
+         * @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct set_withdraw_vesting_route_operation : public base_operation<Major, Hardfork, Release> {
@@ -117,9 +132,13 @@ namespace golos {
         };
 
         /**
+         *  @brief Used by witnesses to publish STEEM/SBD exchange rate
          *  @ingroup operations
+         *
          *  Feeds can only be published by the top N witnesses which are included in every round and are
          *  used to define the exchange rate between steem and the dollar.
+         *
+         *  @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct feed_publish_operation : public base_operation<Major, Hardfork, Release> {
@@ -146,6 +165,8 @@ namespace golos {
 
         /**
          *  @ingroup operations
+         *
+         *  @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct pow_operation : public base_operation<Major, Hardfork, Release> {
@@ -198,6 +219,8 @@ namespace golos {
 
         /**
          *  @ingroup operations
+         *
+         *  @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct pow2_operation : public base_operation<Major, Hardfork, Release> {
@@ -243,6 +266,8 @@ namespace golos {
 
 
         /**
+         * @brief This operation creates an account recovery request which the account to recover has 24 hours to respond to before the request expires and is invalidated.
+         *
          * @ingroup operations
          *
          * All account recovery requests come from a listed recovery account. This
@@ -251,10 +276,6 @@ namespace golos {
          * verify the identity of the account holder of the account to recover by
          * whichever means they have agreed upon. The blockchain assumes identity
          * has been verified when this operation is broadcast.
-         *
-         * This operation creates an account recovery request which the account to
-         * recover has 24 hours to respond to before the request expires and is
-         * invalidated.
          *
          * There can only be one active recovery request per account at any one time.
          * Pushing this operation for an account to recover when it already has
@@ -268,8 +289,9 @@ namespace golos {
          * threshold.
          *
          * This operation only needs to be signed by the the recovery account.
-         * The account to recover confirms its identity to the blockchain in
-         * the recover account operation.
+         * The account to recover confirms its identity to the blockchain in the recover account operation.
+         *
+         * @note Requires to be signed with active authority
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct request_account_recovery_operation : public base_operation<Major, Hardfork, Release> {
@@ -293,8 +315,9 @@ namespace golos {
         /**
          * @ingroup operations
          *
-         * Recover an account to a new authority using a previous authority and verification
-         * of the recovery account as proof of identity. This operation can only succeed
+         * @brief Recover an account to a new authority using a previous authority and verification of the recovery account as proof of identity.
+         *
+         * This operation can only succeed
          * if there was a recovery request sent by the account's recover account.
          *
          * In order to recover the account, the account holder must provide proof
@@ -351,7 +374,7 @@ namespace golos {
         /**
          *  @ingroup operations
          *
-         *  This operation allows recovery_accoutn to change account_to_reset's owner authority to
+         *  @brief This operation allows recovery_account to change account_to_reset's owner authority to
          *  new_owner_authority after 60 days of inactivity.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -370,8 +393,7 @@ namespace golos {
         /**
          * @ingroup operations
          *
-         * This operation allows 'account' owner to control which account has the power
-         * to execute the 'reset_account_operation' after 60 days.
+         * @brief This operation allows 'account' owner to control which account has the power to execute the 'reset_account_operation' after 60 days.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct set_reset_account_operation : public base_operation<Major, Hardfork, Release> {
@@ -410,10 +432,9 @@ namespace golos {
          * the account (The account that pays the creation fee and is a signer on the transaction)
          * or to the empty std::string if the account was mined. An account with no recovery
          * has the top voted witness as a recovery account, at the time the recover
-         * request is created. Note: This does mean the effective recovery account
-         * of an account with no listed recovery account can change at any time as
-         * witness vote weights. The top voted witness is explicitly the most trusted
-         * witness according to stake.
+         * request is created.
+         *
+         * @note This does mean the effective recovery account of an account with no listed recovery account can change at any time as witness vote weights. The top voted witness is explicitly the most trusted witness according to stake.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct change_recovery_account_operation : public base_operation<Major, Hardfork, Release> {
@@ -446,9 +467,11 @@ namespace golos {
         /**
          * @ingroup operations
          *
-         * Delegate vesting shares from one account to the other. The vesting shares are still owned
-         * by the original account, but content voting rights and bandwidth allocation are transferred
-         * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or
+         * @brief Delegate vesting shares from one account to the other.
+         *
+         * The vesting shares are still owned by the original account, but content voting rights and
+         * bandwidth allocation are transferred to the receiving account.
+         * This sets the delegation to `vesting_shares`, increasing it or
          * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
          *
          * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi

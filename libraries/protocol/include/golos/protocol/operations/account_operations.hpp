@@ -24,7 +24,7 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
          *
          *  This particular operation is a data context for account_create_evaluator<Major, Hardfork, Release>. The result of a particular operation is an account_object created with the params set from the operation
          */
@@ -65,7 +65,7 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
          *
          *  This particular operation is a data context for account_create_with_delegation_evaluator<Major, Hardfork, Release>. The result of a particular operation is an account_object created with the params set from the operation
          */

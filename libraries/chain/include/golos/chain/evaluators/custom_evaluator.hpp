@@ -9,6 +9,12 @@
 
 namespace golos {
     namespace chain {
+        /**
+         *  @brief Evaluator for custom_operation
+         *
+         *  @see evaluator
+         *  @see custom_operation
+         */
         class custom_evaluator : public evaluator<custom_evaluator, 0, 17, 0> {
         public:
             typedef protocol::custom_operation operation_type;
@@ -19,6 +25,12 @@ namespace golos {
             void do_apply(const protocol::custom_operation &o);
         };
 
+        /**
+         *  @brief Evaluator for custom_json_operation
+         *
+         *  @see evaluator
+         *  @see custom_json_operation
+         */
         class custom_json_evaluator : public evaluator<custom_json_evaluator, 0, 17, 0> {
         public:
             typedef protocol::custom_json_operation operation_type;
@@ -29,6 +41,12 @@ namespace golos {
             void do_apply(const protocol::custom_json_operation &o);
         };
 
+        /**
+         *  @brief Evaluator for custom_binary_operation
+         *
+         *  @see evaluator
+         *  @see custom_binary_operation
+         */
         class custom_binary_evaluator : public evaluator<custom_binary_evaluator, 0, 17, 0> {
         public:
             typedef protocol::custom_binary_operation operation_type;

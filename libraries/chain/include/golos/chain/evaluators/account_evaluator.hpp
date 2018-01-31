@@ -13,7 +13,7 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
          *  @see evaluator
          *  @see account_create_operation
          */
@@ -36,7 +36,7 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
          *  @see evaluator
          *  @see account_create_with_delegation_operation
          */
@@ -59,7 +59,7 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
          *  @see evaluator
          *  @see account_update_operation
          */
@@ -82,7 +82,7 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork protocol version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioninig scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
          *  @see evaluator
          *  @see account_whitelist_operation
          */
