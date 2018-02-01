@@ -99,6 +99,8 @@ namespace golos {
         }
 
         /**
+         * @brief Implements wallet interaction (p.e. cli_wallet)
+         * @ingroup api
          * This wallet assumes it is connected to the database server with a high-bandwidth, low-latency connection and
          * performs minimal caching. This API could be provided locally to be used by a web interface.
          */

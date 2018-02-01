@@ -18,8 +18,10 @@
 namespace golos {
     namespace protocol {
 
-        /** NOTE: do not change the order of any operations prior to the virtual operations
-         * or it will trigger a hardfork.
+        /**
+         * @note Do not change the order of any operations prior to the virtual operations
+         * or it will trigger a hardfork because of operations are getting identified by
+         * their sequential number in this set.
          */
         typedef fc::static_variant<
                 vote_operation<0, 16, 0>,

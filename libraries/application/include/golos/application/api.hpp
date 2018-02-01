@@ -116,6 +116,7 @@ namespace golos {
 
         /**
          * @brief The network_node_api class allows maintenance of p2p connections.
+         * @ingroup api
          */
         class network_node_api {
         public:
@@ -177,7 +178,8 @@ namespace golos {
         };
 
         /**
-         * @brief
+         * @brief Provides various asset-specific by holder selection methods
+         * @ingroup api
          */
         class asset_api {
         public:
@@ -199,6 +201,7 @@ namespace golos {
 
         /**
          * @brief The login_api class implements the bottom layer of the RPC API
+         * @ingroup api
          *
          * All other APIs must be requested from this API.
          */

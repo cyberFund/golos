@@ -13,13 +13,14 @@ namespace golos {
         /**
          *  @defgroup operations Operations
          *  @ingroup transactions Transactions
-         *  @brief A set of valid comands for mutating the globally shared state.
+         *  @brief Golos implements a variety of operations besides simple
+transfers of funds. For instance in order to operate the decentralized exchange we need support for buy, sell orders as well. Posting, voting, reward retrieving are also transactions with operations inside. This reference defines the set of valid commands for mutating the globally shared state.
          *
          *  An operation can be thought of like a function that will modify the global
          *  shared state of the blockchain.  The members of each struct are like function
          *  arguments and each operation can potentially generate a return value.
          *
-         *  Operations can be grouped into transactions (@ref transaction) to ensure that they occur
+         *  Operations can be grouped into transaction to ensure that they occur
          *  in a particular order and that all operations apply successfully or
          *  no operations apply.
          *
@@ -59,6 +60,13 @@ namespace golos {
          *    define and enforce the @balance_calculation. This is superset of the @ref defined_authority
          *
          *  @{
+         *
+         *  @class base_operation
+         *  @brief Introduces concept of interpreted data structure used to group user-initiated, once applied shared state mutations
+         *
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -79,6 +87,9 @@ namespace golos {
                 return false;
             }
 
+            /**
+             * @brief Implements stateless operation input data validation.
+             */
             void validate() const {
             }
 
@@ -89,12 +100,22 @@ namespace golos {
             }
         };
 
+        /**
+         * @brief Introduces concept of interpreted data structure used to group chain-initiated, once applied shared state mutations
+         *
+         *  @tparam Major Indicates the major protocol version this operation will be used for
+         *  @tparam Hardfork Indicates the hardfork version this operation will be used for
+         *  @tparam Release Indicates the release protocol version this operation will be used for
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct virtual_operation : public base_operation<Major, Hardfork, Release> {
             bool is_virtual() const {
                 return true;
             }
 
+            /**
+             * @brief Virtual operations do no require stateless operation data validation because of them being initialized with blockchain events, not the user.
+             */
             void validate() const {
                 FC_ASSERT(false, "This is a virtual operation");
             }
