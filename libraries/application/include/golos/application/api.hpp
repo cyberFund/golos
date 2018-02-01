@@ -38,6 +38,11 @@ namespace golos {
         };
 
         /**
+         * @defgroup api API
+         * @brief An API is a set of related methods, accessible over Websocket / HTTP and provided by a single C++ class. API's exist on a per-connection basis. This group contains and describes all the API methods and operations available.
+         *
+         * @class network_broadcast_api
+         * @ingroup api
          * @brief The network_broadcast_api class allows broadcasting of transactions.
          */
         class network_broadcast_api
