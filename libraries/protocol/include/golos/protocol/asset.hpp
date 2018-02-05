@@ -26,7 +26,7 @@ namespace golos {
          *
          * @warning Changes to this structure will break protocol compatibility.
          */
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType = void, typename AmountType = void>
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType, typename AmountType>
         struct asset_interface : public static_version<Major, Hardfork, Release> {
             typedef StorageType asset_container_type;
             typedef AmountType amount_container_type;
@@ -65,7 +65,7 @@ namespace golos {
          * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
-        struct asset : public asset_interface<Major, Hardfork, Release> {
+        struct asset : public asset_interface<Major, Hardfork, Release, type_traits::void_t, type_traits::void_t> {
 
         };
 

@@ -4792,9 +4792,9 @@ namespace golos {
 
                 for (auto itr = limit_order_idx.begin(); itr != limit_order_idx.end(); ++itr) {
                     if (itr->sell_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
-                        total_supply += asset<0, 17, 0>(itr->for_sale, STEEM_SYMBOL);
+                        total_supply += itr->for_sale;
                     } else if (itr->sell_price.base.symbol_name() == SBD_SYMBOL_NAME) {
-                        total_sbd += asset<0, 17, 0>(itr->for_sale, SBD_SYMBOL);
+                        total_sbd += itr->for_sale;
                     }
                 }
 
@@ -4830,7 +4830,7 @@ namespace golos {
 
                 for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr) {
                     if (itr->net_rshares.value > 0) {
-                        auto delta = calculate_claims(itr->net_rshares.value);
+                        auto delta = utilities::calculate_claims(itr->net_rshares.value);
                         total_rshares2 += delta;
                     }
                     if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
