@@ -54,13 +54,14 @@ namespace golos {
         class database_api_impl;
 
 
-/**
- * @brief The database_api class implements the RPC API for the chain database.
- *
- * This API exposes accessors on the database which query state tracked by a blockchain validating node. This API is
- * read-only; all modifications to the database must be performed via transactions. Transactions are broadcast via
- * the @ref network_broadcast_api.
- */
+        /**
+         * @brief The database_api class implements the RPC API for the chain database.
+         * @ingroup api
+         *
+         * This API exposes accessors on the database which query state tracked by a blockchain validating node.
+         * This API is a read-only one, all the modifications to the database must be performed via transactions.
+         * Transactions are broadcast via the @ref network_broadcast_api.
+         */
         class database_api {
         public:
             database_api(const golos::application::api_context &ctx);

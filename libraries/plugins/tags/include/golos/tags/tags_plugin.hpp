@@ -414,8 +414,8 @@ namespace golos {
 
 
         /**
-         *  The purpose of this object is to track the relationship between accounts based upon how a user votes. Every time
-         *  a user votes on a post, the relationship between voter and author increases direct rshares.
+         *  @brief The purpose of this object is to track the relationship between accounts based upon how a user votes.
+         *  Every time a user votes on a post, the relationship between voter and author increases direct rshares.
          */
         class peer_stats_object : public object<peer_stats_object_type, peer_stats_object> {
         public:
@@ -479,10 +479,10 @@ namespace golos {
                                 std::less<account_object::id_type>>> >, allocator<peer_stats_object> > peer_stats_index;
 
         /**
-         *  This purpose of this object is to maintain stats about which tags an author uses, how frequnetly, and
-         *  how many total earnings of all posts by author in tag.  It also allows us to answer the question of which
-         *  authors earn the most in each tag category.  This helps users to discover the best bloggers to follow for
-         *  particular tags.
+         *  @brief This purpose of this object is to maintain stats about which tags an author uses, how frequnetly,
+         *  and how many total earnings of all posts by author in tag.  It also allows us to answer the question
+         *  of which authors earn the most in each tag category.  This helps users to discover the best
+         *  bloggers to follow for particular tags.
          */
         class author_tag_stats_object : public object<author_tag_stats_object_type, author_tag_stats_object> {
         public:
@@ -542,8 +542,7 @@ namespace golos {
         };
 
         /**
-         *  This plugin will scan all changes to posts and/or their meta data and
-         *
+         *  This plugin will scan all changes to posts and/or their meta data
          */
         class tags_plugin : public golos::application::plugin {
         public:
@@ -572,7 +571,8 @@ namespace golos {
         };
 
         /**
-         *  This API is used to query data maintained by the tags_plugin
+         *  @brief This API is intended to query data maintained by the tags_plugin
+         *  @ingroup api
          */
         class tag_api : public std::enable_shared_from_this<tag_api> {
         public:

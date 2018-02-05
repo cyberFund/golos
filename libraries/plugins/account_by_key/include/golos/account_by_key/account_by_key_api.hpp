@@ -13,6 +13,13 @@ namespace golos {
             class account_by_key_api_impl;
         }
 
+        /**
+         * @brief Used for indexing an retrieving account_object by account_authority_object.
+         * @ingroup api
+         *
+         * This API is intended to retrieve accounts by their keys. This API is
+         * read-only; all modifications to the database must be performed via transactions.
+         */
         class account_by_key_api {
         public:
             account_by_key_api(const application::api_context &ctx);

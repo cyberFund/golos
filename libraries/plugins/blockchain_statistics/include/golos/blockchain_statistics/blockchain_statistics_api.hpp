@@ -70,6 +70,10 @@ namespace golos {
             statistics &operator+=(const bucket_object &b);
         };
 
+        /**
+         * @brief This API is intended to retrieve lifetime blockchain stats with bucket_object and statistics structure
+         * @ingroup api
+         */
         class blockchain_statistics_api: public std::enable_shared_from_this<blockchain_statistics_api> {
         public:
             blockchain_statistics_api(const golos::application::api_context &ctx);

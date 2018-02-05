@@ -71,6 +71,10 @@ namespace golos {
             fc::uint128_t weight;
         };
 
+        /**
+         * @brief This API is intended to retrieve all the markets-specific data
+         * @ingroup api
+         */
         class market_history_api {
         public:
             market_history_api(const golos::application::api_context &ctx);

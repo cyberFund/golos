@@ -69,6 +69,10 @@ namespace golos {
             class follow_api_impl;
         }
 
+        /**
+         * @brief This API is intended to retrieve all the follow_plugin data
+         * @ingroup api
+         */
         class follow_api {
         public:
             follow_api(const golos::application::api_context &ctx);
@@ -92,12 +96,12 @@ namespace golos {
             std::vector<account_reputation> get_account_reputations(std::string lower_bound_name, uint32_t limit = 1000) const;
 
             /**
-             * Gets list of accounts that have reblogged a particular post
+             * Retrieves list of accounts that have reblogged a particular post
              */
             std::vector<account_name_type> get_reblogged_by(const std::string &author, const std::string &permlink) const;
 
             /**
-             * Gets a list of authors that have had their content reblogged on a given blog account
+             * Retrieves a list of authors that have had their content reblogged on a given blog account
              */
             std::vector<std::pair<account_name_type, uint32_t>> get_blog_authors(const account_name_type &blog_account) const;
 

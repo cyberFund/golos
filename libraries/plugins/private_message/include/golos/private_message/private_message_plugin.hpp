@@ -160,11 +160,10 @@ namespace golos {
         > message_index;
 
 
-/**
- *   This plugin scans the blockchain for custom operations containing a valid message and authorized
- *   by the posting key.
- *
- */
+        /**
+         * @brief This plugin scans the blockchain for custom operations containing a valid message and authorized
+         * by the posting key.
+         */
         class private_message_plugin : public golos::application::plugin {
         public:
             private_message_plugin(application::application *app);
@@ -188,6 +187,10 @@ namespace golos {
             std::unique_ptr<detail::private_message_plugin_impl> my;
         };
 
+        /**
+         * @brief This API is intended to retrieve all the private_message_plugin data
+         * @ingroup api
+         */
         class private_message_api
                 : public std::enable_shared_from_this<private_message_api> {
         public:

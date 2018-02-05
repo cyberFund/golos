@@ -17,6 +17,10 @@ namespace golos {
             class account_statistics_api_impl;
         }
 
+        /**
+         * @brief This API is intended to retrieve the lifetime account statistics with account_stats_bucket_object
+         * @ingroup api
+         */
         class account_statistics_api {
         public:
             account_statistics_api(const golos::application::api_context &ctx);

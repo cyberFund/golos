@@ -63,7 +63,7 @@ namespace golos {
 
         /**
          *  The purpose of the tag object is to allow the generation and listing of
-         *  all top level posts by a std::string tag.  The desired sort orders include:
+         *  all top level posts by a language string tag. The desired sort orders include:
          *
          *  1. created - time of creation
          *  2. maturing - about to receive a payout
@@ -567,7 +567,8 @@ namespace golos {
         };
 
         /**
-         *  This API is used to query data maintained by the languages_plugin
+         * @brief This API is intended to query data maintained by the languages_plugin
+         * @ingroup api
          */
         class language_api : public std::enable_shared_from_this<language_api> {
         public:
