@@ -10,6 +10,8 @@ namespace golos {
         /**
          *  @brief Provides comment creation
          *  @ingroup operations
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_operation : public base_operation<Major, Hardfork, Release> {
@@ -29,6 +31,9 @@ namespace golos {
             }
         };
 
+        /**
+         * @warning Changes to this structure will break protocol compatibility.
+         */
         struct beneficiary_route_type {
             beneficiary_route_type() {
             }
@@ -64,6 +69,7 @@ namespace golos {
          *  The max_accepted_payout may be decreased, but never increased.
          *  The percent_steem_dollars may be decreased, but never increased
          *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct comment_options_operation : public base_operation<Major, Hardfork, Release> {
@@ -86,6 +92,7 @@ namespace golos {
 
         /**
          *  @ingroup operations
+         *  @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct delete_comment_operation : public base_operation<Major, Hardfork, Release> {

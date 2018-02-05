@@ -12,6 +12,8 @@ namespace golos {
          *  @ingroup operations
          *
          *  The funds are deposited after STEEMIT_CONVERSION_DELAY
+         *
+         *  @warning Changes to this structure will break protocol compatibility
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct convert_operation : public base_operation<Major, Hardfork, Release> {
@@ -43,6 +45,8 @@ namespace golos {
          *
          *  Market orders are matched in the order they are included
          *  in the block chain.
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -93,6 +97,8 @@ namespace golos {
          *
          *  This operation is identical to limit_order_create except it serializes the price rather
          *  than calculating it from other fields.
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -129,6 +135,8 @@ namespace golos {
          *  account to receive the proceeds must be the same as order->seller.
          *
          *  @return the amount actually refunded
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -154,6 +162,8 @@ namespace golos {
          *  the call price limit then it will fail if the call price is above the settlement price.
          *
          *  @note this operation can be used to force a market order using the collateral without requiring outside funds.
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
 
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
@@ -173,8 +183,10 @@ namespace golos {
         /**
          *  @ingroup operations
          *
-         *  This operation can be used after a black swan to bid collateral for
+         *  @brief This operation can be used after a black swan to bid collateral for
          *  taking over part of the debt and the settlement_fund (see BSIP-0018).
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct bid_collateral_operation : public base_operation<Major, Hardfork, Release> {

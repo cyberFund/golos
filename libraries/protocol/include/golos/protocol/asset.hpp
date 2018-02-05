@@ -16,7 +16,17 @@ namespace golos {
 
         bool operator==(const asset_name_type &b, const asset_symbol_type &a);
 
-        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType, typename AmountType>
+        /**
+         * @brief This interface is used to define the generic asset container with easily changing amount and name container storage types.
+         * @tparam Major Indicates the major protocol version this structure will be used for
+         * @tparam Hardfork Indicates the hardfork version this structure will be used for
+         * @tparam Release Indicates the release protocol version this structure will be used for
+         * @tparam StorageType Inficates the asset name storage type and size
+         * @tparam AmountType Indicates the asset amount storage type and size
+         *
+         * @warning Changes to this structure will break protocol compatibility.
+         */
+        template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename StorageType = void, typename AmountType = void>
         struct asset_interface : public static_version<Major, Hardfork, Release> {
             typedef StorageType asset_container_type;
             typedef AmountType amount_container_type;
@@ -41,8 +51,21 @@ namespace golos {
             asset_container_type symbol;
         };
 
+        /**
+         * @brief Asset structure is intended to represent asset information for business-logic replication protocol.
+         *
+         * Version 16 uses an asset_symbol_name (uint64_t) for asset name storage container, as for version 17 asset_name_type (fc::fixed_string<boost::multiprecision::uint128_t>) is getting used. This is required to increase the asset name length from sizeof(uint64_t) to sizeof(boost::multiprecision::uint128_t). These changes also lead to serialization changes because of params reflection order defines the sequence of bytes in the final blob.
+         * Version 16 serialization is like 1000 | \x03 | GOLOS <=> amount | precision_decimals | ticker_name <=> 8 bytes | 1 byte | 6 bytes.
+         * Version 17 serialization looks like 1000 | GOLOS | \x03 <=> amount | ticker_name | decimals <=> 8 bytes | 16 bytes | 1 byte.
+         *
+         * @tparam Major Indicates the major protocol version this structure will be used for
+         * @tparam Hardfork Indicates the hardfork version this structure will be used for
+         * @tparam Release Indicates the release protocol version this structure will be used for
+         *
+         * @warning Changes to this structure will break protocol compatibility.
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release, typename = type_traits::static_range<true>>
-        struct asset : public asset_interface<Major, Hardfork, Release, type_traits::void_t, type_traits::void_t> {
+        struct asset : public asset_interface<Major, Hardfork, Release> {
 
         };
 
@@ -74,16 +97,14 @@ namespace golos {
             std::string to_string() const;
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
-            asset<Major, Hardfork, Release> &operator+=(
-                    const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
+            asset<Major, Hardfork, Release> &operator+=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
                 this->amount += o.amount;
                 return *this;
             }
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
-            asset<Major, Hardfork, Release> &operator-=(
-                    const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
+            asset<Major, Hardfork, Release> &operator-=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
                 this->amount -= o.amount;
                 return *this;
@@ -198,8 +219,7 @@ namespace golos {
             std::string to_string() const;
 
             template<uint8_t ArgumentMajor, uint8_t ArgumentHardfork, uint16_t ArgumentRelease>
-            asset<Major, Hardfork, Release> &operator+=(
-                    const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
+            asset<Major, Hardfork, Release> &operator+=(const asset<ArgumentMajor, ArgumentHardfork, ArgumentRelease> &o) {
                 FC_ASSERT(this->symbol == o.symbol);
                 this->amount += o.amount;
                 return *this;
@@ -298,13 +318,15 @@ namespace golos {
          * @brief The price struct stores asset prices in the Graphene system.
          *
          * A price is defined as a ratio between two assets, and represents a possible exchange rate between those two
-         * assets. prices are generally not stored in any simplified form, i.e. a price of (1000 CORE)/(20 USD) is per     fectly
-         * normal.
+         * assets. prices are generally not stored in any simplified form, i.e. a price of (1000 CORE)/(20 USD)
+         * is perfectly normal.
          *
-         * The assets within a price are labeled base and quote. Throughout the Graphene code base, the convention use     d is
-         * that the base asset is the asset being sold, and the quote asset is the asset being purchased, where the pri     ce is
-         * represented as base/quote, so in the example price above the seller is looking to sell CORE asset and get USD in
-         * return.
+         * The assets within a price are labeled base and quote. Throughout the Graphene code base, the
+         * convention used is that the base asset is the asset being sold, and the quote asset is the asset
+         * being purchased, where the price is represented as base/quote, so in the example price above the
+         * seller is looking to sell CORE asset and get USD in return.
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct price : public static_version<Major, Hardfork, Release> {
@@ -357,7 +379,6 @@ namespace golos {
              * @param debt
              * @param collateral
              * @param collateral_ratio
-             * @return
              */
 
             static price<Major, Hardfork, Release> call_price(const asset<Major, Hardfork, Release> &debt,
@@ -462,8 +483,9 @@ namespace golos {
         }
 
         /**
-         *  @class price_feed
-         *  @brief defines market parameters for margin positions
+         * @brief Defines market parameters for margin positions
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct price_feed : public static_version<Major, Hardfork, Release> {
@@ -502,8 +524,9 @@ namespace golos {
              *  debt * maintenance_price() < collateral
              *  debt * settlement_price    < debt * maintenance
              *  debt * maintenance_price() < debt * max_short_squeeze_price()
-            price maintenance_price()const;
              */
+
+            // price<Major, Hardfork, Release> maintenance_price() const;
 
             /** When selling collateral to pay off debt, the least amount of debt to receive should be
              *  min_usd = max_short_squeeze_price() * collateral

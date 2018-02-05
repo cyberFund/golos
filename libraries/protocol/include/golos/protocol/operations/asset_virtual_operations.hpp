@@ -6,10 +6,12 @@
 
 namespace golos {
     namespace protocol {
-        /**
-         * Virtual op generated when force settlement is cancelled.
-         */
 
+        /**
+         * @brief Virtual operation generated when force settlement is cancelled.
+         *
+         * @warning Changes to this structure will break protocol compatibility.
+         */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_settle_cancel_operation : public virtual_operation<Major, Hardfork, Release> {
             integral_id_type settlement;

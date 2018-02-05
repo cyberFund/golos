@@ -24,7 +24,8 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide.
+         *  @warning Changes to this structure will break protocol compatibility.
          *
          *  This particular operation is a data context for account_create_evaluator<Major, Hardfork, Release>. The result of a particular operation is an account_object created with the params set from the operation
          */
@@ -65,7 +66,8 @@ namespace golos {
          *  @tparam Hardfork Indicates the hardfork version this operation will be used for
          *  @tparam Release Indicates the release protocol version this operation will be used for
          *
-         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide
+         *  @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide.
+         *  @warning Changes to this structure will break protocol compatibility.
          *
          *  This particular operation is a data context for account_create_with_delegation_evaluator<Major, Hardfork, Release>. The result of a particular operation is an account_object created with the params set from the operation
          */
@@ -100,7 +102,14 @@ namespace golos {
          * @param active Account public active key
          * @param posting Account public posting key
          * @param memo_key The memo key is the key this account will typically use to encrypt/sign transaction memos and other non-validated account activities. This field is here to prevent confusion if the active authority has zero or multiple keys in it.
-         * @param json_metadata
+         * @param json_metadata Exact content of this member will be available in account_object::json_metadata
+         *
+         * @tparam Major Indicates the major protocol version this operation will be used for
+         * @tparam Hardfork Indicates the hardfork version this operation will be used for
+         * @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         * @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide.
+         * @warning Changes to this structure will break protocol compatibility.
          *
          * This operation is used to update an existing account. It can be used to update the authorities, or adjust the opt ions on the account.
          */
@@ -137,7 +146,13 @@ namespace golos {
          * @param authorizing_account The account which is specifying an opinion of another account
          * @param account_to_list The account being opined about
          * @param new_listing The new white and blacklist status of account_to_list, as determined by authorizing_account. This is a bitfield using values defined in the @ref account_listing enum
-         * @param extensions
+         *
+         * @tparam Major Indicates the major protocol version this operation will be used for
+         * @tparam Hardfork Indicates the hardfork version this operation will be used for
+         * @tparam Release Indicates the release protocol version this operation will be used for
+         *
+         * @note In fact business logic protocol versioning scheme is not bounded in any way to business logic chain versioning, but it was decided to make them coincide.
+         * @warning Changing this structure triggers a hardfork.
          *
          * Accounts can freely specify opinions about other accounts, in the form of either whitelisting or blacklisting
          * them. This information is used in chain validation only to determine whether an account is authorized to tra     nsact

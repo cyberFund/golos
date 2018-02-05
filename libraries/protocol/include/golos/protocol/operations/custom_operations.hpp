@@ -11,7 +11,7 @@ namespace golos {
          * @brief Provides a generic way to add higher level protocols on top of witness consensus
          * @ingroup operations
          *
-         * There is no validation for this operation other than that required auths are valid
+         * @note There is no validation for this operation other than that required auths are valid
          */
         struct custom_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_auths;
@@ -32,8 +32,8 @@ namespace golos {
          * @brief Serves the same purpose as custom_operation but also supports required posting authorities. Unlike custom_operation,
          * @ingroup operations
          *
-         * This operation is designed to be human readable/developer friendly.
-         **/
+         * @note This operation is designed to be human readable/developer friendly.
+         */
         struct custom_json_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_auths;
             flat_set <account_name_type> required_posting_auths;
@@ -57,8 +57,8 @@ namespace golos {
 
         /**
          * @ingroup operations
+         * @warning Changes to this structure will break protocol compatibility.
          */
-
         struct custom_binary_operation : public base_operation<0, 17, 0> {
             flat_set <account_name_type> required_owner_auths;
             flat_set <account_name_type> required_active_auths;

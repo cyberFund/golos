@@ -11,7 +11,7 @@ namespace golos {
         /**
          * @brief The asset_options struct contains options available on all assets in the network
          *
-         * @note Changes to this struct will break protocol compatibility
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_options {
@@ -65,7 +65,7 @@ namespace golos {
         /**
          * @brief The bitasset_options struct contains configurable options available only to BitAssets.
          *
-         * @note Changes to this struct will break protocol compatibility
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct bitasset_options {
@@ -95,7 +95,9 @@ namespace golos {
 
 
         /**
-         *  @ingroup operations
+         * @ingroup operations
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_create_operation : public base_operation<Major, Hardfork, Release> {
@@ -140,6 +142,8 @@ namespace golos {
          *  settle_price and all open margin positions are called at the settle price.  If this asset is
          *  used as backing for other bitassets, those bitassets will be force settled at their current
          *  feed price.
+         *
+         *  @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_global_settle_operation : public base_operation<Major, Hardfork, Release> {
@@ -171,6 +175,8 @@ namespace golos {
          * blockchain parameter set in the global_property_object.
          *
          * The fee is paid by @ref account, and @ref account must authorize this operation
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_settle_operation : public base_operation<Major, Hardfork, Release> {
@@ -203,6 +209,8 @@ namespace golos {
          * blockchain parameter set in the global_property_object.
          *
          * The fee is paid by @ref account, and @ref account must authorize this operation
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_force_settle_operation : public base_operation<Major, Hardfork, Release> {
@@ -225,7 +233,9 @@ namespace golos {
         };
 
         /**
-         *  @ingroup operations
+         * @ingroup operations
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_fund_fee_pool_operation : public base_operation<Major, Hardfork, Release> {
@@ -259,6 +269,8 @@ namespace golos {
          * @pre @ref fee SHALL be nonnegative, and @ref issuer MUST have a sufficient balance to pay it
          * @pre @ref new_options SHALL be internally consistent, as verified by @ref validate()
          * @post @ref asset_to_update will have options matching those of new_options
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_update_operation : public base_operation<Major, Hardfork, Release> {
@@ -293,6 +305,8 @@ namespace golos {
          * @pre @ref fee MUST be nonnegative, and @ref issuer MUST have a sufficient balance to pay it
          * @pre @ref new_options SHALL be internally consistent, as verified by @ref validate()
          * @post @ref asset_to_update will have BitAsset-specific options matching those of new_options
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_update_bitasset_operation : public base_operation<Major, Hardfork, Release> {
@@ -326,8 +340,9 @@ namespace golos {
          * @pre @ref fee MUST be nonnegative, and @ref issuer MUST have a sufficient balance to pay it
          * @pre Cardinality of @ref new_feed_producers MUST NOT exceed @ref chain_parameters::maximum_asset_feed_publishers
          * @post @ref asset_to_update will have a set of feed producers matching @ref new_feed_producers
-         * @post All valid feeds supplied by feed producers in @ref new_feed_producers, which were already feed producers
-         * prior to execution of this operation, will be preserved
+         * @post All valid feeds supplied by feed producers in @ref new_feed_producers, which were already feed producers prior to execution of this operation, will be preserved
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_update_feed_producers_operation : public base_operation<Major, Hardfork, Release> {
@@ -352,17 +367,20 @@ namespace golos {
          * @brief Publish price feeds for market-issued assets
          * @ingroup operations
          *
-         * Price feed providers use this operation to publish their price feeds for market-issued assets. A price feed is
-         * used to tune the market for a particular market-issued asset. For each value in the feed, the median across all
-         * committee_member feeds for that asset is calculated and the market for the asset is configured with the median of that
-         * value.
+         * Price feed providers use this operation to publish their price feeds for market-issued assets.
+         * A price feed is used to tune the market for a particular market-issued asset. For each value in
+         * the feed, the median across all committee_member feeds for that asset is calculated and the
+         * market for the asset is configured with the median of that value.
          *
-         * The feed in the operation contains three prices: a call price limit, a short price limit, and a settlement price.
-         * The call limit price is structured as (collateral asset) / (debt asset) and the short limit price is structured
-         * as (asset for sale) / (collateral asset). Note that the asset IDs are opposite to eachother, so if we're
-         * publishing a feed for USD, the call limit price will be CORE/USD and the short limit price will be USD/CORE. The
-         * settlement price may be flipped either direction, as long as it is a ratio between the market-issued asset and
-         * its collateral.
+         * The feed in the operation contains three prices: a call price limit, a short price limit,
+         * and a settlement price.
+         * The call limit price is structured as (collateral asset) / (debt asset) and the short limit price
+         * is structured as (asset for sale) / (collateral asset). Note that the asset IDs are opposite to
+         * eachother, so if we're publishing a feed for USD, the call limit price will be CORE/USD and the
+         * short limit price will be USD/CORE. The settlement price may be flipped either direction, as long
+         * as it is a ratio between the market-issued asset and its collateral.
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_publish_feed_operation : public base_operation<Major, Hardfork, Release> {
@@ -384,6 +402,8 @@ namespace golos {
 
         /**
          * @ingroup operations
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_issue_operation : public base_operation<Major, Hardfork, Release> {
@@ -412,6 +432,7 @@ namespace golos {
          * @ingroup operations
          *
          * @note You cannot use this operation on market-issued assets.
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_reserve_operation : public base_operation<Major, Hardfork, Release> {
@@ -433,6 +454,8 @@ namespace golos {
         /**
          * @brief Used to transfer accumulated fees back to the issuer's balance.
          * @ingroup operations
+         *
+         * @warning Changes to this structure will break protocol compatibility.
          */
         template<uint8_t Major, uint8_t Hardfork, uint16_t Release>
         struct asset_claim_fees_operation : public base_operation<Major, Hardfork, Release> {
