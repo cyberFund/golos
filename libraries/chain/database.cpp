@@ -726,13 +726,12 @@ namespace golos {
             if (blocks.size() > 1) {
                 std::vector<std::pair<account_name_type, fc::time_point_sec>> witness_time_pairs;
                 for (const auto &b : blocks) {
-                    witness_time_pairs.push_back(std::make_pair(b->data.witness, b->data.timestamp));
+                    witness_time_pairs.emplace_back(b->data.witness, b->data.timestamp);
                 }
 
                 ilog("Encountered block num collision at block ${n} due to a fork, witnesses are:",
                      ("n", height)("w", witness_time_pairs));
             }
-            return;
         }
 
         bool database::_push_block(const signed_block &new_block) {
@@ -1024,7 +1023,7 @@ namespace golos {
 
         void database::clear_pending() {
             try {
-                assert((_pending_tx.size() == 0) || _pending_tx_session.valid());
+                assert((_pending_tx.empty()) || _pending_tx_session.valid());
                 _pending_tx.clear();
                 _pending_tx_session.reset();
             } FC_CAPTURE_AND_RETHROW()
@@ -1795,7 +1794,7 @@ namespace golos {
                         // This extra logic is for when the funds are created in HF 16. We are using this data to preload
                         // recent rshares 2 to prevent any downtime in payouts at HF 17. After HF 17, we can capture
                         // the value of recent rshare 2 and set it at the hardfork instead of computing it every reindex
-                        if (funds.size() && comment.net_rshares > 0) {
+                        if (!funds.empty() && comment.net_rshares > 0) {
                             const auto &rf = get_reward_fund(comment);
                             funds[rf.id._id].recent_claims += utilities::calculate_claims(comment.net_rshares.value,
                                                                                           rf);
@@ -1813,7 +1812,7 @@ namespace golos {
                 current = cidx.begin();
             }
 
-            if (funds.size()) {
+            if (!funds.empty()) {
                 for (size_t i = 0; i < funds.size(); i++) {
                     modify(get<reward_fund_object, by_id>(reward_fund_object::id_type(i)),
                            [&](reward_fund_object &rfo) {
@@ -2661,7 +2660,7 @@ namespace golos {
                 //fc::time_point begin_time = fc::time_point::now();
 
                 auto block_num = next_block.block_num();
-                if (_checkpoints.size() && _checkpoints.rbegin()->second != block_id_type()) {
+                if (!_checkpoints.empty() && _checkpoints.rbegin()->second != block_id_type()) {
                     auto itr = _checkpoints.find(block_num);
                     if (itr != _checkpoints.end()) {
                         FC_ASSERT(next_block.id() == itr->second, "Block did not match checkpoint",
@@ -2919,7 +2918,7 @@ namespace golos {
                             fho.price_history.pop_front();
                         }
 
-                        if (fho.price_history.size()) {
+                        if (!fho.price_history.empty()) {
                             std::deque<price<0, 17, 0>> copy;
                             for (auto i : fho.price_history) {
                                 copy.push_back(i);
@@ -4064,7 +4063,7 @@ namespace golos {
                             return false;
                         }
                         if (extra_dump) {
-                            ilog("next_asset<0, 17, 0> returning true, bound is ${b}", ("b", *bound));
+                            ilog("next_asset returning true, bound is ${b}", ("b", *bound));
                         }
                         current_asset = bound->balance.symbol;
                         return true;
@@ -4766,59 +4765,59 @@ namespace golos {
                 for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
                     FC_ASSERT(itr->votes < gpo.total_vesting_shares.amount, "", ("itr", *itr));
 
-                for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr) {
-                    total_supply += itr->balance;
-                    total_supply += itr->savings_balance;
-                    total_sbd += itr->sbd_balance;
-                    total_sbd += itr->savings_sbd_balance;
-                    total_vesting += itr->vesting_shares;
-                    total_vsf_votes += (itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr->witness_vote_weight() : (
-                            STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ? itr->proxied_vsf_votes[
-                                    STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] : itr->vesting_shares.amount));
+                for (const auto &itr : account_idx) {
+                    total_supply += itr.balance;
+                    total_supply += itr.savings_balance;
+                    total_sbd += itr.sbd_balance;
+                    total_sbd += itr.savings_sbd_balance;
+                    total_vesting += itr.vesting_shares;
+                    total_vsf_votes += (itr.proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ? itr.witness_vote_weight() : (
+                            STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ? itr.proxied_vsf_votes[
+                                    STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] : itr.vesting_shares.amount));
                 }
 
                 const auto &convert_request_idx = get_index<convert_request_index>().indices();
 
-                for (auto itr = convert_request_idx.begin(); itr != convert_request_idx.end(); ++itr) {
-                    if (itr->amount.symbol_name() == STEEM_SYMBOL_NAME) {
-                        total_supply += itr->amount;
-                    } else if (itr->amount.symbol_name() == SBD_SYMBOL_NAME) {
-                        total_sbd += itr->amount;
+                for (const auto &itr : convert_request_idx) {
+                    if (itr.amount.symbol_name() == STEEM_SYMBOL_NAME) {
+                        total_supply += itr.amount;
+                    } else if (itr.amount.symbol_name() == SBD_SYMBOL_NAME) {
+                        total_sbd += itr.amount;
                     } else
                         FC_ASSERT(false, "Encountered illegal symbol in convert_request_object");
                 }
 
                 const auto &limit_order_idx = get_index<limit_order_index>().indices();
 
-                for (auto itr = limit_order_idx.begin(); itr != limit_order_idx.end(); ++itr) {
-                    if (itr->sell_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
-                        total_supply += itr->for_sale;
-                    } else if (itr->sell_price.base.symbol_name() == SBD_SYMBOL_NAME) {
-                        total_sbd += itr->for_sale;
+                for (const auto &itr : limit_order_idx) {
+                    if (itr.sell_price.base.symbol_name() == STEEM_SYMBOL_NAME) {
+                        total_supply += itr.for_sale;
+                    } else if (itr.sell_price.base.symbol_name() == SBD_SYMBOL_NAME) {
+                        total_sbd += itr.for_sale;
                     }
                 }
 
                 const auto &escrow_idx = get_index<escrow_index>().indices().get<by_id>();
 
-                for (auto itr = escrow_idx.begin(); itr != escrow_idx.end(); ++itr) {
-                    total_supply += itr->steem_balance;
-                    total_sbd += itr->sbd_balance;
+                for (const auto &itr : escrow_idx) {
+                    total_supply += itr.steem_balance;
+                    total_sbd += itr.sbd_balance;
 
-                    if (itr->pending_fee.symbol_name() == STEEM_SYMBOL_NAME) {
-                        total_supply += itr->pending_fee;
-                    } else if (itr->pending_fee.symbol_name() == SBD_SYMBOL_NAME) {
-                        total_sbd += itr->pending_fee;
+                    if (itr.pending_fee.symbol_name() == STEEM_SYMBOL_NAME) {
+                        total_supply += itr.pending_fee;
+                    } else if (itr.pending_fee.symbol_name() == SBD_SYMBOL_NAME) {
+                        total_sbd += itr.pending_fee;
                     } else
                         FC_ASSERT(false, "found escrow pending fee that is not SBD or STEEM");
                 }
 
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
 
-                for (auto itr = savings_withdraw_idx.begin(); itr != savings_withdraw_idx.end(); ++itr) {
-                    if (itr->amount.symbol_name() == STEEM_SYMBOL_NAME) {
-                        total_supply += itr->amount;
-                    } else if (itr->amount.symbol_name() == SBD_SYMBOL_NAME) {
-                        total_sbd += itr->amount;
+                for (const auto &itr : savings_withdraw_idx) {
+                    if (itr.amount.symbol_name() == STEEM_SYMBOL_NAME) {
+                        total_supply += itr.amount;
+                    } else if (itr.amount.symbol_name() == SBD_SYMBOL_NAME) {
+                        total_sbd += itr.amount;
                     } else
                         FC_ASSERT(false, "found savings withdraw that is not SBD or STEEM");
                 }
@@ -4828,13 +4827,13 @@ namespace golos {
 
                 const auto &comment_idx = get_index<comment_index>().indices();
 
-                for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr) {
-                    if (itr->net_rshares.value > 0) {
-                        auto delta = utilities::calculate_claims(itr->net_rshares.value);
+                for (const auto &itr : comment_idx) {
+                    if (itr.net_rshares.value > 0) {
+                        auto delta = utilities::calculate_claims(itr.net_rshares.value);
                         total_rshares2 += delta;
                     }
-                    if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
-                        total_children_rshares2 += itr->children_rshares2;
+                    if (itr.parent_author == STEEMIT_ROOT_POST_PARENT) {
+                        total_children_rshares2 += itr.children_rshares2;
                     }
                 }
 
@@ -5015,7 +5014,7 @@ namespace golos {
                 // must still pass other checks even if it is in allowed_assets
             }
 
-            for (const auto id : acct.blacklisting_accounts) {
+            for (const auto &id : acct.blacklisting_accounts) {
                 if (asset_obj.options.blacklist_authorities.find(id) != asset_obj.options.blacklist_authorities.end()) {
                     return false;
                 }
@@ -5025,7 +5024,7 @@ namespace golos {
                 return true;
             }
 
-            for (const auto id : acct.whitelisting_accounts) {
+            for (const auto &id : acct.whitelisting_accounts) {
                 if (asset_obj.options.whitelist_authorities.find(id) != asset_obj.options.whitelist_authorities.end()) {
                     return true;
                 }
