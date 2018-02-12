@@ -123,7 +123,12 @@ namespace golos {
             network_node_api(const api_context &a);
 
             /**
-             * @brief Return general network information, such as p2p port
+             * @brief Return general network information, such as:
+             * - P2P port currently used
+             * - Current node connection count
+             * - Node public key (if exists)
+             * - If node is firewalled
+             * - Node identifier
              */
             fc::variant_object get_info() const;
 
@@ -135,6 +140,7 @@ namespace golos {
 
             /**
              * @brief Get status of all current connections to peers
+             * @see peer_status
              */
             std::vector<network::peer_status> get_connected_peers() const;
 

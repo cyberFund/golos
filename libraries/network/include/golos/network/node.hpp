@@ -145,8 +145,7 @@ namespace golos {
         };
 
         /**
-         *  Information about connected peers that the client may want to make
-         *  available to the user.
+         *  @brief Information about connected peers that the client may want to make available to the user.
          */
         struct peer_status {
             uint32_t version;
