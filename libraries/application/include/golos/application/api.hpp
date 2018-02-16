@@ -162,7 +162,7 @@ namespace golos {
              */
             std::vector<network::potential_peer_record> get_potential_peers() const;
 
-            /// internal method, not exposed via JSON RPC
+            /// Internal method, not exposed via JSON RPC
             void on_api_startup();
 
         private:

@@ -95,14 +95,20 @@ namespace golos {
 
             std::vector<category_api_object> get_recent_categories(std::string after, uint32_t limit) const;
 
+            /**
+             * @return Current block-signing witnesses vector
+             */
             std::vector<account_name_type> get_active_witnesses() const;
 
+            /**
+             * @return Current miner queue
+             */
             std::vector<account_name_type> get_miner_queue() const;
 
             /**
-            *  This API is a short-cut for returning all of the state required for a particular URL
-            *  with a single query.
-            */
+             *  This API is a short-cut for returning all of the state required for a particular URL
+             *  with a single query.
+             */
             state get_state(std::string path) const;
 
             /////////////////////////////
@@ -141,13 +147,20 @@ namespace golos {
             fc::variant_object get_config() const;
 
             /**
-             * @brief Retrieve the current @ref dynamic_global_property_object
+             * @return Current dynamic_global_property_object
              */
             dynamic_global_property_object get_dynamic_global_properties() const;
 
+            /**
+             * @return Current active chain_properties
+             */
             chain_properties<0, 17, 0> get_chain_properties() const;
 
+            /**
+             * @return Current GOLOS/GBG feed median price
+             */
             price<0, 17, 0> get_current_median_history_price() const;
+
 
             feed_history_api_object get_feed_history() const;
 
@@ -294,7 +307,10 @@ namespace golos {
             // Authority / Validation //
             ////////////////////////////
 
-            /// @brief Get a hexdump of the serialized binary form of a transaction
+            /**
+             * @brief Get a hexdump of the serialized binary form of a transaction:w
+             *
+             */
             std::string get_transaction_hex(const signed_transaction &trx) const;
 
             annotated_signed_transaction get_transaction(transaction_id_type trx_id) const;
