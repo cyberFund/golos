@@ -72,11 +72,11 @@ namespace steemit {
 
                             new_cop.required_auths = op.required_auths;
                             new_cop.required_posting_auths = op.required_posting_auths;
-                            new_cop.id = _plugin.plugin_name();
-                            first_key_value_operation fop;
+                            new_cop.id = plugin.plugin_name();
+                            create_first_key_value_operation fop;
 
                             try {
-                                fop = fc::json::from_string(op.json).as<first_key_value_operation>();
+                                fop = fc::json::from_string(op.json).as<create_first_key_value_operation>();
                             }
                             catch (const fc::exception &) {
                                 return;
@@ -84,7 +84,7 @@ namespace steemit {
 
                             auto new_fop = key_value_plugin_operation(fop);
                             new_cop.json = fc::json::to_string(new_fop);
-                            std::shared_ptr<custom_operation_interpreter> eval = _plugin.database().get_custom_json_evaluator(op.id);
+                            std::shared_ptr<custom_operation_interpreter> eval = plugin.database().get_custom_json_evaluator(op.id);
                             eval->apply(new_cop);
                         }
                     }
