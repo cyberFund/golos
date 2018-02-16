@@ -64,6 +64,32 @@ namespace steemit {
                 void operator()(const create_first_key_value_operation &op) const {
 
                 }
+
+                void operator()(const custom_json_operation &op) const {
+                    try {
+                        if (op.id == KEY_VALUE_PLUGIN_NAME) {
+                            custom_json_operation new_cop;
+
+                            new_cop.required_auths = op.required_auths;
+                            new_cop.required_posting_auths = op.required_posting_auths;
+                            new_cop.id = _plugin.plugin_name();
+                            first_key_value_operation fop;
+
+                            try {
+                                fop = fc::json::from_string(op.json).as<first_key_value_operation>();
+                            }
+                            catch (const fc::exception &) {
+                                return;
+                            }
+
+                            auto new_fop = key_value_plugin_operation(fop);
+                            new_cop.json = fc::json::to_string(new_fop);
+                            std::shared_ptr<custom_operation_interpreter> eval = _plugin.database().get_custom_json_evaluator(op.id);
+                            eval->apply(new_cop);
+                        }
+                    }
+                    FC_CAPTURE_AND_RETHROW()
+                }
             };
 
             void key_value_plugin_impl::plugin_initialize() {
@@ -79,11 +105,25 @@ namespace steemit {
             }
 
             void key_value_plugin_impl::pre_operation(const operation_notification &note) {
-                note.op.visit(pre_operation_visitor(self));
+                try {
+                    note.op.visit(pre_operation_visitor(self));
+                }
+                catch (const fc::assert_exception &) {
+                    if (database().is_producing()) {
+                        throw;
+                    }
+                }
             }
 
             void key_value_plugin_impl::post_operation(const operation_notification &note) {
-                note.op.visit(post_operation_visitor(self));
+                try {
+                    note.op.visit(post_operation_visitor(self));
+                }
+                catch (fc::assert_exception) {
+                    if (database().is_producing()) {
+                        throw;
+                    }
+                }
             }
         } // detail
 
